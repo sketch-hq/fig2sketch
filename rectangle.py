@@ -1,30 +1,14 @@
-import uuid
-import fsl.transform.affine
-import numpy
-import math
 import style
-
-
-def gen_uuid():
-    return str(uuid.uuid4()).upper()
+import utils
 
 
 def convert(rect, children, parent):
-    matrix = numpy.array(rect['relativeTransform']+[[0,0,1]])
-
-    origin = numpy.array([rect['width'] / 2, rect['height'] / 2, 1])
-    mapped_origin = matrix.dot(origin)
-
-    if parent['type'] == "GROUP":
-        parent_coord = (parent['x'], parent['y'])
-        parent_rotation = parent['rotation']
-    else:
-        parent_coord = (0, 0)
-        parent_rotation = 0
+    base_coordinates, base_rotation = utils.get_base_position(parent)
+    coordinates = utils.transform_relative_coordinates(rect)
 
     return {
         "_class": "rectangle",
-        "do_objectID": gen_uuid(),
+        "do_objectID": utils.gen_object_id(),
         "booleanOperation": -1,
         "exportOptions": {
             "_class": "exportOptions",
@@ -38,8 +22,8 @@ def convert(rect, children, parent):
             "constrainProportions": False,
             "height": rect['height'],
             "width": rect['width'],
-            "x": (mapped_origin - origin)[0] - parent_coord[0],
-            "y": (mapped_origin - origin)[1] - parent_coord[1]
+            "x": coordinates[0] - base_coordinates[0],
+            "y": coordinates[1] - base_coordinates[1]
         },
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
@@ -51,7 +35,7 @@ def convert(rect, children, parent):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": rect['rotation'] - parent_rotation,
+        "rotation": rect['rotation'] - base_rotation,
         "shouldBreakMaskChain": False,
         "style": style.convert(rect),
         "edited": False,

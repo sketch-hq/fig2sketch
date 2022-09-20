@@ -1,11 +1,3 @@
-import uuid
-import math
-
-
-def gen_uuid():
-    return str(uuid.uuid4()).upper()
-
-
 def convert(figma):
     fills = [
         {

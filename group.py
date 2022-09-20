@@ -1,9 +1,12 @@
 import utils
 
 
-def convert(artboard, children, parent):
+def convert(group, children, parent):
+    base_coordinates, base_rotation = utils.get_base_position(parent)
+    coordinates = utils.transform_relative_coordinates(group)
+
     return {
-        "_class": 'artboard',
+        "_class": 'group',
         "do_objectID": utils.gen_object_id(),
         "booleanOperation": -1,
         "exportOptions": {
@@ -16,10 +19,10 @@ def convert(artboard, children, parent):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": artboard['absoluteRenderBounds']['height'],
-            "width": artboard['absoluteRenderBounds']['width'],
-            "x": artboard['relativeTransform'][0][2],
-            "y": artboard['relativeTransform'][1][2]
+            "height": group['absoluteRenderBounds']['height'],
+            "width": group['absoluteRenderBounds']['width'],
+            "x": coordinates[0] - base_coordinates[0],
+            "y": coordinates[1] - base_coordinates[1]
         },
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
@@ -27,11 +30,11 @@ def convert(artboard, children, parent):
         "isLocked": False,
         "isVisible": True,
         "layerListExpandedType": 2,
-        "name": artboard['name'],
+        "name": group['name'],
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": artboard['rotation'],
+        "rotation": group['rotation'] - base_rotation,
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",

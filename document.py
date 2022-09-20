@@ -1,17 +1,13 @@
-import uuid
-
-
-def gen_uuid():
-    return str(uuid.uuid4()).upper()
+import utils
 
 
 def convert(pages):
     return {
         "_class": "document",
-        "do_objectID": gen_uuid(),
+        "do_objectID": utils.gen_object_id(),
         "assets": {
             "_class": "assetCollection",
-            "do_objectID": gen_uuid(),
+            "do_objectID": utils.gen_object_id(),
             "imageCollection": {
                 "_class": "imageCollection",
                 "images": {}
@@ -31,22 +27,22 @@ def convert(pages):
         "foreignSwatches": [],
         "layerStyles": {
             "_class": "sharedStyleContainer",
-            "do_objectID": gen_uuid(),
+            "do_objectID": utils.gen_object_id(),
             "objects": []
         },
         "layerSymbols": {
             "_class": "symbolContainer",
-            "do_objectID": gen_uuid(),
+            "do_objectID": utils.gen_object_id(),
             "objects": []
         },
         "layerTextStyles": {
             "_class": "sharedTextStyleContainer",
-            "do_objectID": gen_uuid(),
+            "do_objectID": utils.gen_object_id(),
             "objects": []
         },
         "sharedSwatches": {
             "_class": "swatchContainer",
-            "do_objectID": gen_uuid(),
+            "do_objectID": utils.gen_object_id(),
             "objects": []
         },
         "fontReferences": [],

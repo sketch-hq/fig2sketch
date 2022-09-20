@@ -1,23 +1,20 @@
 import json
 import shutil
 import os
-import uuid
 import sys
 
 import artboard as Artboard
-import rectangle as Rectangle
-import page as Page
 import document as Document
-import user as User
+import group as Group
 import meta as Meta
+import page as Page
+import rectangle as Rectangle
+import user as User
+
 # import vector as Vector
 # import regular_vector as RegularVector
 # import text as Text
 # import instance as Instance
-
-
-def gen_uuid():
-    return str(uuid.uuid4()).upper()
 
 
 components = []
@@ -25,7 +22,7 @@ components = []
 CONVERTERS = {
     'RECTANGLE': Rectangle.convert,
     'FRAME': Artboard.convert,
-    'GROUP': Artboard.convert,
+    'GROUP': Group.convert,
     # 'STAR': RegularVector.convert,
     # 'VECTOR': Vector.convert,
     # 'ELLIPSE': Vector.convert,
@@ -59,10 +56,12 @@ def convert_page(page):
 
 
 figma = json.load(open(sys.argv[1]))
+
 try:
     shutil.rmtree('output')
 except:
     pass
+
 os.mkdir('output')
 os.mkdir('output/pages')
 
