@@ -1,0 +1,8 @@
+fslpy==3.10.0
+h5py==3.7.0
+nibabel==4.0.2
+numpy==1.23.3
+packaging==21.3
+pyparsing==3.0.9
+scipy==1.9.1
+svg.path==6.2
