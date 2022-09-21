@@ -1,6 +1,8 @@
+import io
 import zlib
 import struct
 import sys
+from kiwi import *
 
 figma = open(sys.argv[1], 'rb').read()
 
@@ -15,6 +17,5 @@ while offset < len(figma):
     offset += size
     segments.append(data)
 
-for i, s in enumerate(segments):
-    open(f'segment{i}.data', 'wb').write(s)
-
+schema = KiwiSchema(io.BytesIO(segments[0]))
+print(KiwiDecoder(schema).decode(io.BytesIO(segments[1]), "Message"))
