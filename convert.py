@@ -3,59 +3,19 @@ import shutil
 import os
 import sys
 
-import converter.artboard as Artboard
 import converter.document as Document
-import converter.group as Group
 import converter.meta as Meta
-import converter.page as Page
-import converter.rectangle as Rectangle
 import converter.user as User
-import utils
-
-# import converter.vector as Vector
-
-# import regular_vector as RegularVector
-# import text as Text
-# import instance as Instance
-
+import converter.tree as tree
 
 components = []
-
-CONVERTERS = {
-    'PAGE': Page.convert,
-    'RECTANGLE': Rectangle.convert,
-    'FRAME': Artboard.convert,
-    'GROUP': Group.convert,
-    # 'STAR': RegularVector.convert,
-    # 'VECTOR': Vector.convert,
-    # 'ELLIPSE': Vector.convert,
-    # 'REGULAR_POLYGON': RegularVector.convert,
-    # 'TEXT': Text.convert,
-    # 'COMPONENT': lambda a, b: Instance.convert(a, b, components),
-    # 'INSTANCE': lambda a, b: Instance.convert(a, b, components),
-}
-
-
-def convert_something(figma_item, parent_position):
-    name = figma_item['name']
-    type_ = figma_item['type']
-    print(f'{type_}: {name}')
-
-    sketch_item = CONVERTERS[type_](figma_item, parent_position)
-    base_position = utils.get_base_position(figma_item)
-
-    children = [convert_something(child, base_position) for child in
-                figma_item.get('children', [])]
-    sketch_item['layers'] = children
-
-    return sketch_item
 
 
 def convert_pages(figma_pages):
     pages = []
 
     for figma_page in figma_pages:
-        page = convert_something(figma_page, {})
+        page = tree.convert_root_node(figma_page)
         json.dump(page, open(f'output/pages/{page["do_objectID"]}.json', 'w'), indent=2)
         pages.append(page)
 
@@ -67,7 +27,7 @@ def convert_pages(figma_pages):
 
 
 def convert_components():
-    components_page = convert_something({"name": "Symbols", "type": "PAGE"}, {})
+    components_page = tree.convert_root_node({"name": "Symbols", "type": "PAGE"})
     components_page['layers'] = components
     json.dump(components_page, open(f'output/pages/{components_page["do_objectID"]}.json', 'w'),
               indent=2)
