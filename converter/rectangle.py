@@ -2,8 +2,7 @@ import style
 import utils
 
 
-def convert(rect, children, parent):
-    base_position = utils.get_base_position(parent)
+def convert(rect, base_position):
     coordinates = utils.transform_relative_coordinates(rect, base_position)
 
     return {

@@ -22,6 +22,7 @@ import utils
 components = []
 
 CONVERTERS = {
+    'PAGE': Page.convert,
     'RECTANGLE': Rectangle.convert,
     'FRAME': Artboard.convert,
     'GROUP': Group.convert,
@@ -35,30 +36,43 @@ CONVERTERS = {
 }
 
 
-def convert_something(item, parent):
-    name = item['name']
-    type_ = item['type']
+def convert_something(figma_item, parent_position):
+    name = figma_item['name']
+    type_ = figma_item['type']
     print(f'{type_}: {name}')
 
-    # child = CONVERTERS[type_](item, children, base_position)
-    # blank fill-geometry = pain
-    children = [convert_something(x, item) for x in item.get('children', []) if
-                x['name'] not in ['Vector 3', 'Vector 4']]
+    sketch_item = CONVERTERS[type_](figma_item, parent_position)
+    base_position = utils.get_base_position(figma_item)
 
-    return CONVERTERS[type_](item, children, parent)
+    children = [convert_something(child, base_position) for child in
+                figma_item.get('children', [])]
+    sketch_item['layers'] = children
+
+    return sketch_item
 
 
-def convert_page(figma_page):
-    converted_page = Page.convert(figma_page)
-    base_position = utils.get_base_position(figma_page)
+def convert_pages(figma_pages):
+    pages = []
 
-    children = []
-    for child in figma_page['children']:
-        children.append(convert_something(child, figma_page))
+    for figma_page in figma_pages:
+        page = convert_something(figma_page, {})
+        json.dump(page, open(f'output/pages/{page["do_objectID"]}.json', 'w'), indent=2)
+        pages.append(page)
 
-    converted_page['layers'] = children
+    if components:
+        components_page = convert_components()
+        pages.append(components_page)
 
-    return converted_page
+    return pages
+
+
+def convert_components():
+    components_page = convert_something({"name": "Symbols", "type": "PAGE"}, {})
+    components_page['layers'] = components
+    json.dump(components_page, open(f'output/pages/{components_page["do_objectID"]}.json', 'w'),
+              indent=2)
+
+    return components_page
 
 
 figma = json.load(open(sys.argv[1]))
@@ -71,19 +85,10 @@ except:
 os.mkdir('output')
 os.mkdir('output/pages')
 
-pages = []
-for figma_page in figma['document']['children']:
-    page = convert_page(figma_page)
-    json.dump(page, open(f'output/pages/{page["do_objectID"]}.json', 'w'), indent=2)
-    pages.append(page)
+sketch_pages = convert_pages(figma['document']['children'])
 
-if components:
-    page = Page.convert({"name": "Symbols"}, components)
-    json.dump(page, open(f'output/pages/{page["do_objectID"]}.json', 'w'), indent=2)
-    pages.append(page)
-
-json.dump(Document.convert(pages), open('output/document.json', 'w'), indent=2)
-json.dump(User.convert(pages), open('output/user.json', 'w'), indent=2)
-json.dump(Meta.convert(pages), open('output/meta.json', 'w'), indent=2)
+json.dump(Document.convert(sketch_pages), open('output/document.json', 'w'), indent=2)
+json.dump(User.convert(sketch_pages), open('output/user.json', 'w'), indent=2)
+json.dump(Meta.convert(sketch_pages), open('output/meta.json', 'w'), indent=2)
 
 os.system('cd output; zip -r ../output/output.sketch .')
