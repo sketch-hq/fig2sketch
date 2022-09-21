@@ -2,7 +2,7 @@ import utils
 
 
 def convert(group, children, parent):
-    base_coordinates, base_rotation = utils.get_base_position(parent)
+    base_position = utils.get_base_position(parent)
     coordinates = utils.transform_relative_coordinates(group)
 
     return {
@@ -21,8 +21,8 @@ def convert(group, children, parent):
             "constrainProportions": False,
             "height": group['absoluteRenderBounds']['height'],
             "width": group['absoluteRenderBounds']['width'],
-            "x": coordinates[0] - base_coordinates[0],
-            "y": coordinates[1] - base_coordinates[1]
+            "x": coordinates[0] - base_position['coordinates'][0],
+            "y": coordinates[1] - base_position['coordinates'][1]
         },
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
@@ -34,7 +34,7 @@ def convert(group, children, parent):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": group['rotation'] - base_rotation,
+        "rotation": group['rotation'] - base_position['rotation'],
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",

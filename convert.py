@@ -3,13 +3,14 @@ import shutil
 import os
 import sys
 
-import artboard as Artboard
-import document as Document
-import group as Group
-import meta as Meta
-import page as Page
-import rectangle as Rectangle
-import user as User
+import converter.artboard as Artboard
+import converter.document as Document
+import converter.group as Group
+import converter.meta as Meta
+import converter.page as Page
+import converter.rectangle as Rectangle
+import converter.user as User
+import utils
 
 # import vector as Vector
 # import regular_vector as RegularVector
@@ -45,14 +46,16 @@ def convert_something(item, parent):
     return CONVERTERS[type_](item, children, parent)
 
 
-def convert_page(page):
-    children = []
-    for child in page['children']:
-        # if child['name'] not in ['Frame 1', 'Frame 2', 'Frame 3']: continue
-        # if child['name'] not in ['Text']: continue
-        children.append(convert_something(child, page))
+def convert_page(figma_page):
+    converted_page = Page.convert(figma_page)
 
-    return Page.convert(page, children)
+    children = []
+    for child in figma_page['children']:
+        children.append(convert_something(child, figma_page))
+
+    converted_page['layers'] = children
+
+    return converted_page
 
 
 figma = json.load(open(sys.argv[1]))
@@ -66,9 +69,8 @@ os.mkdir('output')
 os.mkdir('output/pages')
 
 pages = []
-for page in figma['document']['children']:
-    # if page['name'] != 'Component text': continue
-    page = convert_page(page)
+for figma_page in figma['document']['children']:
+    page = convert_page(figma_page)
     json.dump(page, open(f'output/pages/{page["do_objectID"]}.json', 'w'), indent=2)
     pages.append(page)
 

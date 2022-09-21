@@ -3,7 +3,7 @@ import utils
 
 
 def convert(rect, children, parent):
-    base_coordinates, base_rotation = utils.get_base_position(parent)
+    base_position = utils.get_base_position(parent)
     coordinates = utils.transform_relative_coordinates(rect)
 
     return {
@@ -22,8 +22,8 @@ def convert(rect, children, parent):
             "constrainProportions": False,
             "height": rect['height'],
             "width": rect['width'],
-            "x": coordinates[0] - base_coordinates[0],
-            "y": coordinates[1] - base_coordinates[1]
+            "x": coordinates[0] - base_position['coordinates'][0],
+            "y": coordinates[1] - base_position['coordinates'][1]
         },
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
@@ -35,7 +35,7 @@ def convert(rect, children, parent):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": rect['rotation'] - base_rotation,
+        "rotation": rect['rotation'] - base_position['rotation'],
         "shouldBreakMaskChain": False,
         "style": style.convert(rect),
         "edited": False,
