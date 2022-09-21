@@ -12,7 +12,8 @@ import converter.rectangle as Rectangle
 import converter.user as User
 import utils
 
-# import vector as Vector
+# import converter.vector as Vector
+
 # import regular_vector as RegularVector
 # import text as Text
 # import instance as Instance
@@ -39,6 +40,7 @@ def convert_something(item, parent):
     type_ = item['type']
     print(f'{type_}: {name}')
 
+    # child = CONVERTERS[type_](item, children, base_position)
     # blank fill-geometry = pain
     children = [convert_something(x, item) for x in item.get('children', []) if
                 x['name'] not in ['Vector 3', 'Vector 4']]
@@ -48,6 +50,7 @@ def convert_something(item, parent):
 
 def convert_page(figma_page):
     converted_page = Page.convert(figma_page)
+    base_position = utils.get_base_position(figma_page)
 
     children = []
     for child in figma_page['children']:
