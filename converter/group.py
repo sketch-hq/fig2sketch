@@ -1,8 +1,8 @@
 import utils
 
 
-def convert(group, children, parent):
-    coordinates = utils.transform_relative_coordinates(group)
+def convert(group, base_position):
+    coordinates = utils.transform_relative_coordinates(group, base_position)
 
     return {
         "_class": 'group',
@@ -66,6 +66,5 @@ def convert(group, children, parent):
                 "saturation": 1
             }
         },
-        "hasClickThrough": False,
-        "layers": children
+        "hasClickThrough": False
     }

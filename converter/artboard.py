@@ -1,7 +1,7 @@
 import utils
 
 
-def convert(artboard, children, parent):
+def convert(artboard, base_position):
     return {
         "_class": 'artboard',
         "do_objectID": utils.gen_object_id(),
@@ -64,6 +64,5 @@ def convert(artboard, children, parent):
                 "saturation": 1
             }
         },
-        "hasClickThrough": False,
-        "layers": children
+        "hasClickThrough": False
     }
