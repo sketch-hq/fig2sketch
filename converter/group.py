@@ -2,7 +2,8 @@ import utils
 
 
 def convert(group, children, parent):
-    coordinates = utils.transform_relative_coordinates(group)
+    base_position = utils.get_base_position(parent)
+    coordinates = utils.transform_relative_coordinates(group, base_position)
 
     return {
         "_class": 'group',
