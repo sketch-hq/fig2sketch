@@ -4,7 +4,7 @@
   "document": {
     "type": "DOCUMENT",
     "id": "0:0",
-    "name": "Untitled",
+    "name": "Shaping party",
     "children": [
       {
         "type": "PAGE",
@@ -97,39 +97,39 @@
             "children": [
               {
                 "type": "GROUP",
-                "id": "1:6",
+                "id": "9:3",
                 "name": "Group 1",
-                "x": 136.76522827148438,
-                "y": -52.91450881958008,
-                "width": 649,
-                "height": 404,
+                "x": 55.56039047241211,
+                "y": -92.87993621826172,
+                "width": 692.300537109375,
+                "height": 619.8290405273438,
                 "visible": true,
                 "locked": false,
                 "opacity": 1,
                 "blendMode": "PASS_THROUGH",
                 "isMask": false,
-                "rotation": -22.27146799549406,
+                "rotation": -7.016940172482683,
                 "layoutAlign": "INHERIT",
                 "layoutGrow": 0,
                 "layoutPositioning": "AUTO",
                 "exportSettings": [],
                 "relativeTransform": [
                   [
-                    0.925398588180542,
-                    -0.3789953887462616,
-                    136.76522827148438
+                    0.9925100803375244,
+                    -0.12216279655694962,
+                    55.56039047241211
                   ],
                   [
-                    0.3789953887462616,
-                    0.925398588180542,
-                    -52.91450881958008
+                    0.12216279655694962,
+                    0.9925100803375244,
+                    -92.87993621826172
                   ]
                 ],
                 "absoluteRenderBounds": {
                   "x": -623,
                   "y": -517,
-                  "width": 737.3489379882812,
-                  "height": 566.91455078125
+                  "width": 742.6756591796875,
+                  "height": 587
                 },
                 "effects": [],
                 "children": [
@@ -137,8 +137,8 @@
                     "type": "RECTANGLE",
                     "id": "1:2",
                     "name": "Rectangle 1",
-                    "x": 136.76522827148438,
-                    "y": -52.91450881958008,
+                    "x": 176.3067019271366,
+                    "y": -78.01791378295377,
                     "width": 430,
                     "height": 321,
                     "visible": true,
@@ -164,7 +164,7 @@
                     "dashPattern": [],
                     "strokeCap": "NONE",
                     "strokeMiterLimit": 4,
-                    "rotation": -22.27146799549406,
+                    "rotation": -29.28840816797674,
                     "layoutAlign": "INHERIT",
                     "layoutGrow": 0,
                     "layoutPositioning": "AUTO",
@@ -175,21 +175,21 @@
                     "exportSettings": [],
                     "relativeTransform": [
                       [
-                        0.925398588180542,
-                        -0.3789953887462616,
-                        136.76522827148438
+                        0.8721682905278698,
+                        -0.48920602319409134,
+                        176.3067019271366
                       ],
                       [
-                        0.3789953887462616,
-                        0.925398588180542,
-                        -52.91450881958008
+                        0.48920602319409134,
+                        0.8721682905278698,
+                        -78.01791378295377
                       ]
                     ],
                     "absoluteRenderBounds": {
-                      "x": -607.8922729492188,
+                      "x": -603.7284545898438,
                       "y": -517,
-                      "width": 519.5789184570312,
-                      "height": 407.1064758300781
+                      "width": 532.0675048828125,
+                      "height": 412.3066711425781
                     },
                     "fillGeometry": [
                       {
@@ -229,8 +229,8 @@
                     "type": "RECTANGLE",
                     "id": "1:5",
                     "name": "Rectangle 2",
-                    "x": 364.0854000747204,
-                    "y": 125.55269771814346,
+                    "x": 380.1222157840691,
+                    "y": 126.88264319077666,
                     "width": 371,
                     "height": 325,
                     "visible": true,
@@ -256,7 +256,7 @@
                     "dashPattern": [],
                     "strokeCap": "NONE",
                     "strokeMiterLimit": 4,
-                    "rotation": -22.27146799549406,
+                    "rotation": -29.28840816797674,
                     "layoutAlign": "INHERIT",
                     "layoutGrow": 0,
                     "layoutPositioning": "AUTO",
@@ -267,21 +267,21 @@
                     "exportSettings": [],
                     "relativeTransform": [
                       [
-                        0.925398588180542,
-                        -0.3789953887462616,
-                        364.0854000747204
+                        0.8721682905278698,
+                        -0.48920602319409134,
+                        380.1222157840691
                       ],
                       [
-                        0.3789953887462616,
-                        0.925398588180542,
-                        125.55269771814346
+                        0.48920602319409134,
+                        0.8721682905278698,
+                        126.88264319077666
                       ]
                     ],
                     "absoluteRenderBounds": {
-                      "x": -382.0881042480469,
-                      "y": -391.4472961425781,
-                      "width": 466.4963684082031,
-                      "height": 441.36181640625
+                      "x": -401.8697509765625,
+                      "y": -390.11737060546875,
+                      "width": 482.5663757324219,
+                      "height": 460.11737060546875
                     },
                     "fillGeometry": [
                       {
@@ -309,12 +309,12 @@
               },
               {
                 "type": "RECTANGLE",
-                "id": "1:7",
+                "id": "9:2",
                 "name": "Rectangle 3",
-                "x": 720.9627685546875,
-                "y": 381.8171691894531,
-                "width": 123,
-                "height": 109,
+                "x": 811.739501953125,
+                "y": 333,
+                "width": 106,
+                "height": 95,
                 "visible": true,
                 "locked": false,
                 "opacity": 1,
@@ -338,7 +338,7 @@
                 "dashPattern": [],
                 "strokeCap": "NONE",
                 "strokeMiterLimit": 4,
-                "rotation": 52.999998065829416,
+                "rotation": -44.62961221222006,
                 "layoutAlign": "INHERIT",
                 "layoutGrow": 0,
                 "layoutPositioning": "AUTO",
@@ -349,26 +349,26 @@
                 "exportSettings": [],
                 "relativeTransform": [
                   [
-                    0.6018150448799133,
-                    0.7986354827880859,
-                    720.9627685546875
+                    0.7116630673408508,
+                    -0.7025209665298462,
+                    811.739501953125
                   ],
                   [
-                    -0.7986354827880859,
-                    0.6018150448799133,
-                    381.8171691894531
+                    0.7025209665298462,
+                    0.7116630673408508,
+                    333
                   ]
                 ],
                 "absoluteRenderBounds": {
-                  "x": 83.95825958251953,
-                  "y": -247.41949462890625,
-                  "width": 180.04174041748047,
-                  "height": 191.83900451660156
+                  "x": 107.85816955566406,
+                  "y": -198.141845703125,
+                  "width": 156.14183044433594,
+                  "height": 170.35890197753906
                 },
                 "fillGeometry": [
                   {
                     "windingRule": "NONZERO",
-                    "data": "M0 0L123 0L123 109L0 109L0 0Z"
+                    "data": "M0 0L106 0L106 95L0 95L0 0Z"
                   }
                 ],
                 "fills": [
@@ -378,9 +378,9 @@
                     "opacity": 1,
                     "blendMode": "NORMAL",
                     "color": {
-                      "r": 0.14378264546394348,
-                      "g": 0.8208333253860474,
-                      "b": 0.12996530532836914
+                      "r": 0.11428821086883545,
+                      "g": 0.9458333253860474,
+                      "b": 0.2972281575202942
                     }
                   }
                 ],
@@ -400,6 +400,98 @@
                 "effects": []
               }
             ]
+          },
+          {
+            "type": "RECTANGLE",
+            "id": "9:4",
+            "name": "Rectangle 4",
+            "x": -494,
+            "y": -779,
+            "width": 163,
+            "height": 158,
+            "visible": true,
+            "locked": false,
+            "opacity": 1,
+            "blendMode": "PASS_THROUGH",
+            "isMask": false,
+            "cornerRadius": 0,
+            "cornerSmoothing": 0,
+            "topLeftRadius": 0,
+            "topRightRadius": 0,
+            "bottomLeftRadius": 0,
+            "bottomRightRadius": 0,
+            "fillStyleId": "",
+            "strokeStyleId": "",
+            "strokeWeight": 15,
+            "strokeTopWeight": 15,
+            "strokeBottomWeight": 15,
+            "strokeLeftWeight": 15,
+            "strokeRightWeight": 15,
+            "strokeJoin": "MITER",
+            "strokeAlign": "OUTSIDE",
+            "dashPattern": [],
+            "strokeCap": "NONE",
+            "strokeMiterLimit": 4,
+            "rotation": 0,
+            "layoutAlign": "INHERIT",
+            "layoutGrow": 0,
+            "layoutPositioning": "AUTO",
+            "constraints": {
+              "horizontal": "MIN",
+              "vertical": "MIN"
+            },
+            "exportSettings": [],
+            "relativeTransform": [
+              [
+                1,
+                0,
+                -494
+              ],
+              [
+                0,
+                1,
+                -779
+              ]
+            ],
+            "absoluteRenderBounds": {
+              "x": -509,
+              "y": -794,
+              "width": 193,
+              "height": 188
+            },
+            "fillGeometry": [
+              {
+                "windingRule": "NONZERO",
+                "data": "M0 0L163 0L163 158L0 158L0 0Z"
+              }
+            ],
+            "fills": [
+              {
+                "type": "SOLID",
+                "visible": true,
+                "opacity": 1,
+                "blendMode": "NORMAL",
+                "color": {
+                  "r": 0.12398505210876465,
+                  "g": 0.10925346612930298,
+                  "b": 0.8458333611488342
+                }
+              }
+            ],
+            "strokes": [
+              {
+                "type": "SOLID",
+                "visible": true,
+                "opacity": 1,
+                "blendMode": "NORMAL",
+                "color": {
+                  "r": 0.9404444694519043,
+                  "g": 0.9583333134651184,
+                  "b": 0.06388890743255615
+                }
+              }
+            ],
+            "effects": []
           }
         ]
       }
@@ -408,13 +500,13 @@
   "viewport": {
     "zoom": 1,
     "center": {
-      "x": -127,
-      "y": 48
+      "x": -180,
+      "y": -263
     },
     "bounds": {
-      "x": -663,
-      "y": -579,
-      "width": 1072,
+      "x": -1219,
+      "y": -890,
+      "width": 2078,
       "height": 1254
     }
   },

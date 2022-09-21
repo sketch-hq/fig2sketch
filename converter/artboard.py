@@ -16,8 +16,8 @@ def convert(artboard, children, parent):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": artboard['absoluteRenderBounds']['height'],
-            "width": artboard['absoluteRenderBounds']['width'],
+            "height": artboard['height'],
+            "width": artboard['width'],
             "x": artboard['relativeTransform'][0][2],
             "y": artboard['relativeTransform'][1][2]
         },
