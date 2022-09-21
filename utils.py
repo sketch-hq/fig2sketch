@@ -7,15 +7,15 @@ def gen_object_id():
     return str(uuid.uuid4()).upper()
 
 
-def get_base_position(parent):
-    if parent['type'] == "GROUP":
-        base_coordinates = (parent['x'], parent['y'])
-        base_rotation = parent['rotation']
+def get_base_position(item):
+    if item['type'] == "GROUP":
+        base_coordinates = (item['x'], item['y'])
+        base_rotation = item['rotation']
     else:
         base_coordinates = (0, 0)
         base_rotation = 0
 
-    return base_coordinates, base_rotation
+    return {'coordinates': base_coordinates, 'rotation': base_rotation}
 
 
 def transform_relative_coordinates(item):

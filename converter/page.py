@@ -5,7 +5,7 @@ def gen_uuid():
     return str(uuid.uuid4()).upper()
 
 
-def convert(page, children):
+def convert(page):
     return {
         "_class": "page",
         "do_objectID": gen_uuid(),
@@ -69,5 +69,5 @@ def convert(page, children):
             "_class": "MSImmutableFreeformGroupLayout"
         },
         "hasClippingMask": False,
-        "layers": children
+        "layers": []
     }
