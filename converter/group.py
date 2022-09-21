@@ -2,7 +2,6 @@ import utils
 
 
 def convert(group, children, parent):
-    base_position = utils.get_base_position(parent)
     coordinates = utils.transform_relative_coordinates(group)
 
     return {
@@ -19,10 +18,10 @@ def convert(group, children, parent):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": group['absoluteRenderBounds']['height'],
-            "width": group['absoluteRenderBounds']['width'],
-            "x": coordinates[0] - base_position['coordinates'][0],
-            "y": coordinates[1] - base_position['coordinates'][1]
+            "height": group['height'],
+            "width": group['width'],
+            "x": coordinates[0],
+            "y": coordinates[1]
         },
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
@@ -34,7 +33,7 @@ def convert(group, children, parent):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": group['rotation'] - base_position['rotation'],
+        "rotation": group['rotation'],
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",
