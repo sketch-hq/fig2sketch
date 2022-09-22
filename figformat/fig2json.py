@@ -1,7 +1,6 @@
 import figformat.decodefig as decodefig
 import math
 
-
 def transform_node(node):
     # Extract ID
     guid = node.pop("guid")
@@ -9,11 +8,12 @@ def transform_node(node):
     node["children"] = []
 
     # Extract parent ID
-    parent = None
     if 'parentIndex' in node:
         parent = node.pop("parentIndex")
-        # TODO: parent.position?
-        parent = f"{parent['guid']['sessionID']}:{parent['guid']['localID']}"
+        node["parent"] = {
+            "id": f"{parent['guid']['sessionID']}:{parent['guid']['localID']}",
+            "position": parent["position"]
+        }
 
     # Transform properties to be more similar to JSON Exporter output
     node["x"] = node["transform"]["m02"]
@@ -34,7 +34,7 @@ def transform_node(node):
     if "strokePaints" in node:
         node["strokes"] = node["strokePaints"]
 
-    return node, parent
+    return node
 
 
 def convert_fig(reader):
@@ -45,19 +45,23 @@ def convert_fig(reader):
     root = None
 
     for node in fig["nodeChanges"]:
-        node, parent = transform_node(node)
+        node = transform_node(node)
         id = node["id"]
-        id_map[id] = (node, parent)
+        id_map[id] = node
 
         if not root:
             root = id
 
     # Build the tree
-    tree = {"document": id_map[root][0]}
-    for (id, (node, parent)) in id_map.items():
-        if not parent:
+    tree = {"document": id_map[root]}
+    for node in id_map.values():
+        if not "parent" in node:
             continue
 
-        id_map[parent][0]["children"].append(node)
+        id_map[node["parent"]["id"]]["children"].append(node)
+
+    # Sort children
+    for node in id_map.values():
+        node["children"].sort(key=lambda n: n["parent"]["position"])
 
     return tree
