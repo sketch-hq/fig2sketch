@@ -3,7 +3,6 @@ import converter.group as group
 import converter.oval as oval
 import converter.page as page
 import converter.rectangle as rectangle
-import utils
 
 # import converter.vector as vector
 
@@ -16,7 +15,7 @@ CONVERTERS = {
     'ARTBOARD': artboard.convert,
     'GROUP': group.convert,
     'ROUNDED_RECTANGLE': rectangle.convert,
-    # 'ELLIPSE': oval.convert,
+    'ELLIPSE': oval.convert,
     # 'STAR': regular_vector.convert,
     # 'VECTOR': vector.convert,
     # 'REGULAR_POLYGON': regular_vector.convert,

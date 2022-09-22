@@ -1,5 +1,4 @@
 import figformat.decodefig as decodefig
-import sys
 import math
 
 
@@ -25,7 +24,7 @@ def transform_node(node):
     ]
     node["rotation"] = math.degrees(
         math.atan2(-node["transform"]["m10"], node["transform"]["m00"]))
-    
+
     if "size" in node:
         node["width"] = node["size"]["x"]
         node["height"] = node["size"]["y"]
@@ -62,9 +61,3 @@ def convert_fig(reader):
         id_map[parent][0]["children"].append(node)
 
     return tree
-
-
-if __name__ == '__main__':
-    import json
-
-    print(json.dumps(convert_fig(open(sys.argv[1], 'rb')), indent=2))

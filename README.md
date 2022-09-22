@@ -18,7 +18,7 @@ pip install -r requirements.txt
 2. Open the resulting `output/output.sketch` in Sketch
 
 ## Convert a .fig to .sketch step by step
-1. Run `python figformat/fig2json.py example/shapes_party.fig > example/figma.json`
+1. Run `python fig2json.py example/shapes_party.fig > example/figma.json`
 2. Run: `python convert.py example/figma.json`
 3. Open the resulting `output/output.sketch` in Sketch
 
