@@ -26,6 +26,6 @@ while i < len(commands):
     i += 1
     params = []
     for p in range(num_params):
-        params.append(struct.unpack('<f', commands[i:i+4])[0])
+        params.append(struct.unpack('<f', commands[i:i + 4])[0])
         i += 4
     print(command, params)

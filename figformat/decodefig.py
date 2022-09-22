@@ -4,15 +4,16 @@ import struct
 import sys
 from kiwi import *
 
+
 def decodeFig(reader):
     figma = reader.read()
 
     offset = 12
     segments = []
     while offset < len(figma):
-        size = struct.unpack('<I', figma[offset:offset+4])[0]
+        size = struct.unpack('<I', figma[offset:offset + 4])[0]
         offset += 4
-        data = figma[offset:offset+size]
+        data = figma[offset:offset + size]
         if not data.startswith(b'\x89PNG'):
             data = zlib.decompress(data, wbits=-15)
         offset += size
@@ -21,6 +22,8 @@ def decodeFig(reader):
     schema = KiwiSchema(io.BytesIO(segments[0]))
     return KiwiDecoder(schema).decode(io.BytesIO(segments[1]), "Message")
 
+
 if __name__ == '__main__':
     import json
+
     print(json.dumps(decodeFig(open(sys.argv[1], 'rb'))))

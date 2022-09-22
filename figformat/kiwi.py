@@ -2,6 +2,7 @@ import codecs
 from collections import OrderedDict
 import ctypes
 
+
 class KiwiReader:
     def __init__(self, reader):
         self._reader = reader
@@ -48,6 +49,7 @@ class KiwiReader:
 
         return string[:-1]
 
+
 class KiwiSchema:
     def __init__(self, reader):
         kw = KiwiReader(reader)
@@ -77,6 +79,7 @@ class KiwiSchema:
             "value": kw.uint()
         }
 
+
 class KiwiDecoder:
     TYPES = ['bool', 'byte', 'int', 'uint', 'float', 'string'];
     KINDS = ['ENUM', 'STRUCT', 'MESSAGE'];
@@ -100,8 +103,8 @@ class KiwiDecoder:
         return obj
 
     def _decodeStruct(self, kw, type):
-        return { f["name"] : self._decodeType(kw, f["type"], f["array"]) for f in type["fields"].values() }
-
+        return {f["name"]: self._decodeType(kw, f["type"], f["array"]) for f in
+                type["fields"].values()}
 
     def _decodeEnum(self, kw, type):
         value = kw.uint()

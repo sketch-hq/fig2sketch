@@ -2,6 +2,7 @@ import decodefig
 import sys
 import math
 
+
 def transformNode(node):
     # Extract ID
     guid = node.pop("guid")
@@ -22,7 +23,8 @@ def transformNode(node):
         [node["transform"]["m00"], node["transform"]["m01"], node["transform"]["m02"]],
         [node["transform"]["m10"], node["transform"]["m11"], node["transform"]["m12"]],
     ]
-    node["rotation"] = math.degrees(math.atan2(-node["transform"]["m10"], node["transform"]["m00"]))
+    node["rotation"] = math.degrees(
+        math.atan2(-node["transform"]["m10"], node["transform"]["m00"]))
     if "size" in node:
         node["width"] = node["size"]["x"]
         node["height"] = node["size"]["y"]
@@ -31,13 +33,14 @@ def transformNode(node):
         node["fills"] = node["fillPaints"]
     if "strokePaints" in node:
         node["strokes"] = node["strokePaints"]
-    
+
     if node["type"] == "CANVAS":
         node["type"] = "PAGE"
     if node["type"] == "ROUNDED_RECTANGLE":
         node["type"] = "RECTANGLE"
 
     return node, parent
+
 
 def convertFig(reader):
     fig = decodefig.decodeFig(reader)
@@ -55,7 +58,7 @@ def convertFig(reader):
             root = id
 
     # Build the tree
-    tree = { "document": id_map[root][0] }
+    tree = {"document": id_map[root][0]}
     for (id, (node, parent)) in id_map.items():
         if not parent:
             continue
@@ -72,4 +75,5 @@ def convertFig(reader):
 
 if __name__ == '__main__':
     import json
+
     print(json.dumps(convertFig(open(sys.argv[1], 'rb')), indent=2))
