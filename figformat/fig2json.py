@@ -25,6 +25,7 @@ def transform_node(node):
     ]
     node["rotation"] = math.degrees(
         math.atan2(-node["transform"]["m10"], node["transform"]["m00"]))
+    
     if "size" in node:
         node["width"] = node["size"]["x"]
         node["height"] = node["size"]["y"]

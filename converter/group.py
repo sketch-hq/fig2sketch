@@ -1,8 +1,8 @@
 import utils
 
 
-def convert(group):
-    coordinates = utils.apply_transform(group)
+def convert(figma_group):
+    coordinates = utils.apply_transform(figma_group)
 
     return {
         "_class": 'group',
@@ -18,8 +18,8 @@ def convert(group):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": group['height'],
-            "width": group['width'],
+            "height": figma_group['height'],
+            "width": figma_group['width'],
             "x": coordinates[0],
             "y": coordinates[1]
         },
@@ -29,11 +29,11 @@ def convert(group):
         "isLocked": False,
         "isVisible": True,
         "layerListExpandedType": 2,
-        "name": group['name'],
+        "name": figma_group['name'],
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": group['rotation'],
+        "rotation": figma_group['rotation'],
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",

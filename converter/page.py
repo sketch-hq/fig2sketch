@@ -5,7 +5,7 @@ def gen_uuid():
     return str(uuid.uuid4()).upper()
 
 
-def convert(page):
+def convert(figma_canvas):
     return {
         "_class": "page",
         "do_objectID": gen_uuid(),
@@ -32,7 +32,7 @@ def convert(page):
         "isLocked": False,
         "isVisible": True,
         "layerListExpandedType": 0,
-        "name": page['name'],
+        "name": figma_canvas['name'],
         "nameIsFixed": False,
         "resizingConstraint": 63,
         "resizingType": 0,

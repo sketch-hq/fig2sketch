@@ -1,7 +1,7 @@
 import utils
 
 
-def convert(artboard):
+def convert(figma_frame):
     return {
         "_class": 'artboard',
         "do_objectID": utils.gen_object_id(),
@@ -16,10 +16,10 @@ def convert(artboard):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": artboard['height'],
-            "width": artboard['width'],
-            "x": artboard['relativeTransform'][0][2],
-            "y": artboard['relativeTransform'][1][2]
+            "height": figma_frame['height'],
+            "width": figma_frame['width'],
+            "x": figma_frame['relativeTransform'][0][2],
+            "y": figma_frame['relativeTransform'][1][2]
         },
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
@@ -27,11 +27,11 @@ def convert(artboard):
         "isLocked": False,
         "isVisible": True,
         "layerListExpandedType": 2,
-        "name": artboard['name'],
+        "name": figma_frame['name'],
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": artboard['rotation'],
+        "rotation": figma_frame['rotation'],
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",

@@ -1,3 +1,6 @@
+import utils
+
+
 def convert(figma):
     fills = [
         {
@@ -63,7 +66,7 @@ def convert(figma):
 
     return {
         "_class": "style",
-        "do_objectID": "49818921-5C49-492C-810F-00AB552E03BC",
+        "do_objectID": utils.gen_object_id(),
         "borders": borders,
         "borderOptions": {
             "_class": "borderOptions",
