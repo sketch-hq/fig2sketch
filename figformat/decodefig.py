@@ -1,11 +1,10 @@
 import io
 import zlib
 import struct
-import sys
-from kiwi import *
+from figformat.kiwi import *
 
 
-def decodeFig(reader):
+def decode(reader):
     figma = reader.read()
 
     offset = 12
@@ -21,9 +20,3 @@ def decodeFig(reader):
 
     schema = KiwiSchema(io.BytesIO(segments[0]))
     return KiwiDecoder(schema).decode(io.BytesIO(segments[1]), "Message")
-
-
-if __name__ == '__main__':
-    import json
-
-    print(json.dumps(decodeFig(open(sys.argv[1], 'rb'))))

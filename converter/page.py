@@ -5,7 +5,7 @@ def gen_uuid():
     return str(uuid.uuid4()).upper()
 
 
-def convert(page, base_position):
+def convert(page):
     return {
         "_class": "page",
         "do_objectID": gen_uuid(),

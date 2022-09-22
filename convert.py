@@ -1,11 +1,11 @@
 import json
-import shutil
 import os
+import shutil
 import sys
 
-import converter.document as Document
-import converter.meta as Meta
-import converter.user as User
+import converter.document as document
+import converter.meta as meta
+import converter.user as user
 import converter.tree as tree
 
 components = []
@@ -15,7 +15,7 @@ def convert_pages(figma_pages):
     pages = []
 
     for figma_page in figma_pages:
-        page = tree.convert_root_node(figma_page)
+        page = tree.convert_node(figma_page)
         json.dump(page, open(f'output/pages/{page["do_objectID"]}.json', 'w'), indent=2)
         pages.append(page)
 
@@ -27,7 +27,7 @@ def convert_pages(figma_pages):
 
 
 def convert_components():
-    components_page = tree.convert_root_node({"name": "Symbols", "type": "PAGE"})
+    components_page = tree.convert_node({"name": "Symbols", "type": "PAGE"})
     components_page['layers'] = components
     json.dump(components_page, open(f'output/pages/{components_page["do_objectID"]}.json', 'w'),
               indent=2)
@@ -35,20 +35,35 @@ def convert_components():
     return components_page
 
 
-figma = json.load(open(sys.argv[1]))
+def convert_json_to_sketch(figma):
+    clean_output()
 
-try:
-    shutil.rmtree('output')
-except:
-    pass
+    sketch_pages = convert_pages(figma['document']['children'])
 
-os.mkdir('output')
-os.mkdir('output/pages')
+    sketch_document = document.convert(sketch_pages)
+    sketch_user = user.convert(sketch_pages)
+    sketch_meta = meta.convert(sketch_pages)
 
-sketch_pages = convert_pages(figma['document']['children'])
+    write_sketch_file(sketch_document, sketch_user, sketch_meta)
 
-json.dump(Document.convert(sketch_pages), open('output/document.json', 'w'), indent=2)
-json.dump(User.convert(sketch_pages), open('output/user.json', 'w'), indent=2)
-json.dump(Meta.convert(sketch_pages), open('output/meta.json', 'w'), indent=2)
 
-os.system('cd output; zip -r ../output/output.sketch .')
+def clean_output():
+    try:
+        shutil.rmtree('output')
+    except:
+        pass
+
+    os.mkdir('output')
+    os.mkdir('output/pages')
+
+
+def write_sketch_file(sketch_document, sketch_user, sketch_meta):
+    json.dump(sketch_document, open('output/document.json', 'w'), indent=2)
+    json.dump(sketch_user, open('output/user.json', 'w'), indent=2)
+    json.dump(sketch_meta, open('output/meta.json', 'w'), indent=2)
+
+    os.system('cd output; zip -r ../output/output.sketch .')
+
+
+if __name__ == '__main__':
+    convert_json_to_sketch(json.load(open(sys.argv[1])))

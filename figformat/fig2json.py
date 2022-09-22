@@ -1,9 +1,9 @@
-import decodefig
+import figformat.decodefig as decodefig
 import sys
 import math
 
 
-def transformNode(node):
+def transform_node(node):
     # Extract ID
     guid = node.pop("guid")
     node["id"] = f"{guid['sessionID']}:{guid['localID']}"
@@ -34,23 +34,18 @@ def transformNode(node):
     if "strokePaints" in node:
         node["strokes"] = node["strokePaints"]
 
-    if node["type"] == "CANVAS":
-        node["type"] = "PAGE"
-    if node["type"] == "ROUNDED_RECTANGLE":
-        node["type"] = "RECTANGLE"
-
     return node, parent
 
 
-def convertFig(reader):
-    fig = decodefig.decodeFig(reader)
+def convert_fig(reader):
+    fig = decodefig.decode(reader)
 
     # Load all nodes into a map
     id_map = {}
     root = None
 
     for node in fig["nodeChanges"]:
-        node, parent = transformNode(node)
+        node, parent = transform_node(node)
         id = node["id"]
         id_map[id] = (node, parent)
 
@@ -65,15 +60,10 @@ def convertFig(reader):
 
         id_map[parent][0]["children"].append(node)
 
-        # TODO: This is very questionable and will break
-        # All groups are marked as FRAME. We'll take top-level as artboards, the rest as groups
-        if node["type"] == "FRAME" and id_map[parent][0]["type"] != "PAGE":
-            node["type"] = "GROUP"
-
     return tree
 
 
 if __name__ == '__main__':
     import json
 
-    print(json.dumps(convertFig(open(sys.argv[1], 'rb')), indent=2))
+    print(json.dumps(convert_fig(open(sys.argv[1], 'rb')), indent=2))

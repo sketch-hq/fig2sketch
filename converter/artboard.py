@@ -1,7 +1,7 @@
 import utils
 
 
-def convert(artboard, base_position):
+def convert(artboard):
     return {
         "_class": 'artboard',
         "do_objectID": utils.gen_object_id(),

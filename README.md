@@ -12,8 +12,22 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## Convert a Figma JSON file to .sketch (via exporter plugin in Figma)
+## Convert .fig to .sketch directly
 
-1. In Figma, select a file and use the "JSON Exporter" plugin (the red icon one) to export the **full document** in JSON. 
-2. Run: `python convert.py example/exporter-plugin.json`
-3. Get the resulting `output/output.sketch` file and open it in Sketch
+1. Run `python fig2sketch.py example/shapes_party.fig `
+2. Open the resulting `output/output.sketch` in Sketch
+
+## Convert a .fig to .sketch step by step
+1. Run `python figformat/fig2json.py example/shapes_party.fig > example/figma.json`
+2. Run: `python convert.py example/figma.json`
+3. Open the resulting `output/output.sketch` in Sketch
+
+## Other conversions
+
+### Decode .fig via KiwiDecoder
+
+This decodes the .fig file and generates a JSON file without any fix. **The resulting JSON can't be used directly in the converter.**
+
+```
+python decode_fig.py example/shapes_party.fig > example/figma.json
+```

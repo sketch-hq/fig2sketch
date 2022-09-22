@@ -1,9 +1,9 @@
-import style
+import converter.style as style
 import utils
 
 
-def convert(rect, base_position):
-    coordinates = utils.transform_relative_coordinates(rect, base_position)
+def convert(rect):
+    coordinates = utils.apply_transform(rect)
 
     return {
         "_class": "rectangle",
@@ -34,7 +34,7 @@ def convert(rect, base_position):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": rect['rotation'] - base_position['rotation'],
+        "rotation": rect['rotation'],
         "shouldBreakMaskChain": False,
         "style": style.convert(rect),
         "edited": False,

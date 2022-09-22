@@ -1,8 +1,8 @@
 import utils
 
 
-def convert(group, base_position):
-    coordinates = utils.transform_relative_coordinates(group, base_position)
+def convert(group):
+    coordinates = utils.apply_transform(group)
 
     return {
         "_class": 'group',
@@ -33,7 +33,7 @@ def convert(group, base_position):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": group['rotation'] - base_position['rotation'],
+        "rotation": group['rotation'],
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",
