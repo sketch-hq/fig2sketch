@@ -21,15 +21,15 @@ def get_base_position(item):
 
 def transform_relative_coordinates(item, base_position):
     # 1. Calculate positions relative to parent
+    # Calculate relative position
+    relative_position = np.array([item['x'],item['y']]) - np.array(base_position['coordinates'])
+
     # Undo parent's rotation to measure distances in cartesian space
     theta = np.radians(base_position['rotation'])
     c, s = np.cos(theta), np.sin(theta)
     matrix = np.array(((c,-s),(s,c)))
 
-    base_abs = matrix.dot(np.array(base_position['coordinates']))
-    item_abs = matrix.dot(np.array([item['x'],item['y']]))
-
-    relative_positions = item_abs - base_abs
+    relative_position = matrix.dot(relative_position)
     
     # 2. Calculate offset in item relative rotation to parent (where the origin is pre-rotation)
     # Vector from rotation center to origin (0,0)
@@ -47,4 +47,4 @@ def transform_relative_coordinates(item, base_position):
     origin_translation = vco_rotated - vco
 
     # Return origin coordinates after translation and relative to parent
-    return relative_positions + origin_translation
+    return relative_position + origin_translation
