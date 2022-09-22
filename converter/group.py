@@ -33,7 +33,7 @@ def convert(group, base_position):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": group['rotation'],
+        "rotation": group['rotation'] - base_position['rotation'],
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",
