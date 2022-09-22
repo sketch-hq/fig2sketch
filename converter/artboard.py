@@ -16,10 +16,10 @@ def convert(figma_frame):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": figma_frame['height'],
-            "width": figma_frame['width'],
-            "x": figma_frame['relativeTransform'][0][2],
-            "y": figma_frame['relativeTransform'][1][2]
+            "height": figma_frame.size['y'],
+            "width": figma_frame.size['x'],
+            "x": figma_frame.x,
+            "y": figma_frame.y
         },
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
@@ -31,7 +31,7 @@ def convert(figma_frame):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": figma_frame['rotation'],
+        "rotation": figma_frame.rotation,
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",

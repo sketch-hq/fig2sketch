@@ -9,13 +9,13 @@ def gen_object_id():
 
 def apply_transform(item):
     #  Calculate relative position
-    relative_position = np.array([item['x'], item['y']])
+    relative_position = np.array([item.x, item.y])
 
     # Vector from rotation center to origin (0,0)
-    vco = np.array([item['width'] / 2, item['height'] / 2])
+    vco = np.array([item.size['x'] / 2, item.size['y'] / 2])
 
     # Rotation matrix
-    theta = np.radians(-item['rotation'])
+    theta = np.radians(-item.rotation)
     c, s = np.cos(theta), np.sin(theta)
     matrix = np.array(((c, -s), (s, c)))
 

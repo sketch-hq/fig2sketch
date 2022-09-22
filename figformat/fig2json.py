@@ -1,5 +1,6 @@
 import figformat.decodefig as decodefig
 import math
+from .fignode import FigNode
 
 def transform_node(node):
     # Extract ID
@@ -15,26 +16,7 @@ def transform_node(node):
             "position": parent["position"]
         }
 
-    # Transform properties to be more similar to JSON Exporter output
-    node["x"] = node["transform"]["m02"]
-    node["y"] = node["transform"]["m12"]
-    node["relativeTransform"] = [
-        [node["transform"]["m00"], node["transform"]["m01"], node["transform"]["m02"]],
-        [node["transform"]["m10"], node["transform"]["m11"], node["transform"]["m12"]],
-    ]
-    node["rotation"] = math.degrees(
-        math.atan2(-node["transform"]["m10"], node["transform"]["m00"]))
-
-    if "size" in node:
-        node["width"] = node["size"]["x"]
-        node["height"] = node["size"]["y"]
-
-    if "fillPaints" in node:
-        node["fills"] = node["fillPaints"]
-    if "strokePaints" in node:
-        node["strokes"] = node["strokePaints"]
-
-    return node
+    return FigNode(node)
 
 
 def convert_fig(reader):

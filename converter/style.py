@@ -31,7 +31,7 @@ def convert(figma):
                 "gradientType": 1,
                 "stops": []
             }
-        } for f in figma['fills']
+        } for f in figma['fillPaints']
     ]
     borders = [
         {
@@ -61,7 +61,7 @@ def convert(figma):
                 "gradientType": 1,
                 "stops": []
             }
-        } for b in figma['strokes']
+        } for b in figma['strokePaints']
     ]
 
     return {

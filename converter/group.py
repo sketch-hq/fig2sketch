@@ -18,8 +18,8 @@ def convert(figma_group):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": figma_group['height'],
-            "width": figma_group['width'],
+            "height": figma_group.size['y'],
+            "width": figma_group.size['x'],
             "x": coordinates[0],
             "y": coordinates[1]
         },
@@ -33,7 +33,7 @@ def convert(figma_group):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": figma_group['rotation'],
+        "rotation": figma_group.rotation,
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",
