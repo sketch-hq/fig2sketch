@@ -15,11 +15,20 @@ def make_point(x, y):
         'point': f'{{{x}, {y}}}'
     }
 
-def convert(figma_polygon):
-    points = [make_point(0.5 + (cos(angle) * 0.5), 0.5 + (sin(angle) * 0.5)) for angle in np.arange(-pi/2, 2*pi-pi/2, 2*pi/figma_polygon.count)]
+def make_point_pair(angle, numberPoints, scale):
+    angle2 = angle + pi / numberPoints
+    return [
+        make_point(0.5 + (cos(angle) * 0.5), 0.5 + (sin(angle) * 0.5)),
+        make_point(0.5 + (cos(angle2) * 0.5 * scale), 0.5 + (sin(angle2) * 0.5 * scale))
+    ]
+
+def convert(figma_star):
+    points = []
+    for angle in np.arange(-pi/2, 2*pi-pi/2, 2*pi/figma_star.count):
+        points += make_point_pair(angle, figma_star.count, figma_star.starInnerScale)
 
     return {
-        '_class': 'polygon',
+        '_class': 'star',
         'do_objectID': utils.gen_object_id(),
         'booleanOperation': -1,
         'exportOptions': {
@@ -29,23 +38,23 @@ def convert(figma_polygon):
             'layerOptions': 0,
             'shouldTrim': False
         },
-        **positioning.convert(figma_polygon),
+        **positioning.convert(figma_star),
         'isFixedToViewport': False,
         'isFlippedHorizontal': False,
         'isFlippedVertical': False,
         'isLocked': False,
         'isVisible': True,
         'layerListExpandedType': 1,
-        'name': figma_polygon.name,
+        'name': figma_star.name,
         'nameIsFixed': False,
         'resizingConstraint': 63,
         'resizingType': 0,
         'shouldBreakMaskChain': False,
-        'style': style.convert(figma_polygon),
+        'style': style.convert(figma_star),
         'edited': False,
         'isClosed': True,
         'pointRadiusBehaviour': 1,
-        'numberOfPoints': figma_polygon.count,
+        'numberOfPoints': figma_star.count,
         'points': points,
         'fixedRadius': 0,
         'hasConvertedToNewRoundCorners': True
