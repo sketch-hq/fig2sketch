@@ -19,8 +19,8 @@ def convert(figma_ellipse):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": figma_ellipse['height'],
-            "width": figma_ellipse['width'],
+            "height": figma_ellipse.size['y'],
+            "width": figma_ellipse.size['x'],
             "x": coordinates[0],
             "y": coordinates[1]
         },
@@ -34,7 +34,7 @@ def convert(figma_ellipse):
         "nameIsFixed": False,
         "resizingConstraint": 63,
         "resizingType": 0,
-        "rotation": figma_ellipse['rotation'],
+        "rotation": figma_ellipse.rotation,
         "shouldBreakMaskChain": False,
         "style": style.convert(figma_ellipse),
         "edited": False,

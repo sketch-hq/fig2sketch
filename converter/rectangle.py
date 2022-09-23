@@ -19,8 +19,8 @@ def convert(rect):
         "frame": {
             "_class": "rect",
             "constrainProportions": False,
-            "height": rect['height'],
-            "width": rect['width'],
+            "height": rect.size['y'],
+            "width": rect.size['x'],
             "x": coordinates[0],
             "y": coordinates[1]
         },
@@ -34,7 +34,7 @@ def convert(rect):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": rect['rotation'],
+        "rotation": rect.rotation,
         "shouldBreakMaskChain": False,
         "style": style.convert(rect),
         "edited": False,
