@@ -13,7 +13,7 @@ def convert_pages(figma_pages):
 
     for figma_page in figma_pages:
         page = tree.convert_node(figma_page)
-        json.dump(page, open(f'output/pages/{page["do_objectID"]}.json', 'w'), indent=2)
+        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
         pages.append(page)
 
     if components:
@@ -24,9 +24,9 @@ def convert_pages(figma_pages):
 
 
 def convert_components():
-    components_page = tree.convert_node({"name": "Symbols", "type": "PAGE"})
+    components_page = tree.convert_node({'name': 'Symbols', 'type': 'PAGE'})
     components_page['layers'] = components
-    json.dump(components_page, open(f'output/pages/{components_page["do_objectID"]}.json', 'w'),
+    json.dump(components_page, open(f"output/pages/{components_page['do_objectID']}.json", 'w'),
               indent=2)
 
     return components_page

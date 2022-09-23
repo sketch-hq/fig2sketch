@@ -63,20 +63,20 @@ class KiwiSchema:
             for _ in range(kw.uint()):
                 field = KiwiSchema._decode_field(kw)
 
-                fields[field["value"]] = field
+                fields[field['value']] = field
 
             self.types.append({
-                "name": name,
-                "kind": kind,
-                "fields": fields
+                'name': name,
+                'kind': kind,
+                'fields': fields
             })
 
     def _decode_field(kw):
         return {
-            "name": kw.string(),
-            "type": kw.int(),
-            "array": kw.bool(),
-            "value": kw.uint()
+            'name': kw.string(),
+            'type': kw.int(),
+            'array': kw.bool(),
+            'value': kw.uint()
         }
 
 
@@ -89,26 +89,26 @@ class KiwiDecoder:
 
     def decode(self, reader, root):
         kw = KiwiReader(reader)
-        root_type = [t for t in self.schema.types if t["name"] == root][0]
+        root_type = [t for t in self.schema.types if t['name'] == root][0]
         return self._decode_message(kw, root_type)
 
     def _decode_message(self, kw, type):
         obj = {}
         while (fid := kw.uint()) != 0:
-            field = type["fields"][fid]
-            ftype = field["type"]
+            field = type['fields'][fid]
+            ftype = field['type']
 
-            obj[field["name"]] = self._decode_type(kw, ftype, field["array"])
+            obj[field['name']] = self._decode_type(kw, ftype, field['array'])
 
         return obj
 
     def _decode_struct(self, kw, type):
-        return {f["name"]: self._decode_type(kw, f["type"], f["array"]) for f in
-                type["fields"].values()}
+        return {f['name']: self._decode_type(kw, f['type'], f['array']) for f in
+                type['fields'].values()}
 
     def _decode_enum(self, kw, type):
         value = kw.uint()
-        return type["fields"][value]["name"]
+        return type['fields'][value]['name']
 
     def _decode_type(self, kw, type_id, array):
         if array:
@@ -119,7 +119,7 @@ class KiwiDecoder:
             return kw.__getattribute__(primitive)()
         else:
             type = self.schema.types[type_id]
-            match type["kind"]:
+            match type['kind']:
                 case 0:
                     return self._decode_enum(kw, type)
                 case 1:
@@ -127,4 +127,4 @@ class KiwiDecoder:
                 case 2:
                     return self._decode_message(kw, type)
                 case other:
-                    raise "Unknown"
+                    raise 'Unknown'

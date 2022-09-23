@@ -19,4 +19,4 @@ def decode(reader):
         segments.append(data)
 
     schema = KiwiSchema(io.BytesIO(segments[0]))
-    return KiwiDecoder(schema).decode(io.BytesIO(segments[1]), "Message")
+    return KiwiDecoder(schema).decode(io.BytesIO(segments[1]), 'Message')
