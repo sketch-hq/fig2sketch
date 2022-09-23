@@ -1,7 +1,7 @@
 import io
 import zlib
 import struct
-from figformat.kiwi import *
+from .kiwi import *
 
 
 def decode(reader):

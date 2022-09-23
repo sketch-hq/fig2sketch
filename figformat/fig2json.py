@@ -1,6 +1,6 @@
-import figformat.decodefig as decodefig
-import math
+from . import decodefig
 from .fignode import FigNode
+
 
 def transform_node(node):
     # Extract ID

@@ -3,10 +3,7 @@ import os
 import shutil
 import sys
 
-import converter.document as document
-import converter.meta as meta
-import converter.user as user
-import converter.tree as tree
+from . import document, meta, tree, user
 
 components = []
 
