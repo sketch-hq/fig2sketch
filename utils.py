@@ -5,6 +5,14 @@ def gen_object_id():
     return str(uuid.uuid4()).upper()
 
 
+def add_points(point1, point2):
+    return {'x': point1['x'] + point2['x'], 'y': point1['y'] + point2['y']}
+
+
+def point_to_string(point):
+    return f"{{{point['x']}, {point['y']}}}"
+
+
 def resizing_constraints(figma_item):
     # TODO: Figma is returning MIN so I assigned it to the defaults (TOP & LEFT respectively)
     v = {

@@ -18,7 +18,8 @@ def transform_node(fig, node):
 
     if 'vectorData' in node:
         blob_id = node['vectorData']['vectorNetworkBlob']
-        vector_network = decodevectornetwork.decode(fig, blob_id)
+        scale = node['vectorData']['normalizedSize']
+        vector_network = decodevectornetwork.decode(fig, blob_id, scale)
         node['vectorNetwork'] = vector_network
 
     return FigNode(node)

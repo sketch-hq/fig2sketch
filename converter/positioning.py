@@ -6,12 +6,12 @@ def convert(figma_item):
 
     return {
         'frame': {
-            "_class": "rect",
-            "constrainProportions": False,
-            "height": figma_item.size['y'],
-            "width": figma_item.size['x'],
-            "x": coordinates[0],
-            "y": coordinates[1]
+            '_class': 'rect',
+            'constrainProportions': False,
+            'height': figma_item.size['y'],
+            'width': figma_item.size['x'],
+            'x': coordinates[0],
+            'y': coordinates[1]
         },
         'rotation': figma_item.rotation
     }
