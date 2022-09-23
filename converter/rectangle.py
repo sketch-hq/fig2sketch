@@ -21,7 +21,7 @@ def convert(figma_rect):
         'isLocked': False,
         'isVisible': True,
         'layerListExpandedType': 0,
-        'name': figma_rect['name'],
+        'name': figma_rect.name,
         'nameIsFixed': False,
         'resizingConstraint': 9,
         'resizingType': 0,

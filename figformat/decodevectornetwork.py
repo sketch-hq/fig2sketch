@@ -1,22 +1,6 @@
 import struct
 
 
-def decode_vertex(x, y, style_id):
-    return {
-        'x': x,
-        'y': y
-    }
-
-
-def decode_segment(v1, v2, t1x, t1y, t2x, t2y, style_id):
-    return {
-        'start': v1,
-        'end': v2,
-        'tangentStart': {'x': t1x, 'y': t1y},
-        'tangentEnd': {'x': t2x, 'y': t2y}
-    }
-
-
 def decode(fig, blob_id):
     network = bytes(fig['blobs'][blob_id]['bytes'])
 
@@ -74,11 +58,27 @@ def decode(fig, blob_id):
                 i += 4
             loops.append(loop_vertices)
 
-        regions.append(loops)
+        regions.append({'loops': loops})
         # print('REGION', loops)
 
     return {
         'regions': regions,
         'segments': segments,
         'vertices': vertices
+    }
+
+
+def decode_vertex(x, y, style_id):
+    return {
+        'x': x,
+        'y': y
+    }
+
+
+def decode_segment(v1, v2, t1x, t1y, t2x, t2y, style_id):
+    return {
+        'start': v1,
+        'end': v2,
+        'tangentStart': {'x': t1x, 'y': t1y},
+        'tangentEnd': {'x': t2x, 'y': t2y}
     }

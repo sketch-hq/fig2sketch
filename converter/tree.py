@@ -1,14 +1,4 @@
-import converter.artboard as artboard
-import converter.group as group
-import converter.oval as oval
-import converter.page as page
-import converter.rectangle as rectangle
-
-# import converter.vector as vector
-
-# import regular_vector as regular_vector
-# import text as text
-# import instance as instance
+from converter import artboard, group, oval, page, rectangle, shape_path
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -16,8 +6,8 @@ CONVERTERS = {
     'GROUP': group.convert,
     'ROUNDED_RECTANGLE': rectangle.convert,
     'ELLIPSE': oval.convert,
+    'VECTOR': shape_path.convert,
     # 'STAR': regular_vector.convert,
-    # 'VECTOR': vector.convert,
     # 'REGULAR_POLYGON': regular_vector.convert,
     # 'TEXT': text.convert,
     # 'COMPONENT': lambda a, b: instance.convert(a, b, components),

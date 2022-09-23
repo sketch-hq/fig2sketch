@@ -21,7 +21,7 @@ def convert(figma_ellipse):
         'isLocked': False,
         'isVisible': True,
         'layerListExpandedType': 1,
-        'name': figma_ellipse['name'],
+        'name': figma_ellipse.name,
         'nameIsFixed': False,
         'resizingConstraint': 63,
         'resizingType': 0,

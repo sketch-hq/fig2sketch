@@ -21,7 +21,7 @@ def convert(figma_frame):
         'isLocked': False,
         'isVisible': True,
         'layerListExpandedType': 2,
-        'name': figma_frame['name'],
+        'name': figma_frame.name,
         'nameIsFixed': False,
         'resizingConstraint': 9,
         'resizingType': 0,
