@@ -1,4 +1,4 @@
-from converter import artboard, group, oval, page, rectangle, shape_path
+from converter import artboard, group, oval, page, rectangle, shape_path, polygon
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -8,7 +8,7 @@ CONVERTERS = {
     'ELLIPSE': oval.convert,
     'VECTOR': shape_path.convert,
     # 'STAR': regular_vector.convert,
-    # 'REGULAR_POLYGON': regular_vector.convert,
+    'REGULAR_POLYGON': polygon.convert,
     # 'TEXT': text.convert,
     # 'COMPONENT': lambda a, b: instance.convert(a, b, components),
     # 'INSTANCE': lambda a, b: instance.convert(a, b, components),
