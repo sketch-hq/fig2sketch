@@ -1,3 +1,4 @@
+from . import positioning
 import utils
 
 
@@ -13,14 +14,7 @@ def convert(figma_frame):
             "layerOptions": 0,
             "shouldTrim": False
         },
-        "frame": {
-            "_class": "rect",
-            "constrainProportions": False,
-            "height": figma_frame.size['y'],
-            "width": figma_frame.size['x'],
-            "x": figma_frame.x,
-            "y": figma_frame.y
-        },
+        **positioning.convert(figma_frame),
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
         "isFlippedVertical": False,
@@ -31,7 +25,6 @@ def convert(figma_frame):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": figma_frame.rotation,
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",

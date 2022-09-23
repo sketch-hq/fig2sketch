@@ -1,10 +1,8 @@
-import converter.style as style
+from . import positioning, style
 import utils
 
 
 def convert(figma_ellipse):
-    coordinates = utils.apply_transform(figma_ellipse)
-
     return {
         "_class": "oval",
         "do_objectID": utils.gen_object_id(),
@@ -16,14 +14,7 @@ def convert(figma_ellipse):
             "layerOptions": 0,
             "shouldTrim": False
         },
-        "frame": {
-            "_class": "rect",
-            "constrainProportions": False,
-            "height": figma_ellipse.size['y'],
-            "width": figma_ellipse.size['x'],
-            "x": coordinates[0],
-            "y": coordinates[1]
-        },
+        **positioning.convert(figma_ellipse),
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
         "isFlippedVertical": False,
@@ -34,7 +25,6 @@ def convert(figma_ellipse):
         "nameIsFixed": False,
         "resizingConstraint": 63,
         "resizingType": 0,
-        "rotation": figma_ellipse.rotation,
         "shouldBreakMaskChain": False,
         "style": style.convert(figma_ellipse),
         "edited": False,

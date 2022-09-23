@@ -1,9 +1,8 @@
+from . import positioning
 import utils
 
 
 def convert(figma_group):
-    coordinates = utils.apply_transform(figma_group)
-
     return {
         "_class": 'group',
         "do_objectID": utils.gen_object_id(),
@@ -15,14 +14,7 @@ def convert(figma_group):
             "layerOptions": 0,
             "shouldTrim": False
         },
-        "frame": {
-            "_class": "rect",
-            "constrainProportions": False,
-            "height": figma_group.size['y'],
-            "width": figma_group.size['x'],
-            "x": coordinates[0],
-            "y": coordinates[1]
-        },
+        **positioning.convert(figma_group),
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
         "isFlippedVertical": False,
@@ -33,7 +25,6 @@ def convert(figma_group):
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": figma_group.rotation,
         "shouldBreakMaskChain": True,
         "style": {
             "_class": "style",

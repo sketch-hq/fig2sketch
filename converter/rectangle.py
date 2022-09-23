@@ -1,10 +1,8 @@
-import converter.style as style
+from . import positioning, style
 import utils
 
 
-def convert(rect):
-    coordinates = utils.apply_transform(rect)
-
+def convert(figma_rect):
     return {
         "_class": "rectangle",
         "do_objectID": utils.gen_object_id(),
@@ -16,27 +14,19 @@ def convert(rect):
             "layerOptions": 0,
             "shouldTrim": False
         },
-        "frame": {
-            "_class": "rect",
-            "constrainProportions": False,
-            "height": rect.size['y'],
-            "width": rect.size['x'],
-            "x": coordinates[0],
-            "y": coordinates[1]
-        },
+        **positioning.convert(figma_rect),
         "isFixedToViewport": False,
         "isFlippedHorizontal": False,
         "isFlippedVertical": False,
         "isLocked": False,
         "isVisible": True,
         "layerListExpandedType": 0,
-        "name": rect['name'],
+        "name": figma_rect['name'],
         "nameIsFixed": False,
         "resizingConstraint": 9,
         "resizingType": 0,
-        "rotation": rect.rotation,
         "shouldBreakMaskChain": False,
-        "style": style.convert(rect),
+        "style": style.convert(figma_rect),
         "edited": False,
         "isClosed": True,
         "pointRadiusBehaviour": 1,
