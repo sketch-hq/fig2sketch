@@ -12,9 +12,10 @@ def convert_pages(figma_pages):
     pages = []
 
     for figma_page in figma_pages:
-        page = tree.convert_node(figma_page)
-        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
-        pages.append(page)
+        if figma_page['name'] != 'Internal Only Canvas':
+            page = tree.convert_node(figma_page)
+            json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
+            pages.append(page)
 
     if components:
         components_page = convert_components()
