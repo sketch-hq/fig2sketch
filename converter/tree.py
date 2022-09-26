@@ -1,4 +1,4 @@
-from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star
+from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, shape_group
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -9,11 +9,15 @@ CONVERTERS = {
     'VECTOR': shape_path.convert,
     'STAR': star.convert,
     'REGULAR_POLYGON': polygon.convert,
-    # 'TEXT': text.convert,
+    'TEXT': rectangle.convert,
+    'BOOLEAN_OPERATION': shape_group.convert,
     # 'COMPONENT': lambda a, b: instance.convert(a, b, components),
     # 'INSTANCE': lambda a, b: instance.convert(a, b, components),
 }
 
+POST_PROCESSING = {
+    'BOOLEAN_OPERATION': shape_group.post_process,
+}
 
 def convert_node(figma_item):
     name = figma_item['name']
@@ -24,6 +28,10 @@ def convert_node(figma_item):
 
     children = [convert_node(child) for child in figma_item.get('children', [])]
     sketch_item['layers'] = children
+
+    post_process = POST_PROCESSING.get(type_)
+    if post_process:
+        post_process(figma_item, sketch_item)
 
     return sketch_item
 
