@@ -8,7 +8,7 @@ def convert(pages):
             'libraryListCollapsed': 0
         },
         **{page['do_objectID']: {
-            'scrollOrigin': '{0, 0}',
-            'zoomValue': 1
+            'scrollOrigin': '{1000, 500}',
+            'zoomValue': 0.5
         } for page in pages}
     }
