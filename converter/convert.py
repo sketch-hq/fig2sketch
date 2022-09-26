@@ -12,7 +12,7 @@ def convert_pages(figma_pages):
     pages = []
 
     for figma_page in figma_pages:
-        if figma_page['name'] != 'Internal Only Canvas':
+        if 'internalOnly' not in figma_page or not figma_page['internalOnly']:
             page = tree.convert_node(figma_page)
             json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
             pages.append(page)
