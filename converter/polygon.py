@@ -3,20 +3,10 @@ import utils
 import numpy as np
 from math import sin, cos, pi
 
-def make_point(x, y):
-    return {
-        '_class': 'curvePoint',
-        'cornerRadius': 0,
-        'curveFrom': '{0, 0}',
-        'curveMode': 1,
-        'curveTo': '{0, 0}',
-        'hasCurveFrom': False,
-        'hasCurveTo': False,
-        'point': f'{{{x}, {y}}}'
-    }
 
 def convert(figma_polygon):
-    points = [make_point(0.5 + (cos(angle) * 0.5), 0.5 + (sin(angle) * 0.5)) for angle in np.arange(-pi/2, 2*pi-pi/2, 2*pi/figma_polygon.count)]
+    points = [utils.make_point(0.5 + (cos(angle) * 0.5), 0.5 + (sin(angle) * 0.5)) for angle in
+              np.arange(-pi / 2, 2 * pi - pi / 2, 2 * pi / figma_polygon.count)]
 
     return {
         '_class': 'polygon',

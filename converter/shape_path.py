@@ -73,17 +73,7 @@ def get_or_create_point(points, index, vertices):
     if index in points:
         point = points[index]
     else:
-        point = {
-            '_class': 'curvePoint',
-            'cornerRadius': 0,
-            'cornerStyle': 0,
-            'curveFrom': '{0.0, 0.0}',
-            'curveMode': 1,
-            'curveTo': '{0.0, 0.0}',
-            'hasCurveFrom': False,
-            'hasCurveTo': False,
-            'point': utils.point_to_string(vertices[index])
-        }
+        point = utils.make_point(vertices[index]['x'], vertices[index]['y'])
 
     return point
 

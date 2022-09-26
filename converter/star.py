@@ -1,30 +1,20 @@
 from . import positioning, style
-import utils
-import numpy as np
 from math import sin, cos, pi
+import numpy as np
+import utils
 
-def make_point(x, y):
-    return {
-        '_class': 'curvePoint',
-        'cornerRadius': 0,
-        'curveFrom': '{0, 0}',
-        'curveMode': 1,
-        'curveTo': '{0, 0}',
-        'hasCurveFrom': False,
-        'hasCurveTo': False,
-        'point': f'{{{x}, {y}}}'
-    }
 
-def make_point_pair(angle, numberPoints, scale):
-    angle2 = angle + pi / numberPoints
+def make_point_pair(angle, number_points, scale):
+    angle2 = angle + pi / number_points
     return [
-        make_point(0.5 + (cos(angle) * 0.5), 0.5 + (sin(angle) * 0.5)),
-        make_point(0.5 + (cos(angle2) * 0.5 * scale), 0.5 + (sin(angle2) * 0.5 * scale))
+        utils.make_point(0.5 + (cos(angle) * 0.5), 0.5 + (sin(angle) * 0.5)),
+        utils.make_point(0.5 + (cos(angle2) * 0.5 * scale), 0.5 + (sin(angle2) * 0.5 * scale))
     ]
+
 
 def convert(figma_star):
     points = []
-    for angle in np.arange(-pi/2, 2*pi-pi/2, 2*pi/figma_star.count):
+    for angle in np.arange(-pi / 2, 2 * pi - pi / 2, 2 * pi / figma_star.count):
         points += make_point_pair(angle, figma_star.count, figma_star.starInnerScale)
 
     return {

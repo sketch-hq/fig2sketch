@@ -5,6 +5,19 @@ def gen_object_id():
     return str(uuid.uuid4()).upper()
 
 
+def make_point(x, y):
+    return {
+        '_class': 'curvePoint',
+        'cornerRadius': 0,
+        'curveFrom': '{0, 0}',
+        'curveMode': 1,
+        'curveTo': '{0, 0}',
+        'hasCurveFrom': False,
+        'hasCurveTo': False,
+        'point': f'{{{x}, {y}}}'
+    }
+
+
 def add_points(point1, point2):
     return {'x': point1['x'] + point2['x'], 'y': point1['y'] + point2['y']}
 
