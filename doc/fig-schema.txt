@@ -1,0 +1,1443 @@
+enum MessageType {
+  JOIN_START = 0;
+  NODE_CHANGES = 1;
+  USER_CHANGES = 2;
+  JOIN_END = 3;
+  SIGNAL = 4;
+  STYLE = 5;
+  STYLE_SET = 6;
+  JOIN_START_SKIP_RELOAD = 7;
+  NOTIFY_SHOULD_UPGRADE = 8;
+  UPGRADE_DONE = 9;
+  UPGRADE_REFRESH = 10;
+  SCENE_GRAPH_QUERY = 11;
+  SCENE_GRAPH_REPLY = 12;
+  DIFF = 13;
+}
+
+enum Axis {
+  X = 0;
+  Y = 1;
+}
+
+enum Access {
+  READ_ONLY = 0;
+  READ_WRITE = 1;
+}
+
+enum NodePhase {
+  CREATED = 0;
+  REMOVED = 1;
+}
+
+enum WindingRule {
+  NONZERO = 0;
+  ODD = 1;
+}
+
+enum NodeType {
+  NONE = 0;
+  DOCUMENT = 1;
+  CANVAS = 2;
+  GROUP = 3;
+  FRAME = 4;
+  BOOLEAN_OPERATION = 5;
+  VECTOR = 6;
+  STAR = 7;
+  LINE = 8;
+  ELLIPSE = 9;
+  RECTANGLE = 10;
+  REGULAR_POLYGON = 11;
+  ROUNDED_RECTANGLE = 12;
+  TEXT = 13;
+  SLICE = 14;
+  SYMBOL = 15;
+  INSTANCE = 16;
+}
+
+enum BlendMode {
+  PASS_THROUGH = 0;
+  NORMAL = 1;
+  DARKEN = 2;
+  MULTIPLY = 3;
+  LINEAR_BURN = 4;
+  COLOR_BURN = 5;
+  LIGHTEN = 6;
+  SCREEN = 7;
+  LINEAR_DODGE = 8;
+  COLOR_DODGE = 9;
+  OVERLAY = 10;
+  SOFT_LIGHT = 11;
+  HARD_LIGHT = 12;
+  DIFFERENCE = 13;
+  EXCLUSION = 14;
+  HUE = 15;
+  SATURATION = 16;
+  COLOR = 17;
+  LUMINOSITY = 18;
+}
+
+enum PaintType {
+  SOLID = 0;
+  GRADIENT_LINEAR = 1;
+  GRADIENT_RADIAL = 2;
+  GRADIENT_ANGULAR = 3;
+  GRADIENT_DIAMOND = 4;
+  IMAGE = 5;
+  EMOJI = 6;
+}
+
+enum ImageScaleMode {
+  STRETCH = 0;
+  FIT = 1;
+  FILL = 2;
+  TILE = 3;
+}
+
+enum EffectType {
+  INNER_SHADOW = 0;
+  DROP_SHADOW = 1;
+  FOREGROUND_BLUR = 2;
+  BACKGROUND_BLUR = 3;
+}
+
+enum TextCase {
+  ORIGINAL = 0;
+  UPPER = 1;
+  LOWER = 2;
+  TITLE = 3;
+  SMALL_CAPS = 4;
+  SMALL_CAPS_FORCED = 5;
+}
+
+enum TextDecoration {
+  NONE = 0;
+  UNDERLINE = 1;
+  STRIKETHROUGH = 2;
+}
+
+enum NumberUnits {
+  RAW = 0;
+  PIXELS = 1;
+  PERCENT = 2;
+}
+
+enum ConstraintType {
+  MIN = 0;
+  CENTER = 1;
+  MAX = 2;
+  STRETCH = 3;
+  SCALE = 4;
+  FIXED_MIN = 5;
+  FIXED_MAX = 6;
+}
+
+enum StrokeAlign {
+  CENTER = 0;
+  INSIDE = 1;
+  OUTSIDE = 2;
+}
+
+enum StrokeCap {
+  NONE = 0;
+  ROUND = 1;
+  SQUARE = 2;
+  ARROW_LINES = 3;
+  ARROW_EQUILATERAL = 4;
+}
+
+enum StrokeJoin {
+  MITER = 0;
+  BEVEL = 1;
+  ROUND = 2;
+}
+
+enum BooleanOperation {
+  UNION = 0;
+  INTERSECT = 1;
+  SUBTRACT = 2;
+  XOR = 3;
+}
+
+enum TextAlignHorizontal {
+  LEFT = 0;
+  CENTER = 1;
+  RIGHT = 2;
+  JUSTIFIED = 3;
+}
+
+enum TextAlignVertical {
+  TOP = 0;
+  CENTER = 1;
+  BOTTOM = 2;
+}
+
+enum MouseCursor {
+  DEFAULT = 0;
+  CROSSHAIR = 1;
+  EYEDROPPER = 2;
+  HAND = 3;
+  PAINT_BUCKET = 4;
+  PEN = 5;
+  PENCIL = 6;
+}
+
+enum VectorMirror {
+  NONE = 0;
+  ANGLE = 1;
+  ANGLE_AND_LENGTH = 2;
+}
+
+enum DashMode {
+  CLIP = 0;
+  STRETCH = 1;
+}
+
+enum ImageType {
+  PNG = 0;
+  JPEG = 1;
+  SVG = 2;
+  PDF = 3;
+}
+
+enum ExportConstraintType {
+  CONTENT_SCALE = 0;
+  CONTENT_WIDTH = 1;
+  CONTENT_HEIGHT = 2;
+}
+
+enum LayoutGridType {
+  MIN = 0;
+  CENTER = 1;
+  STRETCH = 2;
+  MAX = 3;
+}
+
+enum LayoutGridPattern {
+  STRIPES = 0;
+  GRID = 1;
+}
+
+enum TextAutoResize {
+  NONE = 0;
+  WIDTH_AND_HEIGHT = 1;
+  HEIGHT = 2;
+}
+
+enum StyleSetType {
+  PERSONAL = 0;
+  TEAM = 1;
+  CUSTOM = 2;
+  FREQUENCY = 3;
+  TEMPORARY = 4;
+}
+
+enum StyleSetContentType {
+  SOLID = 0;
+  GRADIENT = 1;
+  IMAGE = 2;
+}
+
+enum StackMode {
+  NONE = 0;
+  HORIZONTAL = 1;
+  VERTICAL = 2;
+}
+
+enum StackAlign {
+  MIN = 0;
+  CENTER = 1;
+  MAX = 2;
+}
+
+enum StackCounterAlign {
+  MIN = 0;
+  CENTER = 1;
+  MAX = 2;
+  STRETCH = 3;
+  AUTO = 4;
+}
+
+enum StackJustify {
+  MIN = 0;
+  CENTER = 1;
+  MAX = 2;
+  SPACE_EVENLY = 3;
+}
+
+enum StackSize {
+  FIXED = 0;
+  RESIZE_TO_FIT = 1;
+}
+
+enum ConnectionType {
+  NONE = 0;
+  INTERNAL_NODE = 1;
+  URL = 2;
+  BACK = 3;
+  CLOSE = 4;
+}
+
+enum InteractionType {
+  ON_CLICK = 0;
+  AFTER_TIMEOUT = 1;
+  MOUSE_IN = 2;
+  MOUSE_OUT = 3;
+  ON_HOVER = 4;
+  MOUSE_DOWN = 5;
+  MOUSE_UP = 6;
+  ON_PRESS = 7;
+  NONE = 8;
+  DRAG = 9;
+  ON_KEY_DOWN = 10;
+  ON_VOICE = 11;
+}
+
+enum TransitionType {
+  INSTANT_TRANSITION = 0;
+  DISSOLVE = 1;
+  FADE = 2;
+  SLIDE_FROM_LEFT = 3;
+  SLIDE_FROM_RIGHT = 4;
+  SLIDE_FROM_TOP = 5;
+  SLIDE_FROM_BOTTOM = 6;
+  PUSH_FROM_LEFT = 7;
+  PUSH_FROM_RIGHT = 8;
+  PUSH_FROM_TOP = 9;
+  PUSH_FROM_BOTTOM = 10;
+  MOVE_FROM_LEFT = 11;
+  MOVE_FROM_RIGHT = 12;
+  MOVE_FROM_TOP = 13;
+  MOVE_FROM_BOTTOM = 14;
+  SLIDE_OUT_TO_LEFT = 15;
+  SLIDE_OUT_TO_RIGHT = 16;
+  SLIDE_OUT_TO_TOP = 17;
+  SLIDE_OUT_TO_BOTTOM = 18;
+  MOVE_OUT_TO_LEFT = 19;
+  MOVE_OUT_TO_RIGHT = 20;
+  MOVE_OUT_TO_TOP = 21;
+  MOVE_OUT_TO_BOTTOM = 22;
+  MAGIC_MOVE = 23;
+  SMART_ANIMATE = 24;
+}
+
+enum EasingType {
+  IN_CUBIC = 0;
+  OUT_CUBIC = 1;
+  INOUT_CUBIC = 2;
+  LINEAR = 3;
+  IN_BACK_CUBIC = 4;
+  OUT_BACK_CUBIC = 5;
+  INOUT_BACK_CUBIC = 6;
+  CUSTOM_CUBIC = 7;
+}
+
+enum ScrollDirection {
+  NONE = 0;
+  HORIZONTAL = 1;
+  VERTICAL = 2;
+  BOTH = 3;
+}
+
+enum ScrollContractedState {
+  EXPANDED = 0;
+  CONTRACTED = 1;
+}
+
+struct GUID {
+  uint sessionID;
+  uint localID;
+}
+
+struct Color {
+  float r;
+  float g;
+  float b;
+  float a;
+}
+
+struct Vector {
+  float x;
+  float y;
+}
+
+struct Rect {
+  float x;
+  float y;
+  float w;
+  float h;
+}
+
+struct ColorStop {
+  Color color;
+  float position;
+}
+
+struct Matrix {
+  float m00;
+  float m01;
+  float m02;
+  float m10;
+  float m11;
+  float m12;
+}
+
+struct ParentIndex {
+  GUID guid;
+  string position;
+}
+
+struct Number {
+  float value;
+  NumberUnits units;
+}
+
+struct FontName {
+  string family;
+  string style;
+  string postscript;
+}
+
+enum FontVariantNumericFigure {
+  NORMAL = 0;
+  LINING = 1;
+  OLDSTYLE = 2;
+}
+
+enum FontVariantNumericSpacing {
+  NORMAL = 0;
+  PROPORTIONAL = 1;
+  TABULAR = 2;
+}
+
+enum FontVariantNumericFraction {
+  NORMAL = 0;
+  DIAGONAL = 1;
+  STACKED = 2;
+}
+
+enum FontVariantCaps {
+  NORMAL = 0;
+  SMALL = 1;
+  ALL_SMALL = 2;
+  PETITE = 3;
+  ALL_PETITE = 4;
+  UNICASE = 5;
+  TITLING = 6;
+}
+
+enum FontVariantPosition {
+  NORMAL = 0;
+  SUB = 1;
+  SUPER = 2;
+}
+
+enum FontStyle {
+  NORMAL = 0;
+  ITALIC = 1;
+}
+
+enum OpenTypeFeature {
+  PCAP = 0;
+  C2PC = 1;
+  CASE = 2;
+  CPSP = 3;
+  TITL = 4;
+  UNIC = 5;
+  ZERO = 6;
+  SINF = 7;
+  ORDN = 8;
+  AFRC = 9;
+  DNOM = 10;
+  NUMR = 11;
+  LIGA = 12;
+  CLIG = 13;
+  DLIG = 14;
+  HLIG = 15;
+  RLIG = 16;
+  AALT = 17;
+  CALT = 18;
+  RCLT = 19;
+  SALT = 20;
+  RVRN = 21;
+  VERT = 22;
+  SWSH = 23;
+  CSWH = 24;
+  NALT = 25;
+  CCMP = 26;
+  STCH = 27;
+  HIST = 28;
+  SIZE = 29;
+  ORNM = 30;
+  ITAL = 31;
+  RAND = 32;
+  DTLS = 33;
+  FLAC = 34;
+  MGRK = 35;
+  SSTY = 36;
+  KERN = 37;
+  FWID = 38;
+  HWID = 39;
+  HALT = 40;
+  TWID = 41;
+  QWID = 42;
+  PWID = 43;
+  JUST = 44;
+  LFBD = 45;
+  OPBD = 46;
+  RTBD = 47;
+  PALT = 48;
+  PKNA = 49;
+  LTRA = 50;
+  LTRM = 51;
+  RTLA = 52;
+  RTLM = 53;
+  ABRV = 54;
+  ABVM = 55;
+  ABVS = 56;
+  VALT = 57;
+  VHAL = 58;
+  BLWF = 59;
+  BLWM = 60;
+  BLWS = 61;
+  AKHN = 62;
+  CJCT = 63;
+  CFAR = 64;
+  CPCT = 65;
+  CURS = 66;
+  DIST = 67;
+  EXPT = 68;
+  FALT = 69;
+  FINA = 70;
+  FIN2 = 71;
+  FIN3 = 72;
+  HALF = 73;
+  HALN = 74;
+  HKNA = 75;
+  HNGL = 76;
+  HOJO = 77;
+  INIT = 78;
+  ISOL = 79;
+  JP78 = 80;
+  JP83 = 81;
+  JP90 = 82;
+  JP04 = 83;
+  LJMO = 84;
+  LOCL = 85;
+  MARK = 86;
+  MEDI = 87;
+  MED2 = 88;
+  MKMK = 89;
+  NLCK = 90;
+  NUKT = 91;
+  PREF = 92;
+  PRES = 93;
+  VPAL = 94;
+  PSTF = 95;
+  PSTS = 96;
+  RKRF = 97;
+  RPHF = 98;
+  RUBY = 99;
+  SMPL = 100;
+  TJMO = 101;
+  TNAM = 102;
+  TRAD = 103;
+  VATU = 104;
+  VJMO = 105;
+  VKNA = 106;
+  VKRN = 107;
+  VRTR = 108;
+  VRT2 = 109;
+  SS01 = 110;
+  SS02 = 111;
+  SS03 = 112;
+  SS04 = 113;
+  SS05 = 114;
+  SS06 = 115;
+  SS07 = 116;
+  SS08 = 117;
+  SS09 = 118;
+  SS10 = 119;
+  SS11 = 120;
+  SS12 = 121;
+  SS13 = 122;
+  SS14 = 123;
+  SS15 = 124;
+  SS16 = 125;
+  SS17 = 126;
+  SS18 = 127;
+  SS19 = 128;
+  SS20 = 129;
+  CV01 = 130;
+  CV02 = 131;
+  CV03 = 132;
+  CV04 = 133;
+  CV05 = 134;
+  CV06 = 135;
+  CV07 = 136;
+  CV08 = 137;
+  CV09 = 138;
+  CV10 = 139;
+  CV11 = 140;
+  CV12 = 141;
+  CV13 = 142;
+  CV14 = 143;
+  CV15 = 144;
+  CV16 = 145;
+  CV17 = 146;
+  CV18 = 147;
+  CV19 = 148;
+  CV20 = 149;
+  CV21 = 150;
+  CV22 = 151;
+  CV23 = 152;
+  CV24 = 153;
+  CV25 = 154;
+  CV26 = 155;
+  CV27 = 156;
+  CV28 = 157;
+  CV29 = 158;
+  CV30 = 159;
+  CV31 = 160;
+  CV32 = 161;
+  CV33 = 162;
+  CV34 = 163;
+  CV35 = 164;
+  CV36 = 165;
+  CV37 = 166;
+  CV38 = 167;
+  CV39 = 168;
+  CV40 = 169;
+  CV41 = 170;
+  CV42 = 171;
+  CV43 = 172;
+  CV44 = 173;
+  CV45 = 174;
+  CV46 = 175;
+  CV47 = 176;
+  CV48 = 177;
+  CV49 = 178;
+  CV50 = 179;
+  CV51 = 180;
+  CV52 = 181;
+  CV53 = 182;
+  CV54 = 183;
+  CV55 = 184;
+  CV56 = 185;
+  CV57 = 186;
+  CV58 = 187;
+  CV59 = 188;
+  CV60 = 189;
+  CV61 = 190;
+  CV62 = 191;
+  CV63 = 192;
+  CV64 = 193;
+  CV65 = 194;
+  CV66 = 195;
+  CV67 = 196;
+  CV68 = 197;
+  CV69 = 198;
+  CV70 = 199;
+  CV71 = 200;
+  CV72 = 201;
+  CV73 = 202;
+  CV74 = 203;
+  CV75 = 204;
+  CV76 = 205;
+  CV77 = 206;
+  CV78 = 207;
+  CV79 = 208;
+  CV80 = 209;
+  CV81 = 210;
+  CV82 = 211;
+  CV83 = 212;
+  CV84 = 213;
+  CV85 = 214;
+  CV86 = 215;
+  CV87 = 216;
+  CV88 = 217;
+  CV89 = 218;
+  CV90 = 219;
+  CV91 = 220;
+  CV92 = 221;
+  CV93 = 222;
+  CV94 = 223;
+  CV95 = 224;
+  CV96 = 225;
+  CV97 = 226;
+  CV98 = 227;
+  CV99 = 228;
+}
+
+struct ExportConstraint {
+  ExportConstraintType type;
+  float value;
+}
+
+struct GUIDMapping {
+  GUID from;
+  GUID to;
+}
+
+struct Blob {
+  byte[] bytes;
+}
+
+message Image {
+  byte[] hash = 1;
+  string name = 2;
+  uint dataBlob = 3;
+}
+
+struct FilterColorAdjust {
+  float tint;
+  float shadows;
+  float highlights;
+  float detail;
+  float exposure;
+  float vignette;
+  float temperature;
+  float vibrance;
+}
+
+message PaintFilterMessage {
+  float tint = 1;
+  float shadows = 2;
+  float highlights = 3;
+  float detail = 4;
+  float exposure = 5;
+  float vignette = 6;
+  float temperature = 7;
+  float vibrance = 8;
+  float contrast = 9;
+  float brightness = 10;
+}
+
+message Paint {
+  PaintType type = 1;
+  Color color = 2;
+  float opacity = 3;
+  bool visible = 4;
+  BlendMode blendMode = 5;
+  ColorStop[] stops = 6;
+  Matrix transform = 7;
+  Image image = 8;
+  Image imageThumbnail = 9;
+  Image animatedImage = 16;
+  uint animationFrame = 17;
+  ImageScaleMode imageScaleMode = 10;
+  float rotation = 11;
+  float scale = 12;
+  FilterColorAdjust filterColorAdjust = 13;
+  PaintFilterMessage paintFilter = 14;
+  uint[] emojiCodePoints = 15;
+}
+
+message FontMetaData {
+  FontName key = 1;
+  float fontLineHeight = 2;
+  byte[] fontDigest = 3;
+  FontStyle fontStyle = 4;
+  int fontWeight = 5;
+}
+
+message TextData {
+  string characters = 1;
+  uint[] characterStyleIDs = 2;
+  NodeChange[] styleOverrideTable = 3;
+  Vector layoutSize = 4;
+  Baseline[] baselines = 5;
+  Glyph[] glyphs = 6;
+  Decoration[] decorations = 7;
+  uint layoutVersion = 8;
+  FontMetaData[] fontMetaData = 9;
+  FontName[] fallbackFonts = 10;
+  HyperlinkBox[] hyperlinkBoxes = 11;
+}
+
+message HyperlinkBox {
+  Rect bounds = 1;
+  string url = 2;
+  GUID guid = 3;
+  int hyperlinkID = 4;
+}
+
+message Baseline {
+  Vector position = 1;
+  float width = 2;
+  float lineY = 3;
+  float lineHeight = 4;
+  float lineAscent = 7;
+  uint firstCharacter = 5;
+  uint endCharacter = 6;
+}
+
+message Glyph {
+  uint commandsBlob = 1;
+  Vector position = 2;
+  uint styleID = 3;
+  float fontSize = 4;
+  uint firstCharacter = 5;
+  float advance = 6;
+}
+
+message Decoration {
+  Rect[] rects = 1;
+  uint styleID = 2;
+}
+
+message VectorData {
+  uint vectorNetworkBlob = 1;
+  Vector normalizedSize = 2;
+  NodeChange[] styleOverrideTable = 3;
+}
+
+message GUIDPath {
+  GUID[] guids = 1;
+}
+
+message SymbolData {
+  GUID symbolID = 1;
+  NodeChange[] symbolOverrides = 2;
+  float uniformScaleFactor = 3;
+}
+
+message GUIDPathMapping {
+  GUID id = 1;
+  GUIDPath path = 2;
+}
+
+message SharedSymbolReference {
+  string fileKey = 1;
+  GUID symbolID = 2;
+  string versionHash = 3;
+  GUIDPathMapping[] guidPathMappings = 4;
+  byte[] bytes = 5;
+  GUIDMapping[] libraryGUIDToSubscribingGUID = 6;
+  string componentKey = 7;
+  GUIDPathMapping[] unflatteningMappings = 8;
+  bool isUnflattened = 9;
+}
+
+message SharedComponentMasterData {
+  string componentKey = 1;
+  GUIDPathMapping[] publishingGUIDPathToTeamLibraryGUID = 2;
+  bool isUnflattened = 3;
+}
+
+message Effect {
+  EffectType type = 1;
+  Color color = 2;
+  Vector offset = 3;
+  float radius = 4;
+  bool visible = 5;
+  BlendMode blendMode = 6;
+  float spread = 7;
+}
+
+message TransitionInfo {
+  TransitionType type = 1;
+  float duration = 2;
+}
+
+enum PrototypeDeviceType {
+  NONE = 0;
+  PRESET = 1;
+  CUSTOM = 2;
+  PRESENTATION = 3;
+}
+
+enum DeviceRotation {
+  NONE = 0;
+  CCW_90 = 1;
+}
+
+message PrototypeDevice {
+  PrototypeDeviceType type = 1;
+  Vector size = 2;
+  string presetIdentifier = 3;
+  DeviceRotation rotation = 4;
+}
+
+enum OverlayPositionType {
+  CENTER = 0;
+  TOP_LEFT = 1;
+  TOP_CENTER = 2;
+  TOP_RIGHT = 3;
+  BOTTOM_LEFT = 4;
+  BOTTOM_CENTER = 5;
+  BOTTOM_RIGHT = 6;
+  MANUAL = 7;
+}
+
+enum OverlayBackgroundInteraction {
+  NONE = 0;
+  CLOSE_ON_CLICK_OUTSIDE = 1;
+}
+
+enum OverlayBackgroundType {
+  NONE = 0;
+  SOLID_COLOR = 1;
+}
+
+message OverlayBackgroundAppearance {
+  OverlayBackgroundType backgroundType = 1;
+  Color backgroundColor = 2;
+}
+
+enum NavigationType {
+  NAVIGATE = 0;
+  OVERLAY = 1;
+  SWAP = 2;
+  SWAP_STATE = 3;
+  SCROLL_TO = 4;
+}
+
+message ExportSettings {
+  string suffix = 1;
+  ImageType imageType = 2;
+  ExportConstraint constraint = 3;
+  bool svgDataName = 4;
+  ExportSVGIDMode svgIDMode = 5;
+  bool svgOutlineText = 6;
+  bool contentsOnly = 7;
+  bool svgForceStrokeMasks = 8;
+}
+
+enum ExportSVGIDMode {
+  IF_NEEDED = 0;
+  ALWAYS = 1;
+}
+
+message LayoutGrid {
+  LayoutGridType type = 1;
+  Axis axis = 2;
+  bool visible = 3;
+  int numSections = 4;
+  float offset = 5;
+  float sectionSize = 6;
+  float gutterSize = 7;
+  Color color = 8;
+  LayoutGridPattern pattern = 9;
+}
+
+message Guide {
+  Axis axis = 1;
+  float offset = 2;
+  GUID guid = 3;
+}
+
+message Path {
+  WindingRule windingRule = 1;
+  uint commandsBlob = 2;
+}
+
+enum StyleType {
+  NONE = 0;
+  FILL = 1;
+  STROKE = 2;
+  TEXT = 3;
+  EFFECT = 4;
+  EXPORT = 5;
+  GRID = 6;
+}
+
+message SharedStyleReference {
+  string styleKey = 1;
+  string versionHash = 2;
+}
+
+message SharedStyleMasterData {
+  string styleKey = 1;
+  string sortPosition = 2;
+  string fileKey = 3;
+}
+
+enum ScrollBehavior {
+  SCROLLS = 0;
+  FIXED_WHEN_CHILD_OF_SCROLLING_FRAME = 1;
+}
+
+message ArcData {
+  float startingAngle = 1;
+  float endingAngle = 2;
+  float innerRadius = 3;
+}
+
+message SymbolLink {
+  string uri = 1;
+  string displayName = 2;
+  string displayText = 3;
+}
+
+message PluginData {
+  string pluginID = 1;
+  string value = 2;
+  string key = 3;
+}
+
+message PluginRelaunchData {
+  string pluginID = 1;
+  string message = 2;
+  string command = 3;
+}
+
+message NodeChange {
+  GUID guid = 1;
+  uint guidTag = 53;
+  NodePhase phase = 2;
+  uint phaseTag = 54;
+  ParentIndex parentIndex = 3;
+  uint parentIndexTag = 55;
+  NodeType type = 4;
+  uint typeTag = 56;
+  string name = 5;
+  uint nameTag = 57;
+  bool visible = 6;
+  uint visibleTag = 58;
+  bool locked = 7;
+  uint lockedTag = 59;
+  float opacity = 8;
+  uint opacityTag = 60;
+  BlendMode blendMode = 9;
+  uint blendModeTag = 61;
+  uint count = 10;
+  uint countTag = 62;
+  Vector size = 11;
+  uint sizeTag = 63;
+  Matrix transform = 12;
+  uint transformTag = 64;
+  float[] dashPattern = 13;
+  uint dashPatternTag = 65;
+  bool autoRename = 14;
+  uint autoRenameTag = 66;
+  bool backgroundEnabled = 15;
+  uint backgroundEnabledTag = 67;
+  bool mask = 16;
+  uint maskTag = 68;
+  bool exportContentsOnly = 17;
+  uint exportContentsOnlyTag = 69;
+  bool maskIsOutline = 18;
+  uint maskIsOutlineTag = 70;
+  float backgroundOpacity = 19;
+  uint backgroundOpacityTag = 71;
+  float cornerRadius = 20;
+  uint cornerRadiusTag = 72;
+  float fontSize = 21;
+  uint fontSizeTag = 73;
+  float paragraphIndent = 22;
+  uint paragraphIndentTag = 74;
+  float paragraphSpacing = 23;
+  uint paragraphSpacingTag = 75;
+  float starInnerScale = 24;
+  uint starInnerScaleTag = 76;
+  float miterLimit = 25;
+  uint miterLimitTag = 77;
+  float strokeWeight = 26;
+  uint strokeWeightTag = 78;
+  float textTracking = 27;
+  uint textTrackingTag = 79;
+  ConstraintType horizontalConstraint = 28;
+  uint horizontalConstraintTag = 80;
+  StrokeAlign strokeAlign = 29;
+  uint strokeAlignTag = 81;
+  StrokeCap strokeCap = 30;
+  uint strokeCapTag = 82;
+  StrokeJoin strokeJoin = 31;
+  uint strokeJoinTag = 83;
+  TextAlignHorizontal textAlignHorizontal = 32;
+  uint textAlignHorizontalTag = 84;
+  TextAlignVertical textAlignVertical = 33;
+  uint textAlignVerticalTag = 85;
+  TextCase textCase = 34;
+  uint textCaseTag = 86;
+  TextDecoration textDecoration = 35;
+  uint textDecorationTag = 87;
+  BooleanOperation booleanOperation = 36;
+  uint booleanOperationTag = 88;
+  ConstraintType verticalConstraint = 37;
+  uint verticalConstraintTag = 89;
+  Paint[] fillPaints = 38;
+  uint fillPaintsTag = 90;
+  Paint[] strokePaints = 39;
+  uint strokePaintsTag = 91;
+  Number lineHeight = 40;
+  uint lineHeightTag = 92;
+  FontName fontName = 41;
+  uint fontNameTag = 93;
+  TextData textData = 42;
+  uint textDataTag = 94;
+  Effect[] effects = 43;
+  uint effectsTag = 95;
+  VectorMirror handleMirroring = 44;
+  uint handleMirroringTag = 96;
+  ExportSettings[] exportSettings = 45;
+  uint exportSettingsTag = 97;
+  TextAutoResize textAutoResize = 46;
+  uint textAutoResizeTag = 98;
+  LayoutGrid[] layoutGrids = 47;
+  uint layoutGridsTag = 99;
+  VectorData vectorData = 48;
+  uint vectorDataTag = 100;
+  uint styleID = 49;
+  uint styleIDTag = 101;
+  Color backgroundColor = 50;
+  uint backgroundColorTag = 102;
+  Path[] fillGeometry = 51;
+  uint fillGeometryTag = 103;
+  Path[] strokeGeometry = 52;
+  uint strokeGeometryTag = 104;
+  StackMode stackMode = 105;
+  uint stackModeTag = 106;
+  float stackSpacing = 107;
+  uint stackSpacingTag = 108;
+  float stackPadding = 109;
+  uint stackPaddingTag = 110;
+  GUIDPath guidPath = 111;
+  uint guidPathTag = 112;
+  SymbolData symbolData = 113;
+  uint symbolDataTag = 114;
+  bool frameMaskDisabled = 115;
+  uint frameMaskDisabledTag = 116;
+  bool resizeToFit = 117;
+  uint resizeToFitTag = 118;
+  bool exportBackgroundDisabled = 119;
+  StackCounterAlign stackCounterAlign = 120;
+  StackJustify stackJustify = 121;
+  SharedSymbolReference sharedSymbolReference = 122;
+  bool isSymbolPublishable = 123;
+  GUIDPathMapping[] sharedSymbolMappings = 124;
+  NodeChange[] derivedSymbolData = 125;
+  string sharedSymbolVersion = 126;
+  bool fontVariantCommonLigatures = 127;
+  bool fontVariantContextualLigatures = 128;
+  bool fontVariantDiscretionaryLigatures = 129;
+  bool fontVariantHistoricalLigatures = 130;
+  bool fontVariantOrdinal = 131;
+  bool fontVariantSlashedZero = 132;
+  FontVariantNumericFigure fontVariantNumericFigure = 133;
+  FontVariantNumericSpacing fontVariantNumericSpacing = 134;
+  FontVariantNumericFraction fontVariantNumericFraction = 135;
+  FontVariantCaps fontVariantCaps = 136;
+  FontVariantPosition fontVariantPosition = 137;
+  Guide[] guides = 138;
+  GUID transitionNodeID = 139;
+  GUID prototypeStartNodeID = 140;
+  Color prototypeBackgroundColor = 141;
+  bool internalOnly = 142;
+  GUID overriddenSymbolID = 143;
+  string symbolDescription = 144;
+  float rectangleTopLeftCornerRadius = 145;
+  float rectangleTopRightCornerRadius = 146;
+  float rectangleBottomLeftCornerRadius = 147;
+  float rectangleBottomRightCornerRadius = 148;
+  bool rectangleCornerRadiiIndependent = 149;
+  bool rectangleCornerToolIndependent = 150;
+  bool proportionsConstrained = 151;
+  SharedComponentMasterData sharedComponentMasterData = 152;
+  TransitionInfo transitionInfo = 153;
+  TransitionType transitionType = 154;
+  float transitionDuration = 155;
+  EasingType easingType = 156;
+  ScrollDirection scrollDirection = 159;
+  float cornerSmoothing = 160;
+  GUID inheritFillStyleID = 158;
+  GUID inheritStrokeStyleID = 162;
+  GUID inheritTextStyleID = 167;
+  GUID inheritExportStyleID = 168;
+  GUID inheritEffectStyleID = 169;
+  GUID inheritGridStyleID = 170;
+  GUID inheritFillStyleIDForStroke = 185;
+  bool isFillStyle = 157;
+  bool isStrokeStyle = 161;
+  StyleType styleType = 163;
+  string styleDescription = 191;
+  GUIDPathMapping[] unflatteningMappings = 164;
+  Number letterSpacing = 165;
+  Vector scrollOffset = 166;
+  string version = 171;
+  SharedStyleMasterData sharedStyleMasterData = 172;
+  SharedStyleReference sharedStyleReference = 173;
+  bool isPublishable = 174;
+  bool exportTextAsSVGText = 175;
+  bool isSoftDeletedStyle = 176;
+  bool isNonUpdateable = 177;
+  ScrollContractedState scrollContractedState = 178;
+  Vector contractedSize = 179;
+  string fixedChildrenDivider = 180;
+  bool transitionPreserveScroll = 181;
+  ConnectionType connectionType = 182;
+  string connectionURL = 183;
+  PrototypeDevice prototypeDevice = 184;
+  ScrollBehavior scrollBehavior = 186;
+  InteractionType interactionType = 187;
+  float transitionTimeout = 188;
+  bool interactionMaintained = 189;
+  float interactionDuration = 190;
+  bool destinationIsOverlay = 192;
+  Paint[] backgroundPaints = 193;
+  GUID inheritFillStyleIDForBackground = 194;
+  ArcData arcData = 195;
+  int derivedSymbolDataLayoutVersion = 196;
+  NavigationType navigationType = 197;
+  OverlayPositionType overlayPositionType = 198;
+  Vector overlayRelativePosition = 199;
+  OverlayBackgroundInteraction overlayBackgroundInteraction = 200;
+  OverlayBackgroundAppearance overlayBackgroundAppearance = 201;
+  string fontVersion = 202;
+  uint textUserLayoutVersion = 203;
+  PluginData[] pluginData = 204;
+  OpenTypeFeature[] toggledOnOTFeatures = 205;
+  OpenTypeFeature[] toggledOffOTFeatures = 206;
+  bool transitionShouldSmartAnimate = 207;
+  StackAlign stackAlign = 208;
+  float stackHorizontalPadding = 209;
+  float stackVerticalPadding = 210;
+  StackSize stackWidth = 211;
+  StackSize stackHeight = 212;
+  GUID overrideKey = 213;
+  string publishFile = 214;
+  GUID publishID = 215;
+  string componentKey = 216;
+  bool isC2 = 217;
+  string publishedVersion = 218;
+  PluginRelaunchData[] pluginRelaunchData = 219;
+  bool containerSupportsFillStrokeAndCorners = 220;
+  StackSize stackCounterSizing = 221;
+  bool containersSupportFillStrokeAndCorners = 222;
+  Hyperlink hyperlink = 223;
+  KeyTrigger keyTrigger = 224;
+  bool isStateGroup = 225;
+  PrototypeInteraction[] prototypeInteractions = 226;
+  string voiceEventPhrase = 227;
+  GUIDPathMapping[] forceUnflatteningMappings = 228;
+  StackSize stackPrimarySizing = 229;
+  StackJustify stackPrimaryAlignItems = 230;
+  StackAlign stackCounterAlignItems = 231;
+  float stackChildPrimaryGrow = 232;
+  float stackPaddingRight = 233;
+  float stackPaddingBottom = 234;
+  GUID[] ancestorPathBeforeDeletion = 235;
+  StackCounterAlign stackChildAlignSelf = 236;
+  SymbolLink[] symbolLinks = 237;
+  StateGroupPropertyValueOrder[] stateGroupPropertyValueOrders = 238;
+  TextListData textListData = 239;
+}
+
+message StateGroupPropertyValueOrder {
+  string property = 1;
+  string[] values = 2;
+}
+
+message TextListData {
+  int listID = 1;
+  BulletType bulletType = 2;
+  int indentationLevel = 3;
+  int lineNumber = 4;
+}
+
+enum BulletType {
+  ORDERED = 0;
+  UNORDERED = 1;
+  INDENT = 2;
+}
+
+message PrototypeInteraction {
+  GUID id = 1;
+  PrototypeEvent event = 2;
+  PrototypeAction[] actions = 3;
+  bool isDeleted = 4;
+}
+
+message PrototypeEvent {
+  InteractionType interactionType = 1;
+  bool interactionMaintained = 2;
+  float interactionDuration = 3;
+  KeyTrigger keyTrigger = 4;
+  string voiceEventPhrase = 5;
+  float transitionTimeout = 6;
+}
+
+message PrototypeAction {
+  GUID transitionNodeID = 1;
+  TransitionType transitionType = 2;
+  float transitionDuration = 3;
+  EasingType easingType = 4;
+  float transitionTimeout = 5;
+  bool transitionShouldSmartAnimate = 6;
+  ConnectionType connectionType = 7;
+  string connectionURL = 8;
+  Vector overlayRelativePosition = 9;
+  NavigationType navigationType = 10;
+  bool transitionPreserveScroll = 11;
+  float[] easingFunction = 12;
+}
+
+enum TriggerDevice {
+  KEYBOARD = 0;
+  UNKNOWN_CONTROLLER = 1;
+  XBOX_ONE = 2;
+  PS4 = 3;
+  SWITCH_PRO = 4;
+}
+
+message KeyTrigger {
+  int[] keyCodes = 1;
+  TriggerDevice triggerDevice = 2;
+}
+
+message Hyperlink {
+  string url = 1;
+  GUID guid = 2;
+}
+
+message Viewport {
+  Rect canvasSpaceBounds = 1;
+  bool pixelPreview = 2;
+  float pixelDensity = 3;
+  GUID canvasGuid = 4;
+}
+
+message Mouse {
+  MouseCursor cursor = 1;
+  Vector canvasSpaceLocation = 2;
+  Rect canvasSpaceSelectionBox = 3;
+  GUID canvasGuid = 4;
+}
+
+struct Click {
+  uint id;
+  Vector point;
+}
+
+struct ScrollPosition {
+  GUID node;
+  Vector scrollOffset;
+}
+
+struct TriggeredOverlay {
+  GUID overlayGuid;
+  GUID hotspotGuid;
+  GUID swapGuid;
+}
+
+message TriggeredOverlayData {
+  GUID overlayGuid = 1;
+  GUID hotspotGuid = 2;
+  GUID swapGuid = 3;
+  GUID prototypeInteractionGuid = 4;
+  GUIDPath hotspotBlueprintId = 5;
+}
+
+message PresentedState {
+  GUID baseScreenID = 1;
+  TriggeredOverlayData[] overlays = 2;
+}
+
+enum TransitionDirection {
+  FORWARD = 0;
+  REVERSE = 1;
+}
+
+message TopLevelPlaybackChange {
+  PresentedState oldState = 1;
+  PresentedState newState = 2;
+  GUIDPath hotspotBlueprintID = 3;
+  GUID interactionID = 4;
+  bool isHotspotInNewPresentedState = 5;
+  TransitionDirection direction = 6;
+}
+
+enum PlaybackChangePhase {
+  INITIATED = 0;
+  ABORTED = 1;
+  COMMITTED = 2;
+}
+
+message PlaybackChangeKeyframe {
+  PlaybackChangePhase phase = 1;
+  float progress = 2;
+  float timestamp = 3;
+}
+
+message ScrollMapping {
+  GUIDPath blueprintID = 1;
+  uint overlayIndex = 2;
+  Vector scrollOffset = 3;
+}
+
+message PlaybackUpdate {
+  TopLevelPlaybackChange lastTopLevelChange = 1;
+  PlaybackChangeKeyframe lastTopLevelChangeStatus = 2;
+  ScrollMapping[] scrollMappings = 3;
+  float timestamp = 4;
+  Vector pointerLocation = 5;
+}
+
+message UserChange {
+  uint sessionID = 1;
+  bool connected = 2;
+  string name = 3;
+  Color color = 4;
+  string imageURL = 5;
+  Viewport viewport = 6;
+  Mouse mouse = 7;
+  GUID[] selection = 8;
+  uint[] observing = 9;
+  string deviceName = 10;
+  Click[] recentClicks = 11;
+  ScrollPosition[] scrollPositions = 12;
+  TriggeredOverlay[] triggeredOverlays = 13;
+  string userID = 14;
+  GUID lastTriggeredHotspot = 15;
+  GUID lastTriggeredPrototypeInteractionID = 16;
+  TriggeredOverlayData[] triggeredOverlaysData = 17;
+  PlaybackUpdate[] playbackUpdates = 18;
+}
+
+message SceneGraphQuery {
+  GUID startingNode = 1;
+  uint depth = 2;
+}
+
+message NodeChangesMetadata {
+  uint blobsFieldOffset = 1;
+}
+
+message Message {
+  MessageType type = 1;
+  uint sessionID = 2;
+  uint ackID = 3;
+  NodeChange[] nodeChanges = 4;
+  UserChange[] userChanges = 5;
+  Blob[] blobs = 6;
+  string signalName = 7;
+  Access access = 8;
+  string styleSetName = 9;
+  StyleSetType styleSetType = 10;
+  StyleSetContentType styleSetContentType = 11;
+  int pasteID = 12;
+  Vector pasteOffset = 13;
+  string pasteFileKey = 14;
+  string signalPayload = 15;
+  SceneGraphQuery[] sceneGraphQueries = 16;
+  NodeChangesMetadata nodeChangesMetadata = 17;
+  uint fileVersion = 18;
+  bool pasteIsPartiallyOutsideEnclosingFrame = 19;
+  GUID pastePageId = 20;
+}
+
+message DiffChunk {
+  uint[] nodeChanges = 1;
+  NodePhase phase = 2;
+  NodeChange displayNode = 3;
+  GUID canvasId = 4;
+  string canvasName = 5;
+  bool canvasIsInternal = 6;
+}
+
+message DiffPayload {
+  NodeChange[] nodeChanges = 1;
+  Blob[] blobs = 2;
+  DiffChunk[] diffChunks = 3;
+}
