@@ -5,7 +5,7 @@ def convert(figma):
     fills = [
         {
             '_class': 'fill',
-            'isEnabled': True,
+            'isEnabled': f['visible'],
             'color': {
                 '_class': 'color',
                 'red': f['color']['r'],
