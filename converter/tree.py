@@ -12,6 +12,7 @@ CONVERTERS = {
     'REGULAR_POLYGON': polygon.convert,
     'TEXT': text.convert,
     'BOOLEAN_OPERATION': shape_group.convert,
+    'LINE': shape_path.convert_line
     # 'COMPONENT': lambda a, b: instance.convert(a, b, components),
     # 'INSTANCE': lambda a, b: instance.convert(a, b, components),
 }

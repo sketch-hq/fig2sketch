@@ -67,8 +67,8 @@ def decode(fig, blob_id, scale):
 
 def decode_vertex(x, y, scale):
     return {
-        'x': x / scale['x'],
-        'y': y / scale['y']
+        'x': x if x == 0 else x / scale['x'],
+        'y': y if y == 0 else y / scale['y']
     }
 
 
@@ -76,6 +76,6 @@ def decode_segment(v1, v2, t1x, t1y, t2x, t2y, scale):
     return {
         'start': v1,
         'end': v2,
-        'tangentStart': {'x': t1x / scale['x'], 'y': t1y / scale['y']},
-        'tangentEnd': {'x': t2x / scale['x'], 'y': t2y / scale['y']}
+        'tangentStart': decode_vertex(t1x, t1y, scale),
+        'tangentEnd': decode_vertex(t2x, t2y, scale)
     }

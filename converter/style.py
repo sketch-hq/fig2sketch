@@ -1,70 +1,8 @@
 import utils
 
-def convert_fill(figma):
-    PATTERN_FILL_TYPE = {
-        'STRETCH': 2,
-        'FIT': 3,
-        'FILL': 1,
-        'TILE': 0
-    }
-
-    sketch = {
-        '_class': 'fill',
-        'isEnabled': figma['visible'],
-        'noiseIndex': 0,
-        'noiseIntensity': 0,
-        'patternFillType': 0,
-        'patternTileScale': 1,
-        'contextSettings': {
-            '_class': 'graphicsContextSettings',
-            'blendMode': 0,
-            'opacity': figma.get('opacity', 1)
-        },
-        'gradient': {
-            '_class': 'gradient',
-            'elipseLength': 0,
-            'from': '{0.5, 0}',
-            'to': '{0.5, 1}',
-            'gradientType': 1,
-            'stops': []
-        }
-    }
-
-    if figma['type'] == 'SOLID':
-        sketch['fillType'] = 0
-        sketch['color'] = {
-            '_class': 'color',
-            'red': figma['color']['r'],
-            'green': figma['color']['g'],
-            'blue': figma['color']['b'],
-            'alpha': figma['opacity'],
-        }
-
-    elif figma['type'] == 'IMAGE':
-        sketch['fillType'] = 4
-        sketch['image'] = {
-            '_class': 'MSJSONFileReference',
-            '_ref_class': 'MSImageData',
-            '_ref': f'images/{figma["image"]["hash"]}.png'
-        }
-        sketch['noiseIndex'] = 0
-        sketch['noiseIntensity'] = 0
-        sketch['patternFillType'] = PATTERN_FILL_TYPE[figma['imageScaleMode']]
-        sketch['patternTileScale'] = 1
-    
-    else:
-        # 'GRADIENT_LINEAR'
-        # 'GRADIENT_RADIAL'
-        # 'GRADIENT_ANGULAR'
-        # 'GRADIENT_DIAMOND'
-        # 'EMOJI'
-        raise f"Fill type not implemented {figma['type']}"
-
-    return sketch
 
 def convert(figma):
-    fills = [convert_fill(f) for f in figma['fillPaints']
-    ]
+    fills = [convert_fill(f) for f in figma['fillPaints']]
     borders = [
         {
             '_class': 'border',
@@ -128,3 +66,66 @@ def convert(figma):
             'saturation': 1
         }
     }
+
+
+def convert_fill(figma):
+    PATTERN_FILL_TYPE = {
+        'STRETCH': 2,
+        'FIT': 3,
+        'FILL': 1,
+        'TILE': 0
+    }
+
+    sketch = {
+        '_class': 'fill',
+        'isEnabled': figma['visible'],
+        'noiseIndex': 0,
+        'noiseIntensity': 0,
+        'patternFillType': 0,
+        'patternTileScale': 1,
+        'contextSettings': {
+            '_class': 'graphicsContextSettings',
+            'blendMode': 0,
+            'opacity': figma.get('opacity', 1)
+        },
+        'gradient': {
+            '_class': 'gradient',
+            'elipseLength': 0,
+            'from': '{0.5, 0}',
+            'to': '{0.5, 1}',
+            'gradientType': 1,
+            'stops': []
+        }
+    }
+
+    if figma['type'] == 'SOLID':
+        sketch['fillType'] = 0
+        sketch['color'] = {
+            '_class': 'color',
+            'red': figma['color']['r'],
+            'green': figma['color']['g'],
+            'blue': figma['color']['b'],
+            'alpha': figma['opacity'],
+        }
+
+    elif figma['type'] == 'IMAGE':
+        sketch['fillType'] = 4
+        sketch['image'] = {
+            '_class': 'MSJSONFileReference',
+            '_ref_class': 'MSImageData',
+            '_ref': f'images/{figma["image"]["hash"]}.png'
+        }
+        sketch['noiseIndex'] = 0
+        sketch['noiseIntensity'] = 0
+        sketch['patternFillType'] = PATTERN_FILL_TYPE[figma['imageScaleMode']]
+        sketch['patternTileScale'] = 1
+
+    else:
+        # 'GRADIENT_LINEAR'
+        # 'GRADIENT_RADIAL'
+        # 'GRADIENT_ANGULAR'
+        # 'GRADIENT_DIAMOND'
+        # 'EMOJI'
+        raise f"Fill type not implemented {figma['type']}"
+
+    return sketch
