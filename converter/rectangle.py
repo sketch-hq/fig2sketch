@@ -14,6 +14,7 @@ def convert(figma_rect):
             'shouldTrim': False
         },
         **positioning.convert(figma_rect),
+        **utils.masking(figma_rect),
         'isFixedToViewport': False,
         'isFlippedHorizontal': False,
         'isFlippedVertical': False,

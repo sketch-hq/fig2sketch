@@ -25,6 +25,25 @@ def add_points(point1, point2):
 def point_to_string(point):
     return f"{{{point['x']}, {point['y']}}}"
 
+# TODO: Call this function from every shape/image/etc
+# TODO: Check if image masks work
+def masking(figma):
+    CLIPPING_MODE = {
+        'ALPHA': 1,
+        'OUTLINE': 0, # TODO This works differently in Sketch vs Figma
+                      # Sketch masks only the fill and draws border normally and fill as background
+                      # Figma masks including the borders and ignores the stroke/fill properties
+        # 'LUMINANCE': UNSUPPORTED
+    }
+    sketch = {}
+    if figma.mask:
+        sketch['hasClippingMask'] = True
+        sketch['clippingMaskMode'] = CLIPPING_MODE[figma.maskType]
+    else:
+        sketch['hasClippingMask'] = False
+    
+    return sketch
+
 
 def resizing_constraints(figma_item):
     # TODO: Figma is returning MIN so I assigned it to the defaults (TOP & LEFT respectively)
