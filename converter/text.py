@@ -82,6 +82,7 @@ def text_style(figma_text):
                 'alpha': figma_text.get('fillPaints', [{}])[0].get('color', {}).get('a', 1)
             },
             'textStyleVerticalAlignmentKey': AlignVertical[figma_text['textAlignVertical']],
+            **text_decoration(figma_text),
             'kerning': 0,  # TODO
             'paragraphStyle': {
                 '_class': 'paragraphStyle',
@@ -139,3 +140,16 @@ def override_characters_style(figma_text):
         }]
 
     return attributes
+
+
+def text_decoration(figma_text):
+    decoration = {}
+
+    if 'textDecoration' in figma_text:
+        match figma_text['textDecoration']:
+            case 'UNDERLINE':
+                decoration = {'underlineStyle': 1}
+            case 'STRIKETHROUGH':
+                decoration = {'strikethroughStyle': 1}
+
+    return decoration
