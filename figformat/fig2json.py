@@ -21,6 +21,15 @@ def transform_node(fig, node):
         scale = node['vectorData']['normalizedSize']
         vector_network = decodevectornetwork.decode(fig, blob_id, scale)
         node['vectorNetwork'] = vector_network
+    
+    # Images
+    # TODO: Convert to .png?
+    for paint in node.get('fillPaints', []):
+        if 'image' in paint:
+            hash = bytes(paint['image']['hash']).hex()
+            paint['image']['hash'] = hash
+            with open(f"output/images/{hash}.png", 'wb') as f:
+                f.write(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes']))
 
     return FigNode(node)
 

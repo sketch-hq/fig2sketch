@@ -1,7 +1,6 @@
 from . import positioning, style
 import utils
 
-
 def convert(figma_rect):
     return {
         '_class': 'rectangle',

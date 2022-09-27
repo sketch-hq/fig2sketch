@@ -34,8 +34,6 @@ def convert_components():
 
 
 def convert_json_to_sketch(figma):
-    clean_output()
-
     sketch_pages = convert_pages(figma['document']['children'])
 
     sketch_document = document.convert(sketch_pages)
@@ -44,15 +42,6 @@ def convert_json_to_sketch(figma):
 
     write_sketch_file(sketch_document, sketch_user, sketch_meta)
 
-
-def clean_output():
-    try:
-        shutil.rmtree('output')
-    except:
-        pass
-
-    os.mkdir('output')
-    os.mkdir('output/pages')
 
 
 def write_sketch_file(sketch_document, sketch_user, sketch_meta):
