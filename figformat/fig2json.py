@@ -1,6 +1,7 @@
 from . import decodefig, decodevectornetwork
 from .fignode import FigNode
-
+from PIL import Image
+import io
 
 def convert_fig(reader):
     fig, figma_zip = decodefig.decode(reader)
@@ -58,10 +59,12 @@ def transform_node(fig, node, figma_zip):
         if 'image' in paint:
             hash = bytes(paint['image']['hash']).hex()
             paint['image']['hash'] = hash
-            with open(f"output/images/{hash}.png", 'wb') as f:
-                if figma_zip is not None:
-                    f.write(figma_zip.open(f'images/{hash}').read())
-                else:
-                    f.write(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes']))
+
+            if figma_zip is not None:
+                image = Image.open(figma_zip.open(f'images/{hash}'))
+            else:
+                image = Image.open(io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
+            
+            image.save(f"output/images/{hash}.png")
 
     return FigNode(node)
