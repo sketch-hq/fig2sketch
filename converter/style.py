@@ -33,6 +33,18 @@ def convert(figma):
             }
         } for b in figma['strokePaints']
     ]
+    LINE_CAP_STYLE = {
+        'NONE': 0,
+        'ROUND': 1,
+        'SQUARE': 2,
+        'LINE_ARROW': 0,
+        'TRIANGLE_ARROW': 0
+    }
+    LINE_JOIN_STYLE = {
+        'MITER': 0,
+        'ROUND': 1,
+        'BEVEL': 2
+    }
 
     return {
         '_class': 'style',
@@ -41,8 +53,8 @@ def convert(figma):
         'borderOptions': {
             '_class': 'borderOptions',
             'isEnabled': True,
-            'lineCapStyle': 0,
-            'lineJoinStyle': 0,
+            'lineCapStyle': LINE_CAP_STYLE[figma.strokeCap],
+            'lineJoinStyle': LINE_JOIN_STYLE[figma.strokeJoin],
             "dashPattern": figma.dashPattern
         },
         'fills': fills,
