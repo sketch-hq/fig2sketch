@@ -1,11 +1,20 @@
 import json
 import os
-import shutil
 import sys
 
 from . import document, meta, tree, user
 
 components = []
+
+
+def convert_json_to_sketch(figma):
+    sketch_pages = convert_pages(figma['document']['children'])
+
+    sketch_document = document.convert(sketch_pages)
+    sketch_user = user.convert(sketch_pages)
+    sketch_meta = meta.convert(sketch_pages)
+
+    write_sketch_file(sketch_document, sketch_user, sketch_meta)
 
 
 def convert_pages(figma_pages):
@@ -31,17 +40,6 @@ def convert_components():
               indent=2)
 
     return components_page
-
-
-def convert_json_to_sketch(figma):
-    sketch_pages = convert_pages(figma['document']['children'])
-
-    sketch_document = document.convert(sketch_pages)
-    sketch_user = user.convert(sketch_pages)
-    sketch_meta = meta.convert(sketch_pages)
-
-    write_sketch_file(sketch_document, sketch_user, sketch_meta)
-
 
 
 def write_sketch_file(sketch_document, sketch_user, sketch_meta):

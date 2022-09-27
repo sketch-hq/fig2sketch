@@ -6,6 +6,7 @@ import sys
 import json
 import shutil
 
+
 def clean_output():
     try:
         shutil.rmtree('output')
@@ -15,6 +16,7 @@ def clean_output():
     os.mkdir('output')
     os.mkdir('output/pages')
     os.mkdir('output/images')
+
 
 if __name__ == '__main__':
     clean_output()

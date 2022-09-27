@@ -6,6 +6,7 @@ from .kiwi import *
 
 
 def decode(reader):
+    figma_zip = None
     figma = reader.read()
 
     if figma.startswith(b'PK'):
@@ -24,4 +25,4 @@ def decode(reader):
         segments.append(data)
 
     schema = KiwiSchema(io.BytesIO(segments[0]))
-    return KiwiDecoder(schema).decode(io.BytesIO(segments[1]), 'Message')
+    return KiwiDecoder(schema).decode(io.BytesIO(segments[1]), 'Message'), figma_zip
