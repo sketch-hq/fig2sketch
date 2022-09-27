@@ -1,4 +1,5 @@
-from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, shape_group
+from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, \
+    shape_group, text
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -9,7 +10,7 @@ CONVERTERS = {
     'VECTOR': shape_path.convert,
     'STAR': star.convert,
     'REGULAR_POLYGON': polygon.convert,
-    'TEXT': rectangle.convert,
+    'TEXT': text.convert,
     'BOOLEAN_OPERATION': shape_group.convert,
     # 'COMPONENT': lambda a, b: instance.convert(a, b, components),
     # 'INSTANCE': lambda a, b: instance.convert(a, b, components),
@@ -18,6 +19,7 @@ CONVERTERS = {
 POST_PROCESSING = {
     'BOOLEAN_OPERATION': shape_group.post_process,
 }
+
 
 def convert_node(figma_item):
     name = figma_item['name']
