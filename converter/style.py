@@ -42,7 +42,8 @@ def convert(figma):
             '_class': 'borderOptions',
             'isEnabled': True,
             'lineCapStyle': 0,
-            'lineJoinStyle': 0
+            'lineJoinStyle': 0,
+            "dashPattern": figma.dashPattern
         },
         'fills': fills,
         'startMarkerType': 0,
