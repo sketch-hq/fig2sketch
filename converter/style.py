@@ -63,9 +63,7 @@ def convert(figma):
         'endMarkerType': 0,
         'miterLimit': 10,
         'windingRule': 0,
-        'shadows': [  # TODO figma['effects'] type = DROP_SHADOW
-        ],
-        'innerShadows': [],  # TODO figma['effects'] type = INNER_SHADOW
+        **convert_effects(figma.get('effects', [])),
         'contextSettings': {
             '_class': 'graphicsContextSettings',
             'blendMode': 0,
@@ -194,6 +192,11 @@ def convert_fill(figma, figma_node):
             ]
         }
 
+        if rotation_offset:
+            # When we have a rotated angular grandient, stops at 0 and 1 both convert
+            # to the exact same position and that confuses Sketch. Force a small difference
+            sketch['gradient']['stops'][-1]['position'] -= 0.00001
+
     return sketch
 
 def scaled_distance(a, b, x_scale):
@@ -206,4 +209,99 @@ def rotated_stop(position, offset):
         pos -= 1
     elif pos < 0:
         pos += 1
+    if pos < 0:
+        pos += 1
     return pos
+
+def convert_effects(effects):
+    sketch = {
+        'blur': {
+            '_class': 'blur',
+            'isEnabled': False,
+            'center': '{0.5, 0.5}',
+            'motionAngle': 0,
+            'radius': 10,
+            'saturation': 1,
+            'type': 0
+        },
+        'shadows': [],
+        'innerShadows': []
+    }
+
+    for e in effects:
+        if e['type'] == 'INNER_SHADOW':
+            sketch['innerShadows'].append({
+                '_class': 'innerShadow',
+                'isEnabled': True,
+                'blurRadius': e['radius'],
+                'offsetX': e['offset']['x'],
+                'offsetY': e['offset']['y'],
+                'spread': e['spread'],
+                'color': {
+                  '_class': 'color',
+                  'alpha': e['color']['a'],
+                  'blue': e['color']['b'],
+                  'green': e['color']['g'],
+                  'red': e['color']['r']
+                },
+                'contextSettings': {
+                  '_class': 'graphicsContextSettings',
+                  'blendMode': 0,
+                  'opacity': 1
+                }
+            })
+
+        elif e['type'] == 'DROP_SHADOW':
+            sketch['shadows'].append({
+                '_class': 'shadow',
+                'isEnabled': True,
+                'blurRadius': e['radius'],
+                'offsetX': e['offset']['x'],
+                'offsetY': e['offset']['y'],
+                'spread': e['spread'],
+                'color': {
+                  '_class': 'color',
+                  'alpha': e['color']['a'],
+                  'blue': e['color']['b'],
+                  'green': e['color']['g'],
+                  'red': e['color']['r']
+                },
+                'contextSettings': {
+                  '_class': 'graphicsContextSettings',
+                  'blendMode': 0,
+                  'opacity': 1
+                }
+            })
+
+        elif e['type'] == 'FOREGROUND_BLUR':
+            if sketch['blur']['isEnabled']:
+                raise Exception(f'Cannot support multuple blurs')
+
+            sketch['blur'] = {
+                '_class': 'blur',
+                'isEnabled': True,
+                'center': '{0.5, 0.5}',
+                'motionAngle': 0,
+                'radius': e['radius'] / 2, # Looks best dividing by 2, no idea why,
+                'saturation': 1,
+                'type': 0
+            }
+
+        elif e['type'] == 'BACKGROUND_BLUR':
+            if sketch['blur']['isEnabled']:
+                raise Exception(f'Cannot support multuple blurs')
+
+            sketch['blur'] = {
+                '_class': 'blur',
+                'isEnabled': True,
+                'center': '{0.5, 0.5}',
+                'motionAngle': 0,
+                'radius': e['radius'] / 2, # Looks best dividing by 2, no idea why
+                'saturation': 1,
+                'type': 3
+            }
+
+        else:
+            raise Exception(f'Unsupported effect: {e["type"]}')
+
+    return sketch
