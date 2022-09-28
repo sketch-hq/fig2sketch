@@ -1,7 +1,7 @@
 import struct
 
 
-def decode(fig, blob_id, scale):
+def decode(fig, blob_id, scale, style_override_table):
     network = bytes(fig['blobs'][blob_id]['bytes'])
 
     i = 0
@@ -20,7 +20,7 @@ def decode(fig, blob_id, scale):
         # Coordinates
         x, y = struct.unpack('<ff', network[i + 4:i + 12])
 
-        vertices.append(decode_vertex(x, y, scale))
+        vertices.append(decode_vertex(x, y, scale, style_override_table, style_id))
         i += 12
 
     segments = []
@@ -65,11 +65,16 @@ def decode(fig, blob_id, scale):
     }
 
 
-def decode_vertex(x, y, scale):
-    return {
+def decode_vertex(x, y, scale, style_override_table=None, style_id=None):
+    vertex = {
         'x': x if x == 0 else x / scale['x'],
         'y': y if y == 0 else y / scale['y']
     }
+
+    if style_id:
+        vertex['style'] = style_override_table[style_id]
+
+    return vertex
 
 
 def decode_segment(v1, v2, t1x, t1y, t2x, t2y, scale):

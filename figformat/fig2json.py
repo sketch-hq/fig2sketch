@@ -1,7 +1,9 @@
+import io
+from PIL import Image
 from . import decodefig, decodevectornetwork
 from .fignode import FigNode
-from PIL import Image
-import io
+import utils
+
 
 def convert_fig(reader):
     fig, figma_zip = decodefig.decode(reader)
@@ -50,7 +52,8 @@ def transform_node(fig, node, figma_zip):
     if 'vectorData' in node:
         blob_id = node['vectorData']['vectorNetworkBlob']
         scale = node['vectorData']['normalizedSize']
-        vector_network = decodevectornetwork.decode(fig, blob_id, scale)
+        style_table_override = utils.get_style_table_override(node['vectorData'])
+        vector_network = decodevectornetwork.decode(fig, blob_id, scale, style_table_override)
         node['vectorNetwork'] = vector_network
 
     # Images
@@ -63,8 +66,9 @@ def transform_node(fig, node, figma_zip):
             if figma_zip is not None:
                 image = Image.open(figma_zip.open(f'images/{hash}'))
             else:
-                image = Image.open(io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
-            
+                image = Image.open(
+                    io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
+
             image.save(f"output/images/{hash}.png")
 
     return FigNode(node)

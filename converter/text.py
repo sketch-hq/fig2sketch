@@ -1,4 +1,5 @@
 from . import base
+import utils
 
 AlignVertical = {
     'TOP': 0,
@@ -78,9 +79,7 @@ def override_characters_style(figma_text):
     char_length = len(figma_text['textData']['characters'])
 
     if 'styleOverrideTable' in figma_text['textData']:
-        override_table = {0: {}}
-        for style_override in figma_text['textData']['styleOverrideTable']:
-            override_table[style_override['styleID']] = style_override
+        override_table = utils.get_style_table_override(figma_text['textData'])
 
         last_style = 0
         count = 0

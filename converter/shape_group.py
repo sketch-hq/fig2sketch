@@ -7,6 +7,7 @@ BOOLEAN_OPERATIONS = {
     'XOR': 3
 }
 
+
 def convert(figma_bool_ops):
     return {
         '_class': 'shapeGroup',
@@ -18,6 +19,7 @@ def convert(figma_bool_ops):
             "_class": "MSImmutableFreeformGroupLayout"
         },
     }
+
 
 def post_process(figma_bool_ops, sketch_bool_ops):
     op = BOOLEAN_OPERATIONS[figma_bool_ops.booleanOperation]

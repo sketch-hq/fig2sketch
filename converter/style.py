@@ -1,6 +1,7 @@
-import utils
 import numpy as np
 import math
+import utils
+
 
 def convert(figma):
     fills = [convert_fill(f, figma) for f in figma['fillPaints']]
@@ -34,13 +35,17 @@ def convert(figma):
             }
         } for b in figma['strokePaints']
     ]
+
     LINE_CAP_STYLE = {
         'NONE': 0,
         'ROUND': 1,
         'SQUARE': 2,
-        'LINE_ARROW': 0,
-        'TRIANGLE_ARROW': 0
+        'LINE_ARROW': 2,
+        'ARROW_LINES': 2,
+        'TRIANGLE_ARROW': 2,
+        'TRIANGLE_FILLED': 2
     }
+
     LINE_JOIN_STYLE = {
         'MITER': 0,
         'ROUND': 1,
@@ -59,8 +64,6 @@ def convert(figma):
             "dashPattern": figma.dashPattern
         },
         'fills': fills,
-        'startMarkerType': 0,
-        'endMarkerType': 0,
         'miterLimit': 10,
         'windingRule': 0,
         'shadows': [  # TODO figma['effects'] type = DROP_SHADOW
@@ -134,8 +137,8 @@ def convert_fill(figma, figma_node):
         GRADIENT_TYPE = {
             'GRADIENT_LINEAR': 0,
             'GRADIENT_RADIAL': 1,
-            'GRADIENT_ANGULAR': 2, # TODO: Sketch does not support positioning angular gradients
-            'GRADIENT_DIAMOND': 1, # Unsupported by Sketch, most similar is radial
+            'GRADIENT_ANGULAR': 2,  # TODO: Sketch does not support positioning angular gradients
+            'GRADIENT_DIAMOND': 1,  # Unsupported by Sketch, most similar is radial
         }
 
         # Convert positions depending on the gradient type
@@ -144,6 +147,7 @@ def convert_fill(figma, figma_node):
             [figma['transform']['m10'], figma['transform']['m11'], figma['transform']['m12']],
             [0, 0, 1]
         ])
+
         invmat = np.linalg.inv(mat)
 
         rotation_offset = 0
@@ -152,11 +156,11 @@ def convert_fill(figma, figma_node):
             # We just apply the transform to get the coordinates (in a 1x1 square)
             point_from = invmat.dot([0, 0.5, 1])
             point_to = invmat.dot([1, 0.5, 1])
-            ellipse_ratio = 0 # Doesn't matter
+            ellipse_ratio = 0  # Doesn't matter
         elif figma['type'] in ['GRADIENT_RADIAL', 'GRADIENT_DIAMOND']:
             # Figma angular gradients have the center at (.5, .5), the vertex at (1, .5)
             # and the co-vertex at (.5, 1). We transform them to the coordinates in a 1x1 square
-            point_from = invmat.dot([0.5, 0.5, 1]) # Center
+            point_from = invmat.dot([0.5, 0.5, 1])  # Center
             point_to = invmat.dot([1, 0.5, 1])
             point_ellipse = invmat.dot([0.5, 1, 1])
 
@@ -164,20 +168,22 @@ def convert_fill(figma, figma_node):
             # So we scale the 1x1 square coordinates to fit the ratio of the item frame before calculating
             # the ellipse's ratio
             x_scale = figma_node.size['x'] / figma_node.size['y']
-            ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(point_from, point_to, x_scale)
+            ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
+                point_from, point_to, x_scale)
         else:
             # Angular gradients don't allow positioning, but we can at least rotate them
             point_from = [0, 0]
             point_to = [0, 0]
             ellipse_ratio = 0
-            rotation_offset = math.atan2(-figma['transform']['m10'], figma['transform']['m00']) / 2 / math.pi
+            rotation_offset = math.atan2(-figma['transform']['m10'],
+                                         figma['transform']['m00']) / 2 / math.pi
 
         sketch['fillType'] = 1
         sketch['gradient'] = {
             '_class': 'gradient',
             'gradientType': GRADIENT_TYPE[figma['type']],
             'from': utils.np_point_to_string(point_from),
-            'to':  utils.np_point_to_string(point_to),
+            'to': utils.np_point_to_string(point_to),
             'elipseLength': ellipse_ratio,
             'stops': [
                 {
@@ -196,9 +202,11 @@ def convert_fill(figma, figma_node):
 
     return sketch
 
+
 def scaled_distance(a, b, x_scale):
-    v = a-b
-    return np.hypot(v[0]*x_scale, v[1])
+    v = a - b
+    return np.hypot(v[0] * x_scale, v[1])
+
 
 def rotated_stop(position, offset):
     pos = position + offset
