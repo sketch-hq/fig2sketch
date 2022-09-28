@@ -1,8 +1,9 @@
 import utils
-
+import numpy as np
+import math
 
 def convert(figma):
-    fills = [convert_fill(f) for f in figma['fillPaints']]
+    fills = [convert_fill(f, figma) for f in figma['fillPaints']]
     borders = [
         {
             '_class': 'border',
@@ -81,7 +82,7 @@ def convert(figma):
     }
 
 
-def convert_fill(figma):
+def convert_fill(figma, figma_node):
     PATTERN_FILL_TYPE = {
         'STRETCH': 2,
         'FIT': 3,
@@ -100,14 +101,6 @@ def convert_fill(figma):
             '_class': 'graphicsContextSettings',
             'blendMode': 0,
             'opacity': figma.get('opacity', 1)
-        },
-        'gradient': {
-            '_class': 'gradient',
-            'elipseLength': 0,
-            'from': '{0.5, 0}',
-            'to': '{0.5, 1}',
-            'gradientType': 1,
-            'stops': []
         }
     }
 
@@ -133,12 +126,84 @@ def convert_fill(figma):
         sketch['patternFillType'] = PATTERN_FILL_TYPE[figma['imageScaleMode']]
         sketch['patternTileScale'] = 1
 
+    elif figma['type'] == 'EMOJI':
+        raise Exception("Unsupported fill: EMOJI")
+
     else:
-        # 'GRADIENT_LINEAR'
-        # 'GRADIENT_RADIAL'
-        # 'GRADIENT_ANGULAR'
-        # 'GRADIENT_DIAMOND'
-        # 'EMOJI'
-        raise f"Fill type not implemented {figma['type']}"
+        # Gradients
+        GRADIENT_TYPE = {
+            'GRADIENT_LINEAR': 0,
+            'GRADIENT_RADIAL': 1,
+            'GRADIENT_ANGULAR': 2, # TODO: Sketch does not support positioning angular gradients
+            'GRADIENT_DIAMOND': 1, # Unsupported by Sketch, most similar is radial
+        }
+
+        # Convert positions depending on the gradient type
+        mat = np.array([
+            [figma['transform']['m00'], figma['transform']['m01'], figma['transform']['m02']],
+            [figma['transform']['m10'], figma['transform']['m11'], figma['transform']['m12']],
+            [0, 0, 1]
+        ])
+        invmat = np.linalg.inv(mat)
+
+        rotation_offset = 0
+        if figma['type'] == 'GRADIENT_LINEAR':
+            # Linear gradients always go from (0, .5) to (1, .5)
+            # We just apply the transform to get the coordinates (in a 1x1 square)
+            point_from = invmat.dot([0, 0.5, 1])
+            point_to = invmat.dot([1, 0.5, 1])
+            ellipse_ratio = 0 # Doesn't matter
+        elif figma['type'] in ['GRADIENT_RADIAL', 'GRADIENT_DIAMOND']:
+            # Figma angular gradients have the center at (.5, .5), the vertex at (1, .5)
+            # and the co-vertex at (.5, 1). We transform them to the coordinates in a 1x1 square
+            point_from = invmat.dot([0.5, 0.5, 1]) # Center
+            point_to = invmat.dot([1, 0.5, 1])
+            point_ellipse = invmat.dot([0.5, 1, 1])
+
+            # Sketch defines the ratio between axis in the item reference point (not the 1x1 square)
+            # So we scale the 1x1 square coordinates to fit the ratio of the item frame before calculating
+            # the ellipse's ratio
+            x_scale = figma_node.size['x'] / figma_node.size['y']
+            ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(point_from, point_to, x_scale)
+        else:
+            # Angular gradients don't allow positioning, but we can at least rotate them
+            point_from = [0, 0]
+            point_to = [0, 0]
+            ellipse_ratio = 0
+            rotation_offset = math.atan2(-figma['transform']['m10'], figma['transform']['m00']) / 2 / math.pi
+
+        sketch['fillType'] = 1
+        sketch['gradient'] = {
+            '_class': 'gradient',
+            'gradientType': GRADIENT_TYPE[figma['type']],
+            'from': utils.np_point_to_string(point_from),
+            'to':  utils.np_point_to_string(point_to),
+            'elipseLength': ellipse_ratio,
+            'stops': [
+                {
+                    '_class': 'gradientStop',
+                    'position': rotated_stop(stop['position'], rotation_offset),
+                    'color': {
+                        '_class': 'color',
+                        'red': stop['color']['r'],
+                        'green': stop['color']['g'],
+                        'blue': stop['color']['b'],
+                        'alpha': stop['color']['a'],
+                    }
+                } for stop in figma['stops']
+            ]
+        }
 
     return sketch
+
+def scaled_distance(a, b, x_scale):
+    v = a-b
+    return np.hypot(v[0]*x_scale, v[1])
+
+def rotated_stop(position, offset):
+    pos = position + offset
+    if pos > 1:
+        pos -= 1
+    elif pos < 0:
+        pos += 1
+    return pos

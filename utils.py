@@ -22,6 +22,9 @@ def add_points(point1, point2):
     return {'x': point1['x'] + point2['x'], 'y': point1['y'] + point2['y']}
 
 
+def np_point_to_string(point):
+    return f"{{{point[0]}, {point[1]}}}"
+
 def point_to_string(point):
     return f"{{{point['x']}, {point['y']}}}"
 
