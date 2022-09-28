@@ -2,6 +2,31 @@ import utils
 
 
 def convert(pages):
+    for ffamily in utils.figma_fonts.keys():
+        utils.download_and_unzip_webfont(ffamily)
+    utils.organize_sketch_fonts()
+
+    font_references = []
+    for ffamily, ffamily_dict in utils.figma_fonts.items():
+        for fsfamily, font_hash in ffamily_dict.items():
+            font_references.append(
+                {
+                    '_class': 'fontReference',
+                    'do_objectID': utils.gen_object_id(),
+                    'fontData': {
+                        "_class": 'MSJSONFileReference',
+                        '_ref_class': 'MSFontData',
+                        '_ref': 'fonts/%s' % font_hash
+                    },
+                    'fontFamilyName': ffamily,
+                    'fontFileName': '%s-%s.ttf' % (ffamily, fsfamily),
+                    'options': 1,
+                    'postscriptNames': [
+                        '%s-%s' % (ffamily, fsfamily)
+                    ]
+                })
+
+    print(utils.figma_fonts)
     return {
         '_class': 'document',
         'do_objectID': utils.gen_object_id(),
@@ -45,7 +70,7 @@ def convert(pages):
             'do_objectID': utils.gen_object_id(),
             'objects': []
         },
-        'fontReferences': [],
+        'fontReferences': font_references,
         'documentState': {
             '_class': 'documentState'
         },

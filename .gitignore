@@ -3,3 +3,5 @@ data/
 output*
 .venv
 .python-version
+.DS_Store
+.vscode

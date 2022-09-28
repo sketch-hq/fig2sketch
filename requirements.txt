@@ -1,2 +1,3 @@
 numpy==1.23.3
 Pillow==9.2.0
+fonttools==4.37.3

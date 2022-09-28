@@ -42,6 +42,7 @@ def convert(figma_text):
 
 
 def text_style(figma_text):
+    utils.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'])
     return {
         '_class': 'textStyle',
         'encodedAttributes': {
