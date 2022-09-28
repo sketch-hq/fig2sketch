@@ -69,7 +69,10 @@ def get_segments(vector_network):
     if vector_network['regions']:
         return vector_network['regions'][0]['loops'][0], True
     else:
-        return range(len(vector_network['segments'])), False
+        segments = vector_network['segments']
+        # A polygon is closed if the first point is the same as the last point
+        is_closed = segments[0]['start'] == segments[-1]['end']
+        return range(len(segments)), is_closed
 
 
 def process_segment(segment, points, vertices):
