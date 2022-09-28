@@ -7,11 +7,12 @@ def convert(figma_rect):
         'name': figma_rect.name,
         'edited': False,
         'isClosed': True,
-        'pointRadiusBehaviour': 1,
+        # Sketch smooth corners are a boolean, Figma is a percent. I picked an arbitrary threshold
+        'pointRadiusBehaviour': 2 if figma_rect.cornerSmoothing > 0.4 else 0,
         'points': [
             {
                 '_class': 'curvePoint',
-                'cornerRadius': 0,
+                'cornerRadius': figma_rect.rectangleTopLeftCornerRadius,
                 'curveFrom': '{0, 0}',
                 'curveMode': 1,
                 'curveTo': '{0, 0}',
@@ -21,7 +22,7 @@ def convert(figma_rect):
             },
             {
                 '_class': 'curvePoint',
-                'cornerRadius': 0,
+                'cornerRadius': figma_rect.rectangleTopRightCornerRadius,
                 'curveFrom': '{1, 0}',
                 'curveMode': 1,
                 'curveTo': '{1, 0}',
@@ -31,7 +32,7 @@ def convert(figma_rect):
             },
             {
                 '_class': 'curvePoint',
-                'cornerRadius': 0,
+                'cornerRadius': figma_rect.rectangleBottomRightCornerRadius,
                 'curveFrom': '{1, 1}',
                 'curveMode': 1,
                 'curveTo': '{1, 1}',
@@ -41,7 +42,7 @@ def convert(figma_rect):
             },
             {
                 '_class': 'curvePoint',
-                'cornerRadius': 0,
+                'cornerRadius': figma_rect.rectangleBottomLeftCornerRadius,
                 'curveFrom': '{0, 1}',
                 'curveMode': 1,
                 'curveTo': '{0, 1}',
@@ -50,6 +51,6 @@ def convert(figma_rect):
                 'point': '{0, 1}'
             }
         ],
-        'fixedRadius': 0,
+        'fixedRadius': figma_rect.cornerRadius,
         'hasConvertedToNewRoundCorners': True
     }
