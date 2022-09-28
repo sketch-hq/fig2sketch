@@ -1,5 +1,4 @@
-from . import positioning, style
-import utils
+from . import base
 
 AlignVertical = {
     'TOP': 0,
@@ -18,31 +17,8 @@ AlignHorizontal = {
 def convert(figma_text):
     obj = {
         '_class': 'text',
-        'do_objectID': utils.gen_object_id(),
-        'booleanOperation': -1,
-        'exportOptions': {
-            '_class': 'exportOptions',
-            'exportFormats': [],
-            'includedLayerIds': [],
-            'layerOptions': 0,
-            'shouldTrim': False
-        },
-        **positioning.convert(figma_text),
-        'isFixedToViewport': False,
-        'isFlippedHorizontal': False,
-        'isFlippedVertical': False,
-        'isLocked': False,
-        'isVisible': True,
-        'layerListExpandedType': 0,
+        **base.base_shape(figma_text),
         'name': figma_text['name'],
-        'nameIsFixed': False,
-        'resizingConstraint': 9,
-        'resizingType': 0,
-        'shouldBreakMaskChain': False,
-        'style': {
-            **style.convert(figma_text),
-            'textStyle': text_style(figma_text)
-        },
         'automaticallyDrawOnUnderlyingPath': False,
         'dontSynchroniseWithSymbol': False,
         'attributedString': {
@@ -55,6 +31,8 @@ def convert(figma_text):
         'textBehaviour': 2,
         'layers': []
     }
+
+    obj['style']['textStyle'] = text_style(figma_text)
 
     if len(obj['attributedString']['attributes']) > 1:
         obj['style']['fills'] = []

@@ -1,32 +1,9 @@
-from . import positioning, style
-import utils
-
+from . import base
 
 def convert(figma_ellipse):
     return {
         '_class': 'oval',
-        'do_objectID': utils.gen_object_id(),
-        'booleanOperation': -1,
-        'exportOptions': {
-            '_class': 'exportOptions',
-            'exportFormats': [],
-            'includedLayerIds': [],
-            'layerOptions': 0,
-            'shouldTrim': False
-        },
-        **positioning.convert(figma_ellipse),
-        'isFixedToViewport': False,
-        'isFlippedHorizontal': False,
-        'isFlippedVertical': False,
-        'isLocked': False,
-        'isVisible': True,
-        'layerListExpandedType': 1,
-        'name': figma_ellipse.name,
-        'nameIsFixed': False,
-        'resizingConstraint': 63,
-        'resizingType': 0,
-        'shouldBreakMaskChain': False,
-        'style': style.convert(figma_ellipse),
+        **base.base_shape(figma_ellipse),
         'edited': False,
         'isClosed': True,
         'pointRadiusBehaviour': 1,

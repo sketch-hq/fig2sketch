@@ -10,10 +10,10 @@ import shutil
 def clean_output():
     try:
         shutil.rmtree('output')
+        os.mkdir('output')
     except:
         pass
 
-    os.mkdir('output')
     os.mkdir('output/pages')
     os.mkdir('output/images')
 

@@ -1,32 +1,11 @@
-from . import positioning, style
+from . import base
 import utils
-
 
 def convert(figma_vector):
     return {
         '_class': 'shapePath',
-        'do_objectID': utils.gen_object_id(),
-        'booleanOperation': -1,
-        'exportOptions': {
-            '_class': 'exportOptions',
-            'exportFormats': [],
-            'includedLayerIds': [],
-            'layerOptions': 0,
-            'shouldTrim': False
-        },
-        **positioning.convert(figma_vector),
-        'isFixedToViewport': False,
-        'isFlippedHorizontal': False,
-        'isFlippedVertical': False,
-        'isLocked': False,
-        'isVisible': True,
-        'layerListExpandedType': 0,
+        **base.base_shape(figma_vector),
         'name': figma_vector.name,
-        'nameIsFixed': False,
-        'resizingConstraint': 63,
-        'resizingType': 0,
-        'shouldBreakMaskChain': False,
-        'style': style.convert(figma_vector),
         'edited': True,
         'pointRadiusBehaviour': 1,
         **convert_points(figma_vector),
@@ -39,28 +18,8 @@ def convert(figma_vector):
 def convert_line(figma_line):
     return {
         '_class': 'shapePath',
-        'do_objectID': utils.gen_object_id(),
-        'booleanOperation': -1,
-        'exportOptions': {
-            '_class': 'exportOptions',
-            'exportFormats': [],
-            'includedLayerIds': [],
-            'layerOptions': 0,
-            'shouldTrim': False
-        },
-        **positioning.convert(figma_line),
-        'isFixedToViewport': False,
-        'isFlippedHorizontal': False,
-        'isFlippedVertical': False,
-        'isLocked': False,
-        'isVisible': True,
-        'layerListExpandedType': 0,
+        **base.base_shape(figma_line),
         'name': figma_line.name,
-        'nameIsFixed': False,
-        'resizingConstraint': 63,
-        'resizingType': 0,
-        'shouldBreakMaskChain': False,
-        'style': style.convert(figma_line),
         'edited': True,
         'isClosed': False,
         'pointRadiusBehaviour': 1,

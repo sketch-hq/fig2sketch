@@ -1,14 +1,9 @@
-import uuid
-
-
-def gen_uuid():
-    return str(uuid.uuid4()).upper()
-
+import utils
 
 def convert(figma_canvas):
     return {
         '_class': 'page',
-        'do_objectID': gen_uuid(),
+        'do_objectID': utils.gen_object_id(),
         'booleanOperation': -1,
         'clippingMaskMode': 0,
         'exportOptions': {

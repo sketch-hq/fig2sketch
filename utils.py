@@ -35,13 +35,15 @@ def masking(figma):
                       # Figma masks including the borders and ignores the stroke/fill properties
         # 'LUMINANCE': UNSUPPORTED
     }
-    sketch = {}
+    sketch = {
+        'shouldBreakMaskChain': False
+    }
     if figma.mask:
         sketch['hasClippingMask'] = True
         sketch['clippingMaskMode'] = CLIPPING_MODE[figma.maskType]
     else:
         sketch['hasClippingMask'] = False
-    
+
     return sketch
 
 

@@ -1,4 +1,4 @@
-from . import positioning, style
+from . import base
 from math import sin, cos, pi
 import numpy as np
 import utils
@@ -19,28 +19,8 @@ def convert(figma_star):
 
     return {
         '_class': 'star',
-        'do_objectID': utils.gen_object_id(),
-        'booleanOperation': -1,
-        'exportOptions': {
-            '_class': 'exportOptions',
-            'exportFormats': [],
-            'includedLayerIds': [],
-            'layerOptions': 0,
-            'shouldTrim': False
-        },
-        **positioning.convert(figma_star),
-        'isFixedToViewport': False,
-        'isFlippedHorizontal': False,
-        'isFlippedVertical': False,
-        'isLocked': False,
-        'isVisible': True,
-        'layerListExpandedType': 1,
+        **base.base_shape(figma_star),
         'name': figma_star.name,
-        'nameIsFixed': False,
-        'resizingConstraint': 63,
-        'resizingType': 0,
-        'shouldBreakMaskChain': False,
-        'style': style.convert(figma_star),
         'edited': False,
         'isClosed': True,
         'pointRadiusBehaviour': 1,

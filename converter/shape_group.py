@@ -1,5 +1,4 @@
-from . import positioning, style
-import utils
+from . import base
 
 BOOLEAN_OPERATIONS = {
     'UNION': 0,
@@ -11,28 +10,9 @@ BOOLEAN_OPERATIONS = {
 def convert(figma_bool_ops):
     return {
         '_class': 'shapeGroup',
-        'do_objectID': utils.gen_object_id(),
-        'booleanOperation': -1,
-        'exportOptions': {
-            '_class': 'exportOptions',
-            'exportFormats': [],
-            'includedLayerIds': [],
-            'layerOptions': 0,
-            'shouldTrim': False
-        },
-        **positioning.convert(figma_bool_ops),
-        'isFixedToViewport': False,
-        'isFlippedHorizontal': False,
-        'isFlippedVertical': False,
-        'isLocked': False,
-        'isVisible': True,
-        'layerListExpandedType': 2,
+        **base.base_shape(figma_bool_ops),
         'name': figma_bool_ops.name,
-        'nameIsFixed': False,
-        'resizingConstraint': 9,
-        'resizingType': 0,
         'shouldBreakMaskChain': True,
-        'style': style.convert(figma_bool_ops),
         'hasClickThrough': False,
         "groupLayout": {
             "_class": "MSImmutableFreeformGroupLayout"
