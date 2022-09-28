@@ -25,17 +25,19 @@ def add_points(point1, point2):
 def np_point_to_string(point):
     return f"{{{point[0]}, {point[1]}}}"
 
+
 def point_to_string(point):
     return f"{{{point['x']}, {point['y']}}}"
 
-# TODO: Call this function from every shape/image/etc
-# TODO: Check if image masks work
+
+# TODO: Call this function from every shape/image/etc
+# TODO: Check if image masks work
 def masking(figma):
     CLIPPING_MODE = {
         'ALPHA': 1,
-        'OUTLINE': 0, # TODO This works differently in Sketch vs Figma
-                      # Sketch masks only the fill and draws border normally and fill as background
-                      # Figma masks including the borders and ignores the stroke/fill properties
+        'OUTLINE': 0,  # TODO This works differently in Sketch vs Figma
+        # Sketch masks only the fill and draws border normally and fill as background
+        # Figma masks including the borders and ignores the stroke/fill properties
         # 'LUMINANCE': UNSUPPORTED
     }
     sketch = {
@@ -67,3 +69,12 @@ def resizing_constraints(figma_item):
         'SCALE': 0,
     }
     return h[figma_item['horizontalConstraint']] + v[figma_item['verticalConstraint']]
+
+
+def get_style_table_override(figma_item):
+    override_table = {0: {}}
+
+    if 'styleOverrideTable' in figma_item:
+        override_table.update({s['styleID']: s for s in figma_item['styleOverrideTable']})
+
+    return override_table
