@@ -4,14 +4,21 @@ import zipfile
 import struct
 from .kiwi import *
 
+SUPPORTED_VERSION = 15
 
 def decode(reader):
     figma_zip = None
-    figma = reader.read()
 
-    if figma.startswith(b'PK'):
-        figma_zip = zipfile.ZipFile(io.BytesIO(figma))
-        figma = figma_zip.open('canvas.fig').read()
+    header = reader.read(2)
+    reader.seek(0)
+    if header == b'PK':
+        figma_zip = zipfile.ZipFile(reader)
+        reader = figma_zip.open('canvas.fig')
+
+    figma = reader.read()
+    fig_version = struct.unpack('<I', figma[8:12])[0]
+    if fig_version != SUPPORTED_VERSION:
+        raise Exception(f"Unsupported Figma version. File = {fig_version} / Supported = {SUPPORTED_VERSION}")
 
     offset = 12
     segments = []
