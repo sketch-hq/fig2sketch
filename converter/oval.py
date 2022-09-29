@@ -1,5 +1,6 @@
 from . import base
 
+
 def convert(figma_ellipse):
     return {
         '_class': 'oval',

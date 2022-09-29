@@ -1,5 +1,6 @@
 import utils
 
+
 def convert(figma_canvas):
     return {
         '_class': 'page',

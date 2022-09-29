@@ -1,25 +1,35 @@
 import uuid
 import hashlib
 
+CURVE_MODES = {
+    'NONE': 1,
+    'ANGLE_AND_LENGTH': 2,
+    'ANGLE': 3
+}
+
 
 def gen_object_id():
     return str(uuid.uuid4()).upper()
 
 
-def make_point(x, y, figma_point={}):
+def make_point(figma_item, x, y, figma_point={}):
     point = {
         '_class': 'curvePoint',
-        'cornerRadius': 0,
+        'cornerRadius': figma_item['cornerRadius'],
         'curveFrom': '{0, 0}',
-        'curveMode': 1,
+        'curveMode': CURVE_MODES[figma_item['handleMirroring']],
         'curveTo': '{0, 0}',
         'hasCurveFrom': False,
         'hasCurveTo': False,
         'point': f'{{{x}, {y}}}'
     }
 
-    if 'style' in figma_point and 'cornerRadius' in figma_point['style']:
-        point['cornerRadius'] = figma_point['style']['cornerRadius']
+    if 'style' in figma_point:
+        if 'cornerRadius' in figma_point['style']:
+            point['cornerRadius'] = figma_point['style']['cornerRadius']
+
+        if 'handleMirroring' in figma_point['style']:
+            point['curveMode'] = CURVE_MODES[figma_point['style']['handleMirroring']]
 
     return point
 

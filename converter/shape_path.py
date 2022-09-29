@@ -86,7 +86,7 @@ def convert_points(figma_vector):
     points = {}
 
     for segment in ordered_segments:
-        point1, point2 = process_segment(vertices, segment, points)
+        point1, point2 = process_segment(figma_vector, vertices, segment, points)
         points[segment['start']] = point1
         points[segment['end']] = point2
 
@@ -103,28 +103,27 @@ def get_segments(vector_network):
         return range(len(segments)), is_closed
 
 
-def process_segment(vertices, segment, points):
-    point1 = get_or_create_point(points, segment['start'], vertices)
-    point2 = get_or_create_point(points, segment['end'], vertices)
+def process_segment(figma_vector, vertices, segment, points):
+    point1 = get_or_create_point(figma_vector, points, segment['start'], vertices)
+    point2 = get_or_create_point(figma_vector, points, segment['end'], vertices)
 
     if segment['tangentStart']['x'] != 0.0 or segment['tangentStart']['y'] != 0.0:
         point1['curveFrom'] = get_curve_point(segment['start'], segment['tangentStart'], vertices)
         point1['hasCurveFrom'] = True
-        point1['curveMode'] = 2  # TODO: Extract from vertex['handleMirroring'] once we have it
 
     if segment['tangentEnd']['x'] != 0.0 or segment['tangentEnd']['y'] != 0.0:
         point2['curveTo'] = get_curve_point(segment['end'], segment['tangentEnd'], vertices)
         point2['hasCurveTo'] = True
-        point2['curveMode'] = 2  # TODO: Extract from vertex['handleMirroring'] once we have it
 
     return point1, point2
 
 
-def get_or_create_point(points, index, vertices):
+def get_or_create_point(figma_vector, points, index, vertices):
     if index in points:
         point = points[index]
     else:
-        point = utils.make_point(vertices[index]['x'], vertices[index]['y'], vertices[index])
+        figma_point = vertices[index]
+        point = utils.make_point(figma_vector, figma_point['x'], figma_point['y'], figma_point)
 
     return point
 

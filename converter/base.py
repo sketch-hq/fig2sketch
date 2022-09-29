@@ -1,6 +1,7 @@
 import utils
 from . import positioning, style
 
+
 def base_shape(figma):
     return {
         'do_objectID': utils.gen_object_id(),
@@ -20,6 +21,7 @@ def base_shape(figma):
         'style': style.convert(figma),
     }
 
+
 def export_options(figma_export_settings):
     return {
         "_class": "exportOptions",
@@ -35,6 +37,7 @@ def export_options(figma_export_settings):
                 **export_scale(s['constraint'])
             } for s in figma_export_settings]
     }
+
 
 def export_scale(figma_constraint):
     match figma_constraint:

@@ -7,7 +7,7 @@ import utils
 def convert(figma_star):
     points = []
     for angle in np.arange(-pi / 2, 2 * pi - pi / 2, 2 * pi / figma_star.count):
-        points += make_point_pair(angle, figma_star.count, figma_star.starInnerScale)
+        points += make_point_pair(figma_star, angle)
 
     return {
         '_class': 'star',
@@ -23,9 +23,17 @@ def convert(figma_star):
     }
 
 
-def make_point_pair(angle, number_points, scale):
-    angle2 = angle + pi / number_points
+def make_point_pair(figma_star, angle):
+    angle2 = angle + pi / figma_star.count
+    scale = figma_star.starInnerScale
+
+    x1 = 0.5 + (cos(angle) * 0.5)
+    y1 = 0.5 + (sin(angle) * 0.5)
+
+    x2 = 0.5 + (cos(angle2) * 0.5 * scale)
+    y2 = 0.5 + (sin(angle2) * 0.5 * scale)
+
     return [
-        utils.make_point(0.5 + (cos(angle) * 0.5), 0.5 + (sin(angle) * 0.5)),
-        utils.make_point(0.5 + (cos(angle2) * 0.5 * scale), 0.5 + (sin(angle2) * 0.5 * scale))
+        utils.make_point(figma_star, x1, y1),
+        utils.make_point(figma_star, x2, y2)
     ]

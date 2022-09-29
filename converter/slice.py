@@ -1,6 +1,7 @@
 import utils
 from . import base, positioning
 
+
 def convert(figma_slice):
     # TODO: Rotated slices. Ideally, we should calculate the bounding box of the
     # rotated rectangle and use that as the Sketch frame (and rotation = 0)
@@ -35,4 +36,3 @@ def convert(figma_slice):
     }
 
     return obj
-

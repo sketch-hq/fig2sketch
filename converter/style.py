@@ -221,6 +221,7 @@ def rotated_stop(position, offset):
         pos += 1
     return pos
 
+
 def convert_effects(effects):
     sketch = {
         'blur': {
@@ -246,16 +247,16 @@ def convert_effects(effects):
                 'offsetY': e['offset']['y'],
                 'spread': e['spread'],
                 'color': {
-                  '_class': 'color',
-                  'alpha': e['color']['a'],
-                  'blue': e['color']['b'],
-                  'green': e['color']['g'],
-                  'red': e['color']['r']
+                    '_class': 'color',
+                    'alpha': e['color']['a'],
+                    'blue': e['color']['b'],
+                    'green': e['color']['g'],
+                    'red': e['color']['r']
                 },
                 'contextSettings': {
-                  '_class': 'graphicsContextSettings',
-                  'blendMode': 0,
-                  'opacity': 1
+                    '_class': 'graphicsContextSettings',
+                    'blendMode': 0,
+                    'opacity': 1
                 }
             })
 
@@ -268,16 +269,16 @@ def convert_effects(effects):
                 'offsetY': e['offset']['y'],
                 'spread': e['spread'],
                 'color': {
-                  '_class': 'color',
-                  'alpha': e['color']['a'],
-                  'blue': e['color']['b'],
-                  'green': e['color']['g'],
-                  'red': e['color']['r']
+                    '_class': 'color',
+                    'alpha': e['color']['a'],
+                    'blue': e['color']['b'],
+                    'green': e['color']['g'],
+                    'red': e['color']['r']
                 },
                 'contextSettings': {
-                  '_class': 'graphicsContextSettings',
-                  'blendMode': 0,
-                  'opacity': 1
+                    '_class': 'graphicsContextSettings',
+                    'blendMode': 0,
+                    'opacity': 1
                 }
             })
 
@@ -290,7 +291,7 @@ def convert_effects(effects):
                 'isEnabled': True,
                 'center': '{0.5, 0.5}',
                 'motionAngle': 0,
-                'radius': e['radius'] / 2, # Looks best dividing by 2, no idea why,
+                'radius': e['radius'] / 2,  # Looks best dividing by 2, no idea why,
                 'saturation': 1,
                 'type': 0
             }
@@ -304,7 +305,7 @@ def convert_effects(effects):
                 'isEnabled': True,
                 'center': '{0.5, 0.5}',
                 'motionAngle': 0,
-                'radius': e['radius'] / 2, # Looks best dividing by 2, no idea why
+                'radius': e['radius'] / 2,  # Looks best dividing by 2, no idea why
                 'saturation': 1,
                 'type': 3
             }
