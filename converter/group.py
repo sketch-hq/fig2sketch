@@ -1,4 +1,4 @@
-from . import positioning
+from . import positioning, base
 import utils
 
 
@@ -7,13 +7,7 @@ def convert(figma_group):
         '_class': 'group',
         'do_objectID': utils.gen_object_id(),
         'booleanOperation': -1,
-        'exportOptions': {
-            '_class': 'exportOptions',
-            'exportFormats': [],
-            'includedLayerIds': [],
-            'layerOptions': 0,
-            'shouldTrim': False
-        },
+        'exportOptions': base.export_options(figma_group.get('exportSettings', [])),
         **positioning.convert(figma_group),
         'isFixedToViewport': False,
         'isFlippedHorizontal': False,

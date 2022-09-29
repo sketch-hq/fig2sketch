@@ -1,5 +1,5 @@
 from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, \
-    shape_group, text
+    shape_group, text, slice
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -12,7 +12,8 @@ CONVERTERS = {
     'REGULAR_POLYGON': polygon.convert,
     'TEXT': text.convert,
     'BOOLEAN_OPERATION': shape_group.convert,
-    'LINE': shape_path.convert_line
+    'LINE': shape_path.convert_line,
+    'SLICE': slice.convert
     # 'COMPONENT': lambda a, b: instance.convert(a, b, components),
     # 'INSTANCE': lambda a, b: instance.convert(a, b, components),
 }
