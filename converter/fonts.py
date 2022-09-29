@@ -16,7 +16,6 @@ os.makedirs(fonts_cache_dir, exist_ok=True)
 
 def record_figma_font(ffamily, fsfamily):
     if ffamily in figma_fonts:
-        # figma_fonts[ffamily][fsfamily] = generate_font_ref(ffamily, fsfamily)
         figma_fonts[ffamily][fsfamily] = ""
     else:
         figma_fonts[ffamily] = {}
