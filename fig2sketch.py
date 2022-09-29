@@ -5,6 +5,8 @@ from converter import convert
 import sys
 import json
 import shutil
+import utils
+import argparse
 
 
 def clean_output():
@@ -19,9 +21,17 @@ def clean_output():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('fig_file', type=argparse.FileType('rb'))
+    parser.add_argument('--salt', type=str, help='salt used to generate ids, defaults to random')
+    args = parser.parse_args()
+
+    if args.salt:
+        utils.id_salt = args.salt.encode('utf8')
+
     clean_output()
 
-    figma_json = fig2json.convert_fig(open(sys.argv[1], 'rb'))
+    figma_json = fig2json.convert_fig(args.fig_file)
 
     try:
         os.remove('example/figma.json')

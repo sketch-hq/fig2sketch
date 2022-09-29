@@ -4,7 +4,7 @@ from . import positioning, style
 
 def base_shape(figma):
     return {
-        'do_objectID': utils.gen_object_id(),
+        'do_objectID': utils.gen_object_id(figma.id),
         'booleanOperation': -1,
         'exportOptions': export_options(figma.get('exportSettings', [])),
         **positioning.convert(figma),
@@ -18,7 +18,7 @@ def base_shape(figma):
         'nameIsFixed': False,
         'resizingConstraint': 9,
         'resizingType': 0,
-        'style': style.convert(figma),
+        'style': style.convert(figma, figma.id),
     }
 
 

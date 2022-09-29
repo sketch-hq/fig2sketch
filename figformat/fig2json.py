@@ -38,14 +38,14 @@ def convert_fig(reader):
 def transform_node(fig, node, figma_zip):
     # Extract ID
     guid = node.pop('guid')
-    node['id'] = f"{guid['sessionID']}:{guid['localID']}"
+    node['id'] = (guid['sessionID'], guid['localID'])
     node['children'] = []
 
     # Extract parent ID
     if 'parentIndex' in node:
         parent = node.pop('parentIndex')
         node['parent'] = {
-            'id': f"{parent['guid']['sessionID']}:{parent['guid']['localID']}",
+            'id': (parent['guid']['sessionID'], parent['guid']['localID']),
             'position': parent['position']
         }
 

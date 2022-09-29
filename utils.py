@@ -1,5 +1,7 @@
 import uuid
 import hashlib
+import random
+import struct
 
 CURVE_MODES = {
     'NONE': 1,
@@ -8,8 +10,19 @@ CURVE_MODES = {
 }
 
 
-def gen_object_id():
-    return str(uuid.uuid4()).upper()
+id_salt = random.randbytes(16)
+
+
+def gen_object_id(figma_id, suffix=b''):
+    # Generate UUIDs by hashing the figma ID with a salt
+    salted_id = id_salt + struct.pack('<II', *figma_id) + suffix
+    uuid_bytes = bytearray(hashlib.shake_128(salted_id).digest(16))
+
+    # Override bits to match UUIDv4
+    uuid_bytes[6] = (uuid_bytes[6] & 0x0f) | 0x40
+    uuid_bytes[8] = (uuid_bytes[8] & 0x3f) | 0x80
+
+    return str(uuid.UUID(bytes=bytes(uuid_bytes))).upper()
 
 
 def make_point(figma_item, x, y, figma_point={}):

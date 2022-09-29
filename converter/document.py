@@ -13,7 +13,7 @@ def convert(pages):
             font_references.append(
                 {
                     '_class': 'fontReference',
-                    'do_objectID': utils.gen_object_id(),
+                    'do_objectID': utils.gen_object_id((0,0), bytes.fromhex(font_hash)),
                     'fontData': {
                         "_class": 'MSJSONFileReference',
                         '_ref_class': 'MSFontData',
@@ -30,10 +30,10 @@ def convert(pages):
     print(fonts.figma_fonts)
     return {
         '_class': 'document',
-        'do_objectID': utils.gen_object_id(),
+        'do_objectID': utils.gen_object_id((0,0), b'document'),
         'assets': {
             '_class': 'assetCollection',
-            'do_objectID': utils.gen_object_id(),
+            'do_objectID': utils.gen_object_id((0,0), b'assetCollection'),
             'imageCollection': {
                 '_class': 'imageCollection',
                 'images': {}
@@ -53,22 +53,22 @@ def convert(pages):
         'foreignSwatches': [],
         'layerStyles': {
             '_class': 'sharedStyleContainer',
-            'do_objectID': utils.gen_object_id(),
+            'do_objectID': utils.gen_object_id((0,0), b'sharedStyleContainer'),
             'objects': []
         },
         'layerSymbols': {
             '_class': 'symbolContainer',
-            'do_objectID': utils.gen_object_id(),
+            'do_objectID': utils.gen_object_id((0,0), b'symbolContainer'),
             'objects': []
         },
         'layerTextStyles': {
             '_class': 'sharedTextStyleContainer',
-            'do_objectID': utils.gen_object_id(),
+            'do_objectID': utils.gen_object_id((0,0), b'sharedTextStyleContainer'),
             'objects': []
         },
         'sharedSwatches': {
             '_class': 'swatchContainer',
-            'do_objectID': utils.gen_object_id(),
+            'do_objectID': utils.gen_object_id((0,0), b'swatchContainer'),
             'objects': []
         },
         'fontReferences': font_references,

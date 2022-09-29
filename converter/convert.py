@@ -47,7 +47,7 @@ def write_sketch_file(sketch_document, sketch_user, sketch_meta):
     json.dump(sketch_user, open('output/user.json', 'w'), indent=2)
     json.dump(sketch_meta, open('output/meta.json', 'w'), indent=2)
 
-    os.system('cd output; zip -r ../output/output.sketch .')
+    os.system('cd output; zip -0 -r ../output/output.sketch .')
 
 
 if __name__ == '__main__':

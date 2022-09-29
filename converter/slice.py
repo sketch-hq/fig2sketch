@@ -11,7 +11,7 @@ def convert(figma_slice):
     return {
         '_class': 'slice',
         'name': figma_slice.name,
-        'do_objectID': utils.gen_object_id(),
+        'do_objectID': utils.gen_object_id(figma_slice.id),
         'booleanOperation': -1,
         'exportOptions': base.export_options(figma_slice.exportSettings),
         **positioning.convert(figma_slice),

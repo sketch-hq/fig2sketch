@@ -5,7 +5,7 @@ import utils
 def convert(figma_frame):
     return {
         '_class': 'artboard',
-        'do_objectID': utils.gen_object_id(),
+        'do_objectID': utils.gen_object_id(figma_frame.id),
         'booleanOperation': -1,
         'exportOptions': {
             '_class': 'exportOptions',
@@ -28,7 +28,7 @@ def convert(figma_frame):
         'shouldBreakMaskChain': True,
         'style': {
             '_class': 'style',
-            'do_objectID': utils.gen_object_id(),
+            'do_objectID': utils.gen_object_id(figma_frame.id, b'style'),
             'borders': [],
             'borderOptions': {
                 '_class': 'borderOptions',

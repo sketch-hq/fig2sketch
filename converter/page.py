@@ -4,7 +4,7 @@ import utils
 def convert(figma_canvas):
     return {
         '_class': 'page',
-        'do_objectID': utils.gen_object_id(),
+        'do_objectID': utils.gen_object_id(figma_canvas.id),
         'booleanOperation': -1,
         'clippingMaskMode': 0,
         'exportOptions': {

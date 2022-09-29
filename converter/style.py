@@ -3,7 +3,7 @@ import math
 import utils
 
 
-def convert(figma):
+def convert(figma, node_id):
     fills = [convert_fill(f, figma) for f in figma['fillPaints']]
     borders = [
         {
@@ -54,7 +54,7 @@ def convert(figma):
 
     return {
         '_class': 'style',
-        'do_objectID': utils.gen_object_id(),
+        'do_objectID': utils.gen_object_id(node_id, b'style'),
         'borders': borders,
         'borderOptions': {
             '_class': 'borderOptions',

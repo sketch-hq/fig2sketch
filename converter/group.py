@@ -5,7 +5,7 @@ import utils
 def convert(figma_group):
     return {
         '_class': 'group',
-        'do_objectID': utils.gen_object_id(),
+        'do_objectID': utils.gen_object_id(figma_group.id),
         'booleanOperation': -1,
         'exportOptions': base.export_options(figma_group.get('exportSettings', [])),
         **positioning.convert(figma_group),
@@ -22,7 +22,7 @@ def convert(figma_group):
         'shouldBreakMaskChain': True,
         'style': {
             '_class': 'style',
-            'do_objectID': utils.gen_object_id(),
+            'do_objectID': utils.gen_object_id(figma_group.id, b'style'),
             'borders': [],
             'borderOptions': {
                 '_class': 'borderOptions',
