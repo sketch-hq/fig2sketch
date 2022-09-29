@@ -108,12 +108,16 @@ def process_segment(figma_vector, vertices, segment, points):
     point2 = get_or_create_point(figma_vector, points, segment['end'], vertices)
 
     if segment['tangentStart']['x'] != 0.0 or segment['tangentStart']['y'] != 0.0:
-        point1['curveFrom'] = get_curve_point(segment['start'], segment['tangentStart'], vertices)
+        vertex1 = vertices[segment['start']]
         point1['hasCurveFrom'] = True
+        point1['curveFrom'] = get_point_curve(vertex1, segment['tangentStart'])
+        point1['curveMode'] = utils.adjust_curve_mode(vertex1, figma_vector['handleMirroring'])
 
     if segment['tangentEnd']['x'] != 0.0 or segment['tangentEnd']['y'] != 0.0:
-        point2['curveTo'] = get_curve_point(segment['end'], segment['tangentEnd'], vertices)
+        vertex2 = vertices[segment['end']]
         point2['hasCurveTo'] = True
+        point2['curveTo'] = get_point_curve(vertex2, segment['tangentEnd'])
+        point2['curveMode'] = utils.adjust_curve_mode(vertex2, figma_vector['handleMirroring'])
 
     return point1, point2
 
@@ -128,8 +132,8 @@ def get_or_create_point(figma_vector, points, index, vertices):
     return point
 
 
-def get_curve_point(point_index, tangent, vertices):
-    return utils.point_to_string(utils.add_points(vertices[point_index], tangent))
+def get_point_curve(figma_point, tangent):
+    return utils.point_to_string(utils.add_points(figma_point, tangent))
 
 
 def points_marker_types(figma_vector, start_point, end_point):

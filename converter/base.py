@@ -2,13 +2,13 @@ import utils
 from . import positioning, style
 
 
-def base_shape(figma):
+def base_shape(figma_node):
     return {
-        'do_objectID': utils.gen_object_id(figma.id),
+        'do_objectID': utils.gen_object_id(figma_node.id),
         'booleanOperation': -1,
-        'exportOptions': export_options(figma.get('exportSettings', [])),
-        **positioning.convert(figma),
-        **utils.masking(figma),
+        'exportOptions': export_options(figma_node.get('exportSettings', [])),
+        **positioning.convert(figma_node),
+        **utils.masking(figma_node),
         'isFixedToViewport': False,
         'isFlippedHorizontal': False,
         'isFlippedVertical': False,
@@ -18,7 +18,7 @@ def base_shape(figma):
         'nameIsFixed': False,
         'resizingConstraint': 9,
         'resizingType': 0,
-        'style': style.convert(figma, figma.id),
+        'style': style.convert(figma_node),
     }
 
 

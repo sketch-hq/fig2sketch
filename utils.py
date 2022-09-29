@@ -4,11 +4,11 @@ import random
 import struct
 
 CURVE_MODES = {
-    'NONE': 1,
+    'STRAIGHT': 1,
     'ANGLE_AND_LENGTH': 2,
-    'ANGLE': 3
+    'ANGLE': 3,
+    'NONE': 4
 }
-
 
 id_salt = random.randbytes(16)
 
@@ -25,26 +25,31 @@ def gen_object_id(figma_id, suffix=b''):
     return str(uuid.UUID(bytes=bytes(uuid_bytes))).upper()
 
 
-def make_point(figma_item, x, y, figma_point={}):
-    point = {
+def make_point(figma_node, x, y, figma_point={}):
+    return {
         '_class': 'curvePoint',
-        'cornerRadius': figma_item['cornerRadius'],
+        'cornerRadius': adjust_corner_radius(figma_node, figma_point),
         'curveFrom': '{0, 0}',
-        'curveMode': CURVE_MODES[figma_item['handleMirroring']],
+        'curveMode': adjust_curve_mode(figma_point, 'STRAIGHT'),
         'curveTo': '{0, 0}',
         'hasCurveFrom': False,
         'hasCurveTo': False,
         'point': f'{{{x}, {y}}}'
     }
 
-    if 'style' in figma_point:
-        if 'cornerRadius' in figma_point['style']:
-            point['cornerRadius'] = figma_point['style']['cornerRadius']
 
-        if 'handleMirroring' in figma_point['style']:
-            point['curveMode'] = CURVE_MODES[figma_point['style']['handleMirroring']]
+def adjust_curve_mode(figma_point, default_value):
+    if 'style' in figma_point and 'handleMirroring' in figma_point['style']:
+        return CURVE_MODES[figma_point['style']['handleMirroring']]
 
-    return point
+    return CURVE_MODES[default_value]
+
+
+def adjust_corner_radius(figma_node, figma_point):
+    if 'style' in figma_point and 'cornerRadius' in figma_point['style']:
+        return figma_point['style']['cornerRadius']
+
+    return figma_node['cornerRadius']
 
 
 def generate_file_ref(data):

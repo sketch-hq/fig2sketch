@@ -3,16 +3,16 @@ import math
 import utils
 
 
-def convert(figma, node_id):
-    fills = [convert_fill(f, figma) for f in figma['fillPaints']]
+def convert(figma_node):
+    fills = [convert_fill(f, figma_node) for f in figma_node['fillPaints']]
     borders = [
         {
-            **convert_fill(b, figma),
+            **convert_fill(b, figma_node),
             '_class': 'border',
-            'position': 0 if figma['strokeAlign'] == 'CENTER' else (
-                1 if figma['strokeAlign'] == 'INSIDE' else 2),
-            'thickness': figma['strokeWeight'],
-        } for b in figma['strokePaints']
+            'position': 0 if figma_node['strokeAlign'] == 'CENTER' else (
+                1 if figma_node['strokeAlign'] == 'INSIDE' else 2),
+            'thickness': figma_node['strokeWeight'],
+        } for b in figma_node['strokePaints']
     ]
 
     LINE_CAP_STYLE = {
@@ -33,19 +33,19 @@ def convert(figma, node_id):
 
     return {
         '_class': 'style',
-        'do_objectID': utils.gen_object_id(node_id, b'style'),
+        'do_objectID': utils.gen_object_id(figma_node.id, b'style'),
         'borders': borders,
         'borderOptions': {
             '_class': 'borderOptions',
             'isEnabled': True,
-            'lineCapStyle': LINE_CAP_STYLE[figma.strokeCap],
-            'lineJoinStyle': LINE_JOIN_STYLE[figma.strokeJoin],
-            "dashPattern": figma.dashPattern
+            'lineCapStyle': LINE_CAP_STYLE[figma_node.strokeCap],
+            'lineJoinStyle': LINE_JOIN_STYLE[figma_node.strokeJoin],
+            "dashPattern": figma_node.dashPattern
         },
         'fills': fills,
         'miterLimit': 10,
         'windingRule': 0,
-        **convert_effects(figma.get('effects', [])),
+        **convert_effects(figma_node.get('effects', [])),
         'contextSettings': {
             '_class': 'graphicsContextSettings',
             'blendMode': 0,
