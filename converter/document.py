@@ -1,13 +1,13 @@
 import utils
-
+from . import fonts
 
 def convert(pages):
-    for ffamily in utils.figma_fonts.keys():
-        utils.download_and_unzip_webfont(ffamily)
-    utils.organize_sketch_fonts()
+    for ffamily in fonts.figma_fonts.keys():
+        fonts.download_and_unzip_webfont(ffamily)
+    fonts.organize_sketch_fonts()
 
     font_references = []
-    for ffamily, ffamily_dict in utils.figma_fonts.items():
+    for ffamily, ffamily_dict in fonts.figma_fonts.items():
         for fsfamily, font_hash in ffamily_dict.items():
             font_references.append(
                 {
@@ -26,7 +26,7 @@ def convert(pages):
                     ]
                 })
 
-    print(utils.figma_fonts)
+    print(fonts.figma_fonts)
     return {
         '_class': 'document',
         'do_objectID': utils.gen_object_id(),

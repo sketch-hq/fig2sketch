@@ -1,5 +1,6 @@
 from . import base
 import utils
+from . import fonts
 
 AlignVertical = {
     'TOP': 0,
@@ -42,7 +43,7 @@ def convert(figma_text):
 
 
 def text_style(figma_text):
-    utils.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'])
+    fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'])
     return {
         '_class': 'textStyle',
         'encodedAttributes': {
