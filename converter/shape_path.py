@@ -124,7 +124,7 @@ def get_or_create_point(points, index, vertices):
     if index in points:
         point = points[index]
     else:
-        point = utils.make_point(vertices[index]['x'], vertices[index]['y'])
+        point = utils.make_point(vertices[index]['x'], vertices[index]['y'], vertices[index])
 
     return point
 

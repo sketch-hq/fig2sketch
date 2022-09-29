@@ -3,6 +3,7 @@ import numpy as np
 from math import sin, cos, pi
 import utils
 
+
 def convert(figma_polygon):
     points = [utils.make_point(0.5 + (cos(angle) * 0.5), 0.5 + (sin(angle) * 0.5)) for angle in
               np.arange(-pi / 2, 2 * pi - pi / 2, 2 * pi / figma_polygon.count)]

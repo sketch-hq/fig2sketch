@@ -1,6 +1,7 @@
 import utils
 from . import fonts
 
+
 def convert(pages):
     for ffamily in fonts.figma_fonts.keys():
         fonts.download_and_unzip_webfont(ffamily)

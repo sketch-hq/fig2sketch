@@ -1,12 +1,13 @@
 import uuid
 import hashlib
 
+
 def gen_object_id():
     return str(uuid.uuid4()).upper()
 
 
-def make_point(x, y):
-    return {
+def make_point(x, y, figma_point={}):
+    point = {
         '_class': 'curvePoint',
         'cornerRadius': 0,
         'curveFrom': '{0, 0}',
@@ -16,6 +17,11 @@ def make_point(x, y):
         'hasCurveTo': False,
         'point': f'{{{x}, {y}}}'
     }
+
+    if 'style' in figma_point and 'cornerRadius' in figma_point['style']:
+        point['cornerRadius'] = figma_point['style']['cornerRadius']
+
+    return point
 
 
 def generate_file_ref(data):
