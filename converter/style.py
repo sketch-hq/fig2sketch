@@ -7,32 +7,11 @@ def convert(figma, node_id):
     fills = [convert_fill(f, figma) for f in figma['fillPaints']]
     borders = [
         {
+            **convert_fill(b, figma),
             '_class': 'border',
-            'isEnabled': True,
-            'color': {
-                '_class': 'color',
-                'red': b['color']['r'],
-                'green': b['color']['g'],
-                'blue': b['color']['b'],
-                'alpha': b['opacity']
-            },
-            'fillType': 0,  # TODO b['type']
             'position': 0 if figma['strokeAlign'] == 'CENTER' else (
                 1 if figma['strokeAlign'] == 'INSIDE' else 2),
             'thickness': figma['strokeWeight'],
-            'contextSettings': {
-                '_class': 'graphicsContextSettings',
-                'blendMode': 0,  # TODO b['blendMode'] enum
-                'opacity': b.get('opacity', 1)
-            },
-            'gradient': {  # TODO b['type'] // How to do type == IMAGE / EMOJI ???
-                '_class': 'gradient',
-                'elipseLength': 0,
-                'from': '{0.5, 0}',
-                'to': '{0.5, 1}',
-                'gradientType': 1,
-                'stops': []
-            }
         } for b in figma['strokePaints']
     ]
 
