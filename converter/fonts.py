@@ -2,12 +2,12 @@ from genericpath import isdir
 from fontTools.ttLib import TTFont
 import os
 import fnmatch
-import hashlib
 import urllib.request
 import urllib.parse
 import shutil
 from zipfile import ZipFile
 import appdirs
+import utils
 
 figma_fonts = {}
 fonts_cache_dir = appdirs.user_cache_dir("Figma2Sketch", "Sketch") + "/fonts"
@@ -21,9 +21,6 @@ def record_figma_font(ffamily, fsfamily):
         figma_fonts[ffamily]= {}
 
     return
-
-def generate_font_ref(font_path):
-    return hashlib.sha1(hashlib.sha1(open(font_path, 'rb').read()).digest()).hexdigest()
 
 def global_fonts():
     return figma_fonts
@@ -48,8 +45,8 @@ def organize_sketch_fonts():
             if fnmatch.fnmatch(filename, "*.ttf"):
                 ffamily, fsfamily = get_font_family_from_file(os.path.join(root, filename))
                 if ffamily in figma_fonts and fsfamily in figma_fonts[ffamily]:
-                    figma_fonts[ffamily][fsfamily] = generate_font_ref(os.path.join(root, filename))
-                    shutil.move(os.path.join(root, filename), os.path.join(sketch_fonts_path, figma_fonts[ffamily][fsfamily]))
+                    figma_fonts[ffamily][fsfamily] = utils.generate_file_ref(open(os.path.join(root, filename), 'rb').read())
+                    shutil.copyfile(os.path.join(root, filename), os.path.join(sketch_fonts_path, figma_fonts[ffamily][fsfamily]))
 
 def get_font_family_from_file(font_file):
     font = TTFont(font_file)

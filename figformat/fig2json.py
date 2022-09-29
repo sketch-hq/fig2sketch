@@ -57,18 +57,22 @@ def transform_node(fig, node, figma_zip):
         node['vectorNetwork'] = vector_network
 
     # Images
-    # TODO: Convert to .png
     for paint in node.get('fillPaints', []):
         if 'image' in paint:
-            hash = bytes(paint['image']['hash']).hex()
-            paint['image']['hash'] = hash
+            fname = bytes(paint['image']['hash']).hex()
 
             if figma_zip is not None:
-                image = Image.open(figma_zip.open(f'images/{hash}'))
+                image = Image.open(figma_zip.open(f'images/{fname}'))
             else:
                 image = Image.open(
                     io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
 
-            image.save(f"output/images/{hash}.png")
+            # Save to memory, calculate hash, and save
+            out = io.BytesIO()
+            image.save(out, format="png")
+            fhash = utils.generate_file_ref(out.getbuffer())
+            open(f'output/images/{fhash}.png', 'wb').write(out.getbuffer())
+            paint['image']['filename'] = fhash
+
 
     return FigNode(node)

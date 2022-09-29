@@ -1,4 +1,5 @@
 import uuid
+import hashlib
 
 def gen_object_id():
     return str(uuid.uuid4()).upper()
@@ -15,6 +16,10 @@ def make_point(x, y):
         'hasCurveTo': False,
         'point': f'{{{x}, {y}}}'
     }
+
+
+def generate_file_ref(data):
+    return hashlib.sha1(hashlib.sha1(data).digest()).hexdigest()
 
 
 def add_points(point1, point2):

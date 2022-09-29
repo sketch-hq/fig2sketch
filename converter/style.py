@@ -120,7 +120,7 @@ def convert_fill(figma, figma_node):
         sketch['image'] = {
             '_class': 'MSJSONFileReference',
             '_ref_class': 'MSImageData',
-            '_ref': f'images/{figma["image"]["hash"]}.png'
+            '_ref': f'images/{figma["image"]["filename"]}.png'
         }
         sketch['noiseIndex'] = 0
         sketch['noiseIntensity'] = 0
