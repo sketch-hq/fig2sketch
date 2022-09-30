@@ -8,10 +8,10 @@ BOOLEAN_OPERATIONS = {
 }
 
 
-def convert(figma_bool_ops):
+def convert(figma_bool_ops, indexed_components):
     return {
         '_class': 'shapeGroup',
-        **base.base_shape(figma_bool_ops),
+        **base.base_shape(figma_bool_ops, indexed_components),
         'name': figma_bool_ops.name,
         'shouldBreakMaskChain': True,
         'hasClickThrough': False,

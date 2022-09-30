@@ -16,10 +16,10 @@ AlignHorizontal = {
 }
 
 
-def convert(figma_text):
+def convert(figma_text, indexed_components):
     obj = {
         '_class': 'text',
-        **base.base_shape(figma_text),
+        **base.base_shape(figma_text, indexed_components),
         'name': figma_text['name'],
         'automaticallyDrawOnUnderlyingPath': False,
         'dontSynchroniseWithSymbol': False,

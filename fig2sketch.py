@@ -2,7 +2,6 @@ import os
 
 import figformat.fig2json as fig2json
 from converter import convert
-import sys
 import json
 import shutil
 import utils

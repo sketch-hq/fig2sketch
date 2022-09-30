@@ -13,12 +13,12 @@ STROKE_CAP_TO_MARKER_TYPE = {
 }
 
 
-def convert(figma_vector):
+def convert(figma_vector, indexed_components):
     points, styles = convert_points(figma_vector)
 
     obj = {
         '_class': 'shapePath',
-        **base.base_shape(figma_vector),
+        **base.base_shape(figma_vector, indexed_components),
         'name': figma_vector.name,
         'edited': True,
         'pointRadiusBehaviour': 1,
@@ -33,10 +33,10 @@ def convert(figma_vector):
     return obj
 
 
-def convert_line(figma_line):
+def convert_line(figma_line, component):
     return {
         '_class': 'shapePath',
-        **base.base_shape(figma_line),
+        **base.base_shape(figma_line, component),
         'name': figma_line.name,
         'edited': True,
         'isClosed': False,

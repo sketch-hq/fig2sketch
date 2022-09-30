@@ -1,45 +1,74 @@
 import json
 import os
-import sys
 
-from . import document, meta, tree, user
+from . import component, document, meta, tree, user
 
-components = []
+SUPPORTED_COMPONENTS = ['FILL']
 
 
 def convert_json_to_sketch(figma):
-    sketch_pages = convert_pages(figma['document']['children'])
+    figma_pages, components_page = separate_pages(figma['document']['children'])
 
-    sketch_document = document.convert(sketch_pages)
+    sketch_components, indexed_components = convert_components(components_page)
+    sketch_pages = convert_pages(figma_pages, indexed_components)
+
+    sketch_document = document.convert(sketch_components, sketch_pages)
     sketch_user = user.convert(sketch_pages)
     sketch_meta = meta.convert(sketch_pages)
 
     write_sketch_file(sketch_document, sketch_user, sketch_meta)
 
 
-def convert_pages(figma_pages):
+def separate_pages(figma_pages):
+    component_page = {}
     pages = []
 
     for figma_page in figma_pages:
-        if 'internalOnly' not in figma_page or not figma_page['internalOnly']:
-            page = tree.convert_node(figma_page)
-            json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
-            pages.append(page)
+        if 'internalOnly' in figma_page and figma_page['internalOnly']:
+            component_page = figma_page
+        else:
+            pages.append(figma_page)
 
-    if components:
-        components_page = convert_components()
-        pages.append(components_page)
+    return pages, component_page
+
+
+def convert_components(components_page):
+    if components_page == {}:
+        return {}
+
+    style_nodes = [node for node in components_page['children'] if
+                   'styleType' in node and node['styleType'] in SUPPORTED_COMPONENTS]
+
+    indexed_components = {}
+    sketch_components = []
+
+    for style_node in style_nodes:
+        sketch_component = component.convert(style_node)
+
+        if sketch_component != {}:
+            indexed_components[style_node['id']] = sketch_component
+            sketch_components.append(sketch_component)
+
+    return sketch_components, indexed_components
+
+
+def convert_pages(figma_pages, indexed_components):
+    pages = []
+
+    for figma_page in figma_pages:
+        page = tree.convert_node(figma_page, indexed_components)
+        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
+        pages.append(page)
 
     return pages
 
 
-def convert_components():
-    components_page = tree.convert_node({'name': 'Symbols', 'type': 'PAGE'})
-    components_page['layers'] = components
-    json.dump(components_page, open(f"output/pages/{components_page['do_objectID']}.json", 'w'),
-              indent=2)
-
-    return components_page
+# def write_components(components, components_page):
+#     components_page['layers'] = components
+#     json.dump(components_page, open(f"output/pages/{components_page['do_objectID']}.json", 'w'),
+#               indent=2)
+#
+#     return components_page
 
 
 def write_sketch_file(sketch_document, sketch_user, sketch_meta):
@@ -48,7 +77,3 @@ def write_sketch_file(sketch_document, sketch_user, sketch_meta):
     json.dump(sketch_meta, open('output/meta.json', 'w'), indent=2)
 
     os.system('cd output; zip -0 -r ../output/output.sketch .')
-
-
-if __name__ == '__main__':
-    convert_json_to_sketch(json.load(open(sys.argv[1])))

@@ -9,7 +9,7 @@ CURVE_MODES = {
 }
 
 
-def base_shape(figma_node):
+def base_shape(figma_node, indexed_components):
     return {
         'do_objectID': utils.gen_object_id(figma_node.id),
         'booleanOperation': -1,
@@ -25,8 +25,35 @@ def base_shape(figma_node):
         'nameIsFixed': False,
         'resizingConstraint': 9,
         'resizingType': 0,
-        'style': style.convert(figma_node),
+        **process_styles(figma_node, indexed_components)
     }
+
+
+def process_styles(figma_node, indexed_components):
+    style_attributes = {'style': style.convert(figma_node)}
+
+    if 'inheritFillStyleID' in figma_node:
+        shared_style = get_shared_style(figma_node['inheritFillStyleID'], indexed_components)
+
+        if shared_style != {}:
+            style_attributes['style']['fills'][0]['color']['swatchID'] = shared_style[
+                'do_objectID']
+
+    # if 'inheritEffectStyleID' in figma_node:
+    #     shared_style = get_shared_style(figma_node['inheritEffectStyleID'], indexed_components)
+    #
+    #     style_attributes['style'][]
+
+    return style_attributes
+
+
+def get_shared_style(item, indexed_components):
+    node_id = (item['sessionID'], item['localID'])
+
+    if node_id in indexed_components:
+        return indexed_components[node_id]
+
+    return {}
 
 
 def export_options(figma_export_settings):

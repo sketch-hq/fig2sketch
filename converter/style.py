@@ -98,39 +98,39 @@ def convert_fill(figma_node, figma_fill):
 
 
 def fill_type_specific_attributes(figma_node, figma_fill):
-    if figma_fill['type'] == 'SOLID':
-        type_attributes = {
-            'fillType': 0,
-            'color': {
-                '_class': 'color',
-                'red': figma_fill['color']['r'],
-                'green': figma_fill['color']['g'],
-                'blue': figma_fill['color']['b'],
-                'alpha': figma_fill['opacity'],
+    match figma_fill:
+        case {'type': 'EMOJI'}:
+            raise Exception("Unsupported fill: EMOJI")
+        case {'type': 'SOLID'}:
+            return {
+                'fillType': 0,
+                'color': convert_color(figma_fill)
             }
-        }
+        case {'type': 'IMAGE'}:
+            return {
+                'fillType': 4,
+                'image': {
+                    '_class': 'MSJSONFileReference',
+                    '_ref_class': 'MSImageData',
+                    '_ref': f'images/{figma_fill["image"]["filename"]}.png'
+                },
+                'noiseIndex': 0,
+                'noiseIntensity': 0,
+                'patternFillType': PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
+                'patternTileScale': 1
+            }
+        case _:
+            return convert_gradient(figma_node, figma_fill)
 
-    elif figma_fill['type'] == 'IMAGE':
-        type_attributes = {
-            'fillType': 4,
-            'image': {
-                '_class': 'MSJSONFileReference',
-                '_ref_class': 'MSImageData',
-                '_ref': f'images/{figma_fill["image"]["filename"]}.png'
-            },
-            'noiseIndex': 0,
-            'noiseIntensity': 0,
-            'patternFillType': PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
-            'patternTileScale': 1
-        }
 
-    elif figma_fill['type'] == 'EMOJI':
-        raise Exception("Unsupported fill: EMOJI")
-
-    else:
-        type_attributes = convert_gradient(figma_node, figma_fill)
-
-    return type_attributes
+def convert_color(figma_fill):
+    return {
+        '_class': 'color',
+        'red': figma_fill['color']['r'],
+        'green': figma_fill['color']['g'],
+        'blue': figma_fill['color']['b'],
+        'alpha': figma_fill['opacity'],
+    }
 
 
 def convert_gradient(figma_node, figma_fill):

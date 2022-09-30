@@ -23,27 +23,28 @@ POST_PROCESSING = {
 }
 
 
-def convert_node(figma_item):
-    name = figma_item['name']
-    type_ = get_node_type(figma_item)
+def convert_node(figma_node, indexed_components):
+    name = figma_node['name']
+    type_ = get_node_type(figma_node)
     print(f'{type_}: {name}')
 
-    sketch_item = CONVERTERS[type_](figma_item)
+    sketch_item = CONVERTERS[type_](figma_node, indexed_components)
 
-    children = [convert_node(child) for child in figma_item.get('children', [])]
+    children = [convert_node(child, indexed_components) for child in
+                figma_node.get('children', [])]
     sketch_item['layers'] = children
 
     post_process = POST_PROCESSING.get(type_)
     if post_process:
-        post_process(figma_item, sketch_item)
+        post_process(figma_node, sketch_item)
 
     return sketch_item
 
 
-def get_node_type(figma_item):
-    match figma_item['type']:
+def get_node_type(figma_node):
+    match figma_node['type']:
         case 'FRAME':
-            if figma_item['resizeToFit']:
+            if figma_node['resizeToFit']:
                 node_type = 'GROUP'
             else:
                 node_type = 'ARTBOARD'
@@ -51,3 +52,12 @@ def get_node_type(figma_item):
             node_type = type_
 
     return node_type
+
+
+def find_shared_style(figma_node, indexed_components):
+    match figma_node:
+        case {'inheritFillStyleID': shared_style}:
+            node_id = (shared_style['sessionID'], shared_style['localID'])
+            return indexed_components[node_id]
+        case _:
+            return {}
