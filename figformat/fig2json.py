@@ -74,5 +74,4 @@ def transform_node(fig, node, figma_zip):
             open(f'output/images/{fhash}.png', 'wb').write(out.getbuffer())
             paint['image']['filename'] = fhash
 
-
     return FigNode(node)

@@ -34,5 +34,3 @@ def convert(figma_slice):
             'red': 1
         }
     }
-
-    return obj

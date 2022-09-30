@@ -160,8 +160,8 @@ def convert_gradient(figma_node, figma_fill):
         point_ellipse = invmat.dot([0.5, 1, 1])
 
         # Sketch defines the ratio between axis in the item reference point (not the 1x1 square)
-        # So we scale the 1x1 square coordinates to fit the ratio of the item frame before calculating
-        # the ellipse's ratio
+        # So we scale the 1x1 square coordinates to fit the ratio of the item frame before
+        # calculating the ellipse's ratio
         x_scale = figma_node.size['x'] / figma_node.size['y']
         ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
             point_from, point_to, x_scale)
@@ -198,7 +198,7 @@ def convert_gradient(figma_node, figma_fill):
     }
 
     if rotation_offset:
-        # When we have a rotated angular grandient, stops at 0 and 1 both convert
+        # When we have a rotated angular gradient, stops at 0 and 1 both convert
         # to the exact same position and that confuses Sketch. Force a small difference
         gradient_fill['gradient']['stops'][-1]['position'] -= 0.00001
 

@@ -6,6 +6,7 @@ from .kiwi import *
 
 SUPPORTED_VERSION = 15
 
+
 def decode(reader):
     figma_zip = None
 
@@ -18,7 +19,8 @@ def decode(reader):
     figma = reader.read()
     fig_version = struct.unpack('<I', figma[8:12])[0]
     if fig_version != SUPPORTED_VERSION:
-        raise Exception(f"Unsupported Figma version. File = {fig_version} / Supported = {SUPPORTED_VERSION}")
+        raise Exception(
+            f"Unsupported Figma version. File = {fig_version} / Supported = {SUPPORTED_VERSION}")
 
     offset = 12
     segments = []
