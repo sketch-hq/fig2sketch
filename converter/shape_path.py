@@ -1,4 +1,4 @@
-from . import base, style
+from . import base
 import utils
 
 STROKE_CAP_TO_MARKER_TYPE = {
@@ -111,13 +111,13 @@ def process_segment(figma_vector, vertices, segment, points):
         vertex1 = vertices[segment['start']]
         point1['hasCurveFrom'] = True
         point1['curveFrom'] = get_point_curve(vertex1, segment['tangentStart'])
-        point1['curveMode'] = utils.adjust_curve_mode(vertex1, figma_vector['handleMirroring'])
+        point1['curveMode'] = base.adjust_curve_mode(vertex1, figma_vector['handleMirroring'])
 
     if segment['tangentEnd']['x'] != 0.0 or segment['tangentEnd']['y'] != 0.0:
         vertex2 = vertices[segment['end']]
         point2['hasCurveTo'] = True
         point2['curveTo'] = get_point_curve(vertex2, segment['tangentEnd'])
-        point2['curveMode'] = utils.adjust_curve_mode(vertex2, figma_vector['handleMirroring'])
+        point2['curveMode'] = base.adjust_curve_mode(vertex2, figma_vector['handleMirroring'])
 
     return point1, point2
 
@@ -127,7 +127,7 @@ def get_or_create_point(figma_vector, points, index, vertices):
         point = points[index]
     else:
         figma_point = vertices[index]
-        point = utils.make_point(figma_vector, figma_point['x'], figma_point['y'], figma_point)
+        point = base.make_point(figma_vector, figma_point['x'], figma_point['y'], figma_point)
 
     return point
 

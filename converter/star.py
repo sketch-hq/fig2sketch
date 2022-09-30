@@ -1,7 +1,6 @@
 from . import base
 from math import sin, cos, pi
 import numpy as np
-import utils
 
 
 def convert(figma_star):
@@ -34,6 +33,6 @@ def make_point_pair(figma_star, angle):
     y2 = 0.5 + (sin(angle2) * 0.5 * scale)
 
     return [
-        utils.make_point(figma_star, x1, y1),
-        utils.make_point(figma_star, x2, y2)
+        base.make_point(figma_star, x1, y1),
+        base.make_point(figma_star, x2, y2)
     ]
