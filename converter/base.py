@@ -32,21 +32,22 @@ def base_shape(figma_node, indexed_components):
 def process_styles(figma_node, indexed_components):
     style_attributes = {'style': style.convert(figma_node)}
 
-    if 'inheritFillStyleID' in figma_node:
-        shared_style = get_shared_style(figma_node['inheritFillStyleID'], indexed_components)
-        
-        # At some point we'll need to handle styles with multiple colors which
-        # are not supported by sketch. This is just using the first color of 
-        # the array
-        if shared_style != {}:
-            style_attributes['style']['fills'][0]['color'] = shared_style['value']
-            style_attributes['style']['fills'][0]['color']['swatchID'] = shared_style[
-                'do_objectID']
+    SUPPORTED_INHERIT_STYLES = {
+        'inheritFillStyleID': 'fills',
+        'inheritFillStyleIDForStroke': 'borders'
+    }
 
-    # if 'inheritEffectStyleID' in figma_node:
-    #     shared_style = get_shared_style(figma_node['inheritEffectStyleID'], indexed_components)
-    #
-    #     style_attributes['style'][]
+    for inherit_style, sketch_style_key in SUPPORTED_INHERIT_STYLES.items():
+        if inherit_style in figma_node:
+            shared_style = get_shared_style(figma_node[inherit_style], indexed_components)
+
+            if shared_style != {}:
+                # At some point we'll need to handle styles with multiple colors which
+                # are not supported by sketch. This is just using the first color of 
+                # the array
+                style_attributes['style'][sketch_style_key][0]['color'] = shared_style['value']
+                style_attributes['style'][sketch_style_key][0]['color']['swatchID'] = shared_style[
+                    'do_objectID']
 
     return style_attributes
 
