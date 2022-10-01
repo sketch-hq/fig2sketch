@@ -9,6 +9,9 @@ SUPPORTED_COMPONENTS = ['FILL']
 def convert_json_to_sketch(figma):
     figma_pages, components_page = separate_pages(figma['document']['children'])
 
+    # We should either bring the fonts to the same indexed_components to pass
+    # them as parameter or move the indexed components to the component file
+    # and store there the components, for consistency purposes
     sketch_components, indexed_components = convert_components(components_page)
     sketch_pages = convert_pages(figma_pages, indexed_components)
 

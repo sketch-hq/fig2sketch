@@ -34,8 +34,12 @@ def process_styles(figma_node, indexed_components):
 
     if 'inheritFillStyleID' in figma_node:
         shared_style = get_shared_style(figma_node['inheritFillStyleID'], indexed_components)
-
+        
+        # At some point we'll need to handle styles with multiple colors which
+        # are not supported by sketch. This is just using the first color of 
+        # the array
         if shared_style != {}:
+            style_attributes['style']['fills'][0]['color'] = shared_style['value']
             style_attributes['style']['fills'][0]['color']['swatchID'] = shared_style[
                 'do_objectID']
 
