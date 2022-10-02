@@ -15,6 +15,13 @@ AlignHorizontal = {
     'JUSTIFIED': 3
 }
 
+TextCase = {
+    'ORIGINAL': 0,
+    'UPPER': 1,
+    'LOWER': 2,
+    'TITLE': 0
+}
+
 
 def convert(figma_text, indexed_components):
     obj = {
@@ -47,6 +54,7 @@ def text_style(figma_text):
     return {
         '_class': 'textStyle',
         'encodedAttributes': {
+            **text_transformation(figma_text),
             'MSAttributedStringFontAttribute': {
                 '_class': 'fontDescriptor',
                 'attributes': {
@@ -64,7 +72,7 @@ def text_style(figma_text):
             },
             'textStyleVerticalAlignmentKey': AlignVertical[figma_text['textAlignVertical']],
             **text_decoration(figma_text),
-            'kerning': 0,  # TODO
+            'kerning': kerning(figma_text),
             'paragraphStyle': {
                 '_class': 'paragraphStyle',
                 'alignment': AlignHorizontal[figma_text['textAlignHorizontal']],
@@ -132,3 +140,21 @@ def text_decoration(figma_text):
                 decoration = {'strikethroughStyle': 1}
 
     return decoration
+
+def kerning(figma_text):
+    if 'letterSpacing' in figma_text:
+        match figma_text['letterSpacing']['units']:
+            case 'PIXELS':
+                return figma_text['letterSpacing']['value']
+            case 'PERCENT':
+                return figma_text['fontSize'] * (figma_text['letterSpacing']['value'] / 100)
+            case _:
+                raise Exception(f'Unknown letter spacing unit')
+    else:
+        return 0
+
+def text_transformation(figma_text):
+    if 'textCase' in figma_text:
+        return({'MSAttributedStringTextTransformAttribute': TextCase[figma_text['textCase']]})
+    else:
+        return {}
