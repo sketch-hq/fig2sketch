@@ -3,9 +3,10 @@ import utils
 
 def convert(figma_style):
     match figma_style:
-        case {'styleType': 'FILL'}:
+        # Fill with a single fill
+        case {'styleType': 'FILL', 'fillPaints': [paint]}:
 
-            return convert_fill(figma_style, figma_style['fillPaints'][0])
+            return convert_fill(figma_style, paint)
         case _:
             raise Exception(f"Unsupported shared style: '{figma_style['styleType']}'")
 

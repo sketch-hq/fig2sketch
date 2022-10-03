@@ -55,9 +55,18 @@ def process_styles(figma_node):
                     # Copying fill to border, so copy fill properties from shared style into this node borders
                     converted_style = style.convert(figma_style)
 
-                    for i in range(len(converted_style['fills'])):
-                        style_attributes['style']['borders'][i].update(converted_style['fills'][i])
-                        style_attributes['style']['borders'][i]['_class'] = 'border'
+                    base_border = {
+                        '_class': 'border',
+                        'position': style_attributes['style']['borders'][0]['position'],
+                        'thickness': style_attributes['style']['borders'][0]['thickness']
+                    }
+
+                    style_attributes['style']['borders'] = [
+                        {
+                            **fill_style,
+                            **base_border
+                        } for fill_style in converted_style['fills']
+                    ]
                 else:
                     style_attributes['style'][sketch_key] = style.convert(figma_style)[sketch_key]
 
