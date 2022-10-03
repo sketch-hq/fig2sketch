@@ -76,8 +76,9 @@ def text_style(figma_text):
             'paragraphStyle': {
                 '_class': 'paragraphStyle',
                 'alignment': AlignHorizontal[figma_text['textAlignHorizontal']],
-                # 'maximumLineHeight': int(figma_style['lineHeightPx']),
-                # 'minimumLineHeight': int(figma_style['lineHeightPx'])
+                'maximumLineHeight': line_height(figma_text),
+                'minimumLineHeight': line_height(figma_text),
+                'paragraphSpacing': figma_text['paragraphSpacing'] if 'paragraphSpacing' in figma_text else 0
             }
         },
         'verticalAlignment': AlignVertical[figma_text['textAlignVertical']],
@@ -150,6 +151,18 @@ def kerning(figma_text):
                 return figma_text['fontSize'] * (figma_text['letterSpacing']['value'] / 100)
             case _:
                 raise Exception(f'Unknown letter spacing unit')
+    else:
+        return 0
+
+def line_height(figma_text):
+    if 'lineHeight' in figma_text:
+        match figma_text['lineHeight']['units']:
+            case 'PIXELS':
+                return figma_text['lineHeight']['value']
+            case 'PERCENT':
+                return figma_text['fontSize'] * (figma_text['lineHeight']['value'] / 100)
+            case _:
+                raise Exception(f'Unknown line height unit')
     else:
         return 0
 
