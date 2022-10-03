@@ -2,7 +2,7 @@ from . import positioning, base
 import utils
 
 
-def convert(figma_group, _):
+def convert(figma_group):
     return {
         '_class': 'group',
         'do_objectID': utils.gen_object_id(figma_group.id),

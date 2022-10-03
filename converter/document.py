@@ -1,8 +1,9 @@
 import utils
 from . import fonts
+from .context import context
 
 
-def convert(components, pages):
+def convert(pages):
     return {
         '_class': 'document',
         'do_objectID': utils.gen_object_id((0, 0), b'document'),
@@ -44,7 +45,7 @@ def convert(components, pages):
         'sharedSwatches': {
             '_class': 'swatchContainer',
             'do_objectID': utils.gen_object_id((0, 0), b'swatchContainer'),
-            'objects': [component for component in components if component['_class'] == 'swatch']
+            'objects': [component for component in context.sketch_components() if component['_class'] == 'swatch']
         },
         'fontReferences': convert_fonts(),
         'documentState': {

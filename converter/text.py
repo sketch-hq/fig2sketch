@@ -23,10 +23,10 @@ TextCase = {
 }
 
 
-def convert(figma_text, indexed_components):
+def convert(figma_text):
     obj = {
         '_class': 'text',
-        **base.base_shape(figma_text, indexed_components),
+        **base.base_shape(figma_text),
         'name': figma_text['name'],
         'automaticallyDrawOnUnderlyingPath': False,
         'dontSynchroniseWithSymbol': False,

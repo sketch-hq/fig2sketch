@@ -3,14 +3,14 @@ from math import sin, cos, pi
 import numpy as np
 
 
-def convert(figma_star, indexed_components):
+def convert(figma_star):
     points = []
     for angle in np.arange(-pi / 2, 2 * pi - pi / 2, 2 * pi / figma_star.count):
         points += make_point_pair(figma_star, angle)
 
     return {
         '_class': 'star',
-        **base.base_shape(figma_star, indexed_components),
+        **base.base_shape(figma_star),
         'name': figma_star.name,
         'edited': False,
         'isClosed': True,

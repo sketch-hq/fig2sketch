@@ -1,7 +1,7 @@
 import utils
 
 
-def convert(figma_canvas, _):
+def convert(figma_canvas):
     return {
         '_class': 'page',
         'do_objectID': utils.gen_object_id(figma_canvas.id),

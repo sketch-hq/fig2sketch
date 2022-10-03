@@ -1,5 +1,6 @@
 import utils
 from . import positioning, style
+from .context import context
 
 CURVE_MODES = {
     'STRAIGHT': 1,
@@ -9,7 +10,7 @@ CURVE_MODES = {
 }
 
 
-def base_shape(figma_node, indexed_components):
+def base_shape(figma_node):
     return {
         'do_objectID': utils.gen_object_id(figma_node.id),
         'booleanOperation': -1,
@@ -25,40 +26,41 @@ def base_shape(figma_node, indexed_components):
         'nameIsFixed': False,
         'resizingConstraint': 9,
         'resizingType': 0,
-        **process_styles(figma_node, indexed_components)
+        **process_styles(figma_node)
     }
 
 
-def process_styles(figma_node, indexed_components):
+def process_styles(figma_node):
     style_attributes = {'style': style.convert(figma_node)}
 
     SUPPORTED_INHERIT_STYLES = {
         'inheritFillStyleID': 'fills',
-        'inheritFillStyleIDForStroke': 'borders'
+        'inheritFillStyleIDForStroke': 'borders',
     }
 
-    for inherit_style, sketch_style_key in SUPPORTED_INHERIT_STYLES.items():
-        if inherit_style in figma_node:
-            shared_style = get_shared_style(figma_node[inherit_style], indexed_components)
+    for inherit_style, sketch_key in SUPPORTED_INHERIT_STYLES.items():
+        if inherit_style in figma_node and figma_node[inherit_style]['sessionID'] != 4294967295: # MAX_INT = unset
+            figma_style, shared_style = context.component((figma_node[inherit_style]['sessionID'], figma_node[inherit_style]['localID']))
 
-            if shared_style != {}:
+            if shared_style is not None:
                 # At some point we'll need to handle styles with multiple colors which
-                # are not supported by sketch. This is just using the first color of 
+                # are not supported by sketch. This is just using the first color of
                 # the array
-                style_attributes['style'][sketch_style_key][0]['color'] = shared_style['value']
-                style_attributes['style'][sketch_style_key][0]['color']['swatchID'] = shared_style[
-                    'do_objectID']
+                style_attributes['style'][sketch_key][0]['color'] = shared_style['value']
+                style_attributes['style'][sketch_key][0]['color']['swatchID'] = shared_style['do_objectID']
+            else:
+                # We don't support the shared style type, so we just copy the style
+                # TODO: Should we add it as a preset
+                if inherit_style == 'inheritFillStyleIDForStroke':
+                    # Copying fill to border, so copy fill properties from shared style into this node borders
+                    converted_style = style.convert(figma_style)
+                    for i in range(len(style_attributes['style'][sketch_key])):
+                        style_attributes['style']['borders'][i].update(converted_style['fills'][i])
+                        style_attributes['style']['borders'][i]['_class'] = 'border'
+                else:
+                    style_attributes['style'][sketch_key] = style.convert(figma_style)[sketch_key]
 
     return style_attributes
-
-
-def get_shared_style(item, indexed_components):
-    node_id = (item['sessionID'], item['localID'])
-
-    if node_id in indexed_components:
-        return indexed_components[node_id]
-
-    return {}
 
 
 def export_options(figma_export_settings):

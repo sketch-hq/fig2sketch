@@ -1,7 +1,6 @@
 from . import style
 import utils
 
-
 def convert(figma_style):
     match figma_style:
         case {'styleType': 'FILL'}:
@@ -24,4 +23,4 @@ def convert_fill(figma_style, figma_fill):
                 }
             }
         case _:
-            return {}
+            return None

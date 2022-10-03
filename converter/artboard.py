@@ -2,7 +2,7 @@ from . import positioning
 import utils
 
 
-def convert(figma_frame, _):
+def convert(figma_frame):
     return {
         '_class': 'artboard',
         'do_objectID': utils.gen_object_id(figma_frame.id),

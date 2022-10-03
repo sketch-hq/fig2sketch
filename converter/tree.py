@@ -1,5 +1,5 @@
 from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, \
-    shape_group, text, slice
+    shape_group, text, slice, context
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -23,14 +23,14 @@ POST_PROCESSING = {
 }
 
 
-def convert_node(figma_node, indexed_components):
+def convert_node(figma_node):
     name = figma_node['name']
     type_ = get_node_type(figma_node)
     print(f'{type_}: {name}')
 
-    sketch_item = CONVERTERS[type_](figma_node, indexed_components)
+    sketch_item = CONVERTERS[type_](figma_node)
 
-    children = [convert_node(child, indexed_components) for child in
+    children = [convert_node(child) for child in
                 figma_node.get('children', [])]
     sketch_item['layers'] = children
 
@@ -54,10 +54,10 @@ def get_node_type(figma_node):
     return node_type
 
 
-def find_shared_style(figma_node, indexed_components):
+def find_shared_style(figma_node):
     match figma_node:
         case {'inheritFillStyleID': shared_style}:
             node_id = (shared_style['sessionID'], shared_style['localID'])
-            return indexed_components[node_id]
+            return context.component(node_id)
         case _:
             return {}

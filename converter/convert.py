@@ -1,9 +1,8 @@
 import json
 import os
 
-from . import component, document, meta, tree, user
-
-SUPPORTED_COMPONENTS = ['FILL']
+from . import document, meta, tree, user
+from .context import context
 
 
 def convert_json_to_sketch(figma):
@@ -12,10 +11,10 @@ def convert_json_to_sketch(figma):
     # We should either bring the fonts to the same indexed_components to pass
     # them as parameter or move the indexed components to the component file
     # and store there the components, for consistency purposes
-    sketch_components, indexed_components = convert_components(components_page)
-    sketch_pages = convert_pages(figma_pages, indexed_components)
+    context.init(components_page)
+    sketch_pages = convert_pages(figma_pages)
 
-    sketch_document = document.convert(sketch_components, sketch_pages)
+    sketch_document = document.convert(sketch_pages)
     sketch_user = user.convert(sketch_pages)
     sketch_meta = meta.convert(sketch_pages)
 
@@ -23,7 +22,7 @@ def convert_json_to_sketch(figma):
 
 
 def separate_pages(figma_pages):
-    component_page = {}
+    component_page = None
     pages = []
 
     for figma_page in figma_pages:
@@ -35,31 +34,11 @@ def separate_pages(figma_pages):
     return pages, component_page
 
 
-def convert_components(components_page):
-    if components_page == {}:
-        return {}
-
-    style_nodes = [node for node in components_page['children'] if
-                   'styleType' in node and node['styleType'] in SUPPORTED_COMPONENTS]
-
-    indexed_components = {}
-    sketch_components = []
-
-    for style_node in style_nodes:
-        sketch_component = component.convert(style_node)
-
-        if sketch_component != {}:
-            indexed_components[style_node['id']] = sketch_component
-            sketch_components.append(sketch_component)
-
-    return sketch_components, indexed_components
-
-
-def convert_pages(figma_pages, indexed_components):
+def convert_pages(figma_pages):
     pages = []
 
     for figma_page in figma_pages:
-        page = tree.convert_node(figma_page, indexed_components)
+        page = tree.convert_node(figma_page)
         json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
         pages.append(page)
 

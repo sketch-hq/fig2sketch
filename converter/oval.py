@@ -1,10 +1,10 @@
 from . import base
 
 
-def convert(figma_ellipse, indexed_components):
+def convert(figma_ellipse):
     return {
         '_class': 'oval',
-        **base.base_shape(figma_ellipse, indexed_components),
+        **base.base_shape(figma_ellipse),
         'edited': False,
         'isClosed': True,
         'pointRadiusBehaviour': 1,

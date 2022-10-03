@@ -1,9 +1,9 @@
 from . import base
 
 
-def convert(figma_rect, indexed_components):
+def convert(figma_rect):
     return {
-        **base.base_shape(figma_rect, indexed_components),
+        **base.base_shape(figma_rect),
         '_class': 'rectangle',
         'name': figma_rect.name,
         'edited': False,
