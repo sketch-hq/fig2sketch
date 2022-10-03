@@ -54,7 +54,8 @@ def process_styles(figma_node):
                 if inherit_style == 'inheritFillStyleIDForStroke':
                     # Copying fill to border, so copy fill properties from shared style into this node borders
                     converted_style = style.convert(figma_style)
-                    for i in range(len(style_attributes['style'][sketch_key])):
+
+                    for i in range(len(converted_style['fills'])):
                         style_attributes['style']['borders'][i].update(converted_style['fills'][i])
                         style_attributes['style']['borders'][i]['_class'] = 'border'
                 else:
