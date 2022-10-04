@@ -24,16 +24,19 @@ def apply_transform(item):
     # Vector from rotation center to origin (0,0)
     vco = np.array([item.size['x'] / 2, item.size['y'] / 2])
 
-    # Rotation matrix
-    theta = np.radians(-item.rotation)
-    c, s = np.cos(theta), np.sin(theta)
-    matrix = np.array(((c, -s), (s, c)))
-
-    # Rotate
-    vco_rotated = matrix.dot(vco)
+    # Apply rotation to vector
+    vco_rotated = apply_rotation(item, vco)
 
     # Calculate translation of origin
     origin_translation = vco_rotated - vco
 
     # Return origin coordinates after translation and relative to parent
     return relative_position + origin_translation
+
+def apply_rotation(item, vector):
+    # Rotation matrix
+    theta = np.radians(-item.rotation)
+    c, s = np.cos(theta), np.sin(theta)
+    matrix = np.array(((c, -s), (s, c)))
+
+    return matrix.dot(vector)

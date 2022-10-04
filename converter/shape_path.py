@@ -1,5 +1,6 @@
-from . import base
+from . import base, positioning
 import utils
+import numpy as np
 
 STROKE_CAP_TO_MARKER_TYPE = {
     'NONE': 0,
@@ -34,7 +35,12 @@ def convert(figma_vector):
 
 
 def convert_line(figma_line):
-    # TODO: Shift line half-thickness up
+    # Shift line by half its width
+    vt = np.array([0, -figma_line.strokeWeight/2])
+    vtr = positioning.apply_rotation(figma_line, vt)
+    figma_line.transform['m02'] += vtr[0]
+    figma_line.transform['m12'] += vtr[1]
+
     return {
         '_class': 'shapePath',
         **base.base_shape(figma_line),
