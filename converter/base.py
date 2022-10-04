@@ -1,5 +1,5 @@
 import utils
-from . import positioning, style
+from . import positioning, style, text
 from .context import context
 
 CURVE_MODES = {
@@ -34,23 +34,32 @@ def process_styles(figma_node):
     style_attributes = {'style': style.convert(figma_node)}
 
     SUPPORTED_INHERIT_STYLES = {
-        'inheritFillStyleID': 'fills',
-        'inheritFillStyleIDForStroke': 'borders',
+        'inheritFillStyleID': ('fills',),
+        'inheritFillStyleIDForStroke': ('borders', ),
+        'inheritStrokeStyleID': None, # Unused in Figma?
+        'inheritTextStyleID': ('textStyle',),
+        'inheritExportStyleID': None, # Unused in Figma?
+        'inheritEffectStyleID': ('blur', 'shadows', 'innerShadows'),
+        'inheritGridStyleID': (), # TODO: Implement grid styles. Don't make it crash for now
+        'inheritFillStyleIDForBackground': None, # Unused in Figma?
     }
 
-    for inherit_style, sketch_key in SUPPORTED_INHERIT_STYLES.items():
+    for inherit_style, sketch_keys in SUPPORTED_INHERIT_STYLES.items():
         if inherit_style in figma_node and figma_node[inherit_style]['sessionID'] != 4294967295: # MAX_INT = unset
+            if sketch_keys is None:
+                raise Exception("Unhandled inherit style ", inherit_style)
+
             figma_style, shared_style = context.component((figma_node[inherit_style]['sessionID'], figma_node[inherit_style]['localID']))
 
             if shared_style is not None:
-                # At some point we'll need to handle styles with multiple colors which
-                # are not supported by sketch. This is just using the first color of
-                # the array
-                style_attributes['style'][sketch_key][0]['color'] = shared_style['value']
-                style_attributes['style'][sketch_key][0]['color']['swatchID'] = shared_style['do_objectID']
+                # At this moment, this is only styles that involve a single solid color
+                # Look at component.convert for supported types
+                assert len(sketch_keys) == 1
+                style_attributes['style'][sketch_keys[0]][0]['color'] = shared_style['value']
+                style_attributes['style'][sketch_keys[0]][0]['color']['swatchID'] = shared_style['do_objectID']
             else:
                 # We don't support the shared style type, so we just copy the style
-                # TODO: Should we add it as a preset
+                # TODO: Should we add it as a preset?
                 if inherit_style == 'inheritFillStyleIDForStroke':
                     # Copying fill to border, so copy fill properties from shared style into this node borders
                     converted_style = style.convert(figma_style)
@@ -68,7 +77,27 @@ def process_styles(figma_node):
                         } for fill_style in converted_style['fills']
                     ]
                 else:
-                    style_attributes['style'][sketch_key] = style.convert(figma_style)[sketch_key]
+                    for sketch_key in sketch_keys:
+                        # Text style are dealt with in text.py, so just change the figma node
+                        # with the overrides and let that module deal with it
+                        # TODO: Should we use this approach for everything else too?
+                        if sketch_key == 'textStyle':
+                            TEXT_PROPERTIES = [
+                                'fontName',
+                                'textCase',
+                                'fontSize',
+                                'textAlignVertical',
+                                'textAlignHorizontal',
+                                'textDecoration',
+                                'letterSpacing',
+                                'lineHeight',
+                                'paragraphSpacing'
+                            ]
+                            for p in TEXT_PROPERTIES:
+                                if p in figma_style:
+                                    figma_node[p] = figma_style[p]
+                        else:
+                            style_attributes['style'][sketch_key] = style.convert(figma_style)[sketch_key]
 
     return style_attributes
 
