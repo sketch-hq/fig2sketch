@@ -34,6 +34,7 @@ def convert(figma_vector):
 
 
 def convert_line(figma_line):
+    # TODO: Shift line half-thickness up
     return {
         '_class': 'shapePath',
         **base.base_shape(figma_line),

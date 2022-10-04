@@ -160,7 +160,14 @@ def line_height(figma_text):
             case 'PIXELS':
                 return figma_text['lineHeight']['value']
             case 'PERCENT':
-                return figma_text['fontSize'] * (figma_text['lineHeight']['value'] / 100)
+                # Relative to normal line height
+                return round(figma_text['textData']['baselines'][0]['lineHeight'] * (figma_text['lineHeight']['value'] / 100))
+            case 'RAW':
+                # Relative to font size
+                # TODO: If < 1, Figma and Sketch calculate the first line position differently
+                # Sketch seems to set it to min(lineHeight, lineAscent). In Figma, you can check baselines[0][position]
+                # Maybe we should change the frame position in Sketch to account for this?
+                return round(figma_text['fontSize'] * figma_text['lineHeight']['value'])
             case _:
                 raise Exception(f'Unknown line height unit')
     else:
