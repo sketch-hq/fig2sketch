@@ -76,8 +76,7 @@ def text_style(figma_text):
             'paragraphStyle': {
                 '_class': 'paragraphStyle',
                 'alignment': AlignHorizontal[figma_text['textAlignHorizontal']],
-                'maximumLineHeight': line_height(figma_text),
-                'minimumLineHeight': line_height(figma_text),
+                **line_height(figma_text),
                 'paragraphSpacing': figma_text['paragraphSpacing'] if 'paragraphSpacing' in figma_text else 0
             }
         },
@@ -158,16 +157,30 @@ def line_height(figma_text):
     if 'lineHeight' in figma_text:
         match figma_text['lineHeight']['units']:
             case 'PIXELS':
-                return figma_text['lineHeight']['value']
+                # Fixed line height
+                return {
+                    'maximumLineHeight': figma_text['lineHeight']['value'],
+                    'minimumLineHeight': figma_text['lineHeight']['value']
+                }
             case 'PERCENT':
-                # Relative to normal line height
-                return round(figma_text['textData']['baselines'][0]['lineHeight'] * (figma_text['lineHeight']['value'] / 100))
+                # Relative to normal line height. We only see this in Figma as 100% when in Auto mode (natural baselines)
+                if figma_text['lineHeight']['value'] != 100:
+                    raise Exception(f"Unexpected lineHeight = {figma_text['lineHeight']['value']} PERCENT")
+                return {}
             case 'RAW':
-                # Relative to font size
+                # Relative to font size of each line. TODO: Sketch does not support this if text
+                # sizes change over lines. We just set constant baseline as appropriate for the first line
+                # We can do better using figma.textData.baselines information (applying lineHeight overrides
+                # to our attributedString)
+
                 # TODO: If < 1, Figma and Sketch calculate the first line position differently
                 # Sketch seems to set it to min(lineHeight, lineAscent). In Figma, you can check baselines[0][position]
                 # Maybe we should change the frame position in Sketch to account for this?
-                return round(figma_text['fontSize'] * figma_text['lineHeight']['value'])
+                line_height = round(figma_text['fontSize'] * figma_text['lineHeight']['value'])
+                return {
+                    'maximumLineHeight': line_height,
+                    'minimumLineHeight': line_height
+                }
             case _:
                 raise Exception(f'Unknown line height unit')
     else:
