@@ -57,5 +57,6 @@ def convert(figma_frame):
                 'saturation': 1
             }
         },
-        'hasClickThrough': False
+        'hasClickThrough': False,
+        'resizesContent': True
     }

@@ -24,7 +24,7 @@ def base_shape(figma_node):
         'isVisible': True,
         'layerListExpandedType': 0,
         'nameIsFixed': False,
-        'resizingConstraint': 9,
+        'resizingConstraint': resizing_constraint(figma_node),
         'resizingType': 0,
         **process_styles(figma_node)
     }
@@ -166,3 +166,27 @@ def adjust_corner_radius(figma_node, figma_point):
         return figma_point['style']['cornerRadius']
 
     return figma_node['cornerRadius']
+
+
+# resizingConstraint is a bitfield:
+#  1: right sizeable
+#  2: width sizeable
+#  4: left sizeable
+#  8: bottom sizeable
+# 16: height sizeable
+# 32: top sizeable
+# 64: all fixed (should be 0 but it's overriden to mean all sizeable, same as 63). Impossible
+HORIZONTAL_CONSTRAINT = {
+    'MIN':       1, # Fixed left + width
+    'CENTER':    5, # Fixed width
+    'MAX':       4, # Fixed right + width
+    'STRETCH':   2, # Fixed left and right
+    'SCALE':     7, # All free
+    # 'FIXED_MIN': 0, # Unused?
+    # 'FIXED_MAX': 0, # Unused?
+}
+# Vertical constraints are equivalent to horizontal ones, with a 3 bit shift
+def resizing_constraint(figma_node):
+    h = HORIZONTAL_CONSTRAINT[figma_node.horizontalConstraint]
+    v = HORIZONTAL_CONSTRAINT[figma_node.verticalConstraint] << 3
+    return h + v
