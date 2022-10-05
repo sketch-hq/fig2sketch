@@ -1,5 +1,5 @@
 from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, \
-    shape_group, text, slice, context
+    shape_group, text, slice, context, instance, symbol
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -13,13 +13,14 @@ CONVERTERS = {
     'TEXT': text.convert,
     'BOOLEAN_OPERATION': shape_group.convert,
     'LINE': shape_path.convert_line,
-    'SLICE': slice.convert
-    # 'COMPONENT': lambda a, b: instance.convert(a, b, components),
-    # 'INSTANCE': lambda a, b: instance.convert(a, b, components),
+    'SLICE': slice.convert,
+    'SYMBOL': symbol.convert,
+    'INSTANCE': instance.convert,
 }
 
 POST_PROCESSING = {
     'BOOLEAN_OPERATION': shape_group.post_process,
+    'SYMBOL': symbol.move_to_symbols_page,
 }
 
 
@@ -36,7 +37,7 @@ def convert_node(figma_node):
 
     post_process = POST_PROCESSING.get(type_)
     if post_process:
-        post_process(figma_node, sketch_item)
+        sketch_item = post_process(figma_node, sketch_item)
 
     return sketch_item
 

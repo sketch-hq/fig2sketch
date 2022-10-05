@@ -1,9 +1,10 @@
-from . import component
+from . import component, page
 
 class Context:
     def init(self, components_page):
         self._figma_components = { node.id: node for node in components_page.children }
         self._sketch_components = {}
+        self.symbols_page = None
 
     def component(self, cid):
         figma_component = self._figma_components[cid]
@@ -22,5 +23,12 @@ class Context:
 
     def sketch_components(self):
         return self._sketch_components.values()
+
+    def add_symbol(self, sketch_symbol):
+        if not self.symbols_page:
+            self.symbols_page = page.symbols_page()
+
+        self.symbols_page['layers'].append(sketch_symbol)
+
 
 context = Context()

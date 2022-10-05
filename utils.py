@@ -17,7 +17,6 @@ def gen_object_id(figma_id, suffix=b''):
 
     return str(uuid.UUID(bytes=bytes(uuid_bytes))).upper()
 
-
 def generate_file_ref(data):
     return hashlib.sha1(hashlib.sha1(data).digest()).hexdigest()
 

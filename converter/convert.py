@@ -42,6 +42,11 @@ def convert_pages(figma_pages):
         json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
         pages.append(page)
 
+    if context.symbols_page:
+        page = context.symbols_page
+        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
+        pages.append(page)
+
     return pages
 
 

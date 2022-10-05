@@ -2,9 +2,18 @@ import utils
 
 
 def convert(figma_canvas):
+    return make_page(utils.gen_object_id(figma_canvas.id), figma_canvas.name)
+
+def symbols_page():
+    page = make_page(utils.gen_object_id((0,0), b'symbols_page'), 'Symbols')
+    page['layers'] = []
+
+    return page
+
+def make_page(uuid, name):
     return {
         '_class': 'page',
-        'do_objectID': utils.gen_object_id(figma_canvas.id),
+        'do_objectID': uuid,
         'booleanOperation': -1,
         'clippingMaskMode': 0,
         'exportOptions': {
@@ -28,7 +37,7 @@ def convert(figma_canvas):
         'isLocked': False,
         'isVisible': True,
         'layerListExpandedType': 0,
-        'name': figma_canvas['name'],
+        'name': name,
         'nameIsFixed': False,
         'resizingConstraint': 63,
         'resizingType': 0,
