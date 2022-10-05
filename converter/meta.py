@@ -7,6 +7,7 @@ def convert(pages):
                 'artboards': {
                     artboard['do_objectID']: {'name': artboard['name']}
                     for artboard in page['layers']
+                    if artboard['_class'] in ['artboard', 'symbolMaster']
                 }
             }
             for page in pages

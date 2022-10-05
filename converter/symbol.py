@@ -11,8 +11,6 @@ def convert(figma_symbol):
     master['symbolID'] = utils.gen_object_id(figma_symbol.id)
     master['do_objectID'] = utils.gen_object_id(figma_symbol.id, b'symbol_master')
 
-    # TODO: Position the symbol in the symbols page
-
     return master
 
 
