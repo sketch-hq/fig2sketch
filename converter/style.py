@@ -38,6 +38,27 @@ GRADIENT_TYPE = {
     'GRADIENT_DIAMOND': 1,  # Unsupported by Sketch, most similar is radial
 }
 
+BLEND_MODE = {
+  'PASS_THROUGH': 0,
+  'NORMAL': 0,
+  'DARKEN': 1,
+  'MULTIPLY': 2,
+  # 'LINEAR_BURN': , Cannot be set on Figma UI?
+  'COLOR_BURN': 3,
+  'LIGHTEN': 4,
+  'SCREEN': 5,
+  # 'LINEAR_DODGE': , Cannot be set on Figma UI?
+  'COLOR_DODGE': 6,
+  'OVERLAY': 7,
+  'SOFT_LIGHT': 8,
+  'HARD_LIGHT': 9,
+  'DIFFERENCE': 10,
+  'EXCLUSION': 11,
+  'HUE': 12,
+  'SATURATION': 13,
+  'COLOR': 14,
+  'LUMINOSITY': 15,
+}
 
 def convert(figma_node):
     return {
@@ -55,11 +76,7 @@ def convert(figma_node):
         'miterLimit': 10,
         'windingRule': 0,
         **convert_effects(figma_node.get('effects', [])),
-        'contextSettings': {
-            '_class': 'graphicsContextSettings',
-            'blendMode': 0,
-            'opacity': 1
-        },
+        'contextSettings': context_settings(figma_node),
         'colorControls': {
             '_class': 'colorControls',
             'isEnabled': True,
@@ -313,3 +330,18 @@ def convert_effects(effects):
             raise Exception(f'Unsupported effect: {e["type"]}')
 
     return sketch
+
+
+def context_settings(figma_node):
+    blend_mode = BLEND_MODE[figma_node['blendMode']]
+    opacity = figma_node['opacity']
+
+    if figma_node['blendMode'] == 'NORMAL' and opacity == 1:
+        # Sketch interprets normal at 100% opacity as pass-through
+        opacity = 0.99
+
+    return {
+        '_class': 'graphicsContextSettings',
+        'blendMode': blend_mode,
+        'opacity': opacity
+    }
