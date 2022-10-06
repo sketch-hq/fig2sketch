@@ -38,7 +38,7 @@ def convert_pages(figma_pages):
     pages = []
 
     for figma_page in figma_pages:
-        page = tree.convert_node(figma_page)
+        page = tree.convert_node(figma_page, 'DOCUMENT')
         json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
         pages.append(page)
 

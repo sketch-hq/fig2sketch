@@ -21,17 +21,18 @@ CONVERTERS = {
 POST_PROCESSING = {
     'BOOLEAN_OPERATION': shape_group.post_process,
     'SYMBOL': symbol.move_to_symbols_page,
+    'GROUP': group.post_process_frame,
 }
 
 
-def convert_node(figma_node):
+def convert_node(figma_node, parent_type):
     name = figma_node['name']
-    type_ = get_node_type(figma_node)
+    type_ = get_node_type(figma_node, parent_type)
     print(f'{type_}: {name}')
 
     sketch_item = CONVERTERS[type_](figma_node)
 
-    children = [convert_node(child) for child in
+    children = [convert_node(child, figma_node['type']) for child in
                 figma_node.get('children', [])]
     sketch_item['layers'] = children
 
@@ -42,17 +43,11 @@ def convert_node(figma_node):
     return sketch_item
 
 
-def get_node_type(figma_node):
-    match figma_node['type']:
-        case 'FRAME':
-            if figma_node['resizeToFit']:
-                node_type = 'GROUP'
-            else:
-                node_type = 'ARTBOARD'
-        case type_:
-            node_type = type_
-
-    return node_type
+def get_node_type(figma_node, parent_type):
+    if figma_node['type'] == 'FRAME':
+        return 'ARTBOARD' if parent_type == 'CANVAS' else 'GROUP'
+    else:
+        return figma_node['type']
 
 
 def find_shared_style(figma_node):
