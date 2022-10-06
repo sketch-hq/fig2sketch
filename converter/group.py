@@ -14,45 +14,67 @@ def post_process_frame(figma_group, sketch_group):
     if figma_group['resizeToFit']:
         return sketch_group
 
-    # Convert Figma frame to Sketch group. Figma frames clip children,
-    # so if the children bbox is larger than the group, then we need
-    # to add a clipping mask to the group. We don't need to recalculate
-    # group bounds because in Sketch, the bounds would match those of the
-    # clipping mask (i.e: group bounds = bounds of visible children)
-    child_bboxes = [
-        bbox_from_frame(child)
-        for child in sketch_group['layers']
-    ]
-    children_bbox = [
-        min([b[0] for b in child_bboxes]),
-        max([b[1] for b in child_bboxes]),
-        min([b[2] for b in child_bboxes]),
-        max([b[3] for b in child_bboxes]),
-    ]
-    if children_bbox[0] < 0 or children_bbox[1] > sketch_group['frame']['width'] or children_bbox[2] < 0 or children_bbox[3] > sketch_group['frame']['height']:
-        # Add a clipping rectangle matching the frame size
+    needs_clip_mask = not figma_group.get('frameMaskDisabled', False)
+    if needs_clip_mask:
+        # Add a clipping rectangle matching the frame size. No need to recalculate bounds
+        # since the clipmask defines Sketch bounds (which match visible children)
         sketch_group['layers'].insert(0, make_clipping_rect(figma_group.id, sketch_group['frame']))
+    else:
+        # When converting from a frame to a group, the bounding box should be adjusted
+        # In Figma the frame box can be smalled than the children bounds, but not so in Sketch
+        # To do so, we resize the frame to match the children bbox and also move the children
+        # so that the top-left corner sits at 0,0
+        child_bboxes = [
+            bbox_from_frame(child)
+            for child in sketch_group['layers']
+        ]
+        children_bbox = [
+            min([b[0] for b in child_bboxes]),
+            max([b[1] for b in child_bboxes]),
+            min([b[2] for b in child_bboxes]),
+            max([b[3] for b in child_bboxes]),
+        ]
+        vector = [children_bbox[0], children_bbox[2]]
+
+        for child in sketch_group['layers']:
+            child['frame']['x'] -= vector[0]
+            child['frame']['y'] -= vector[1]
+
+        # TODO: This probably breaks with rotation of the group
+        sketch_group['frame']['x'] += vector[0]
+        sketch_group['frame']['y'] += vector[1]
+        sketch_group['frame']['width'] = children_bbox[1] - children_bbox[0]
+        sketch_group['frame']['height'] = children_bbox[3] - children_bbox[2]
+
 
     return sketch_group
 
 
+# TODO: Extract this and share code with positioning
 def bbox_from_frame(child):
     frame = child['frame']
-    theta = np.radians(-child['rotation'])
+    theta = np.radians(child['rotation'])
     c, s = np.cos(theta), np.sin(theta)
     matrix = np.array(((c, -s), (s, c)))
     # Rotate the frame to the original position and calculate corners
+    x1 = frame['x']
+    x2 = x1 + frame['width']
+    y1 = frame['y']
+    y2 = y1 + frame['height']
+
+    w2 = frame['width'] / 2
+    h2 = frame['height'] / 2
     points = [
-        matrix.dot(np.array([0, 0])),
-        matrix.dot(np.array([frame['width'], 0])),
-        matrix.dot(np.array([frame['width'], frame['height']])),
-        matrix.dot(np.array([0, frame['height']])),
+        matrix.dot(np.array([-w2, -h2])) - np.array([-w2, -h2]) + np.array([x1, y1]),
+        matrix.dot(np.array([ w2, -h2])) - np.array([ w2, -h2]) + np.array([x2, y1]),
+        matrix.dot(np.array([ w2,  h2])) - np.array([ w2,  h2]) + np.array([x2, y2]),
+        matrix.dot(np.array([-w2,  h2])) - np.array([-w2,  h2]) + np.array([x1, y2]),
     ]
 
     return [
         min(p[0] for p in points),
-        max(p[1] for p in points),
-        min(p[0] for p in points),
+        max(p[0] for p in points),
+        min(p[1] for p in points),
         max(p[1] for p in points),
     ]
 
