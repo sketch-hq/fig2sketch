@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     clean_output()
 
-    figma_json = fig2json.convert_fig(args.fig_file)
+    figma_json, id_map = fig2json.convert_fig(args.fig_file)
 
     try:
         os.remove('example/figma.json')
@@ -39,4 +39,4 @@ if __name__ == '__main__':
 
     json.dump(figma_json, open(f'example/figma.json', 'w'), indent=2)
 
-    convert.convert_json_to_sketch(figma_json)
+    convert.convert_json_to_sketch(figma_json, id_map)

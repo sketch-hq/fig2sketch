@@ -1,5 +1,7 @@
-from . import base
+from . import base, tree
 import utils
+from .context import context
+import copy
 
 def convert(figma_instance):
     sketch_overrides = convert_overrides(figma_instance)
@@ -37,8 +39,11 @@ def convert_overrides(figma_instance):
                 continue
             if property == 'textData':
                 # Text override.
-                # TODO: Handle changes only in styleOverrides (dettach?)
-                # TODO: Make sure the override works with multistyle text
+                if 'styleOverrideTable' in value:
+                    # Sketch does not support multiple styles in text overrides -> dettach
+                    print(f'Unsupported override: text with mixed styles. Will dettach')
+                    return None
+
                 sketch_overrides.append({
                     "_class": "overrideValue",
                     "overrideName": f"{uuid}_stringValue",
@@ -55,10 +60,39 @@ def convert_overrides(figma_instance):
 
 def dettach_symbol(figma_instance):
     # Find symbol master
+    figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'], figma_instance['symbolData']['symbolID']['localID']))
+    dettached = copy.deepcopy(figma_master, {})
 
     # Apply overrides. Can we use derivedSymbolData?
+    overrides = {
+        (o["guidPath"]["guids"][0]["sessionID"], o["guidPath"]["guids"][0]["localID"]): o
+        for o in figma_instance['symbolData']['symbolOverrides']
+    }
+    apply_overrides(dettached, overrides)
 
     # Convert to Sketch
+    dettached['type'] = 'GROUP'
 
-    # Adjust positioning (frame vs group)
-    pass
+    # TODO: Copy more properties from the instance
+    dettached['transform'] = figma_instance['transform']
+
+    sketch = tree.convert_node(dettached, 'NOT_A_PAGE')
+
+    from pprint import pprint
+    import pdb
+    pdb.set_trace()
+
+    return sketch
+
+def apply_overrides(figma, overrides):
+    from pprint import pprint
+    import pdb
+    pdb.set_trace()
+    ov = overrides.get(figma.id)
+    if ov:
+        figma.update(ov)
+
+    figma['id'] = (figma['id'][0] + 10000, figma['id'][1])
+
+    for c in figma.children:
+        apply_overrides(c, overrides)

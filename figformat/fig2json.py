@@ -32,7 +32,7 @@ def convert_fig(reader):
     for node in id_map.values():
         node['children'].sort(key=lambda n: n['parent']['position'])
 
-    return tree
+    return tree, id_map
 
 
 def transform_node(fig, node, figma_zip):

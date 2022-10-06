@@ -1,10 +1,11 @@
 from . import component, page
 
 class Context:
-    def init(self, components_page):
+    def init(self, components_page, id_map):
         self._figma_components = { node.id: node for node in components_page.children }
         self._sketch_components = {}
         self.symbols_page = None
+        self._node_by_id = id_map
 
         # Where to position symbols of the specified width
         # width -> (x, y)
@@ -34,6 +35,9 @@ class Context:
 
         self.symbols_page['layers'].append(sketch_symbol)
         self._position_symbol(sketch_symbol)
+
+    def figma_node(self, fid):
+        return self._node_by_id[fid]
 
     def _position_symbol(self, sketch_symbol):
         # Mimics Sketch positioning algorith:

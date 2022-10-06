@@ -22,4 +22,7 @@ class FigNode(dict):
         try:
             return super().__getattribute__(name)
         except AttributeError:
-            return self[name]
+            try:
+                return self[name]
+            except KeyError:
+                raise AttributeError

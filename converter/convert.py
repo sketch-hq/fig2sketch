@@ -5,13 +5,13 @@ from . import document, meta, tree, user
 from .context import context
 
 
-def convert_json_to_sketch(figma):
+def convert_json_to_sketch(figma, id_map):
     figma_pages, components_page = separate_pages(figma['document']['children'])
 
     # We should either bring the fonts to the same indexed_components to pass
     # them as parameter or move the indexed components to the component file
     # and store there the components, for consistency purposes
-    context.init(components_page)
+    context.init(components_page, id_map)
     sketch_pages = convert_pages(figma_pages)
 
     sketch_document = document.convert(sketch_pages)
