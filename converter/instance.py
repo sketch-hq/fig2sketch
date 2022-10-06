@@ -7,7 +7,13 @@ def convert(figma_instance):
     sketch_overrides = convert_overrides(figma_instance)
 
     if sketch_overrides is None:
-        return dettach_symbol(figma_instance)
+        # Modify Figma tree in place, with the dettached symbol subtree
+        dettach_symbol(figma_instance)
+        return {
+            **base.base_shape(figma_instance),
+            "_class": "group",
+            'name': figma_instance.name
+        }
     else:
         return {
             **base.base_shape(figma_instance),
@@ -61,38 +67,25 @@ def convert_overrides(figma_instance):
 def dettach_symbol(figma_instance):
     # Find symbol master
     figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'], figma_instance['symbolData']['symbolID']['localID']))
-    dettached = copy.deepcopy(figma_master, {})
+    dettached_children = copy.deepcopy(figma_master['children'], {})
 
     # Apply overrides. Can we use derivedSymbolData?
     overrides = {
         (o["guidPath"]["guids"][0]["sessionID"], o["guidPath"]["guids"][0]["localID"]): o
         for o in figma_instance['symbolData']['symbolOverrides']
     }
-    apply_overrides(dettached, overrides)
+    for c in dettached_children:
+        apply_overrides(c, figma_instance.id, overrides)
 
-    # Convert to Sketch
-    dettached['type'] = 'GROUP'
+    figma_instance['children'] = dettached_children
 
-    # TODO: Copy more properties from the instance
-    dettached['transform'] = figma_instance['transform']
-
-    sketch = tree.convert_node(dettached, 'NOT_A_PAGE')
-
-    from pprint import pprint
-    import pdb
-    pdb.set_trace()
-
-    return sketch
-
-def apply_overrides(figma, overrides):
-    from pprint import pprint
-    import pdb
-    pdb.set_trace()
+def apply_overrides(figma, instance_id, overrides):
     ov = overrides.get(figma.id)
     if ov:
         figma.update(ov)
 
-    figma['id'] = (figma['id'][0] + 10000, figma['id'][1])
+    # Generate a unique ID by concatenating instance_id + node_id
+    figma['id'] = (*instance_id, *figma['id'])
 
     for c in figma.children:
         apply_overrides(c, overrides)

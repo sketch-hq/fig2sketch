@@ -32,11 +32,9 @@ def convert_node(figma_node, parent_type):
 
     sketch_item = CONVERTERS[type_](figma_node)
 
-    # TODO: Symbol dettaching hack
-    if 'layers' not in sketch_item:
-        children = [convert_node(child, figma_node['type']) for child in
-                    figma_node.get('children', [])]
-        sketch_item['layers'] = children
+    children = [convert_node(child, figma_node['type']) for child in
+                figma_node.get('children', [])]
+    sketch_item['layers'] = children
 
     post_process = POST_PROCESSING.get(type_)
     if post_process:
