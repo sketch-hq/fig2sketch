@@ -37,7 +37,7 @@ def convert(figma_vector):
 def convert_line(figma_line):
     # Shift line by half its width
     vt = np.array([0, -figma_line.strokeWeight/2])
-    vtr = positioning.apply_rotation(figma_line, vt)
+    vtr = positioning.apply_transform(figma_line, vt)
     figma_line.transform['m02'] += vtr[0]
     figma_line.transform['m12'] += vtr[1]
 

@@ -14,6 +14,11 @@ def post_process_frame(figma_group, sketch_group):
     if figma_group['resizeToFit']:
         return sketch_group
 
+    # TODO: Convert frame styles
+    # - Fill/stroke/bgblur -> Rectangle on bottom with that style
+    # - Layer blur -> Rectangle with bgblur on top
+    # - Shadows -> If we have fill, add shadow to the fill. If not, add shadow to each child
+
     needs_clip_mask = not figma_group.get('frameMaskDisabled', False)
     if needs_clip_mask:
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
