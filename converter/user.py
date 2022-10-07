@@ -1,7 +1,7 @@
 def convert(pages):
     return {
         'document': {
-            'pageListHeight': '200',
+            'pageListHeight': 200,
             'pageListCollapsed': 0,
             'expandedSymbolPathsInSidebar': [],
             'expandedTextStylePathsInPopover': [],

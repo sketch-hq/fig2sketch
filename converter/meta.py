@@ -1,6 +1,6 @@
 def convert(pages):
     return {
-        'commit': '5af03e43d9c4d8bc0e1b21000ea30adc7abf8c31',
+        'commit': '1899e24f63af087a9dd3c66f73b492b72c27c2c8',
         'pagesAndArtboards': {
             page['do_objectID']: {
                 'name': page['name'],
@@ -12,25 +12,25 @@ def convert(pages):
             }
             for page in pages
         },
-        'version': 134,
-        'fonts': [
-        ],
+        'version': 144,
         'compatibilityVersion': 99,
+        'coeditCompatibilityVersion': 143,
         'app': 'com.bohemiancoding.sketch3',
         'autosaved': 0,
         'variant': 'NONAPPSTORE',
         'created': {
-            'commit': '5af03e43d9c4d8bc0e1b21000ea30adc7abf8c31',
-            'appVersion': '69.2',
-            'build': 107504,
+            'commit': '1899e24f63af087a9dd3c66f73b492b72c27c2c8',
+            'appVersion': '93',
+            'build': 155335,
             'app': 'com.bohemiancoding.sketch3',
             'compatibilityVersion': 99,
-            'version': 134,
+            'coeditCompatibilityVersion': 143,
+            'version': 144,
             'variant': 'NONAPPSTORE'
         },
         'saveHistory': [
-            'NONAPPSTORE.107504'
+            'NONAPPSTORE.155335'
         ],
-        'appVersion': '69.2',
-        'build': 107504
+        'appVersion': '93',
+        'build': 155335
     }

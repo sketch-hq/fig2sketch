@@ -48,15 +48,16 @@ def organize_sketch_fonts():
     for root, dirnames, filenames in os.walk(fonts_cache_dir):
         for filename in filenames:
             if fnmatch.fnmatch(filename, "*.ttf"):
-                ffamily, fsfamily = get_font_family_from_file(os.path.join(root, filename))
+                ffamily, fsfamily, psname = get_font_family_from_file(os.path.join(root, filename))
 
                 if ffamily in figma_fonts and fsfamily in figma_fonts[ffamily]:
                     file = open(os.path.join(root, filename), 'rb').read()
-                    figma_fonts[ffamily][fsfamily] = utils.generate_file_ref(file)
-                    fonts_path = os.path.join(sketch_fonts_path, figma_fonts[ffamily][fsfamily])
+                    fhash = utils.generate_file_ref(file)
+                    figma_fonts[ffamily][fsfamily] = (fhash, psname)
+                    fonts_path = os.path.join(sketch_fonts_path, fhash)
                     shutil.copyfile(os.path.join(root, filename), fonts_path)
 
 
 def get_font_family_from_file(font_file):
     font = TTFont(font_file)
-    return font['name'].getBestFamilyName(), font['name'].getBestSubFamilyName()
+    return font['name'].getBestFamilyName(), font['name'].getBestSubFamilyName(), font['name'].getFirstDebugName((6,))

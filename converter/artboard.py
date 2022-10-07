@@ -19,6 +19,7 @@ def convert(figma_frame):
         'isFlippedHorizontal': False,
         'isFlippedVertical': False,
         'isLocked': False,
+        'isTemplate': False,
         'isVisible': True,
         'layerListExpandedType': 2,
         'name': figma_frame.name,

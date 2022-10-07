@@ -21,7 +21,7 @@ def convert(pages):
             'gradients': [],
             'exportPresets': []
         },
-        'colorSpace': 0,
+        'colorSpace': 1,
         'currentPageIndex': 0,
         'foreignLayerStyles': [],
         'foreignSymbols': [],
@@ -42,6 +42,7 @@ def convert(pages):
             'do_objectID': utils.gen_object_id((0, 0), b'sharedTextStyleContainer'),
             'objects': []
         },
+        'perDocumentLibraries': [],
         'sharedSwatches': {
             '_class': 'swatchContainer',
             'do_objectID': utils.gen_object_id((0, 0), b'swatchContainer'),
@@ -68,7 +69,7 @@ def convert_fonts():
 
     font_references = []
     for ffamily, ffamily_dict in fonts.figma_fonts.items():
-        for fsfamily, font_hash in ffamily_dict.items():
+        for fsfamily, (font_hash, psname) in ffamily_dict.items():
             font_references.append(
                 {
                     '_class': 'fontReference',
@@ -80,12 +81,13 @@ def convert_fonts():
                     },
                     'fontFamilyName': ffamily,
                     'fontFileName': '%s-%s.ttf' % (ffamily, fsfamily),
-                    'options': 1,
+                    'options': 3, # Embedded and used
                     'postscriptNames': [
-                        '%s-%s' % (ffamily, fsfamily)
+                        psname
                     ]
                 })
 
     print(fonts.figma_fonts)
+    font_references.sort(key=lambda f: f['do_objectID'])
 
     return font_references
