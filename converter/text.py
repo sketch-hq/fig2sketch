@@ -30,6 +30,35 @@ TEXT_BEHAVIOUR = {
     'HEIGHT': 1,
 }
 
+# Sketch (CoreText?) scales up emojis for small font sizes.
+# This table undoes this converstion, so we can match Figma better
+EMOJI_SIZE_ADJUST = {
+    2: 1.5,
+    3: 2,
+    4: 3,
+    5: 4,
+    6: 5,
+    7: 5.5,
+    8: 6,
+    9: 7,
+    10: 7.5,
+    11: 8,
+    12: 9,
+    13: 10,
+    14: 10.5,
+    15: 11,
+    16: 12,
+    17: 13,
+    18: 13.5,
+    19: 14,
+    20: 15,
+    21: 16,
+    22: 18,
+    23: 20,
+    24: 22,
+    25: 24
+}
+
 EMOJI_FONT = 'AppleColorEmoji'
 
 def convert(figma_text):
@@ -133,6 +162,11 @@ def override_characters_style(figma_text):
         is_emoji = override_table[current_glyph['styleID']].get('fillPaints', [{}])[0].get('type') == 'EMOJI'
         if is_emoji:
             style_override['fontName'] = {'family': EMOJI_FONT, 'postscript': EMOJI_FONT}
+            # The following makes Sketch follow Figma a bit more closely visually
+            font_size = style_override.get('fontSize', figma_text.fontSize)
+            scaled_font_size = EMOJI_SIZE_ADJUST.get(font_size)
+            if scaled_font_size:
+                style_override['fontSize'] = scaled_font_size
 
         # If the style changed, convert the previous style run
         if style_override != last_style_override and pos != 0:
@@ -180,11 +214,11 @@ def text_decoration(figma_text):
 
 def kerning(figma_text):
     if 'letterSpacing' in figma_text:
-        match figma_text['letterSpacing']['units']:
-            case 'PIXELS':
-                return figma_text['letterSpacing']['value']
-            case 'PERCENT':
-                return figma_text['fontSize'] * (figma_text['letterSpacing']['value'] / 100)
+        match figma_text['letterSpacing']:
+            case { 'units': 'PIXELS', 'value': pixels }:
+                return pixels
+            case { 'units': 'PERCENT', 'value': percent }:
+                return figma_text['fontSize'] * percent / 100
             case _:
                 raise Exception(f'Unknown letter spacing unit')
     else:
