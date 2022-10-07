@@ -39,12 +39,12 @@ def convert_pages(figma_pages):
 
     for figma_page in figma_pages:
         page = tree.convert_node(figma_page, 'DOCUMENT')
-        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
+        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2, ensure_ascii=False)
         pages.append(page)
 
     if context.symbols_page:
         page = context.symbols_page
-        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2)
+        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2, ensure_ascii=False)
         pages.append(page)
 
     return pages
@@ -59,8 +59,8 @@ def convert_pages(figma_pages):
 
 
 def write_sketch_file(sketch_document, sketch_user, sketch_meta):
-    json.dump(sketch_document, open('output/document.json', 'w'), indent=2)
-    json.dump(sketch_user, open('output/user.json', 'w'), indent=2)
-    json.dump(sketch_meta, open('output/meta.json', 'w'), indent=2)
+    json.dump(sketch_document, open('output/document.json', 'w'), indent=2, ensure_ascii=False)
+    json.dump(sketch_user, open('output/user.json', 'w'), indent=2, ensure_ascii=False)
+    json.dump(sketch_meta, open('output/meta.json', 'w'), indent=2, ensure_ascii=False)
 
     os.system('cd output; zip -0 -r ../output/output.sketch .')

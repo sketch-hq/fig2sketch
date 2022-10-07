@@ -8,7 +8,7 @@ def convert(figma_item):
     return {
         'frame': {
             '_class': 'rect',
-            'constrainProportions': False,
+            'constrainProportions': figma_item.get('proportionsConstrained', False),
             'height': figma_item.size['y'],
             'width': figma_item.size['x'],
             'x': coordinates[0],

@@ -1,6 +1,8 @@
 from . import base
 import utils
+import itertools
 from . import fonts
+import copy
 
 AlignVertical = {
     'TOP': 0,
@@ -22,6 +24,13 @@ TextCase = {
     'TITLE': 0
 }
 
+TEXT_BEHAVIOUR = {
+    'NONE': 2,
+    'WIDTH_AND_HEIGHT': 0,
+    'HEIGHT': 1,
+}
+
+EMOJI_FONT = 'AppleColorEmoji'
 
 def convert(figma_text):
     obj = {
@@ -35,9 +44,10 @@ def convert(figma_text):
             'string': figma_text['textData']['characters'],
             'attributes': override_characters_style(figma_text),
         },
-        'glyphBounds': '{{5, 15}, {122, 55}}',
+         # No good way to calculate this, so we overestimate by setting the frame
+        'glyphBounds': f'{{{{0, 0}}, {{{figma_text.size["x"]}, {figma_text.size["y"]}}}}}',
         'lineSpacingBehaviour': 2,
-        'textBehaviour': 2,
+        'textBehaviour': TEXT_BEHAVIOUR[figma_text.get('textAutoResize', 'NONE')],
         'layers': []
     }
 
@@ -50,7 +60,8 @@ def convert(figma_text):
 
 
 def text_style(figma_text):
-    fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'])
+    if figma_text['fontName']['family'] != EMOJI_FONT:
+        fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'])
     return {
         '_class': 'textStyle',
         'encodedAttributes': {
@@ -85,46 +96,72 @@ def text_style(figma_text):
 
 
 def override_characters_style(figma_text):
+    # The attributes of the Sketch string, our output
     attributes = []
-    char_length = len(figma_text['textData']['characters'])
 
-    if 'styleOverrideTable' in figma_text['textData']:
-        override_table = utils.get_style_table_override(figma_text['textData'])
+    # Map from Figma styleID to the overriden properties
+    override_table = utils.get_style_table_override(figma_text['textData'])
 
-        last_style = 0
-        count = 0
-        first_pos = 0
+    # List of character styles. For each style, points to the appropriate styleID
+    character_styles = figma_text['textData'].get('characterStyleIDs', [])
+    all_character_styles = itertools.chain(character_styles, itertools.repeat(0))
 
-        # We need an extra iteration to create the 'stringAttribute' for the last group
-        for pos in range(0, char_length + 1):
-            try:
-                style_id = figma_text['textData']['characterStyleIDs'][pos]
-            except IndexError:
-                style_id = 0 if pos < char_length else -1
+    # List of glyphs, taken in pairs (AB, BC, CD). Used to know when to switch from
+    # one glyph to another. Used to identify emojis that can span multiple codepoints
+    # Add a fake glyph to the end that never gets reached for iteration purposes
+    glyph_pairs = itertools.pairwise(figma_text['textData']['glyphs'] + [{'firstCharacter': 0}])
+    current_glyph, next_glyph = next(glyph_pairs)
 
-            if style_id == last_style or pos == 0:
-                count += 1
-            else:
-                attributes.append({
-                    '_class': 'stringAttribute',
-                    'location': first_pos,
-                    'length': count,
-                    'attributes':
-                        text_style({**figma_text, **override_table[last_style]})[
-                            'encodedAttributes']
-                })
-                count = 1
-                first_pos = pos
+    # Keep track of what the previous style was and when it started
+    last_style_override = {}
+    first_pos = 0
 
-            last_style = style_id
+    # Lengths in Figma are given in codepoints. In Sketch, they are given in UTF16 code-units
+    # So we keep the Sketch position independetly, taking into account UTF16 encoding
+    sketch_pos = 0
 
-    if len(attributes) == 0:
-        attributes = [{
-            '_class': 'stringAttribute',
-            'location': 0,
-            'length': char_length,
-            'attributes': text_style(figma_text)['encodedAttributes']
-        }]
+    # Iterate over all characters in Figma input, including their style id and position
+    for pos, (style_id, character) in enumerate(zip(all_character_styles, figma_text['textData']['characters'])):
+        # Check if we are still in the same glyph or we have to advance
+        # We always advance except in multi-codepoint emojis (e.g: families)
+        if pos == next_glyph['firstCharacter']:
+            current_glyph, next_glyph = next(glyph_pairs)
+
+        # Compute the override for this character. Aside from Figma style override,
+        # we have to set the emoji font if this is an emoji (Figma doesn't expose this change)
+        style_override = copy.deepcopy(override_table[style_id])
+        is_emoji = override_table[current_glyph['styleID']].get('fillPaints', [{}])[0].get('type') == 'EMOJI'
+        if is_emoji:
+            style_override['fontName'] = {'family': EMOJI_FONT, 'postscript': EMOJI_FONT}
+
+        # If the style changed, convert the previous style run
+        if style_override != last_style_override and pos != 0:
+            attributes.append({
+                '_class': 'stringAttribute',
+                'location': first_pos,
+                'length': sketch_pos - first_pos,
+                'attributes':
+                    text_style({**figma_text, **last_style_override})['encodedAttributes']
+            })
+            first_pos = sketch_pos
+
+        last_style_override = style_override
+
+        # Characters from supplementary planes are encoded in UTF16 as 2 code units
+        # Advance the Sketch position accordingly
+        if ord(character) > 0xFFFF:
+            sketch_pos += 2
+        else:
+            sketch_pos += 1
+
+    # Save the last style run
+    attributes.append({
+        '_class': 'stringAttribute',
+        'location': first_pos,
+        'length': sketch_pos - first_pos,
+        'attributes':
+            text_style({**figma_text, **last_style_override})['encodedAttributes']
+    })
 
     return attributes
 
