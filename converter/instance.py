@@ -62,7 +62,47 @@ def convert_overrides(figma_instance):
                 print(f'Unsupported override: {property}. Will dettach')
                 return None
 
+    figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'], figma_instance['symbolData']['symbolID']['localID']))
+    for prop in figma_instance.get('componentPropAssignments', []):
+        # TODO: propdef.type needed?
+        # prop_def = [d for d in figma_master.componentPropDefs if d['id'] == prop['defID']]
+
+        ref_prop, ref_node = find_ref(figma_master, prop['defID'])
+        uuid = utils.gen_object_id(ref_node['id'])
+        if ref_prop['componentPropNodeField'] == 'OVERRIDDEN_SYMBOL_ID':
+            symbol_id = utils.gen_object_id((prop['value']['guidValue']['sessionID'], prop['value']['guidValue']['localID']))
+            sketch_overrides.append({
+                "_class": "overrideValue",
+                "overrideName": f"{uuid}_symbolID",
+                "value": symbol_id
+            })
+        elif ref_prop['componentPropNodeField'] == 'TEXT_DATA':
+            sketch_overrides.append({
+                "_class": "overrideValue",
+                "overrideName": f"{uuid}_stringValue",
+                "value": prop['value']['textValue']['characters']
+            })
+        else: # VISIBLE / INHERIT_FILL_STYLE_ID
+            # TODO: Implement dettaching of properties
+            print(f"Unsupported property: {ref_prop['componentPropNodeField']}. Will dettach")
+            return None
+
     return sketch_overrides
+
+
+def find_ref(node, ref_id):
+    refs = [ref for ref in node.get('componentPropRefs', []) if ref['defID'] == ref_id]
+    if refs:
+        return refs[0], node
+
+    for ch in node['children']:
+        r = find_ref(ch, ref_id)
+        if r:
+            return r
+
+    return None
+
+
 
 def dettach_symbol(figma_instance):
     # Find symbol master

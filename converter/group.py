@@ -10,7 +10,7 @@ def convert(figma_group):
     }
 
 def post_process_frame(figma_group, sketch_group):
-    # Do nothing fro Figma groups, they translate directly to Sketch
+    # Do nothing for Figma groups, they translate directly to Sketch
     if figma_group['resizeToFit']:
         return sketch_group
 
