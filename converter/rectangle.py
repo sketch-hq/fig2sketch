@@ -13,7 +13,7 @@ def convert(figma_rect):
         'points': [
             {
                 '_class': 'curvePoint',
-                'cornerRadius': figma_rect.rectangleTopLeftCornerRadius,
+                'cornerRadius': figma_rect.get('rectangleTopLeftCornerRadius' ,0),
                 'curveFrom': '{0, 0}',
                 'curveMode': 1,
                 'curveTo': '{0, 0}',
@@ -23,7 +23,7 @@ def convert(figma_rect):
             },
             {
                 '_class': 'curvePoint',
-                'cornerRadius': figma_rect.rectangleTopRightCornerRadius,
+                'cornerRadius': figma_rect.get('rectangleTopRightCornerRadius' ,0),
                 'curveFrom': '{1, 0}',
                 'curveMode': 1,
                 'curveTo': '{1, 0}',
@@ -33,7 +33,7 @@ def convert(figma_rect):
             },
             {
                 '_class': 'curvePoint',
-                'cornerRadius': figma_rect.rectangleBottomRightCornerRadius,
+                'cornerRadius': figma_rect.get('rectangleBottomRightCornerRadius' ,0),
                 'curveFrom': '{1, 1}',
                 'curveMode': 1,
                 'curveTo': '{1, 1}',
@@ -43,7 +43,7 @@ def convert(figma_rect):
             },
             {
                 '_class': 'curvePoint',
-                'cornerRadius': figma_rect.rectangleBottomLeftCornerRadius,
+                'cornerRadius': figma_rect.get('rectangleBottomLeftCornerRadius' ,0),
                 'curveFrom': '{0, 1}',
                 'curveMode': 1,
                 'curveTo': '{0, 1}',

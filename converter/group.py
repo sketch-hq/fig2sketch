@@ -1,4 +1,4 @@
-from . import base
+from . import base, rectangle
 import utils
 import numpy as np
 
@@ -14,10 +14,20 @@ def post_process_frame(figma_group, sketch_group):
     if figma_group['resizeToFit']:
         return sketch_group
 
-    # TODO: Convert frame styles
+    # Convert frame styles
     # - Fill/stroke/bgblur -> Rectangle on bottom with that style
     # - Layer blur -> Rectangle with bgblur on top
     # - Shadows -> If we have fill, add shadow to the fill. If not, add shadow to each child
+    # TODO: Fix this and make it way less hacky
+    background_rect = rectangle.convert(figma_group)
+    background_rect['frame']['x'] = 0
+    background_rect['frame']['y'] = 0
+    background_rect['rotation'] = 0
+    sketch_group['layers'].insert(0, background_rect)
+    background_rect['name'] = 'Frame background'
+    background_rect['do_objectID'] = utils.gen_object_id(figma_group.id, b'background')
+    background_rect['resizingConstraint'] = 63
+    del sketch_group['style']
 
     needs_clip_mask = not figma_group.get('frameMaskDisabled', False)
     if needs_clip_mask:

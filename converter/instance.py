@@ -9,34 +9,44 @@ def convert(figma_instance):
     if sketch_overrides is None:
         # Modify Figma tree in place, with the dettached symbol subtree
         dettach_symbol(figma_instance)
-        return {
+        obj = {
             **base.base_shape(figma_instance),
             "_class": "group",
             'name': figma_instance.name
         }
+        del obj['style']
+        return obj
     else:
-        return {
+        obj = {
             **base.base_shape(figma_instance),
             "_class": "symbolInstance",
             'name': figma_instance.name,
             'symbolID': utils.gen_object_id((figma_instance['symbolData']['symbolID']['sessionID'], figma_instance['symbolData']['symbolID']['localID'])),
             'overrideValues': sketch_overrides
         }
+        del obj['style']
+        return obj
 
 
 def master_instance(figma_symbol):
-    return {
+    obj = {
         **base.base_shape(figma_symbol),
         "_class": "symbolInstance",
         'do_objectID': utils.gen_object_id(figma_symbol.id, b'master_instance'),
         'name': figma_symbol.name,
         'symbolID': utils.gen_object_id(figma_symbol.id)
     }
+    del obj['style']
+    return obj
 
 def convert_overrides(figma_instance):
     sketch_overrides = []
     for override in figma_instance['symbolData']['symbolOverrides']:
-        assert len(override['guidPath']['guids']) == 1 # What does it mean to have multiple guids here?
+        # This happen when overriding something in a nested symbol instance (override something
+        # in the nested symbol. First GUID is nested symbol instance, Second GUID is layer
+        # inside the nested symbol
+        # TODO
+        assert len(override['guidPath']['guids']) == 1
         guid = override['guidPath']['guids'][0]
         uuid = utils.gen_object_id((guid['sessionID'], guid['localID']))
 

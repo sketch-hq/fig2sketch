@@ -1,4 +1,4 @@
-from . import  artboard, instance
+from . import  artboard, instance, group
 from .context import context
 import utils
 
@@ -41,6 +41,9 @@ def convert(figma_symbol):
 
 
 def move_to_symbols_page(figma_symbol, sketch_symbol):
+    # Apply frame transforms
+    group.post_process_frame(figma_symbol, sketch_symbol)
+
     # After the entire symbol is converted, move it to the Symbols page
     context.add_symbol(sketch_symbol)
 

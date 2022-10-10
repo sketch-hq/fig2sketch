@@ -138,7 +138,7 @@ def override_characters_style(figma_text):
     # List of glyphs, taken in pairs (AB, BC, CD). Used to know when to switch from
     # one glyph to another. Used to identify emojis that can span multiple codepoints
     # Add a fake glyph to the end that never gets reached for iteration purposes
-    glyph_pairs = itertools.pairwise(figma_text['textData']['glyphs'] + [{'firstCharacter': 0}])
+    glyph_pairs = itertools.pairwise(figma_text['textData']['glyphs'] + [{'firstCharacter': -1}])
     current_glyph, next_glyph = next(glyph_pairs)
 
     # Keep track of what the previous style was and when it started
