@@ -51,6 +51,7 @@ def masking(figma):
         sketch['clippingMaskMode'] = CLIPPING_MODE[figma.maskType]
     else:
         sketch['hasClippingMask'] = False
+        sketch['clippingMaskMode'] = 0
 
     return sketch
 

@@ -74,7 +74,7 @@ def convert(figma_text):
             'attributes': override_characters_style(figma_text),
         },
          # No good way to calculate this, so we overestimate by setting the frame
-        'glyphBounds': f'{{{{0, 0}}, {{{figma_text.size["x"]}, {figma_text.size["y"]}}}}}',
+        'glyphBounds': f'{{{{0, 0}}, {{{round(figma_text.size["x"])}, {round(figma_text.size["y"])}}}}}',
         'lineSpacingBehaviour': 2,
         'textBehaviour': TEXT_BEHAVIOUR[figma_text.get('textAutoResize', 'NONE')],
         'layers': []
@@ -91,7 +91,7 @@ def convert(figma_text):
 def text_style(figma_text):
     if figma_text['fontName']['family'] != EMOJI_FONT:
         fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'])
-    return {
+    obj = {
         '_class': 'textStyle',
         'encodedAttributes': {
             **text_transformation(figma_text),
@@ -117,11 +117,15 @@ def text_style(figma_text):
                 '_class': 'paragraphStyle',
                 'alignment': AlignHorizontal[figma_text['textAlignHorizontal']],
                 **line_height(figma_text),
-                'paragraphSpacing': figma_text['paragraphSpacing'] if 'paragraphSpacing' in figma_text else 0
             }
         },
         'verticalAlignment': AlignVertical[figma_text['textAlignVertical']],
     }
+
+    if 'paragraphSpacing' in figma_text:
+        obj['encodedAttributes']['paragraphStyle']['paragraphSpacing'] = figma_text['paragraphSpacing']
+
+    return obj
 
 
 def override_characters_style(figma_text):

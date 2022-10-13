@@ -147,7 +147,16 @@ def make_clipping_rect(guid, frame):
                 'contrast': 1,
                 'hue': 0,
                 'saturation': 1
-            }
+            },
+            'blur': {
+                '_class': 'blur',
+                'center': '{0.5, 0.5}',
+                'isEnabled': False,
+                'motionAngle': 0,
+                'radius': 10,
+                'saturation': 1,
+                'type': 0
+            },
         },
         'edited': False,
         'isClosed': True,
@@ -156,6 +165,7 @@ def make_clipping_rect(guid, frame):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{0, 0}',
                 'curveMode': 1,
                 'curveTo': '{0, 0}',
@@ -166,6 +176,7 @@ def make_clipping_rect(guid, frame):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{1, 0}',
                 'curveMode': 1,
                 'curveTo': '{1, 0}',
@@ -176,6 +187,7 @@ def make_clipping_rect(guid, frame):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{1, 1}',
                 'curveMode': 1,
                 'curveTo': '{1, 1}',
@@ -186,6 +198,7 @@ def make_clipping_rect(guid, frame):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{0, 1}',
                 'curveMode': 1,
                 'curveTo': '{0, 1}',

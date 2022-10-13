@@ -25,7 +25,8 @@ def base_shape(figma_node):
         'resizingConstraint': resizing_constraint(figma_node),
         'resizingType': 0,
         **process_styles(figma_node),
-        **prototyping_flow(figma_node)
+        **prototyping_flow(figma_node),
+        'isTemplate': False
     }
 
 

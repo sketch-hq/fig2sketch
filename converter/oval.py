@@ -13,6 +13,7 @@ def convert(figma_ellipse):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{0.77614237490000004, 1}',
                 'curveMode': 2,
                 'curveTo': '{0.22385762510000001, 1}',
@@ -23,6 +24,7 @@ def convert(figma_ellipse):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{1, 0.22385762510000001}',
                 'curveMode': 2,
                 'curveTo': '{1, 0.77614237490000004}',
@@ -33,6 +35,7 @@ def convert(figma_ellipse):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{0.22385762510000001, 0}',
                 'curveMode': 2,
                 'curveTo': '{0.77614237490000004, 0}',
@@ -43,6 +46,7 @@ def convert(figma_ellipse):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{0, 0.77614237490000004}',
                 'curveMode': 2,
                 'curveTo': '{0, 0.22385762510000001}',
@@ -51,6 +55,5 @@ def convert(figma_ellipse):
                 'point': '{0, 0.5}'
             }
         ],
-        'fixedRadius': 0,
-        'hasConvertedToNewRoundCorners': True
+        'fixedRadius': 0
     }

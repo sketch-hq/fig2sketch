@@ -84,7 +84,9 @@ def convert(figma_node):
             'contrast': 1,
             'hue': 0,
             'saturation': 1
-        }
+        },
+        'startMarkerType': 0,
+        'endMarkerType': 0,
     }
 
 
@@ -113,6 +115,39 @@ def convert_fill(figma_node, figma_fill):
         **fill_type_specific_attributes(figma_node, figma_fill)
     }
 
+DISABLED_GRADIENT = {
+    'gradient': {
+        '_class': 'gradient',
+        'elipseLength': 0,
+        'from': '{0.5, 0}',
+        'gradientType': 0,
+        'stops': [
+        {
+            '_class': 'gradientStop',
+            'color': {
+            '_class': 'color',
+            'alpha': 1,
+            'blue': 1,
+            'green': 1,
+            'red': 1
+            },
+            'position': 0
+        },
+        {
+            '_class': 'gradientStop',
+            'color': {
+            '_class': 'color',
+            'alpha': 1,
+            'blue': 0,
+            'green': 0,
+            'red': 0
+            },
+            'position': 1
+        }
+        ],
+        'to': '{0.5, 1}'
+    }
+}
 
 def fill_type_specific_attributes(figma_node, figma_fill):
     match figma_fill:
@@ -121,7 +156,8 @@ def fill_type_specific_attributes(figma_node, figma_fill):
         case {'type': 'SOLID'}:
             return {
                 'fillType': 0,
-                'color': convert_color(figma_fill)
+                'color': convert_color(figma_fill),
+                **DISABLED_GRADIENT
             }
         case {'type': 'IMAGE'}:
             return {
@@ -134,7 +170,8 @@ def fill_type_specific_attributes(figma_node, figma_fill):
                 'noiseIndex': 0,
                 'noiseIntensity': 0,
                 'patternFillType': PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
-                'patternTileScale': 1
+                'patternTileScale': 1,
+                **DISABLED_GRADIENT
             }
         case _:
             return convert_gradient(figma_node, figma_fill)

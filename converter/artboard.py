@@ -8,6 +8,7 @@ def convert(figma_frame):
         '_class': 'artboard',
         'do_objectID': utils.gen_object_id(figma_frame.id),
         'booleanOperation': -1,
+        'clippingMaskMode': 0,
         'exportOptions': {
             '_class': 'exportOptions',
             'exportFormats': [],
@@ -15,13 +16,37 @@ def convert(figma_frame):
             'layerOptions': 0,
             'shouldTrim': False
         },
+        # TODO: Get this from Figma
+        'backgroundColor': {
+            '_class': 'color',
+            'alpha': 1,
+            'blue': 1,
+            'green': 1,
+            'red': 1
+        },
         **positioning.convert(figma_frame),
+        'includeBackgroundColorInExport': False,
         'isFixedToViewport': False,
         'isFlippedHorizontal': False,
         'isFlippedVertical': False,
         'isLocked': False,
         'isTemplate': False,
         'isVisible': True,
+        'groupLayout': {
+            '_class': 'MSImmutableFreeformGroupLayout'
+        },
+        'hasBackgroundColor': False,
+        'hasClippingMask': False,
+        'horizontalRulerData': {
+            '_class': 'rulerData',
+            'base': 0,
+            'guides': []
+        },
+        'verticalRulerData': {
+            '_class': 'rulerData',
+            'base': 0,
+            'guides': []
+        },
         'layerListExpandedType': 2,
         'name': figma_frame.name,
         'nameIsFixed': False,
@@ -34,6 +59,7 @@ def convert(figma_frame):
             'borders': [],
             'borderOptions': {
                 '_class': 'borderOptions',
+                'dashPattern': [],
                 'isEnabled': True,
                 'lineCapStyle': 0,
                 'lineJoinStyle': 0
@@ -57,7 +83,16 @@ def convert(figma_frame):
                 'contrast': 1,
                 'hue': 0,
                 'saturation': 1
-            }
+            },
+            'blur': {
+                '_class': 'blur',
+                'center': '{0.5, 0.5}',
+                'isEnabled': False,
+                'motionAngle': 0,
+                'radius': 10,
+                'saturation': 1,
+                'type': 0
+            },
         },
         'hasClickThrough': False,
         'resizesContent': True,
@@ -83,9 +118,11 @@ def prototyping_information(figma_frame):
             '_class': 'MSImmutablePrototypeViewport',
             # 'libraryID': 'EB972BCC-0467-4E50-998E-0AC5A39517F0',
             'name': figma_canvas['prototypeDevice']['presetIdentifier'],
-            'size': f"{{{figma_canvas['prototypeDevice']['size']['x']}, {figma_canvas['prototypeDevice']['size']['y']}}}",
+            'size': f"{{{round(figma_canvas['prototypeDevice']['size']['x'])}, {round(figma_canvas['prototypeDevice']['size']['y'])}}}",
             # 'templateID': '55992B99-92E5-4A93-AF90-B3A461675C05'
         },
+        'overlayBackgroundInteraction': 0,
+        'presentationStyle': 0
     }
 
     return obj

@@ -5,6 +5,7 @@ def convert(figma_item):
     flip, rotation = guess_flip(figma_item)
     coordinates = transform_frame(figma_item)
 
+
     return {
         'frame': {
             '_class': 'rect',
@@ -14,7 +15,7 @@ def convert(figma_item):
             'x': coordinates[0],
             'y': coordinates[1]
         },
-        'rotation': rotation,
+        'rotation': rotation or 0,
         'isFlippedHorizontal': flip[0],
         'isFlippedVertical': flip[1],
     }

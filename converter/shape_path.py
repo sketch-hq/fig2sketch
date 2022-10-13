@@ -52,6 +52,7 @@ def convert_line(figma_line):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{0, 0}',
                 'curveMode': 1,
                 'curveTo': '{0, 0}',
@@ -62,6 +63,7 @@ def convert_line(figma_line):
             {
                 '_class': 'curvePoint',
                 'cornerRadius': 0,
+                'cornerStyle': 0,
                 'curveFrom': '{1, 0}',
                 'curveMode': 1,
                 'curveTo': '{1, 0}',

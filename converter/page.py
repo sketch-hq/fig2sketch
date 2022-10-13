@@ -50,10 +50,20 @@ def make_page(uuid, name):
             'startDecorationType': 0,
             'startMarkerType': 0,
             'endMarkerType': 0,
-            'windingRule': 1
+            'windingRule': 1,
+            'blur': {
+                '_class': 'blur',
+                'center': '{0.5, 0.5}',
+                'isEnabled': False,
+                'motionAngle': 0,
+                'radius': 10,
+                'saturation': 1,
+                'type': 0
+            },
         },
         'hasClickThrough': True,
-        'includeInCloudUpload': True,
+        'includeInCloudUpload': 1,
+        'isTemplate': False,
         'horizontalRulerData': {
             '_class': 'rulerData',
             'base': 0,
