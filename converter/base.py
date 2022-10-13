@@ -24,7 +24,8 @@ def base_shape(figma_node):
         'nameIsFixed': False,
         'resizingConstraint': resizing_constraint(figma_node),
         'resizingType': 0,
-        **process_styles(figma_node)
+        **process_styles(figma_node),
+        **prototyping_flow(figma_node)
     }
 
 
@@ -188,3 +189,78 @@ def resizing_constraint(figma_node):
     h = HORIZONTAL_CONSTRAINT[figma_node.horizontalConstraint]
     v = HORIZONTAL_CONSTRAINT[figma_node.verticalConstraint] << 3
     return h + v
+
+
+ANIMATION_TYPE = {
+    'INSTANT_TRANSITION': -1,
+    'SLIDE_FROM_LEFT': 1,
+    'SLIDE_FROM_RIGHT': 0,
+    'SLIDE_FROM_TOP': 3,
+    'SLIDE_FROM_BOTTOM': 2,
+    'PUSH_FROM_LEFT': 1,
+    'PUSH_FROM_RIGHT': 0,
+    'PUSH_FROM_TOP': 3,
+    'PUSH_FROM_BOTTOM': 2,
+    'MOVE_FROM_LEFT': 1,
+    'MOVE_FROM_RIGHT': 0,
+    'MOVE_FROM_TOP': 3,
+    'MOVE_FROM_BOTTOM': 2,
+    'SLIDE_OUT_TO_LEFT': 1,
+    'SLIDE_OUT_TO_RIGHT': 0,
+    'SLIDE_OUT_TO_TOP': 3,
+    'SLIDE_OUT_TO_BOTTOM': 2,
+    'MOVE_OUT_TO_LEFT': 1,
+    'MOVE_OUT_TO_RIGHT': 0,
+    'MOVE_OUT_TO_TOP': 3,
+    'MOVE_OUT_TO_BOTTOM': 2,
+    'MAGIC_MOVE': -1,
+    'SMART_ANIMATE': -1,
+    'SCROLL_ANIMATE': -1,
+}
+
+
+# TODO: Is this called from every node type (groups?)
+def prototyping_flow(figma_node):
+    # TODO: Overlays
+    # TODO: What happens with multiple actions?
+    flow = None
+    for interaction in figma_node.get('prototypeInteractions', []):
+        if interaction['event']['interactionType'] != 'ON_CLICK':
+            print('Unsupported interaction type')
+            continue
+
+        for action in interaction['actions']:
+            # TODO: Back is SCROLL for some reason??? or just irrelevant?
+            if action['navigationType'] not in ['NAVIGATE', 'SCROLL']:
+                print('Unsupported action type')
+                continue
+
+            if flow is not None:
+                print("Unsupported multiple actions per layer")
+                continue
+
+            # TODO: Connection type
+            if action['connectionType'] == 'BACK':
+                destination = 'back'
+            elif action['connectionType'] == 'INTERNAL_NODE':
+                if 'transitionNodeID' in action:
+                    destination = utils.gen_object_id((action['transitionNodeID']['sessionID'], action['transitionNodeID']['localID']))
+                else:
+                    destination = None
+            elif action['connectionType'] == 'NONE':
+                destination = None
+            else:
+                print(f"Unsupported connection type {action['connectionType']}")
+                continue
+
+            flow = {
+                '_class': 'MSImmutableFlowConnection',
+                'animationType': ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
+                'maintainScrollPosition': action.get('transitionPreserveScroll', False),
+                'shouldCloseExistingOverlays': False # TODO ???
+            }
+
+            if destination is not None:
+                flow['destinationArtboardID'] = destination
+
+    return {'flow': flow} if flow else {}
