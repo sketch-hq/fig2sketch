@@ -54,6 +54,5 @@ def convert(figma_ellipse):
                 'hasCurveTo': True,
                 'point': '{0, 0.5}'
             }
-        ],
-        'fixedRadius': 0
+        ]
     }

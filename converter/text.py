@@ -74,10 +74,9 @@ def convert(figma_text):
             'attributes': override_characters_style(figma_text),
         },
          # No good way to calculate this, so we overestimate by setting the frame
-        'glyphBounds': f'{{{{0, 0}}, {{{round(figma_text.size["x"])}, {round(figma_text.size["y"])}}}}}',
+        'glyphBounds': f'{{{{0, 0}}, {{{figma_text.size["x"]}, {figma_text.size["y"]}}}}}',
         'lineSpacingBehaviour': 2,
-        'textBehaviour': TEXT_BEHAVIOUR[figma_text.get('textAutoResize', 'NONE')],
-        'layers': []
+        'textBehaviour': TEXT_BEHAVIOUR[figma_text.get('textAutoResize', 'NONE')]
     }
 
     obj['style']['textStyle'] = text_style(figma_text)

@@ -24,9 +24,6 @@ def convert(figma_vector):
         'edited': True,
         'pointRadiusBehaviour': 1,
         **points,
-        "fixedRadius": 0,
-        "needsConvertionToNewRoundCorners": False,
-        "hasConvertedToNewRoundCorners": True
     }
 
     obj['style'].update(styles)
@@ -71,9 +68,6 @@ def convert_line(figma_line):
                 'hasCurveTo': False,
                 'point': '{1, 1}'
             }],
-        "fixedRadius": 0,
-        "needsConvertionToNewRoundCorners": False,
-        "hasConvertedToNewRoundCorners": True
     }
 
 

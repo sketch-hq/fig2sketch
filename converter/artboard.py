@@ -118,7 +118,7 @@ def prototyping_information(figma_frame):
             '_class': 'MSImmutablePrototypeViewport',
             # 'libraryID': 'EB972BCC-0467-4E50-998E-0AC5A39517F0',
             'name': figma_canvas['prototypeDevice']['presetIdentifier'],
-            'size': f"{{{round(figma_canvas['prototypeDevice']['size']['x'])}, {round(figma_canvas['prototypeDevice']['size']['y'])}}}",
+            'size': f"{{{figma_canvas['prototypeDevice']['size']['x']}, {figma_canvas['prototypeDevice']['size']['y']}}}",
             # 'templateID': '55992B99-92E5-4A93-AF90-B3A461675C05'
         },
         'overlayBackgroundInteraction': 0,

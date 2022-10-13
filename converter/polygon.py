@@ -17,6 +17,5 @@ def convert(figma_polygon):
         'pointRadiusBehaviour': 1,
         'numberOfPoints': figma_polygon.count,
         'points': points,
-        'fixedRadius': 0,
         'hasConvertedToNewRoundCorners': True
     }

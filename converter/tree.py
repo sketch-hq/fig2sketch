@@ -34,7 +34,11 @@ def convert_node(figma_node, parent_type):
 
     children = [convert_node(child, figma_node['type']) for child in
                 figma_node.get('children', [])]
-    sketch_item['layers'] = children
+
+    # TODO: Determine who needs layers per node type
+    # e.g: rectangles never have children, groups do
+    if children:
+        sketch_item['layers'] = children
 
     post_process = POST_PROCESSING.get(type_)
     if post_process:

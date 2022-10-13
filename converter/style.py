@@ -91,12 +91,20 @@ def convert(figma_node):
 
 
 def convert_border(figma_node, figma_border):
-    return {
+    obj = {
         **convert_fill(figma_node, figma_border),
         '_class': 'border',
         'position': BORDER_POSITION[figma_node['strokeAlign']],
         'thickness': figma_node['strokeWeight'],
     }
+
+    # Fill-only properties, no borders
+    del obj['noiseIndex']
+    del obj['noiseIntensity']
+    del obj['patternFillType']
+    del obj['patternTileScale']
+
+    return obj
 
 
 def convert_fill(figma_node, figma_fill):

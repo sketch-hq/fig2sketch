@@ -72,7 +72,8 @@ def process_styles(figma_node):
 
                     style_attributes['style']['borders'] = [
                         {
-                            **fill_style,
+                            # TODO: list of properties shared with style convert_borders. This is ugly
+                            **{k:v for k,v in fill_style.items() if k not in ['noiseIndex', 'noiseIntensity', 'patternFillType', 'patternTileScale']},
                             **base_border
                         } for fill_style in converted_style['fills']
                     ]
