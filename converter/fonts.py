@@ -8,15 +8,16 @@ import shutil
 from zipfile import ZipFile
 import appdirs
 import utils
+from collections import defaultdict
 
 figma_fonts = {}
 fonts_cache_dir = appdirs.user_cache_dir("Figma2Sketch", "Sketch") + "/fonts"
 os.makedirs(fonts_cache_dir, exist_ok=True)
 
 
-def record_figma_font(ffamily, fsfamily):
+def record_figma_font(ffamily, fsfamily, psname):
     if ffamily in figma_fonts:
-        figma_fonts[ffamily][fsfamily] = ""
+        figma_fonts[ffamily][fsfamily] = psname
     else:
         figma_fonts[ffamily] = {}
 
@@ -38,6 +39,7 @@ def download_and_unzip_webfont(ffamily):
 
 
 def organize_sketch_fonts():
+    global figma_fonts
     sketch_fonts_path = "output/fonts"
 
     if not figma_fonts:
@@ -45,17 +47,30 @@ def organize_sketch_fonts():
 
     os.makedirs(sketch_fonts_path, exist_ok=True)
 
+    # TODO: Fix this mess with reusing font dict
+    new_figma_fonts = defaultdict(dict)
+
     for root, dirnames, filenames in os.walk(fonts_cache_dir):
         for filename in filenames:
             if fnmatch.fnmatch(filename, "*.ttf"):
                 ffamily, fsfamily, psname = get_font_family_from_file(os.path.join(root, filename))
 
-                if ffamily in figma_fonts and fsfamily in figma_fonts[ffamily]:
+                if ffamily in figma_fonts and fsfamily in figma_fonts[ffamily] and figma_fonts[ffamily][fsfamily] == psname:
+                    prev = new_figma_fonts.get(ffamily, {}).get(fsfamily)
+                    if prev:
+                        # TODO: Prefer non-variable fonts?
+                        print("FONT ALREADY REGISTERED")
+                        print("Previous ", prev)
+                        print("Current ", filename)
+                        continue
+
                     file = open(os.path.join(root, filename), 'rb').read()
                     fhash = utils.generate_file_ref(file)
-                    figma_fonts[ffamily][fsfamily] = (fhash, psname)
+                    new_figma_fonts[ffamily][fsfamily] = (fhash, psname)
                     fonts_path = os.path.join(sketch_fonts_path, fhash)
                     shutil.copyfile(os.path.join(root, filename), fonts_path)
+
+    figma_fonts = new_figma_fonts
 
 
 def get_font_family_from_file(font_file):

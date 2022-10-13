@@ -89,7 +89,7 @@ def convert(figma_text):
 
 def text_style(figma_text):
     if figma_text['fontName']['family'] != EMOJI_FONT:
-        fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'])
+        fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'], figma_text['fontName']['postscript'])
     obj = {
         '_class': 'textStyle',
         'encodedAttributes': {
