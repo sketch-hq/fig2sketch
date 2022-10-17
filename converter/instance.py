@@ -1,4 +1,4 @@
-from . import base, tree
+from . import base, tree, style, group
 import utils
 from .context import context
 import copy
@@ -9,22 +9,18 @@ def convert(figma_instance):
     if sketch_overrides is None:
         # Modify Figma tree in place, with the dettached symbol subtree
         dettach_symbol(figma_instance)
-        obj = {
-            **base.base_shape(figma_instance),
-            "_class": "group",
-            'name': figma_instance.name
-        }
-        del obj['style']
-        return obj
+        return group.convert(figma_instance)
     else:
         obj = {
             **base.base_shape(figma_instance),
             "_class": "symbolInstance",
             'name': figma_instance.name,
             'symbolID': utils.gen_object_id((figma_instance['symbolData']['symbolID']['sessionID'], figma_instance['symbolData']['symbolID']['localID'])),
-            'overrideValues': sketch_overrides
+            'overrideValues': sketch_overrides,
+            'preservesSpaceWhenHidden': False,
+            'scale': 1
         }
-        del obj['style']
+        obj['style'] = style.DEFAULT_STYLE
         return obj
 
 
@@ -34,9 +30,12 @@ def master_instance(figma_symbol):
         "_class": "symbolInstance",
         'do_objectID': utils.gen_object_id(figma_symbol.id, b'master_instance'),
         'name': figma_symbol.name,
-        'symbolID': utils.gen_object_id(figma_symbol.id)
+        'symbolID': utils.gen_object_id(figma_symbol.id),
+        'preservesSpaceWhenHidden': False,
+        'overrideValues': [],
+        'scale': 1
     }
-    del obj['style']
+    obj['style'] = style.DEFAULT_STYLE
     return obj
 
 def convert_overrides(figma_instance):

@@ -26,11 +26,21 @@ def add_points(point1, point2):
 
 
 def np_point_to_string(point):
-    return f"{{{point[0]}, {point[1]}}}"
+    return x_y_to_string(point[0], point[1])
 
 
 def point_to_string(point):
-    return f"{{{point['x']}, {point['y']}}}"
+    return x_y_to_string(point['x'], point['y'])
+
+
+def x_y_to_string(x, y):
+    # Remove .0 from "integers"
+    # This is to make it more similar to Sketch (easier to compare docs)
+    # But works without it
+    # TODO: Should we remove this for speed?
+    if x == int(x): x = int(x)
+    if y == int(y): y = int(y)
+    return f"{{{x}, {y}}}"
 
 
 # TODO: Call this function from every shape/image/etc

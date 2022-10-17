@@ -1,4 +1,4 @@
-from . import  artboard, instance, group
+from . import  artboard, instance, group, style
 from .context import context
 import utils
 
@@ -19,6 +19,12 @@ def convert(figma_symbol):
     # A symbol is an artboard with a symbolID
     master = artboard.convert(figma_symbol)
     master['_class'] = 'symbolMaster'
+
+    master['allowsOverrides'] = True
+    master['includeBackgroundColorInInstance'] = False
+    master['overrideProperties'] = []
+
+    master['style'] = style.DEFAULT_STYLE
 
     # Keep the base ID as the symbol reference, create a new one for the container
     master['symbolID'] = utils.gen_object_id(figma_symbol.id)

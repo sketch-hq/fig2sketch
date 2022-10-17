@@ -1,4 +1,4 @@
-from . import base, rectangle
+from . import base, rectangle, style
 import utils
 import numpy as np
 
@@ -7,6 +7,10 @@ def convert(figma_group):
         **base.base_shape(figma_group),
         '_class': 'group',
         'name': figma_group.name,
+        'groupLayout': {
+            '_class': 'MSImmutableFreeformGroupLayout'
+        },
+        'hasClickThrough': False,
     }
 
 def post_process_frame(figma_group, sketch_group):
@@ -27,7 +31,9 @@ def post_process_frame(figma_group, sketch_group):
     background_rect['name'] = 'Frame background'
     background_rect['do_objectID'] = utils.gen_object_id(figma_group.id, b'background')
     background_rect['resizingConstraint'] = 63
-    del sketch_group['style']
+
+    # del sketch_group['style']
+    sketch_group['style'] = style.DEFAULT_STYLE
 
     needs_clip_mask = not figma_group.get('frameMaskDisabled', False)
     if needs_clip_mask:
@@ -98,6 +104,7 @@ def make_clipping_rect(guid, frame):
     return {
         '_class': 'rectangle',
         'do_objectID': utils.gen_object_id(guid, b'frame_mask'),
+        'name': 'Clip',
         'booleanOperation': -1,
         'exportOptions': {
             "_class": "exportOptions",
@@ -126,15 +133,28 @@ def make_clipping_rect(guid, frame):
         'nameIsFixed': False,
         'resizingConstraint': 0,
         'resizingType': 0,
+        'shouldBreakMaskChain': False,
+        'isTemplate': False,
+        'needsConvertionToNewRoundCorners': False,
         'style': {
             '_class': 'style',
             'do_objectID': utils.gen_object_id(guid, b'frame_mask_style'),
-            # TODO: Border options
+             "borderOptions": {
+               "_class": "borderOptions",
+               "dashPattern": [],
+               "isEnabled": True,
+               "lineCapStyle": 0,
+               "lineJoinStyle": 0
+             },
             'borders': [],
             'fills': [],
             'miterLimit': 10,
             'windingRule': 0,
             # TODO: Effects
+            'endMarkerType': 0,
+            'innerShadows': [],
+            'shadows': [],
+            'startMarkerType': 0,
             'contextSettings': {
                 '_class': 'graphicsContextSettings',
                 'blendMode': 0,

@@ -30,6 +30,13 @@ TEXT_BEHAVIOUR = {
     'HEIGHT': 1,
 }
 
+# Forces a mask on resizingContraints if the text is set to auto-width/height
+CONSTRAINT_MASK_FOR_AUTO_RESIZE = {
+    'NONE': 0b111111,
+    'WIDTH_AND_HEIGHT': 0b101101,
+    'HEIGHT': 0b101111,
+}
+
 # Sketch (CoreText?) scales up emojis for small font sizes.
 # This table undoes this converstion, so we can match Figma better
 EMOJI_SIZE_ADJUST = {
@@ -62,6 +69,7 @@ EMOJI_SIZE_ADJUST = {
 EMOJI_FONT = 'AppleColorEmoji'
 
 def convert(figma_text):
+    text_resize = figma_text.get('textAutoResize', 'NONE')
     obj = {
         '_class': 'text',
         **base.base_shape(figma_text),
@@ -74,10 +82,11 @@ def convert(figma_text):
             'attributes': override_characters_style(figma_text),
         },
          # No good way to calculate this, so we overestimate by setting the frame
-        'glyphBounds': f'{{{{0, 0}}, {{{figma_text.size["x"]}, {figma_text.size["y"]}}}}}',
+        'glyphBounds': f'{{{{0, 0}}, {utils.point_to_string(figma_text.size)}}}',
         'lineSpacingBehaviour': 2,
-        'textBehaviour': TEXT_BEHAVIOUR[figma_text.get('textAutoResize', 'NONE')]
+        'textBehaviour': TEXT_BEHAVIOUR[text_resize]
     }
+    obj['resizingConstraint'] &= CONSTRAINT_MASK_FOR_AUTO_RESIZE[text_resize]
 
     obj['style']['textStyle'] = text_style(figma_text)
 
@@ -121,7 +130,7 @@ def text_style(figma_text):
         'verticalAlignment': AlignVertical[figma_text['textAlignVertical']],
     }
 
-    if 'paragraphSpacing' in figma_text:
+    if figma_text.get('paragraphSpacing', 0) != 0:
         obj['encodedAttributes']['paragraphStyle']['paragraphSpacing'] = figma_text['paragraphSpacing']
 
     return obj
@@ -145,7 +154,7 @@ def override_characters_style(figma_text):
     current_glyph, next_glyph = next(glyph_pairs)
 
     # Keep track of what the previous style was and when it started
-    last_style_override = {}
+    last_style = text_style(figma_text)
     first_pos = 0
 
     # Lengths in Figma are given in codepoints. In Sketch, they are given in UTF16 code-units
@@ -171,18 +180,18 @@ def override_characters_style(figma_text):
             if scaled_font_size:
                 style_override['fontSize'] = scaled_font_size
 
-        # If the style changed, convert the previous style run
-        if style_override != last_style_override and pos != 0:
+        # If the style changed (as seen by Sketch), convert the previous style run
+        current_style = text_style({**figma_text, **style_override})
+        if current_style != last_style and pos != 0:
             attributes.append({
                 '_class': 'stringAttribute',
                 'location': first_pos,
                 'length': sketch_pos - first_pos,
-                'attributes':
-                    text_style({**figma_text, **last_style_override})['encodedAttributes']
+                'attributes': last_style['encodedAttributes']
             })
             first_pos = sketch_pos
 
-        last_style_override = style_override
+        last_style = current_style
 
         # Characters from supplementary planes are encoded in UTF16 as 2 code units
         # Advance the Sketch position accordingly
@@ -196,8 +205,7 @@ def override_characters_style(figma_text):
         '_class': 'stringAttribute',
         'location': first_pos,
         'length': sketch_pos - first_pos,
-        'attributes':
-            text_style({**figma_text, **last_style_override})['encodedAttributes']
+        'attributes': last_style['encodedAttributes']
     })
 
     return attributes

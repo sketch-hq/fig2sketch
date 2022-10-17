@@ -157,6 +157,16 @@ DISABLED_GRADIENT = {
     }
 }
 
+DEFAULT_COLOR = {
+    'color': {
+        '_class': 'color',
+        'alpha': 1,
+        'blue': 0.847,
+        'green': 0.847,
+        'red': 0.847
+    }
+}
+
 def fill_type_specific_attributes(figma_node, figma_fill):
     match figma_fill:
         case {'type': 'EMOJI'}:
@@ -179,7 +189,8 @@ def fill_type_specific_attributes(figma_node, figma_fill):
                 'noiseIntensity': 0,
                 'patternFillType': PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
                 'patternTileScale': 1,
-                **DISABLED_GRADIENT
+                **DISABLED_GRADIENT,
+                **DEFAULT_COLOR,
             }
         case _:
             return convert_gradient(figma_node, figma_fill)
@@ -236,6 +247,7 @@ def convert_gradient(figma_node, figma_fill):
                                      figma_fill['transform']['m00']) / 2 / math.pi
 
     gradient_fill = {
+        **DEFAULT_COLOR,
         'fillType': 1,
         'gradient': {
             '_class': 'gradient',
@@ -390,3 +402,46 @@ def context_settings(figma_node):
         'blendMode': blend_mode,
         'opacity': opacity
     }
+
+
+DEFAULT_STYLE = {
+    '_class': 'style',
+    'blur': {
+        '_class': 'blur',
+        'center': '{0.5, 0.5}',
+        'isEnabled': False,
+        'motionAngle': 0,
+        'radius': 10,
+        'saturation': 1,
+        'type': 0
+    },
+    'borderOptions': {
+        '_class': 'borderOptions',
+        'dashPattern': [],
+        'isEnabled': True,
+        'lineCapStyle': 0,
+        'lineJoinStyle': 0
+    },
+    'borders': [],
+    'colorControls': {
+        '_class': 'colorControls',
+        'brightness': 0,
+        'contrast': 1,
+        'hue': 0,
+        'isEnabled': False,
+        'saturation': 1
+    },
+    'contextSettings': {
+        '_class': 'graphicsContextSettings',
+        'blendMode': 0,
+        'opacity': 1
+    },
+    'do_objectID': 'A51794A6-A9E5-4E68-911B-99269CFAC3B9',
+    'endMarkerType': 0,
+    'fills': [],
+    'innerShadows': [],
+    'miterLimit': 10,
+    'shadows': [],
+    'startMarkerType': 0,
+    'windingRule': 1
+}

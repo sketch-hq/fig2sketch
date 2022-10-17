@@ -17,7 +17,7 @@ def convert(figma_star):
         'pointRadiusBehaviour': 1,
         'numberOfPoints': figma_star.count,
         'points': points,
-        'hasConvertedToNewRoundCorners': True
+        'radius': figma_star.starInnerScale
     }
 
 

@@ -18,6 +18,7 @@ def convert(figma_bool_ops):
         "groupLayout": {
             "_class": "MSImmutableFreeformGroupLayout"
         },
+        'windingRule': 0
     }
 
 

@@ -146,12 +146,13 @@ def make_point(figma_node, x, y, figma_point={}):
     return {
         '_class': 'curvePoint',
         'cornerRadius': adjust_corner_radius(figma_node, figma_point),
+        'cornerStyle': 0,
         'curveFrom': '{0, 0}',
         'curveMode': adjust_curve_mode(figma_point, 'STRAIGHT'),
         'curveTo': '{0, 0}',
         'hasCurveFrom': False,
         'hasCurveTo': False,
-        'point': f'{{{x}, {y}}}'
+        'point': utils.x_y_to_string(x, y)
     }
 
 

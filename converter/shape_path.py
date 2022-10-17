@@ -149,7 +149,17 @@ def points_marker_types(figma_vector, start_point, end_point):
     if ('style' in end_point) and ('strokeCap' in end_point['style']):
         end_marker_type = STROKE_CAP_TO_MARKER_TYPE[end_point['style']['strokeCap']]
 
-    return {
+    obj = {
         'startMarkerType': start_marker_type,
         'endMarkerType': end_marker_type
     }
+
+    # Legacy properties, can be skipped. Doing this to match Sketch exactly
+    # TODO: Should we remove this?
+    if start_marker_type > 0 or end_marker_type > 0:
+        if start_marker_type < 4:
+            obj['startDecorationType'] = start_marker_type
+        if end_marker_type < 4:
+            obj['endDecorationType'] = end_marker_type
+
+    return obj

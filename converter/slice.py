@@ -26,6 +26,7 @@ def convert(figma_slice):
         'resizingType': 0,
         'hasBackgroundColor': False,
         'shouldBreakMaskChain': False,
+        'isTemplate': False,
         'backgroundColor': {
             '_class': 'color',
             'alpha': 1,

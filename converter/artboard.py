@@ -106,7 +106,11 @@ def prototyping_information(figma_frame):
     # Some information about the prototypye is in the Figma page
     figma_canvas = context.figma_node(figma_frame['parent']['id'])
     if 'prototypeDevice' not in figma_canvas:
-        return {}
+        return {
+            'isFlowHome': False,
+            'overlayBackgroundInteraction': 0,
+            'presentationStyle': 0
+        }
 
     # TODO: Overflow scrolling means making the artboard bigger (fit the child bounds)
     if figma_frame.get('scrollDirection', 'NONE') != 'NONE':
@@ -118,7 +122,7 @@ def prototyping_information(figma_frame):
             '_class': 'MSImmutablePrototypeViewport',
             # 'libraryID': 'EB972BCC-0467-4E50-998E-0AC5A39517F0',
             'name': figma_canvas['prototypeDevice']['presetIdentifier'],
-            'size': f"{{{figma_canvas['prototypeDevice']['size']['x']}, {figma_canvas['prototypeDevice']['size']['y']}}}",
+            'size': utils.point_to_string(figma_canvas['prototypeDevice']['size']),
             # 'templateID': '55992B99-92E5-4A93-AF90-B3A461675C05'
         },
         'overlayBackgroundInteraction': 0,
