@@ -1,4 +1,4 @@
-from . import  artboard, instance, group, style
+from . import artboard, instance, group
 from .context import context
 import utils
 from sketchformat.style import Style
@@ -13,8 +13,9 @@ LAYOUT_ANCHOR = {
     'MIN': 0,
     'CENTER': 1,
     'MAX': 2,
-    'BASELINE': 1 # TODO: Sketch doesn't support this
+    'BASELINE': 1  # TODO: Sketch doesn't support this
 }
+
 
 def convert(figma_symbol):
     # A symbol is an artboard with a symbolID
@@ -25,7 +26,8 @@ def convert(figma_symbol):
     master['includeBackgroundColorInInstance'] = False
     master['overrideProperties'] = []
 
-    master['style'] = Style(do_objectID=utils.gen_object_id(figma_symbol.id, b'symbol_master_style'))
+    master['style'] = Style(
+        do_objectID=utils.gen_object_id(figma_symbol.id, b'symbol_master_style'))
 
     # Keep the base ID as the symbol reference, create a new one for the container
     master['symbolID'] = utils.gen_object_id(figma_symbol.id)
@@ -40,7 +42,7 @@ def convert(figma_symbol):
             '_class': 'MSImmutableInferredGroupLayout',
             'axis': axis,
             'layoutAnchor': anchor,
-            'maxSize': 0, # Unused? Not supported by Figma anyway
+            'maxSize': 0,  # Unused? Not supported by Figma anyway
             'minSize': 0  # Not supported by Figma
         }
 
@@ -54,5 +56,6 @@ def move_to_symbols_page(figma_symbol, sketch_symbol):
     # After the entire symbol is converted, move it to the Symbols page
     context.add_symbol(sketch_symbol)
 
-    # Since we put the Symbol in a different page in Sketch, leave an instance where the Figma master used to be
+    # Since we put the Symbol in a different page in Sketch, leave an instance where the
+    # Figma master used to be
     return instance.master_instance(figma_symbol)

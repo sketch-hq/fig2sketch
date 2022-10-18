@@ -35,7 +35,7 @@ def convert(figma_vector):
 
 def convert_line(figma_line):
     # Shift line by half its width
-    vt = np.array([0, -figma_line.strokeWeight/2])
+    vt = np.array([0, -figma_line.strokeWeight / 2])
     vtr = positioning.apply_transform(figma_line, vt)
     figma_line.transform['m02'] += vtr[0]
     figma_line.transform['m12'] += vtr[1]
@@ -157,7 +157,7 @@ def points_marker_types(figma_vector, start_point, end_point):
     }
 
     # # Legacy properties, can be skipped. Doing this to match Sketch exactly
-    # # TODO: Should we remove this?
+    # TODO: Should we remove this?
     # if start_marker_type > 0 or end_marker_type > 0:
     #     if start_marker_type < 4:
     #         obj['startDecorationType'] = start_marker_type

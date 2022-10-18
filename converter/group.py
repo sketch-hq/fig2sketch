@@ -1,7 +1,8 @@
-from . import base, rectangle, style
+from . import base, rectangle
 import utils
 import numpy as np
 from sketchformat.style import Style
+
 
 def convert(figma_group):
     return {
@@ -13,6 +14,7 @@ def convert(figma_group):
         },
         'hasClickThrough': False,
     }
+
 
 def post_process_frame(figma_group, sketch_group):
     # Do nothing for Figma groups, they translate directly to Sketch
@@ -68,7 +70,6 @@ def post_process_frame(figma_group, sketch_group):
         sketch_group['frame']['width'] = children_bbox[1] - children_bbox[0]
         sketch_group['frame']['height'] = children_bbox[3] - children_bbox[2]
 
-
     return sketch_group
 
 
@@ -88,9 +89,9 @@ def bbox_from_frame(child):
     h2 = frame['height'] / 2
     points = [
         matrix.dot(np.array([-w2, -h2])) - np.array([-w2, -h2]) + np.array([x1, y1]),
-        matrix.dot(np.array([ w2, -h2])) - np.array([ w2, -h2]) + np.array([x2, y1]),
-        matrix.dot(np.array([ w2,  h2])) - np.array([ w2,  h2]) + np.array([x2, y2]),
-        matrix.dot(np.array([-w2,  h2])) - np.array([-w2,  h2]) + np.array([x1, y2]),
+        matrix.dot(np.array([w2, -h2])) - np.array([w2, -h2]) + np.array([x2, y1]),
+        matrix.dot(np.array([w2, h2])) - np.array([w2, h2]) + np.array([x2, y2]),
+        matrix.dot(np.array([-w2, h2])) - np.array([-w2, h2]) + np.array([x1, y2]),
     ]
 
     return [
@@ -108,17 +109,17 @@ def make_clipping_rect(guid, frame):
         'name': 'Clip',
         'booleanOperation': -1,
         'exportOptions': {
-            "_class": "exportOptions",
-            "includedLayerIds": [],
-            "layerOptions": 0,
-            "shouldTrim": False,
-            "exportFormats": []
+            '_class': 'exportOptions',
+            'includedLayerIds': [],
+            'layerOptions': 0,
+            'shouldTrim': False,
+            'exportFormats': []
         },
         'frame': {
             '_class': 'rect',
             'constrainProportions': False,
             'height': frame['height'],
-            'width':frame['width'],
+            'width': frame['width'],
             'x': 0,
             'y': 0
         },

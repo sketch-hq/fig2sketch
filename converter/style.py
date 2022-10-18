@@ -34,26 +34,27 @@ PATTERN_FILL_TYPE = {
 }
 
 BLEND_MODE = {
-  'PASS_THROUGH': BlendMode.NORMAL,
-  'NORMAL': BlendMode.NORMAL,
-  'DARKEN': BlendMode.DARKEN,
-  'MULTIPLY': BlendMode.MULTIPLY,
-  # 'LINEAR_BURN': , Cannot be set on Figma
-  'COLOR_BURN': BlendMode.COLOR_BURN,
-  'LIGHTEN': BlendMode.LIGHTEN,
-  'SCREEN': BlendMode.SCREEN,
-  # 'LINEAR_DODGE': , Cannot be set on Figma
-  'COLOR_DODGE': BlendMode.COLOR_DODGE,
-  'OVERLAY': BlendMode.OVERLAY,
-  'SOFT_LIGHT': BlendMode.SOFT_LIGHT,
-  'HARD_LIGHT': BlendMode.HARD_LIGHT,
-  'DIFFERENCE': BlendMode.DIFFERENCE,
-  'EXCLUSION': BlendMode.EXCLUSION,
-  'HUE': BlendMode.HUE,
-  'SATURATION': BlendMode.SATURATION,
-  'COLOR': BlendMode.COLOR,
-  'LUMINOSITY': BlendMode.LUMINOSITY,
+    'PASS_THROUGH': BlendMode.NORMAL,
+    'NORMAL': BlendMode.NORMAL,
+    'DARKEN': BlendMode.DARKEN,
+    'MULTIPLY': BlendMode.MULTIPLY,
+    # 'LINEAR_BURN': , Cannot be set on Figma
+    'COLOR_BURN': BlendMode.COLOR_BURN,
+    'LIGHTEN': BlendMode.LIGHTEN,
+    'SCREEN': BlendMode.SCREEN,
+    # 'LINEAR_DODGE': , Cannot be set on Figma
+    'COLOR_DODGE': BlendMode.COLOR_DODGE,
+    'OVERLAY': BlendMode.OVERLAY,
+    'SOFT_LIGHT': BlendMode.SOFT_LIGHT,
+    'HARD_LIGHT': BlendMode.HARD_LIGHT,
+    'DIFFERENCE': BlendMode.DIFFERENCE,
+    'EXCLUSION': BlendMode.EXCLUSION,
+    'HUE': BlendMode.HUE,
+    'SATURATION': BlendMode.SATURATION,
+    'COLOR': BlendMode.COLOR,
+    'LUMINOSITY': BlendMode.LUMINOSITY,
 }
+
 
 def convert(figma_node) -> Style:
     return Style(
@@ -78,13 +79,13 @@ def convert_border(figma_node, figma_border) -> Border:
     )
 
 
-from typing import Dict
 def convert_fill(figma_node, figma_fill) -> Fill:
     match figma_fill:
         case {'type': 'EMOJI'}:
             raise Exception("Unsupported fill: EMOJI")
         case {'type': 'SOLID'}:
-            return Fill.Color(convert_color(figma_fill['color'], figma_fill['opacity']), isEnabled=figma_fill['visible'])
+            return Fill.Color(convert_color(figma_fill['color'], figma_fill['opacity']),
+                              isEnabled=figma_fill['visible'])
         case {'type': 'IMAGE'}:
             return Fill.Image(
                 f'images/{figma_fill["image"]["filename"]}.png',
@@ -92,7 +93,8 @@ def convert_fill(figma_node, figma_fill) -> Fill:
                 isEnabled=figma_fill['visible']
             )
         case _:
-            return Fill.Gradient(convert_gradient(figma_node, figma_fill), isEnabled=figma_fill['visible'])
+            return Fill.Gradient(convert_gradient(figma_node, figma_fill),
+                                 isEnabled=figma_fill['visible'])
 
 
 def convert_color(color, opacity=None) -> Color:
@@ -153,6 +155,7 @@ def convert_gradient(figma_node, figma_fill) -> Gradient:
         return Gradient.Angular(
             stops=convert_stops(figma_fill['stops'], rotation_offset)
         )
+
 
 def convert_stops(figma_stops, rotation_offset=0.0) -> List[GradientStop]:
     stops = [

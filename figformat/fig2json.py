@@ -69,7 +69,7 @@ def transform_node(fig, node, figma_zip):
 
             # Save to memory, calculate hash, and save
             out = io.BytesIO()
-            image.save(out, format="png")
+            image.save(out, format='png')
             fhash = utils.generate_file_ref(out.getbuffer())
             open(f'output/images/{fhash}.png', 'wb').write(out.getbuffer())
             paint['image']['filename'] = fhash

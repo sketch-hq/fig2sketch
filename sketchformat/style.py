@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, InitVar
+from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Optional, List
 
@@ -140,7 +140,9 @@ class Gradient:
     elipseLength: float = 0
     from_: Point = Point(0.5, 0)
     to: Point = Point(0.5, 1)
-    stops: List[GradientStop] = field(default_factory=lambda:[GradientStop(color=Color.White(), position=0), GradientStop(color=Color.Black(), position=1)])
+    stops: List[GradientStop] = field(
+        default_factory=lambda: [GradientStop(color=Color.White(), position=0),
+                                 GradientStop(color=Color.Black(), position=1)])
 
     @staticmethod
     def Linear(from_: Point, to: Point, stops: List[GradientStop]):
@@ -186,9 +188,9 @@ class Image:
 @dataclass(kw_only=True)
 class Fill:
     _class: str = field(default='fill', init=False)
+    fillType: FillType
     isEnabled: bool = True
     color: Color = field(default_factory=Color.DefaultFill)
-    fillType: FillType
     noiseIndex: int = 0
     noiseIntensity: float = 0
     patternFillType: PatternFillType = PatternFillType.TILE
@@ -226,11 +228,11 @@ class Fill:
 @dataclass(kw_only=True)
 class Border:
     _class: str = field(default='border', init=False)
-    isEnabled: bool = True
-    color: Color = field(default_factory=Color.DefaultBorder)
     fillType: FillType
     position: BorderPosition
     thickness: int
+    isEnabled: bool = True
+    color: Color = field(default_factory=Color.DefaultBorder)
     contextSettings: ContextSettings = field(default_factory=ContextSettings)
     gradient: Gradient = field(default_factory=Gradient)
 
@@ -284,11 +286,11 @@ class Blur:
 @dataclass(kw_only=True)
 class Shadow:
     _class: str = field(default='shadow', init=False)
-    isEnabled: bool = True
     blurRadius: float
     offsetX: float
     offsetY: float
     spread: float
+    isEnabled: bool = True
     color: Color = field(default_factory=Color.Translucent)
     contextSettings: ContextSettings = field(default_factory=ContextSettings)
 

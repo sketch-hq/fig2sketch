@@ -4,19 +4,21 @@ from .context import context
 import copy
 from sketchformat.style import Style
 
+
 def convert(figma_instance):
     sketch_overrides = convert_overrides(figma_instance)
 
     if sketch_overrides is None:
-        # Modify Figma tree in place, with the dettached symbol subtree
-        dettach_symbol(figma_instance)
+        # Modify Figma tree in place, with the detached symbol subtree
+        detach_symbol(figma_instance)
         return group.convert(figma_instance)
     else:
         obj = {
             **base.base_shape(figma_instance),
-            "_class": "symbolInstance",
+            '_class': 'symbolInstance',
             'name': figma_instance.name,
-            'symbolID': utils.gen_object_id((figma_instance['symbolData']['symbolID']['sessionID'], figma_instance['symbolData']['symbolID']['localID'])),
+            'symbolID': utils.gen_object_id((figma_instance['symbolData']['symbolID']['sessionID'],
+                                             figma_instance['symbolData']['symbolID']['localID'])),
             'overrideValues': sketch_overrides,
             'preservesSpaceWhenHidden': False,
             'scale': 1
@@ -28,7 +30,7 @@ def convert(figma_instance):
 def master_instance(figma_symbol):
     obj = {
         **base.base_shape(figma_symbol),
-        "_class": "symbolInstance",
+        '_class': 'symbolInstance',
         'do_objectID': utils.gen_object_id(figma_symbol.id, b'master_instance'),
         'name': figma_symbol.name,
         'symbolID': utils.gen_object_id(figma_symbol.id),
@@ -36,8 +38,10 @@ def master_instance(figma_symbol):
         'overrideValues': [],
         'scale': 1
     }
-    obj['style'] = Style(do_objectID=utils.gen_object_id(figma_symbol.id, b'master_instance_style'))
+    obj['style'] = Style(
+        do_objectID=utils.gen_object_id(figma_symbol.id, b'master_instance_style'))
     return obj
+
 
 def convert_overrides(figma_instance):
     sketch_overrides = []
@@ -56,23 +60,24 @@ def convert_overrides(figma_instance):
             if property == 'textData':
                 # Text override.
                 if 'styleOverrideTable' in value:
-                    # Sketch does not support multiple styles in text overrides -> dettach
-                    print(f'Unsupported override: text with mixed styles. Will dettach')
+                    # Sketch does not support multiple styles in text overrides -> detach
+                    print(f"Unsupported override: text with mixed styles. Will detach")
                     return None
 
                 sketch_overrides.append({
-                    "_class": "overrideValue",
-                    "overrideName": f"{uuid}_stringValue",
-                    "value": value['characters']
+                    '_class': 'overrideValue',
+                    'overrideName': f'{uuid}_stringValue',
+                    'value': value['characters']
                 })
             elif property == 'size':
-                pass # I think we can ignore this (the frame will pick up the change)
+                pass  # I think we can ignore this (the frame will pick up the change)
             else:
                 # Unknown override
-                print(f'Unsupported override: {property}. Will dettach')
+                print(f"Unsupported override: {property}. Will detach")
                 return None
 
-    figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'], figma_instance['symbolData']['symbolID']['localID']))
+    figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'],
+                                       figma_instance['symbolData']['symbolID']['localID']))
     for prop in figma_instance.get('componentPropAssignments', []):
         # TODO: propdef.type needed?
         # prop_def = [d for d in figma_master.componentPropDefs if d['id'] == prop['defID']]
@@ -80,21 +85,22 @@ def convert_overrides(figma_instance):
         ref_prop, ref_node = find_ref(figma_master, prop['defID'])
         uuid = utils.gen_object_id(ref_node['id'])
         if ref_prop['componentPropNodeField'] == 'OVERRIDDEN_SYMBOL_ID':
-            symbol_id = utils.gen_object_id((prop['value']['guidValue']['sessionID'], prop['value']['guidValue']['localID']))
+            symbol_id = utils.gen_object_id(
+                (prop['value']['guidValue']['sessionID'], prop['value']['guidValue']['localID']))
             sketch_overrides.append({
-                "_class": "overrideValue",
-                "overrideName": f"{uuid}_symbolID",
-                "value": symbol_id
+                '_class': 'overrideValue',
+                'overrideName': f'{uuid}_symbolID',
+                'value': symbol_id
             })
         elif ref_prop['componentPropNodeField'] == 'TEXT_DATA':
             sketch_overrides.append({
-                "_class": "overrideValue",
-                "overrideName": f"{uuid}_stringValue",
-                "value": prop['value']['textValue']['characters']
+                '_class': 'overrideValue',
+                'overrideName': f'{uuid}_stringValue',
+                'value': prop['value']['textValue']['characters']
             })
-        else: # VISIBLE / INHERIT_FILL_STYLE_ID
-            # TODO: Implement dettaching of properties
-            print(f"Unsupported property: {ref_prop['componentPropNodeField']}. Will dettach")
+        else:  # VISIBLE / INHERIT_FILL_STYLE_ID
+            # TODO: Implement detaching of properties
+            print(f"Unsupported property: {ref_prop['componentPropNodeField']}. Will detach")
             return None
 
     return sketch_overrides
@@ -113,21 +119,22 @@ def find_ref(node, ref_id):
     return None
 
 
-
-def dettach_symbol(figma_instance):
+def detach_symbol(figma_instance):
     # Find symbol master
-    figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'], figma_instance['symbolData']['symbolID']['localID']))
-    dettached_children = copy.deepcopy(figma_master['children'], {})
+    figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'],
+                                       figma_instance['symbolData']['symbolID']['localID']))
+    detached_children = copy.deepcopy(figma_master['children'], {})
 
     # Apply overrides. Can we use derivedSymbolData?
     overrides = {
-        (o["guidPath"]["guids"][0]["sessionID"], o["guidPath"]["guids"][0]["localID"]): o
+        (o['guidPath']['guids'][0]['sessionID'], o['guidPath']['guids'][0]['localID']): o
         for o in figma_instance['symbolData']['symbolOverrides']
     }
-    for c in dettached_children:
+    for c in detached_children:
         apply_overrides(c, figma_instance.id, overrides)
 
-    figma_instance['children'] = dettached_children
+    figma_instance['children'] = detached_children
+
 
 def apply_overrides(figma, instance_id, overrides):
     ov = overrides.get(figma.id)

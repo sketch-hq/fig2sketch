@@ -1,5 +1,5 @@
 import utils
-from . import positioning, style, text
+from . import positioning, style
 from .context import context
 from sketchformat.style import *
 
@@ -36,21 +36,23 @@ def process_styles(figma_node):
 
     SUPPORTED_INHERIT_STYLES = {
         'inheritFillStyleID': ('fills',),
-        'inheritFillStyleIDForStroke': ('borders', ),
-        'inheritStrokeStyleID': None, # Unused in Figma?
+        'inheritFillStyleIDForStroke': ('borders',),
+        'inheritStrokeStyleID': None,  # Unused in Figma?
         'inheritTextStyleID': ('textStyle',),
-        'inheritExportStyleID': None, # Unused in Figma?
+        'inheritExportStyleID': None,  # Unused in Figma?
         'inheritEffectStyleID': ('blur', 'shadows', 'innerShadows'),
-        'inheritGridStyleID': (), # TODO: Implement grid styles. Don't make it crash for now
-        'inheritFillStyleIDForBackground': None, # Unused in Figma?
+        'inheritGridStyleID': (),  # TODO: Implement grid styles. Don't make it crash for now
+        'inheritFillStyleIDForBackground': None,  # Unused in Figma?
     }
 
     for inherit_style, sketch_keys in SUPPORTED_INHERIT_STYLES.items():
-        if inherit_style in figma_node and figma_node[inherit_style]['sessionID'] != 4294967295: # MAX_INT = unset
+        # MAX_INT = unset
+        if inherit_style in figma_node and figma_node[inherit_style]['sessionID'] != 4294967295:
             if sketch_keys is None:
-                raise Exception("Unhandled inherit style ", inherit_style)
+                raise Exception('Unhandled inherit style ', inherit_style)
 
-            figma_style, shared_style = context.component((figma_node[inherit_style]['sessionID'], figma_node[inherit_style]['localID']))
+            figma_style, shared_style = context.component(
+                (figma_node[inherit_style]['sessionID'], figma_node[inherit_style]['localID']))
 
             if shared_style is not None:
                 # At this moment, this is only styles that involve a single solid color
@@ -62,7 +64,8 @@ def process_styles(figma_node):
                 # We don't support the shared style type, so we just copy the style
                 # TODO: Should we add it as a preset?
                 if inherit_style == 'inheritFillStyleIDForStroke':
-                    # Copying fill to border, so copy fill properties from shared style into this node borders
+                    # Copying fill to border, so copy fill properties from shared style into this
+                    # node borders
                     converted_style = style.convert(figma_style)
 
                     base_border = {
@@ -70,7 +73,9 @@ def process_styles(figma_node):
                         'thickness': style_attributes['style'].borders[0].thickness
                     }
 
-                    style_attributes['style'].borders = [Border.from_fill(fill_style, **base_border) for fill_style in converted_style.fills]
+                    style_attributes['style'].borders = [
+                        Border.from_fill(fill_style, **base_border) for fill_style in
+                        converted_style.fills]
                 else:
                     for sketch_key in sketch_keys:
                         # Text style are dealt with in text.py, so just change the figma node
@@ -92,23 +97,24 @@ def process_styles(figma_node):
                                 if p in figma_style:
                                     figma_node[p] = figma_style[p]
                         else:
-                            setattr(style_attributes['style'], sketch_key, getattr(style.convert(figma_style), sketch_key))
+                            setattr(style_attributes['style'], sketch_key,
+                                    getattr(style.convert(figma_style), sketch_key))
 
     return style_attributes
 
 
 def export_options(figma_export_settings):
     return {
-        "_class": "exportOptions",
-        "includedLayerIds": [],
-        "layerOptions": 0,
-        "shouldTrim": False,
-        "exportFormats": [
+        '_class': 'exportOptions',
+        'includedLayerIds': [],
+        'layerOptions': 0,
+        'shouldTrim': False,
+        'exportFormats': [
             {
-                "_class": "exportFormat",
-                "fileFormat": s['imageType'].lower(),
-                "name": s['suffix'],
-                "namingScheme": 2,
+                '_class': 'exportFormat',
+                'fileFormat': s['imageType'].lower(),
+                'name': s['suffix'],
+                'namingScheme': 2,
                 **export_scale(s['constraint'])
             } for s in figma_export_settings]
     }
@@ -171,16 +177,18 @@ def adjust_corner_radius(figma_node, figma_point):
 #  8: bottom sizeable
 # 16: height sizeable
 # 32: top sizeable
-# 64: all fixed (should be 0 but it's overriden to mean all sizeable, same as 63). Impossible
+# 64: all fixed (should be 0 but it's overridden to mean all sizeable, same as 63). Impossible
 HORIZONTAL_CONSTRAINT = {
-    'MIN':       1, # Fixed left + width
-    'CENTER':    5, # Fixed width
-    'MAX':       4, # Fixed right + width
-    'STRETCH':   2, # Fixed left and right
-    'SCALE':     7, # All free
+    'MIN': 1,  # Fixed left + width
+    'CENTER': 5,  # Fixed width
+    'MAX': 4,  # Fixed right + width
+    'STRETCH': 2,  # Fixed left and right
+    'SCALE': 7,  # All free
     # 'FIXED_MIN': 0, # Unused?
     # 'FIXED_MAX': 0, # Unused?
 }
+
+
 # Vertical constraints are equivalent to horizontal ones, with a 3 bit shift
 def resizing_constraint(figma_node):
     h = HORIZONTAL_CONSTRAINT[figma_node.horizontalConstraint]
@@ -233,7 +241,7 @@ def prototyping_flow(figma_node):
                 continue
 
             if flow is not None:
-                print("Unsupported multiple actions per layer")
+                print('Unsupported multiple actions per layer')
                 continue
 
             # TODO: Connection type
@@ -241,7 +249,8 @@ def prototyping_flow(figma_node):
                 destination = 'back'
             elif action['connectionType'] == 'INTERNAL_NODE':
                 if 'transitionNodeID' in action:
-                    destination = utils.gen_object_id((action['transitionNodeID']['sessionID'], action['transitionNodeID']['localID']))
+                    destination = utils.gen_object_id((action['transitionNodeID']['sessionID'],
+                                                       action['transitionNodeID']['localID']))
                 else:
                     destination = None
             elif action['connectionType'] == 'NONE':
@@ -252,9 +261,10 @@ def prototyping_flow(figma_node):
 
             flow = {
                 '_class': 'MSImmutableFlowConnection',
-                'animationType': ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
+                'animationType': ANIMATION_TYPE[
+                    action.get('transitionType', 'INSTANT_TRANSITION')],
                 'maintainScrollPosition': action.get('transitionPreserveScroll', False),
-                'shouldCloseExistingOverlays': False # TODO ???
+                'shouldCloseExistingOverlays': False  # TODO ???
             }
 
             if destination is not None:

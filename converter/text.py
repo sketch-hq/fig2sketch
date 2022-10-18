@@ -38,7 +38,7 @@ CONSTRAINT_MASK_FOR_AUTO_RESIZE = {
 }
 
 # Sketch (CoreText?) scales up emojis for small font sizes.
-# This table undoes this converstion, so we can match Figma better
+# This table undoes this conversation, so we can match Figma better
 EMOJI_SIZE_ADJUST = {
     2: 1.5,
     3: 2,
@@ -68,6 +68,7 @@ EMOJI_SIZE_ADJUST = {
 
 EMOJI_FONT = 'AppleColorEmoji'
 
+
 def convert(figma_text):
     text_resize = figma_text.get('textAutoResize', 'NONE')
     obj = {
@@ -81,7 +82,7 @@ def convert(figma_text):
             'string': figma_text['textData']['characters'],
             'attributes': override_characters_style(figma_text),
         },
-         # No good way to calculate this, so we overestimate by setting the frame
+        # No good way to calculate this, so we overestimate by setting the frame
         'glyphBounds': f'{{{{0, 0}}, {utils.point_to_string(figma_text.size)}}}',
         'lineSpacingBehaviour': 2,
         'textBehaviour': TEXT_BEHAVIOUR[text_resize]
@@ -99,7 +100,8 @@ def convert(figma_text):
 
 def text_style(figma_text):
     if figma_text['fontName']['family'] != EMOJI_FONT:
-        fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'], figma_text['fontName']['postscript'])
+        fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'],
+                                figma_text['fontName']['postscript'])
     obj = {
         '_class': 'textStyle',
         'encodedAttributes': {
@@ -132,7 +134,8 @@ def text_style(figma_text):
     }
 
     if figma_text.get('paragraphSpacing', 0) != 0:
-        obj['encodedAttributes']['paragraphStyle']['paragraphSpacing'] = figma_text['paragraphSpacing']
+        obj['encodedAttributes']['paragraphStyle']['paragraphSpacing'] = figma_text[
+            'paragraphSpacing']
 
     return obj
 
@@ -141,7 +144,7 @@ def override_characters_style(figma_text):
     # The attributes of the Sketch string, our output
     attributes = []
 
-    # Map from Figma styleID to the overriden properties
+    # Map from Figma styleID to the overridden properties
     override_table = utils.get_style_table_override(figma_text['textData'])
 
     # List of character styles. For each style, points to the appropriate styleID
@@ -159,11 +162,12 @@ def override_characters_style(figma_text):
     first_pos = 0
 
     # Lengths in Figma are given in codepoints. In Sketch, they are given in UTF16 code-units
-    # So we keep the Sketch position independetly, taking into account UTF16 encoding
+    # So we keep the Sketch position independently, taking into account UTF16 encoding
     sketch_pos = 0
 
     # Iterate over all characters in Figma input, including their style id and position
-    for pos, (style_id, character) in enumerate(zip(all_character_styles, figma_text['textData']['characters'])):
+    for pos, (style_id, character) in enumerate(
+            zip(all_character_styles, figma_text['textData']['characters'])):
         # Check if we are still in the same glyph or we have to advance
         # We always advance except in multi-codepoint emojis (e.g: families)
         if pos == next_glyph['firstCharacter']:
@@ -172,7 +176,8 @@ def override_characters_style(figma_text):
         # Compute the override for this character. Aside from Figma style override,
         # we have to set the emoji font if this is an emoji (Figma doesn't expose this change)
         style_override = copy.deepcopy(override_table[style_id])
-        is_emoji = override_table[current_glyph['styleID']].get('fillPaints', [{}])[0].get('type') == 'EMOJI'
+        is_emoji = override_table[current_glyph['styleID']].get('fillPaints', [{}])[0].get(
+            'type') == 'EMOJI'
         if is_emoji:
             style_override['fontName'] = {'family': EMOJI_FONT, 'postscript': EMOJI_FONT}
             # The following makes Sketch follow Figma a bit more closely visually
@@ -224,17 +229,19 @@ def text_decoration(figma_text):
 
     return decoration
 
+
 def kerning(figma_text):
     if 'letterSpacing' in figma_text:
         match figma_text['letterSpacing']:
-            case { 'units': 'PIXELS', 'value': pixels }:
+            case {'units': 'PIXELS', 'value': pixels}:
                 return pixels
-            case { 'units': 'PERCENT', 'value': percent }:
+            case {'units': 'PERCENT', 'value': percent}:
                 return figma_text['fontSize'] * percent / 100
             case _:
                 raise Exception(f'Unknown letter spacing unit')
     else:
         return 0
+
 
 def line_height(figma_text):
     if 'lineHeight' in figma_text:
@@ -246,18 +253,22 @@ def line_height(figma_text):
                     'minimumLineHeight': figma_text['lineHeight']['value']
                 }
             case 'PERCENT':
-                # Relative to normal line height. We only see this in Figma as 100% when in Auto mode (natural baselines)
+                # Relative to normal line height. We only see this in Figma as 100% when
+                # in Auto mode (natural baselines)
                 if figma_text['lineHeight']['value'] != 100:
-                    raise Exception(f"Unexpected lineHeight = {figma_text['lineHeight']['value']} PERCENT")
+                    raise Exception(
+                        f"Unexpected lineHeight = {figma_text['lineHeight']['value']} PERCENT")
                 return {}
             case 'RAW':
-                # Relative to font size of each line. TODO: Sketch does not support this if text
-                # sizes change over lines. We just set constant baseline as appropriate for the first line
-                # We can do better using figma.textData.baselines information (applying lineHeight overrides
-                # to our attributedString)
+                # Relative to font size of each line.
+                # TODO: Sketch does not support this if text sizes change over lines.
+                # We just set constant baseline as appropriate for the first line.
+                # We can do better using figma.textData.baselines information (applying lineHeight
+                # overrides to our attributedString)
 
                 # TODO: If < 1, Figma and Sketch calculate the first line position differently
-                # Sketch seems to set it to min(lineHeight, lineAscent). In Figma, you can check baselines[0][position]
+                # Sketch seems to set it to min(lineHeight, lineAscent). In Figma, you can check
+                # baselines[0][position]
                 # Maybe we should change the frame position in Sketch to account for this?
                 line_height = round(figma_text['fontSize'] * figma_text['lineHeight']['value'])
                 return {
@@ -269,8 +280,9 @@ def line_height(figma_text):
     else:
         return 0
 
+
 def text_transformation(figma_text):
     if 'textCase' in figma_text:
-        return({'MSAttributedStringTextTransformAttribute': TextCase[figma_text['textCase']]})
+        return ({'MSAttributedStringTextTransformAttribute': TextCase[figma_text['textCase']]})
     else:
         return {}

@@ -4,11 +4,13 @@ import utils
 def convert(figma_canvas):
     return make_page(figma_canvas.id, figma_canvas.name)
 
+
 def symbols_page():
-    page = make_page((0,0), 'Symbols', suffix=b'symbols_page')
+    page = make_page((0, 0), 'Symbols', suffix=b'symbols_page')
     page['layers'] = []
 
     return page
+
 
 def make_page(guid, name, suffix=b''):
     return {
@@ -45,8 +47,6 @@ def make_page(guid, name, suffix=b''):
         'shouldBreakMaskChain': False,
         'style': {
             '_class': 'style',
-            'miterLimit': 10,
-            'endMarkerType': 0,
             'windingRule': 1,
             'blur': {
                 '_class': 'blur',
@@ -57,43 +57,34 @@ def make_page(guid, name, suffix=b''):
                 'saturation': 1,
                 'type': 0
             },
-            "blur": {
-                "_class": "blur",
-                "center": "{0.5, 0.5}",
-                "isEnabled": False,
-                "motionAngle": 0,
-                "radius": 10,
-                "saturation": 1,
-                "type": 0
+            'borderOptions': {
+                '_class': 'borderOptions',
+                'dashPattern': [],
+                'isEnabled': True,
+                'lineCapStyle': 0,
+                'lineJoinStyle': 0
             },
-            "borderOptions": {
-                "_class": "borderOptions",
-                "dashPattern": [],
-                "isEnabled": True,
-                "lineCapStyle": 0,
-                "lineJoinStyle": 0
+            'borders': [],
+            'colorControls': {
+                '_class': 'colorControls',
+                'brightness': 0,
+                'contrast': 1,
+                'hue': 0,
+                'isEnabled': False,
+                'saturation': 1
             },
-            "borders": [],
-            "colorControls": {
-                "_class": "colorControls",
-                "brightness": 0,
-                "contrast": 1,
-                "hue": 0,
-                "isEnabled": False,
-                "saturation": 1
+            'contextSettings': {
+                '_class': 'graphicsContextSettings',
+                'blendMode': 0,
+                'opacity': 1
             },
-            "contextSettings": {
-                "_class": "graphicsContextSettings",
-                "blendMode": 0,
-                "opacity": 1
-            },
-            "do_objectID": utils.gen_object_id(guid, suffix + b'style'),
-            "endMarkerType": 0,
-            "fills": [],
-            "innerShadows": [],
-            "miterLimit": 10,
-            "startMarkerType": 0,
-            "shadows": [],
+            'do_objectID': utils.gen_object_id(guid, suffix + b'style'),
+            'fills': [],
+            'innerShadows': [],
+            'miterLimit': 10,
+            'startMarkerType': 0,
+            'endMarkerType': 0,
+            'shadows': [],
         },
         'hasClickThrough': True,
         'isTemplate': False,
