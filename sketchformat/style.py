@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, InitVar
 from enum import IntEnum
-from typing import Optional
+from typing import Optional, List
 
 
 class LineCapStyle(IntEnum):
@@ -84,12 +84,6 @@ class BlurType(IntEnum):
     BACKGROUND = 3
 
 
-class GradientType(IntEnum):
-    LINEAR = 0
-    RADIAL = 1
-    ANGULAR = 2
-
-
 @dataclass(kw_only=True)
 class Color:
     _class: str = field(default='color', init=False)
@@ -99,17 +93,25 @@ class Color:
     alpha: float
     swatchID: Optional[str] = None
 
+    @staticmethod
     def Black():
         return Color(red=0, green=0, blue=0, alpha=1)
 
+    @staticmethod
     def White():
         return Color(red=1, green=1, blue=1, alpha=1)
 
+    @staticmethod
     def Translucent():
         return Color(red=0, green=0, blue=0, alpha=0.5)
 
-    def DefaultGrey():
+    @staticmethod
+    def DefaultFill():
         return Color(red=0.847, green=0.847, blue=0.847, alpha=1)
+
+    @staticmethod
+    def DefaultBorder():
+        return Color(red=0.592, green=0.592, blue=0.592, alpha=1)
 
 
 @dataclass(kw_only=True)
@@ -138,9 +140,10 @@ class Gradient:
     elipseLength: float = 0
     from_: Point = Point(0.5, 0)
     to: Point = Point(0.5, 1)
-    stops: [GradientStop] = field(default_factory=lambda:[GradientStop(color=Color.White(), position=0), GradientStop(color=Color.Black(), position=1)])
+    stops: List[GradientStop] = field(default_factory=lambda:[GradientStop(color=Color.White(), position=0), GradientStop(color=Color.Black(), position=1)])
 
-    def Linear(from_: Point, to: Point, stops: [GradientStop]):
+    @staticmethod
+    def Linear(from_: Point, to: Point, stops: List[GradientStop]):
         return Gradient(
             gradientType=GradientType.LINEAR,
             from_=from_,
@@ -148,7 +151,8 @@ class Gradient:
             stops=stops
         )
 
-    def Radial(from_: Point, to: Point, elipseLength: float, stops: [GradientStop]):
+    @staticmethod
+    def Radial(from_: Point, to: Point, elipseLength: float, stops: List[GradientStop]):
         return Gradient(
             gradientType=GradientType.RADIAL,
             from_=from_,
@@ -157,7 +161,8 @@ class Gradient:
             stops=stops
         )
 
-    def Angular(stops: [GradientStop]):
+    @staticmethod
+    def Angular(stops: List[GradientStop]):
         return Gradient(
             gradientType=GradientType.ANGULAR,
             stops=stops
@@ -182,7 +187,7 @@ class Image:
 class Fill:
     _class: str = field(default='fill', init=False)
     isEnabled: bool = True
-    color: Color = field(default_factory=Color.DefaultGrey)
+    color: Color = field(default_factory=Color.DefaultFill)
     fillType: FillType
     noiseIndex: int = 0
     noiseIntensity: float = 0
@@ -192,25 +197,29 @@ class Fill:
     gradient: Gradient = field(default_factory=Gradient)
     image: Optional[Image] = None
 
-    def Color(color: Color, **kw):
+    @staticmethod
+    def Color(color: Color, isEnabled: bool):
         return Fill(
             color=color,
             fillType=FillType.COLOR,
-            **kw
+            isEnabled=isEnabled
         )
 
-    def Gradient(gradient: Gradient, **kw):
+    @staticmethod
+    def Gradient(gradient: Gradient, isEnabled: bool):
         return Fill(
             gradient=gradient,
             fillType=FillType.GRADIENT,
-            **kw
+            isEnabled=isEnabled
         )
 
-    def Image(path, **kw):
+    @staticmethod
+    def Image(path: str, patternFillType: PatternFillType, isEnabled: bool):
         return Fill(
             image=Image(path),
             fillType=FillType.PATTERN,
-            **kw
+            patternFillType=patternFillType,
+            isEnabled=isEnabled
         )
 
 
@@ -218,26 +227,30 @@ class Fill:
 class Border:
     _class: str = field(default='border', init=False)
     isEnabled: bool = True
-    color: Color = field(default_factory=Gradient)
+    color: Color = field(default_factory=Color.DefaultBorder)
     fillType: FillType
     position: BorderPosition
     thickness: int
     contextSettings: ContextSettings = field(default_factory=ContextSettings)
     gradient: Gradient = field(default_factory=Gradient)
 
-    def from_fill(fill: Fill, **kw):
+    @staticmethod
+    def from_fill(fill: Fill, position: BorderPosition, thickness: int) -> 'Border':
         return Border(
             fillType=fill.fillType,
             color=fill.color,
             gradient=fill.gradient,
             contextSettings=fill.contextSettings,
-            **kw)
+
+            position=position,
+            thickness=thickness
+        )
 
 
 @dataclass(kw_only=True)
 class ColorControls:
     _class: str = field(default='colorControls', init=False)
-    isEnabled: bool = True
+    isEnabled: bool = False
     brightness: float = 0
     contrast: float = 1
     hue: float = 0
@@ -250,7 +263,7 @@ class BorderOptions:
     isEnabled: bool = True
     lineCapStyle: LineCapStyle = LineCapStyle.BUTT
     lineJoinStyle: LineJoinStyle = LineJoinStyle.MITER
-    dashPattern: [int] = field(default_factory=list)
+    dashPattern: List[int] = field(default_factory=list)
 
 
 @dataclass(kw_only=True)
@@ -263,6 +276,7 @@ class Blur:
     saturation: float = 1
     type: BlurType = BlurType.GAUSSIAN
 
+    @staticmethod
     def Disabled():
         return Blur(isEnabled=False)
 
@@ -294,8 +308,8 @@ class Style:
     _class: str = field(default='style', init=False)
     do_objectID: str
     borderOptions: BorderOptions = field(default_factory=BorderOptions)
-    borders: [Border] = field(default_factory=list)
-    fills: [Fill] = field(default_factory=list)
+    borders: List[Border] = field(default_factory=list)
+    fills: List[Fill] = field(default_factory=list)
     miterLimit: int = 10
     windingRule: WindingRule = WindingRule.NON_ZERO
     contextSettings: ContextSettings = field(default_factory=ContextSettings)
@@ -304,5 +318,5 @@ class Style:
     endMarkerType: MarkerType = MarkerType.NONE
     blur: Blur = field(default_factory=Blur.Disabled)
     textStyle: Optional[TextStyle] = None
-    shadows: [Shadow] = field(default_factory=list)
-    innerShadows: [InnerShadow] = field(default_factory=list)
+    shadows: List[Shadow] = field(default_factory=list)
+    innerShadows: List[InnerShadow] = field(default_factory=list)

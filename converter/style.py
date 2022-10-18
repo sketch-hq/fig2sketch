@@ -2,89 +2,75 @@ import numpy as np
 import math
 import utils
 from sketchformat.style import *
+from typing import List, TypedDict
 
 BORDER_POSITION = {
-    'CENTER': 0,
-    'INSIDE': 1,
-    'OUTSIDE': 2
+    'CENTER': BorderPosition.CENTER,
+    'INSIDE': BorderPosition.INSIDE,
+    'OUTSIDE': BorderPosition.OUTSIDE
 }
 
 LINE_CAP_STYLE = {
-    'NONE': 0,
-    'ROUND': 1,
-    'SQUARE': 2,
-    'LINE_ARROW': 2,
-    'ARROW_LINES': 2,
-    'TRIANGLE_ARROW': 2,
-    'TRIANGLE_FILLED': 2
+    'NONE': LineCapStyle.BUTT,
+    'ROUND': LineCapStyle.ROUND,
+    'SQUARE': LineCapStyle.SQUARE,
+    'LINE_ARROW': LineCapStyle.SQUARE,
+    'ARROW_LINES': LineCapStyle.SQUARE,
+    'TRIANGLE_ARROW': LineCapStyle.SQUARE,
+    'TRIANGLE_FILLED': LineCapStyle.SQUARE
 }
 
 LINE_JOIN_STYLE = {
-    'MITER': 0,
-    'ROUND': 1,
-    'BEVEL': 2
+    'MITER': LineJoinStyle.MITER,
+    'ROUND': LineJoinStyle.ROUND,
+    'BEVEL': LineJoinStyle.BEVEL
 }
 
 PATTERN_FILL_TYPE = {
-    'STRETCH': 2,
-    'FIT': 3,
-    'FILL': 1,
-    'TILE': 0
+    'STRETCH': PatternFillType.STRETCH,
+    'FIT': PatternFillType.FIT,
+    'FILL': PatternFillType.FILL,
+    'TILE': PatternFillType.TILE
 }
 
 BLEND_MODE = {
-  'PASS_THROUGH': 0,
-  'NORMAL': 0,
-  'DARKEN': 1,
-  'MULTIPLY': 2,
-  # 'LINEAR_BURN': , Cannot be set on Figma UI?
-  'COLOR_BURN': 3,
-  'LIGHTEN': 4,
-  'SCREEN': 5,
-  # 'LINEAR_DODGE': , Cannot be set on Figma UI?
-  'COLOR_DODGE': 6,
-  'OVERLAY': 7,
-  'SOFT_LIGHT': 8,
-  'HARD_LIGHT': 9,
-  'DIFFERENCE': 10,
-  'EXCLUSION': 11,
-  'HUE': 12,
-  'SATURATION': 13,
-  'COLOR': 14,
-  'LUMINOSITY': 15,
+  'PASS_THROUGH': BlendMode.NORMAL,
+  'NORMAL': BlendMode.NORMAL,
+  'DARKEN': BlendMode.DARKEN,
+  'MULTIPLY': BlendMode.MULTIPLY,
+  # 'LINEAR_BURN': , Cannot be set on Figma
+  'COLOR_BURN': BlendMode.COLOR_BURN,
+  'LIGHTEN': BlendMode.LIGHTEN,
+  'SCREEN': BlendMode.SCREEN,
+  # 'LINEAR_DODGE': , Cannot be set on Figma
+  'COLOR_DODGE': BlendMode.COLOR_DODGE,
+  'OVERLAY': BlendMode.OVERLAY,
+  'SOFT_LIGHT': BlendMode.SOFT_LIGHT,
+  'HARD_LIGHT': BlendMode.HARD_LIGHT,
+  'DIFFERENCE': BlendMode.DIFFERENCE,
+  'EXCLUSION': BlendMode.EXCLUSION,
+  'HUE': BlendMode.HUE,
+  'SATURATION': BlendMode.SATURATION,
+  'COLOR': BlendMode.COLOR,
+  'LUMINOSITY': BlendMode.LUMINOSITY,
 }
 
-def convert(figma_node):
-    return {
-        '_class': 'style',
-        'do_objectID': utils.gen_object_id(figma_node.id, b'style'),
-        'borderOptions': {
-            '_class': 'borderOptions',
-            'isEnabled': True,
-            'lineCapStyle': LINE_CAP_STYLE[figma_node.strokeCap],
-            'lineJoinStyle': LINE_JOIN_STYLE[figma_node.strokeJoin],
-            "dashPattern": figma_node.dashPattern
-        },
-        'borders': [convert_border(figma_node, b) for b in figma_node['strokePaints']],
-        'fills': [convert_fill(figma_node, f) for f in figma_node['fillPaints']],
-        'miterLimit': 10,
-        'windingRule': 0,
+def convert(figma_node) -> Style:
+    return Style(
+        do_objectID=utils.gen_object_id(figma_node.id, b'style'),
+        borderOptions=BorderOptions(
+            lineCapStyle=LINE_CAP_STYLE[figma_node.strokeCap],
+            lineJoinStyle=LINE_JOIN_STYLE[figma_node.strokeJoin],
+            dashPattern=figma_node.dashPattern
+        ),
+        borders=[convert_border(figma_node, b) for b in figma_node['strokePaints']],
+        fills=[convert_fill(figma_node, f) for f in figma_node['fillPaints']],
         **convert_effects(figma_node.get('effects', [])),
-        'contextSettings': context_settings(figma_node),
-        'colorControls': {
-            '_class': 'colorControls',
-            'isEnabled': True,
-            'brightness': 0,
-            'contrast': 1,
-            'hue': 0,
-            'saturation': 1
-        },
-        'startMarkerType': 0,
-        'endMarkerType': 0,
-    }
+        contextSettings=context_settings(figma_node)
+    )
 
 
-def convert_border(figma_node, figma_border):
+def convert_border(figma_node, figma_border) -> Border:
     return Border.from_fill(
         convert_fill(figma_node, figma_border),
         position=BORDER_POSITION[figma_node['strokeAlign']],
@@ -92,28 +78,24 @@ def convert_border(figma_node, figma_border):
     )
 
 
-def convert_fill(figma_node, figma_fill):
-    kw = {
-        'contextSettings': ContextSettings(opacity=figma_fill.get('opacity', 1)),
-        'isEnabled': figma_fill['visible']
-    }
-
+from typing import Dict
+def convert_fill(figma_node, figma_fill) -> Fill:
     match figma_fill:
         case {'type': 'EMOJI'}:
             raise Exception("Unsupported fill: EMOJI")
         case {'type': 'SOLID'}:
-            return Fill.Color(convert_color(figma_fill['color'], figma_fill['opacity']), **kw)
+            return Fill.Color(convert_color(figma_fill['color'], figma_fill['opacity']), isEnabled=figma_fill['visible'])
         case {'type': 'IMAGE'}:
             return Fill.Image(
                 f'images/{figma_fill["image"]["filename"]}.png',
                 patternFillType=PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
-                **kw
+                isEnabled=figma_fill['visible']
             )
         case _:
-            return Fill.Gradient(convert_gradient(figma_node, figma_fill))
+            return Fill.Gradient(convert_gradient(figma_node, figma_fill), isEnabled=figma_fill['visible'])
 
 
-def convert_color(color, opacity=None):
+def convert_color(color, opacity=None) -> Color:
     return Color(
         red=color['r'],
         green=color['g'],
@@ -122,7 +104,7 @@ def convert_color(color, opacity=None):
     )
 
 
-def convert_gradient(figma_node, figma_fill):
+def convert_gradient(figma_node, figma_fill) -> Gradient:
     # Convert positions depending on the gradient type
     mat = np.array([
         [figma_fill['transform']['m00'], figma_fill['transform']['m01'],
@@ -134,7 +116,7 @@ def convert_gradient(figma_node, figma_fill):
 
     invmat = np.linalg.inv(mat)
 
-    rotation_offset = 0
+    rotation_offset = 0.0
     if figma_fill['type'] == 'GRADIENT_LINEAR':
         # Linear gradients always go from (0, .5) to (1, .5)
         # We just apply the transform to get the coordinates (in a 1x1 square)
@@ -172,7 +154,7 @@ def convert_gradient(figma_node, figma_fill):
             stops=convert_stops(figma_fill['stops'], rotation_offset)
         )
 
-def convert_stops(figma_stops, rotation_offset=0):
+def convert_stops(figma_stops, rotation_offset=0.0) -> List[GradientStop]:
     stops = [
         GradientStop(
             color=convert_color(stop['color']),
@@ -189,12 +171,12 @@ def convert_stops(figma_stops, rotation_offset=0):
     return stops
 
 
-def scaled_distance(a, b, x_scale):
+def scaled_distance(a, b, x_scale) -> float:
     v = a - b
     return np.hypot(v[0] * x_scale, v[1])
 
 
-def rotated_stop(position, offset):
+def rotated_stop(position, offset) -> float:
     pos = position + offset
     if pos > 1:
         pos -= 1
@@ -205,93 +187,55 @@ def rotated_stop(position, offset):
     return pos
 
 
-def convert_effects(effects):
-    sketch = {
-        'blur': {
-            '_class': 'blur',
-            'isEnabled': False,
-            'center': '{0.5, 0.5}',
-            'motionAngle': 0,
-            'radius': 10,
-            'saturation': 1,
-            'type': 0
-        },
+class _Effects(TypedDict):
+    blur: Blur
+    shadows: List[Shadow]
+    innerShadows: List[InnerShadow]
+
+
+def convert_effects(effects) -> _Effects:
+    sketch: _Effects = {
+        'blur': Blur.Disabled(),
         'shadows': [],
         'innerShadows': []
     }
 
     for e in effects:
         if e['type'] == 'INNER_SHADOW':
-            sketch['innerShadows'].append({
-                '_class': 'innerShadow',
-                'isEnabled': True,
-                'blurRadius': e['radius'],
-                'offsetX': e['offset']['x'],
-                'offsetY': e['offset']['y'],
-                'spread': e['spread'],
-                'color': {
-                    '_class': 'color',
-                    'alpha': e['color']['a'],
-                    'blue': e['color']['b'],
-                    'green': e['color']['g'],
-                    'red': e['color']['r']
-                },
-                'contextSettings': {
-                    '_class': 'graphicsContextSettings',
-                    'blendMode': 0,
-                    'opacity': 1
-                }
-            })
+            sketch['innerShadows'].append(InnerShadow(
+                blurRadius=e['radius'],
+                offsetX=e['offset']['x'],
+                offsetY=e['offset']['y'],
+                spread=e['spread'],
+                color=convert_color(e['color'])
+            ))
 
         elif e['type'] == 'DROP_SHADOW':
-            sketch['shadows'].append({
-                '_class': 'shadow',
-                'isEnabled': True,
-                'blurRadius': e['radius'],
-                'offsetX': e['offset']['x'],
-                'offsetY': e['offset']['y'],
-                'spread': e['spread'],
-                'color': {
-                    '_class': 'color',
-                    'alpha': e['color']['a'],
-                    'blue': e['color']['b'],
-                    'green': e['color']['g'],
-                    'red': e['color']['r']
-                },
-                'contextSettings': {
-                    '_class': 'graphicsContextSettings',
-                    'blendMode': 0,
-                    'opacity': 1
-                }
-            })
+            sketch['shadows'].append(Shadow(
+                blurRadius=e['radius'],
+                offsetX=e['offset']['x'],
+                offsetY=e['offset']['y'],
+                spread=e['spread'],
+                color=convert_color(e['color'])
+            ))
 
         elif e['type'] == 'FOREGROUND_BLUR':
-            if sketch['blur']['isEnabled']:
+            if sketch['blur'].isEnabled:
                 raise Exception(f'Cannot support multuple blurs')
 
-            sketch['blur'] = {
-                '_class': 'blur',
-                'isEnabled': True,
-                'center': '{0.5, 0.5}',
-                'motionAngle': 0,
-                'radius': e['radius'] / 2,  # Looks best dividing by 2, no idea why,
-                'saturation': 1,
-                'type': 0
-            }
+            sketch['blur'] = Blur(
+                radius=e['radius'] / 2,  # Looks best dividing by 2, no idea why,
+                type=BlurType.GAUSSIAN
+            )
 
         elif e['type'] == 'BACKGROUND_BLUR':
-            if sketch['blur']['isEnabled']:
+            if sketch['blur'].isEnabled:
                 raise Exception(f'Cannot support multiple blurs')
 
-            sketch['blur'] = {
-                '_class': 'blur',
-                'isEnabled': True,
-                'center': '{0.5, 0.5}',
-                'motionAngle': 0,
-                'radius': e['radius'] / 2,  # Looks best dividing by 2, no idea why
-                'saturation': 1,
-                'type': 3
-            }
+            sketch['blur'] = Blur(
+                radius=e['radius'] / 2,  # Looks best dividing by 2, no idea why,
+                type=BlurType.BACKGROUND
+            )
 
         else:
             raise Exception(f'Unsupported effect: {e["type"]}')
@@ -299,7 +243,7 @@ def convert_effects(effects):
     return sketch
 
 
-def context_settings(figma_node):
+def context_settings(figma_node) -> ContextSettings:
     blend_mode = BLEND_MODE[figma_node['blendMode']]
     opacity = figma_node['opacity']
 
@@ -307,51 +251,4 @@ def context_settings(figma_node):
         # Sketch interprets normal at 100% opacity as pass-through
         opacity = 0.99
 
-    return {
-        '_class': 'graphicsContextSettings',
-        'blendMode': blend_mode,
-        'opacity': opacity
-    }
-
-
-DEFAULT_STYLE = {
-    '_class': 'style',
-    'blur': {
-        '_class': 'blur',
-        'center': '{0.5, 0.5}',
-        'isEnabled': False,
-        'motionAngle': 0,
-        'radius': 10,
-        'saturation': 1,
-        'type': 0
-    },
-    'borderOptions': {
-        '_class': 'borderOptions',
-        'dashPattern': [],
-        'isEnabled': True,
-        'lineCapStyle': 0,
-        'lineJoinStyle': 0
-    },
-    'borders': [],
-    'colorControls': {
-        '_class': 'colorControls',
-        'brightness': 0,
-        'contrast': 1,
-        'hue': 0,
-        'isEnabled': False,
-        'saturation': 1
-    },
-    'contextSettings': {
-        '_class': 'graphicsContextSettings',
-        'blendMode': 0,
-        'opacity': 1
-    },
-    'do_objectID': 'A51794A6-A9E5-4E68-911B-99269CFAC3B9',
-    'endMarkerType': 0,
-    'fills': [],
-    'innerShadows': [],
-    'miterLimit': 10,
-    'shadows': [],
-    'startMarkerType': 0,
-    'windingRule': 1
-}
+    return ContextSettings(blendMode=blend_mode, opacity=opacity)

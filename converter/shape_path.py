@@ -1,6 +1,7 @@
 from . import base, positioning
 import utils
 import numpy as np
+import dataclasses
 
 STROKE_CAP_TO_MARKER_TYPE = {
     'NONE': 0,
@@ -26,7 +27,8 @@ def convert(figma_vector):
         **points,
     }
 
-    obj['style'].update(styles)
+    # TODO
+    obj['style'] = dataclasses.replace(obj['style'], **styles)
 
     return obj
 
@@ -154,12 +156,12 @@ def points_marker_types(figma_vector, start_point, end_point):
         'endMarkerType': end_marker_type
     }
 
-    # Legacy properties, can be skipped. Doing this to match Sketch exactly
-    # TODO: Should we remove this?
-    if start_marker_type > 0 or end_marker_type > 0:
-        if start_marker_type < 4:
-            obj['startDecorationType'] = start_marker_type
-        if end_marker_type < 4:
-            obj['endDecorationType'] = end_marker_type
+    # # Legacy properties, can be skipped. Doing this to match Sketch exactly
+    # # TODO: Should we remove this?
+    # if start_marker_type > 0 or end_marker_type > 0:
+    #     if start_marker_type < 4:
+    #         obj['startDecorationType'] = start_marker_type
+    #     if end_marker_type < 4:
+    #         obj['endDecorationType'] = end_marker_type
 
     return obj

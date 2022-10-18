@@ -88,10 +88,11 @@ def convert(figma_text):
     }
     obj['resizingConstraint'] &= CONSTRAINT_MASK_FOR_AUTO_RESIZE[text_resize]
 
-    obj['style']['textStyle'] = text_style(figma_text)
+    # TODO: Implement TextStyle
+    obj['style'].textStyle = text_style(figma_text)
 
     if len(obj['attributedString']['attributes']) > 1:
-        obj['style']['fills'] = []
+        obj['style'].fills = []
 
     return obj
 

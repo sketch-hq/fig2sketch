@@ -2,6 +2,7 @@ from . import base, tree, style, group
 import utils
 from .context import context
 import copy
+from sketchformat.style import Style
 
 def convert(figma_instance):
     sketch_overrides = convert_overrides(figma_instance)
@@ -20,7 +21,7 @@ def convert(figma_instance):
             'preservesSpaceWhenHidden': False,
             'scale': 1
         }
-        obj['style'] = style.DEFAULT_STYLE
+        obj['style'] = Style(do_objectID=utils.gen_object_id(figma_instance.id, b'style'))
         return obj
 
 
@@ -35,7 +36,7 @@ def master_instance(figma_symbol):
         'overrideValues': [],
         'scale': 1
     }
-    obj['style'] = style.DEFAULT_STYLE
+    obj['style'] = Style(do_objectID=utils.gen_object_id(figma_symbol.id, b'master_instance_style'))
     return obj
 
 def convert_overrides(figma_instance):

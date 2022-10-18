@@ -34,7 +34,7 @@ def post_process_frame(figma_group, sketch_group):
     background_rect['resizingConstraint'] = 63
 
     # del sketch_group['style']
-    sketch_group['style'] = style.DEFAULT_STYLE
+    sketch_group['style'] = Style(do_objectID=utils.gen_object_id(figma_group.id, b'style'))
 
     needs_clip_mask = not figma_group.get('frameMaskDisabled', False)
     if needs_clip_mask:
