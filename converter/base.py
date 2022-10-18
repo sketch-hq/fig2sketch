@@ -2,6 +2,8 @@ import utils
 from . import positioning, style, text
 from .context import context
 from sketchformat.style import *
+from sketchformat.layer_common import ExportOptions, ExportFormat, VisibleScaleType
+from typing import TypedDict
 
 CURVE_MODES = {
     'STRAIGHT': 1,
@@ -97,24 +99,23 @@ def process_styles(figma_node):
     return style_attributes
 
 
-def export_options(figma_export_settings):
-    return {
-        "_class": "exportOptions",
-        "includedLayerIds": [],
-        "layerOptions": 0,
-        "shouldTrim": False,
-        "exportFormats": [
-            {
-                "_class": "exportFormat",
-                "fileFormat": s['imageType'].lower(),
-                "name": s['suffix'],
-                "namingScheme": 2,
-                **export_scale(s['constraint'])
-            } for s in figma_export_settings]
-    }
+def export_options(figma_export_settings) -> ExportOptions:
+    return ExportOptions(
+        exportFormats=[
+            ExportFormat(
+                fileFormat=s['imageType'].lower(),
+                name=s['suffix'],
+                **export_scale(s['constraint']))
+            for s in figma_export_settings])
 
 
-def export_scale(figma_constraint):
+class _ExportScale(TypedDict):
+    absoluteSize: int
+    scale: float
+    visibleScaleType: VisibleScaleType
+
+
+def export_scale(figma_constraint) -> _ExportScale:
     match figma_constraint:
         case {'type': 'CONTENT_SCALE', 'value': scale}:
             return {

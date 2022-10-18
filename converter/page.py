@@ -1,4 +1,5 @@
 import utils
+from sketchformat.style import Style
 
 
 def convert(figma_canvas):
@@ -43,58 +44,7 @@ def make_page(guid, name, suffix=b''):
         'resizingType': 0,
         'rotation': 0,
         'shouldBreakMaskChain': False,
-        'style': {
-            '_class': 'style',
-            'miterLimit': 10,
-            'endMarkerType': 0,
-            'windingRule': 1,
-            'blur': {
-                '_class': 'blur',
-                'center': '{0.5, 0.5}',
-                'isEnabled': False,
-                'motionAngle': 0,
-                'radius': 10,
-                'saturation': 1,
-                'type': 0
-            },
-            "blur": {
-                "_class": "blur",
-                "center": "{0.5, 0.5}",
-                "isEnabled": False,
-                "motionAngle": 0,
-                "radius": 10,
-                "saturation": 1,
-                "type": 0
-            },
-            "borderOptions": {
-                "_class": "borderOptions",
-                "dashPattern": [],
-                "isEnabled": True,
-                "lineCapStyle": 0,
-                "lineJoinStyle": 0
-            },
-            "borders": [],
-            "colorControls": {
-                "_class": "colorControls",
-                "brightness": 0,
-                "contrast": 1,
-                "hue": 0,
-                "isEnabled": False,
-                "saturation": 1
-            },
-            "contextSettings": {
-                "_class": "graphicsContextSettings",
-                "blendMode": 0,
-                "opacity": 1
-            },
-            "do_objectID": utils.gen_object_id(guid, suffix + b'style'),
-            "endMarkerType": 0,
-            "fills": [],
-            "innerShadows": [],
-            "miterLimit": 10,
-            "startMarkerType": 0,
-            "shadows": [],
-        },
+        'style': Style(do_objectID=utils.gen_object_id(guid, suffix + b'style')),
         'hasClickThrough': True,
         'isTemplate': False,
         'horizontalRulerData': {

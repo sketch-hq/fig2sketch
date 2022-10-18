@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, InitVar
+from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Optional, List
 
