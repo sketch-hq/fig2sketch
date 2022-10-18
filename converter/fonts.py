@@ -9,8 +9,9 @@ from zipfile import ZipFile
 import appdirs
 import utils
 from collections import defaultdict
+from typing import Dict
 
-figma_fonts = {}
+figma_fonts: Dict[str, Dict[str, str]] = {}
 fonts_cache_dir = appdirs.user_cache_dir("Figma2Sketch", "Sketch") + "/fonts"
 os.makedirs(fonts_cache_dir, exist_ok=True)
 

@@ -1,6 +1,7 @@
 import utils
 from . import positioning, style, text
 from .context import context
+from sketchformat.style import *
 
 CURVE_MODES = {
     'STRAIGHT': 1,
@@ -55,8 +56,8 @@ def process_styles(figma_node):
                 # At this moment, this is only styles that involve a single solid color
                 # Look at component.convert for supported types
                 assert len(sketch_keys) == 1
-                style_attributes['style'][sketch_keys[0]][0]['color'] = shared_style['value']
-                style_attributes['style'][sketch_keys[0]][0]['color']['swatchID'] = shared_style['do_objectID']
+                getattr(style_attributes['style'], sketch_keys[0])[0].color = shared_style['value']
+                # style_attributes['style'][sketch_keys[0]][0]['color']['swatchID'] = shared_style['do_objectID']
             else:
                 # We don't support the shared style type, so we just copy the style
                 # TODO: Should we add it as a preset?
@@ -65,18 +66,11 @@ def process_styles(figma_node):
                     converted_style = style.convert(figma_style)
 
                     base_border = {
-                        '_class': 'border',
-                        'position': style_attributes['style']['borders'][0]['position'],
-                        'thickness': style_attributes['style']['borders'][0]['thickness']
+                        'position': style_attributes['style'].borders[0].position,
+                        'thickness': style_attributes['style'].borders[0].thickness
                     }
 
-                    style_attributes['style']['borders'] = [
-                        {
-                            # TODO: list of properties shared with style convert_borders. This is ugly
-                            **{k:v for k,v in fill_style.items() if k not in ['noiseIndex', 'noiseIntensity', 'patternFillType', 'patternTileScale']},
-                            **base_border
-                        } for fill_style in converted_style['fills']
-                    ]
+                    style_attributes['style'].borders = [Border.from_fill(fill_style, **base_border) for fill_style in converted_style.fills]
                 else:
                     for sketch_key in sketch_keys:
                         # Text style are dealt with in text.py, so just change the figma node
@@ -98,7 +92,7 @@ def process_styles(figma_node):
                                 if p in figma_style:
                                     figma_node[p] = figma_style[p]
                         else:
-                            style_attributes['style'][sketch_key] = style.convert(figma_style)[sketch_key]
+                            setattr(style_attributes['style'], sketch_key, getattr(style.convert(figma_style), sketch_key))
 
     return style_attributes
 

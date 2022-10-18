@@ -1,6 +1,7 @@
 from . import  artboard, instance, group, style
 from .context import context
 import utils
+from sketchformat.style import Style
 
 LAYOUT_AXIS = {
     'NONE': None,
@@ -24,7 +25,7 @@ def convert(figma_symbol):
     master['includeBackgroundColorInInstance'] = False
     master['overrideProperties'] = []
 
-    master['style'] = style.DEFAULT_STYLE
+    master['style'] = Style(do_objectID=utils.gen_object_id(figma_symbol.id, b'symbol_master_style'))
 
     # Keep the base ID as the symbol reference, create a new one for the container
     master['symbolID'] = utils.gen_object_id(figma_symbol.id)
