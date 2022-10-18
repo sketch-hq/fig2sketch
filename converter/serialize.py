@@ -18,10 +18,10 @@ def convert_object(obj):
         return obj.to_json()
 
 
-def serialize(obj, writer):
+def serialize(obj, path):
     return json.dump(
         obj,
-        writer,
+        open(path, 'w'),
         default=convert_object,
         ensure_ascii=False, # Write emoji directly, without surrogate pairs
         indent=2 # Makes debugging nicer. TODO: Remove

@@ -39,20 +39,20 @@ def convert_pages(figma_pages):
 
     for figma_page in figma_pages:
         page = tree.convert_node(figma_page, 'DOCUMENT')
-        serialize(page, open(f"output/pages/{page['do_objectID']}.json", 'w'))
+        serialize(page, f"output/pages/{page['do_objectID']}.json")
         pages.append(page)
 
     if context.symbols_page:
         page = context.symbols_page
-        serialize(page, open(f"output/pages/{page['do_objectID']}.json", 'w'))
+        serialize(page, f"output/pages/{page['do_objectID']}.json")
         pages.append(page)
 
     return pages
 
 
 def write_sketch_file(sketch_document, sketch_user, sketch_meta):
-    serialize(sketch_document, open('output/document.json', 'w'))
-    serialize(sketch_user, open('output/user.json', 'w'))
-    serialize(sketch_meta, open('output/meta.json', 'w'))
+    serialize(sketch_document, 'output/document.json')
+    serialize(sketch_user, 'output/user.json')
+    serialize(sketch_meta, 'output/meta.json')
 
     os.system('cd output; zip -0 -r ../output/output.sketch .')
