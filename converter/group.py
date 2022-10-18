@@ -1,6 +1,7 @@
 from . import base, rectangle, style
 import utils
 import numpy as np
+from sketchformat.style import Style
 
 def convert(figma_group):
     return {
@@ -136,48 +137,7 @@ def make_clipping_rect(guid, frame):
         'shouldBreakMaskChain': False,
         'isTemplate': False,
         'needsConvertionToNewRoundCorners': False,
-        'style': {
-            '_class': 'style',
-            'do_objectID': utils.gen_object_id(guid, b'frame_mask_style'),
-             "borderOptions": {
-               "_class": "borderOptions",
-               "dashPattern": [],
-               "isEnabled": True,
-               "lineCapStyle": 0,
-               "lineJoinStyle": 0
-             },
-            'borders': [],
-            'fills': [],
-            'miterLimit': 10,
-            'windingRule': 0,
-            # TODO: Effects
-            'endMarkerType': 0,
-            'innerShadows': [],
-            'shadows': [],
-            'startMarkerType': 0,
-            'contextSettings': {
-                '_class': 'graphicsContextSettings',
-                'blendMode': 0,
-                'opacity': 1
-            },
-            'colorControls': {
-                '_class': 'colorControls',
-                'isEnabled': True,
-                'brightness': 0,
-                'contrast': 1,
-                'hue': 0,
-                'saturation': 1
-            },
-            'blur': {
-                '_class': 'blur',
-                'center': '{0.5, 0.5}',
-                'isEnabled': False,
-                'motionAngle': 0,
-                'radius': 10,
-                'saturation': 1,
-                'type': 0
-            },
-        },
+        'style': Style(do_objectID=utils.gen_object_id(guid, b'frame_mask_style')),
         'edited': False,
         'isClosed': True,
         'pointRadiusBehaviour': 0,

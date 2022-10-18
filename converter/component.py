@@ -5,14 +5,13 @@ def convert(figma_style):
     match figma_style:
         # Fill with a single fill
         case {'styleType': 'FILL', 'fillPaints': [{'type': 'SOLID'} as paint]}:
+            color = style.convert_color(paint['color'], paint['opacity'])
+            color.swatchID = utils.gen_object_id(figma_style.id)
             return {
                 '_class': 'swatch',
-                'do_objectID': utils.gen_object_id(figma_style.id),
+                'do_objectID': color.swatchID,
                 'name': figma_style.name,
-                'value': {
-                    '_class': 'color',
-                    **style.convert_color(paint)
-                }
+                'value': color
             }
         case _:
-            raise Exception(f"Unsupported shared style: '{figma_style['styleType']}'")
+            return None

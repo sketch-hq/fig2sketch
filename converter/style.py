@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import utils
+from sketchformat.style import *
 
 BORDER_POSITION = {
     'CENTER': 0,
@@ -29,13 +30,6 @@ PATTERN_FILL_TYPE = {
     'FIT': 3,
     'FILL': 1,
     'TILE': 0
-}
-
-GRADIENT_TYPE = {
-    'GRADIENT_LINEAR': 0,
-    'GRADIENT_RADIAL': 1,
-    'GRADIENT_ANGULAR': 2,  # TODO: Sketch does not support positioning angular gradients
-    'GRADIENT_DIAMOND': 1,  # Unsupported by Sketch, most similar is radial
 }
 
 BLEND_MODE = {
@@ -91,119 +85,41 @@ def convert(figma_node):
 
 
 def convert_border(figma_node, figma_border):
-    obj = {
-        **convert_fill(figma_node, figma_border),
-        '_class': 'border',
-        'position': BORDER_POSITION[figma_node['strokeAlign']],
-        'thickness': figma_node['strokeWeight'],
-    }
-
-    # Fill-only properties, no borders
-    del obj['noiseIndex']
-    del obj['noiseIntensity']
-    del obj['patternFillType']
-    del obj['patternTileScale']
-
-    return obj
+    return Border.from_fill(
+        convert_fill(figma_node, figma_border),
+        position=BORDER_POSITION[figma_node['strokeAlign']],
+        thickness=figma_node['strokeWeight'],
+    )
 
 
 def convert_fill(figma_node, figma_fill):
-    return {
-        '_class': 'fill',
-        'isEnabled': figma_fill['visible'],
-        'noiseIndex': 0,
-        'noiseIntensity': 0,
-        'patternFillType': 0,
-        'patternTileScale': 1,
-        'contextSettings': {
-            '_class': 'graphicsContextSettings',
-            'blendMode': 0,
-            'opacity': figma_fill.get('opacity', 1)
-        },
-        **fill_type_specific_attributes(figma_node, figma_fill)
+    kw = {
+        'contextSettings': ContextSettings(opacity=figma_fill.get('opacity', 1)),
+        'isEnabled': figma_fill['visible']
     }
 
-DISABLED_GRADIENT = {
-    'gradient': {
-        '_class': 'gradient',
-        'elipseLength': 0,
-        'from': '{0.5, 0}',
-        'gradientType': 0,
-        'stops': [
-        {
-            '_class': 'gradientStop',
-            'color': {
-            '_class': 'color',
-            'alpha': 1,
-            'blue': 1,
-            'green': 1,
-            'red': 1
-            },
-            'position': 0
-        },
-        {
-            '_class': 'gradientStop',
-            'color': {
-            '_class': 'color',
-            'alpha': 1,
-            'blue': 0,
-            'green': 0,
-            'red': 0
-            },
-            'position': 1
-        }
-        ],
-        'to': '{0.5, 1}'
-    }
-}
-
-DEFAULT_COLOR = {
-    'color': {
-        '_class': 'color',
-        'alpha': 1,
-        'blue': 0.847,
-        'green': 0.847,
-        'red': 0.847
-    }
-}
-
-def fill_type_specific_attributes(figma_node, figma_fill):
     match figma_fill:
         case {'type': 'EMOJI'}:
             raise Exception("Unsupported fill: EMOJI")
         case {'type': 'SOLID'}:
-            return {
-                'fillType': 0,
-                'color': convert_color(figma_fill),
-                **DISABLED_GRADIENT
-            }
+            return Fill.Color(convert_color(figma_fill['color'], figma_fill['opacity']), **kw)
         case {'type': 'IMAGE'}:
-            return {
-                'fillType': 4,
-                'image': {
-                    '_class': 'MSJSONFileReference',
-                    '_ref_class': 'MSImageData',
-                    '_ref': f'images/{figma_fill["image"]["filename"]}.png'
-                },
-                'noiseIndex': 0,
-                'noiseIntensity': 0,
-                'patternFillType': PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
-                'patternTileScale': 1,
-                **DISABLED_GRADIENT,
-                **DEFAULT_COLOR,
-            }
+            return Fill.Image(
+                f'images/{figma_fill["image"]["filename"]}.png',
+                patternFillType=PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
+                **kw
+            )
         case _:
-            return convert_gradient(figma_node, figma_fill)
+            return Fill.Gradient(convert_gradient(figma_node, figma_fill))
 
 
-def convert_color(figma_fill):
-    return {
-        '_class': 'color',
-        'red': figma_fill['color']['r'],
-        'green': figma_fill['color']['g'],
-        'blue': figma_fill['color']['b'],
-        'alpha': figma_fill['opacity'],
-    }
+def convert_color(color, opacity=None):
+    return Color(
+        red=color['r'],
+        green=color['g'],
+        blue=color['b'],
+        alpha=color['a'] if opacity is None else opacity,
+    )
 
 
 def convert_gradient(figma_node, figma_fill):
@@ -222,9 +138,11 @@ def convert_gradient(figma_node, figma_fill):
     if figma_fill['type'] == 'GRADIENT_LINEAR':
         # Linear gradients always go from (0, .5) to (1, .5)
         # We just apply the transform to get the coordinates (in a 1x1 square)
-        point_from = invmat.dot([0, 0.5, 1])
-        point_to = invmat.dot([1, 0.5, 1])
-        ellipse_ratio = 0  # Doesn't matter
+        return Gradient.Linear(
+            from_=Point.from_array(invmat.dot([0, 0.5, 1])),
+            to=Point.from_array(invmat.dot([1, 0.5, 1])),
+            stops=convert_stops(figma_fill['stops'])
+        )
     elif figma_fill['type'] in ['GRADIENT_RADIAL', 'GRADIENT_DIAMOND']:
         # Figma angular gradients have the center at (.5, .5), the vertex at (1, .5)
         # and the co-vertex at (.5, 1). We transform them to the coordinates in a 1x1 square
@@ -238,45 +156,37 @@ def convert_gradient(figma_node, figma_fill):
         x_scale = figma_node.size['x'] / figma_node.size['y']
         ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
             point_from, point_to, x_scale)
+
+        return Gradient.Radial(
+            from_=Point.from_array(point_from),
+            to=Point.from_array(point_to),
+            elipseLength=ellipse_ratio,
+            stops=convert_stops(figma_fill['stops'])
+        )
     else:
         # Angular gradients don't allow positioning, but we can at least rotate them
-        point_from = [0, 0]
-        point_to = [0, 0]
-        ellipse_ratio = 0
         rotation_offset = math.atan2(-figma_fill['transform']['m10'],
                                      figma_fill['transform']['m00']) / 2 / math.pi
 
-    gradient_fill = {
-        **DEFAULT_COLOR,
-        'fillType': 1,
-        'gradient': {
-            '_class': 'gradient',
-            'gradientType': GRADIENT_TYPE[figma_fill['type']],
-            'from': utils.np_point_to_string(point_from),
-            'to': utils.np_point_to_string(point_to),
-            'elipseLength': ellipse_ratio,
-            'stops': [
-                {
-                    '_class': 'gradientStop',
-                    'position': rotated_stop(stop['position'], rotation_offset),
-                    'color': {
-                        '_class': 'color',
-                        'red': stop['color']['r'],
-                        'green': stop['color']['g'],
-                        'blue': stop['color']['b'],
-                        'alpha': stop['color']['a'],
-                    }
-                } for stop in figma_fill['stops']
-            ]
-        }
-    }
+        return Gradient.Angular(
+            stops=convert_stops(figma_fill['stops'], rotation_offset)
+        )
+
+def convert_stops(figma_stops, rotation_offset=0):
+    stops = [
+        GradientStop(
+            color=convert_color(stop['color']),
+            position=rotated_stop(stop['position'], rotation_offset),
+        )
+        for stop in figma_stops
+    ]
 
     if rotation_offset:
         # When we have a rotated angular gradient, stops at 0 and 1 both convert
         # to the exact same position and that confuses Sketch. Force a small difference
-        gradient_fill['gradient']['stops'][-1]['position'] -= 0.00001
+        stops[-1].position -= 0.00001
 
-    return gradient_fill
+    return stops
 
 
 def scaled_distance(a, b, x_scale):

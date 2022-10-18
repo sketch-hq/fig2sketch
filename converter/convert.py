@@ -1,4 +1,4 @@
-import json
+from .serialize import serialize
 import os
 
 from . import document, meta, tree, user
@@ -39,28 +39,20 @@ def convert_pages(figma_pages):
 
     for figma_page in figma_pages:
         page = tree.convert_node(figma_page, 'DOCUMENT')
-        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2, ensure_ascii=False)
+        serialize(page, open(f"output/pages/{page['do_objectID']}.json", 'w'))
         pages.append(page)
 
     if context.symbols_page:
         page = context.symbols_page
-        json.dump(page, open(f"output/pages/{page['do_objectID']}.json", 'w'), indent=2, ensure_ascii=False)
+        serialize(page, open(f"output/pages/{page['do_objectID']}.json", 'w'))
         pages.append(page)
 
     return pages
 
 
-# def write_components(components, components_page):
-#     components_page['layers'] = components
-#     json.dump(components_page, open(f"output/pages/{components_page['do_objectID']}.json", 'w'),
-#               indent=2)
-#
-#     return components_page
-
-
 def write_sketch_file(sketch_document, sketch_user, sketch_meta):
-    json.dump(sketch_document, open('output/document.json', 'w'), indent=2, ensure_ascii=False)
-    json.dump(sketch_user, open('output/user.json', 'w'), indent=2, ensure_ascii=False)
-    json.dump(sketch_meta, open('output/meta.json', 'w'), indent=2, ensure_ascii=False)
+    serialize(sketch_document, open('output/document.json', 'w'))
+    serialize(sketch_user, open('output/user.json', 'w'))
+    serialize(sketch_meta, open('output/meta.json', 'w'))
 
     os.system('cd output; zip -0 -r ../output/output.sketch .')

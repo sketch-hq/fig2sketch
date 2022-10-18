@@ -17,10 +17,7 @@ class Context:
         # See if we can convert this component to a Sketch swatch
         sketch_component = self._sketch_components.get(cid)
         if not sketch_component:
-            try:
-                sketch_component = component.convert(figma_component)
-            except:
-                pass
+            sketch_component = component.convert(figma_component)
             if sketch_component is not None:
                 self._sketch_components[cid] = sketch_component
 
