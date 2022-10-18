@@ -1,6 +1,7 @@
 import json
 from dataclasses import asdict, is_dataclass
 
+
 def clean_obj(items):
     return {
         # Remove _ suffix for reserved keywords
@@ -23,6 +24,6 @@ def serialize(obj, path):
         obj,
         open(path, 'w'),
         default=convert_object,
-        ensure_ascii=False, # Write emoji directly, without surrogate pairs
-        indent=2 # Makes debugging nicer. TODO: Remove
+        ensure_ascii=False,  # Write emoji directly, without surrogate pairs
+        indent=2  # Makes debugging nicer. TODO: Remove
     )

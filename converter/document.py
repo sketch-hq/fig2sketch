@@ -46,7 +46,8 @@ def convert(pages):
         'sharedSwatches': {
             '_class': 'swatchContainer',
             'do_objectID': utils.gen_object_id((0, 0), b'swatchContainer'),
-            'objects': [component for component in context.sketch_components() if component['_class'] == 'swatch']
+            'objects': [component for component in context.sketch_components() if
+                        component['_class'] == 'swatch']
         },
         'fontReferences': convert_fonts(),
         'documentState': {
@@ -75,13 +76,13 @@ def convert_fonts():
                     '_class': 'fontReference',
                     'do_objectID': utils.gen_object_id((0, 0), bytes.fromhex(font_hash)),
                     'fontData': {
-                        "_class": 'MSJSONFileReference',
+                        '_class': 'MSJSONFileReference',
                         '_ref_class': 'MSFontData',
                         '_ref': 'fonts/%s' % font_hash
                     },
                     'fontFamilyName': ffamily,
                     'fontFileName': '%s-%s.ttf' % (ffamily, fsfamily),
-                    'options': 3, # Embedded and used
+                    'options': 3,  # Embedded and used
                     'postscriptNames': [
                         psname
                     ]

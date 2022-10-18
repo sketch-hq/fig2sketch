@@ -64,7 +64,7 @@ def convert(figma_frame):
 
 # TODO: Check isDeleted properties all over the code (prototyping, symbol properties, etc.)
 def prototyping_information(figma_frame):
-    # Some information about the prototypye is in the Figma page
+    # Some information about the prototype is in the Figma page
     figma_canvas = context.figma_node(figma_frame['parent']['id'])
     if 'prototypeDevice' not in figma_canvas:
         return {

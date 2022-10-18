@@ -5,11 +5,13 @@ from sketchformat.style import Style
 def convert(figma_canvas):
     return make_page(figma_canvas.id, figma_canvas.name)
 
+
 def symbols_page():
-    page = make_page((0,0), 'Symbols', suffix=b'symbols_page')
+    page = make_page((0, 0), 'Symbols', suffix=b'symbols_page')
     page['layers'] = []
 
     return page
+
 
 def make_page(guid, name, suffix=b''):
     return {

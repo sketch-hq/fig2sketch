@@ -1,6 +1,7 @@
 from . import style
 import utils
 
+
 def convert(figma_style):
     match figma_style:
         # Fill with a single fill

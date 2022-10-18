@@ -5,7 +5,6 @@ def convert(figma_item):
     flip, rotation = guess_flip(figma_item)
     coordinates = transform_frame(figma_item)
 
-
     return {
         'frame': {
             '_class': 'rect',
@@ -66,11 +65,10 @@ def guess_flip(figma_item):
     # We've got a chance to invert both flips and add 180 to the angle, but we've got to guess
     # We guess that angles between -90 to 90 are OK. Angles of 180 are also OK if there is no flip
     # already applied. This makes sure our output angle is < 90 or that it's 180 with no flips.
-    # Note: this heuristic is bound to be wrong a lot of the time, so maybe we can skip it completely
+    # Note: this heuristic is bound to be wrong lots of times, so maybe we can skip it completely
     if 90 < abs(angle) < 179 or (abs(angle) > 179 and flip[1]):
         flip[0] = not flip[0]
         flip[1] = not flip[1]
         angle = (angle + 180) % 360
 
     return flip, angle
-

@@ -15,8 +15,8 @@ def convert(figma_bool_ops):
         'name': figma_bool_ops.name,
         'shouldBreakMaskChain': True,
         'hasClickThrough': False,
-        "groupLayout": {
-            "_class": "MSImmutableFreeformGroupLayout"
+        'groupLayout': {
+            '_class': 'MSImmutableFreeformGroupLayout'
         },
         'windingRule': 0
     }

@@ -4,7 +4,7 @@ import zipfile
 import struct
 from .kiwi import *
 
-SUPPORTED_VERSION = 15
+SUPPORTED_VERSION = 20
 
 
 def decode(reader):
