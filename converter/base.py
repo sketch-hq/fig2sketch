@@ -49,12 +49,11 @@ def process_styles(figma_node):
 
     for inherit_style, sketch_keys in SUPPORTED_INHERIT_STYLES.items():
         # MAX_INT = unset
-        if inherit_style in figma_node and figma_node[inherit_style]['sessionID'] != 4294967295:
+        if inherit_style in figma_node and figma_node[inherit_style][0] != 4294967295:
             if sketch_keys is None:
                 raise Exception('Unhandled inherit style ', inherit_style)
 
-            figma_style, shared_style = context.component(
-                (figma_node[inherit_style]['sessionID'], figma_node[inherit_style]['localID']))
+            figma_style, shared_style = context.component(figma_node[inherit_style])
 
             if shared_style is not None:
                 # At this moment, this is only styles that involve a single solid color
@@ -253,8 +252,7 @@ def prototyping_flow(figma_node):
                 destination = 'back'
             elif action['connectionType'] == 'INTERNAL_NODE':
                 if 'transitionNodeID' in action:
-                    destination = utils.gen_object_id((action['transitionNodeID']['sessionID'],
-                                                       action['transitionNodeID']['localID']))
+                    destination = utils.gen_object_id(action['transitionNodeID'])
                 else:
                     destination = None
             elif action['connectionType'] == 'NONE':

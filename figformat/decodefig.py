@@ -33,5 +33,8 @@ def decode(reader):
         offset += size
         segments.append(data)
 
+    type_converters = {
+        'GUID': (lambda x: (x['sessionID'], x['localID']))
+    }
     schema = KiwiSchema(io.BytesIO(segments[0]))
-    return KiwiDecoder(schema).decode(io.BytesIO(segments[1]), 'Message'), figma_zip
+    return KiwiDecoder(schema, type_converters).decode(io.BytesIO(segments[1]), 'Message'), figma_zip

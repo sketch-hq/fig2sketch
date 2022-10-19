@@ -36,16 +36,16 @@ def convert_fig(reader):
 
 
 def transform_node(fig, node, figma_zip):
-    # Extract ID
+    # Extract ID. TODO: This can be removed
     guid = node.pop('guid')
-    node['id'] = (guid['sessionID'], guid['localID'])
+    node['id'] = guid
     node['children'] = []
 
     # Extract parent ID
     if 'parentIndex' in node:
         parent = node.pop('parentIndex')
         node['parent'] = {
-            'id': (parent['guid']['sessionID'], parent['guid']['localID']),
+            'id': parent['guid'],
             'position': parent['position']
         }
 

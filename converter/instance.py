@@ -17,8 +17,7 @@ def convert(figma_instance):
             **base.base_shape(figma_instance),
             '_class': 'symbolInstance',
             'name': figma_instance.name,
-            'symbolID': utils.gen_object_id((figma_instance['symbolData']['symbolID']['sessionID'],
-                                             figma_instance['symbolData']['symbolID']['localID'])),
+            'symbolID': utils.gen_object_id(figma_instance['symbolData']['symbolID']),
             'overrideValues': sketch_overrides,
             'preservesSpaceWhenHidden': False,
             'scale': 1
@@ -52,7 +51,7 @@ def convert_overrides(figma_instance):
         # TODO
         assert len(override['guidPath']['guids']) == 1
         guid = override['guidPath']['guids'][0]
-        uuid = utils.gen_object_id((guid['sessionID'], guid['localID']))
+        uuid = utils.gen_object_id(guid)
 
         for property, value in override.items():
             if property == 'guidPath':
@@ -76,8 +75,7 @@ def convert_overrides(figma_instance):
                 print(f"Unsupported override: {property}. Will detach")
                 return None
 
-    figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'],
-                                       figma_instance['symbolData']['symbolID']['localID']))
+    figma_master = context.figma_node(figma_instance['symbolData']['symbolID'])
     for prop in figma_instance.get('componentPropAssignments', []):
         # TODO: propdef.type needed?
         # prop_def = [d for d in figma_master.componentPropDefs if d['id'] == prop['defID']]
@@ -85,8 +83,7 @@ def convert_overrides(figma_instance):
         ref_prop, ref_node = find_ref(figma_master, prop['defID'])
         uuid = utils.gen_object_id(ref_node['id'])
         if ref_prop['componentPropNodeField'] == 'OVERRIDDEN_SYMBOL_ID':
-            symbol_id = utils.gen_object_id(
-                (prop['value']['guidValue']['sessionID'], prop['value']['guidValue']['localID']))
+            symbol_id = utils.gen_object_id(prop['value']['guidValue'])
             sketch_overrides.append({
                 '_class': 'overrideValue',
                 'overrideName': f'{uuid}_symbolID',
@@ -122,13 +119,12 @@ def find_ref(node, ref_id):
 
 def detach_symbol(figma_instance):
     # Find symbol master
-    figma_master = context.figma_node((figma_instance['symbolData']['symbolID']['sessionID'],
-                                       figma_instance['symbolData']['symbolID']['localID']))
+    figma_master = context.figma_node(figma_instance['symbolData']['symbolID'])
     detached_children = copy.deepcopy(figma_master['children'], {})
 
     # Apply overrides. Can we use derivedSymbolData?
     overrides = {
-        (o['guidPath']['guids'][0]['sessionID'], o['guidPath']['guids'][0]['localID']): o
+        o['guidPath']['guids'][0]: o
         for o in figma_instance['symbolData']['symbolOverrides']
     }
     for c in detached_children:

@@ -61,7 +61,6 @@ def get_node_type(figma_node, parent_type):
 def find_shared_style(figma_node):
     match figma_node:
         case {'inheritFillStyleID': shared_style}:
-            node_id = (shared_style['sessionID'], shared_style['localID'])
-            return context.component(node_id)
+            return context.component(shared_style)
         case _:
             return {}

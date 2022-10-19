@@ -84,8 +84,9 @@ class KiwiDecoder:
     TYPES = ['bool', 'byte', 'int', 'uint', 'float', 'string'];
     KINDS = ['ENUM', 'STRUCT', 'MESSAGE'];
 
-    def __init__(self, schema):
+    def __init__(self, schema, type_converters):
         self.schema = schema
+        self.type_converters = type_converters
 
     def decode(self, reader, root):
         kw = KiwiReader(reader)
@@ -111,6 +112,16 @@ class KiwiDecoder:
         return type['fields'][value]['name']
 
     def _decode_type(self, kw, type_id, array):
+        obj = self._decode_type_inner(kw, type_id, array)
+
+        type_converter = self.type_converters.get(self.schema.types[type_id]['name'])
+        if not array and type_converter:
+            obj = type_converter(obj)
+        
+        return obj
+
+
+    def _decode_type_inner(self, kw, type_id, array):
         if array:
             return [self._decode_type(kw, type_id, False) for i in range(kw.uint())]
 
