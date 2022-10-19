@@ -31,7 +31,7 @@ class Context:
         if not self.symbols_page:
             self.symbols_page = page.symbols_page()
 
-        self.symbols_page['layers'].append(sketch_symbol)
+        self.symbols_page.layers.append(sketch_symbol)
         self._position_symbol(sketch_symbol)
 
     def figma_node(self, fid):

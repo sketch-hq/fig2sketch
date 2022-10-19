@@ -57,7 +57,7 @@ def convert(pages):
             {
                 '_class': 'MSJSONFileReference',
                 '_ref_class': 'MSImmutablePage',
-                '_ref': f"pages/{page['do_objectID']}"
+                '_ref': f"pages/{page.do_objectID}"
             } for page in pages
         ]
     }

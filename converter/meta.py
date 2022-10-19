@@ -2,11 +2,11 @@ def convert(pages):
     return {
         'commit': '1899e24f63af087a9dd3c66f73b492b72c27c2c8',
         'pagesAndArtboards': {
-            page['do_objectID']: {
-                'name': page['name'],
+            page.do_objectID: {
+                'name': page.name,
                 'artboards': {
                     artboard['do_objectID']: {'name': artboard['name']}
-                    for artboard in page['layers']
+                    for artboard in page.layers
                     if artboard['_class'] in ['artboard', 'symbolMaster']
                 }
             }

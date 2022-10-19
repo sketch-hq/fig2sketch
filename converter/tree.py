@@ -1,5 +1,6 @@
 from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, \
     shape_group, text, slice, context, instance, symbol
+from dataclasses import is_dataclass
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -38,7 +39,10 @@ def convert_node(figma_node, parent_type):
     # TODO: Determine who needs layers per node type
     # e.g: rectangles never have children, groups do
     if children:
-        sketch_item['layers'] = children
+        if is_dataclass(sketch_item):
+            sketch_item.layers = children
+        else:
+            sketch_item['layers'] = children
 
     post_process = POST_PROCESSING.get(type_)
     if post_process:

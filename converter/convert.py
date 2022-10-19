@@ -39,12 +39,12 @@ def convert_pages(figma_pages):
 
     for figma_page in figma_pages:
         page = tree.convert_node(figma_page, 'DOCUMENT')
-        serialize(page, f"output/pages/{page['do_objectID']}.json")
+        serialize(page, f"output/pages/{page.do_objectID}.json")
         pages.append(page)
 
     if context.symbols_page:
         page = context.symbols_page
-        serialize(page, f"output/pages/{page['do_objectID']}.json")
+        serialize(page, f"output/pages/{page.do_objectID}.json")
         pages.append(page)
 
     return pages

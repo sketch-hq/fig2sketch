@@ -7,7 +7,7 @@ def convert(pages):
             'expandedTextStylePathsInPopover': [],
             'libraryListCollapsed': 0
         },
-        **{page['do_objectID']: {
+        **{page.do_objectID: {
             'scrollOrigin': '{1000, 500}',
             'zoomValue': 0.5
         } for page in pages}
