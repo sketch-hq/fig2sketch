@@ -183,7 +183,7 @@ class AbstractRootLayer(AbstractLayer):
     hasClickThrough: bool = False
     horizontalRulerData: RulerData = field(default_factory=RulerData)
     verticalRulerData: RulerData = field(default_factory=RulerData)
-    grid: Optional[SimpleGrid] = None
+    grid: SimpleGrid = field(default_factory=SimpleGrid)
     layout: Optional[LayoutGrid] = None
     groupLayout: Union[FreeFormGroupLayout,InferredGroupLayout] = field(default_factory=FreeFormGroupLayout)
     layers: List[AbstractLayer] = field(default_factory=list)

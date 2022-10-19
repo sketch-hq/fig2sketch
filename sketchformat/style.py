@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from enum import IntEnum
 from typing import Optional, List
 
@@ -322,3 +322,18 @@ class Style:
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
     innerShadows: List[InnerShadow] = field(default_factory=list)
+    startDecorationType: Optional[MarkerType] = None
+    endDecorationType: Optional[MarkerType] = None
+
+    def set_markers(self, startMarkerType: MarkerType, endMarkerType: MarkerType):
+        self.startMarkerType = startMarkerType
+        self.endMarkerType = endMarkerType
+
+        # Legacy properties, can be skipped. Doing this to match Sketch exactly
+        # TODO: Should we remove this?
+        if startMarkerType > 0 or endMarkerType > 0:
+            if startMarkerType < 4:
+                self.startDecorationType = startMarkerType
+            if endMarkerType < 4:
+                self.endDecorationType = endMarkerType
+
