@@ -107,7 +107,8 @@ def convert_overrides(figma_instance):
 
 
 def find_ref(node, ref_id):
-    refs = [ref for ref in node.get('componentPropRefs', []) if ref['defID'] == ref_id]
+    refs = [ref for ref in node.get('componentPropRefs', []) if
+            ref['defID'] == ref_id and not ref['isDeleted']]
     if refs:
         return refs[0], node
 

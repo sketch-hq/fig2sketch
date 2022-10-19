@@ -231,6 +231,9 @@ def prototyping_flow(figma_node):
     # TODO: What happens with multiple actions?
     flow = None
     for interaction in figma_node.get('prototypeInteractions', []):
+        if interaction['isDeleted']:
+            continue
+
         if interaction['event']['interactionType'] != 'ON_CLICK':
             print('Unsupported interaction type')
             continue
