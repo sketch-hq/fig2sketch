@@ -129,8 +129,16 @@ class AbstractLayer:
     shouldBreakMaskChain: bool = False
     hasClippingMask: bool = False
     clippingMaskMode: ClippingMaskMode = ClippingMaskMode.OUTLINE
-    style: Style = field(default_factory=Style)
-    maintainScrollPosition: bool = False
+    style: Style
+
+    # Makes compatible with dictionary access
+    # TODO: Remove when conversion to dataclasses is complete
+    def __getitem__(self, k):
+        return getattr(self, k)
+
+
+    def __setitem__(self, k, v):
+        return setattr(self, k, v)
 
 
 @dataclass(kw_only=True)

@@ -1,0 +1,83 @@
+from .layer_common import AbstractLayer
+from .common import Point
+from enum import IntEnum
+from typing import Optional, List, NamedTuple
+from dataclasses import dataclass, field, asdict, InitVar
+
+
+class PointRadiusBehaviour(IntEnum):
+    V0 = 0
+    V1 = 1
+    V1_SMOOTH = 2
+
+
+class CornerStyle(IntEnum):
+    ROUNDED = 0
+    ROUNDED_INVERTED = 1
+    ANGLED = 2
+    SQUARED = 3
+
+
+class CurveMode(IntEnum):
+    UNDEFINED = 0
+    STRAIGHT = 1
+    MIRRORED = 2
+    ASYMMETRIC = 3
+    DISCONNECTED = 4
+
+
+@dataclass(kw_only=True)
+class CurvePoint:
+    _class: str = field(default='curvePoint', init=False)
+    cornerRadius: float = 0
+    cornerStyle: CornerStyle = CornerStyle.ROUNDED
+    curveFrom: Point
+    curveTo: Point
+    hasCurveFrom: bool = False
+    hasCurveTo: bool = False
+    curveMode: CurveMode = CurveMode.UNDEFINED
+    point: Point
+
+    @staticmethod
+    def Straight(point: Point, radius: float = 0) -> 'CurvePoint':
+        return CurvePoint(
+            curveFrom=point,
+            curveTo=point,
+            point=point,
+            cornerRadius=radius,
+            curveMode=CurveMode.STRAIGHT
+        )
+
+
+@dataclass(kw_only=True)
+class AbstractShapeLayer(AbstractLayer):
+    edited: bool = False
+    isClosed: bool
+    pointRadiusBehaviour: PointRadiusBehaviour = PointRadiusBehaviour.V1
+    points: List[CurvePoint]
+
+
+@dataclass(kw_only=True)
+class Rectangle(AbstractShapeLayer):
+    class Corners(NamedTuple):
+        topLeft: float
+        topRight: float
+        bottomRight: float
+        bottomLeft: float
+
+    corners: InitVar[Corners]
+    _class: str = field(default='rectangle', init=False)
+    fixedRadius: float = 0
+    hasConvertedToNewRoundCorners: bool = True
+    needsConvertionToNewRoundCorners: bool = False
+    isClosed: bool = True
+    # Override points with fixed rectangle coordinates
+    points: List[CurvePoint] = field(default_factory=list, init=False)
+
+    def __post_init__(self, corners):
+        self.points = [
+            CurvePoint.Straight(Point(0, 0), corners.topLeft),
+            CurvePoint.Straight(Point(0, 1), corners.topRight),
+            CurvePoint.Straight(Point(1, 1), corners.bottomRight),
+            CurvePoint.Straight(Point(1, 0), corners.bottomLeft),
+        ]
