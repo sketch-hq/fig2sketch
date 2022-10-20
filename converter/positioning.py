@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 
 def convert(figma_item):
@@ -9,8 +10,8 @@ def convert(figma_item):
         'frame': {
             '_class': 'rect',
             'constrainProportions': figma_item.get('proportionsConstrained', False),
-            'height': figma_item.size['y'],
-            'width': figma_item.size['x'],
+            'height': figma_item['size']['y'],
+            'width': figma_item['size']['x'],
             'x': coordinates[0],
             'y': coordinates[1]
         },
@@ -25,7 +26,7 @@ def transform_frame(item):
     relative_position = item['transform'][:2,2]
 
     # Vector from rotation center to origin (0,0)
-    vco = np.array([item.size['x'] / 2, item.size['y'] / 2])
+    vco = np.array([item['size']['x'] / 2, item['size']['y'] / 2])
 
     # Apply rotation to vector
     vco_rotated = apply_transform(item, vco)
@@ -45,7 +46,7 @@ def apply_transform(item, vector):
 
 
 def guess_flip(figma_item):
-    tr = figma_item.transform
+    tr = figma_item['transform']
 
     # Use a diagonal with big numbers to check for sign flips, to avoid floating point weirdness
     flip = [False, False]
@@ -54,7 +55,10 @@ def guess_flip(figma_item):
     else:
         flip[1] = bool(np.sign(tr[0,1]) == np.sign(tr[1,0]))
 
-    angle = figma_item.rotation
+    angle = math.degrees(math.atan2(
+        -figma_item['transform'][1,0],
+        figma_item['transform'][0,0]
+    ))
     if flip[1]:
         angle *= -1
 

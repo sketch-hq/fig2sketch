@@ -58,11 +58,11 @@ BLEND_MODE = {
 
 def convert(figma_node) -> Style:
     return Style(
-        do_objectID=utils.gen_object_id(figma_node.id, b'style'),
+        do_objectID=utils.gen_object_id(figma_node['guid'], b'style'),
         borderOptions=BorderOptions(
-            lineCapStyle=LINE_CAP_STYLE[figma_node.strokeCap],
-            lineJoinStyle=LINE_JOIN_STYLE[figma_node.strokeJoin],
-            dashPattern=figma_node.dashPattern
+            lineCapStyle=LINE_CAP_STYLE[figma_node['strokeCap']],
+            lineJoinStyle=LINE_JOIN_STYLE[figma_node['strokeJoin']],
+            dashPattern=figma_node['dashPattern']
         ),
         borders=[convert_border(figma_node, b) for b in figma_node['strokePaints']],
         fills=[convert_fill(figma_node, f) for f in figma_node['fillPaints']],
@@ -131,7 +131,7 @@ def convert_gradient(figma_node, figma_fill) -> Gradient:
         # Sketch defines the ratio between axis in the item reference point (not the 1x1 square)
         # So we scale the 1x1 square coordinates to fit the ratio of the item frame before
         # calculating the ellipse's ratio
-        x_scale = figma_node.size['x'] / figma_node.size['y']
+        x_scale = figma_node['size']['x'] / figma_node['size']['y']
         ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
             point_from, point_to, x_scale)
 

@@ -3,7 +3,7 @@ from . import component, page
 
 class Context:
     def init(self, components_page, id_map):
-        self._figma_components = {node.id: node for node in components_page.children}
+        self._figma_components = {node['guid']: node for node in components_page['children']}
         self._sketch_components = {}
         self.symbols_page = None
         self._node_by_id = id_map

@@ -21,7 +21,7 @@ def convert(figma_vector):
     obj = {
         '_class': 'shapePath',
         **base.base_shape(figma_vector),
-        'name': figma_vector.name,
+        'name': figma_vector['name'],
         'edited': True,
         'pointRadiusBehaviour': 1,
         **points,
@@ -35,15 +35,15 @@ def convert(figma_vector):
 
 def convert_line(figma_line):
     # Shift line by half its width
-    vt = np.array([0, -figma_line.strokeWeight / 2])
+    vt = np.array([0, -figma_line['strokeWeight'] / 2])
     vtr = positioning.apply_transform(figma_line, vt)
-    figma_line.transform[0][2] += vtr[0]
-    figma_line.transform[1][2] += vtr[1]
+    figma_line['transform'][0][2] += vtr[0]
+    figma_line['transform'][1][2] += vtr[1]
 
     return {
         '_class': 'shapePath',
         **base.base_shape(figma_line),
-        'name': figma_line.name,
+        'name': figma_line['name'],
         'edited': True,
         'isClosed': False,
         'pointRadiusBehaviour': 1,
@@ -142,8 +142,8 @@ def get_point_curve(figma_point, tangent):
 
 
 def points_marker_types(figma_vector, start_point, end_point):
-    start_marker_type = STROKE_CAP_TO_MARKER_TYPE[figma_vector.strokeCap]
-    end_marker_type = STROKE_CAP_TO_MARKER_TYPE[figma_vector.strokeCap]
+    start_marker_type = STROKE_CAP_TO_MARKER_TYPE[figma_vector['strokeCap']]
+    end_marker_type = STROKE_CAP_TO_MARKER_TYPE[figma_vector['strokeCap']]
 
     if ('style' in start_point) and ('strokeCap' in start_point['style']):
         start_marker_type = STROKE_CAP_TO_MARKER_TYPE[start_point['style']['strokeCap']]

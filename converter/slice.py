@@ -10,10 +10,10 @@ def convert(figma_slice):
     # Not using base because slices don't have many style/masking properties
     return {
         '_class': 'slice',
-        'name': figma_slice.name,
-        'do_objectID': utils.gen_object_id(figma_slice.id),
+        'name': figma_slice['name'],
+        'do_objectID': utils.gen_object_id(figma_slice['guid']),
         'booleanOperation': -1,
-        'exportOptions': base.export_options(figma_slice.exportSettings),
+        'exportOptions': base.export_options(figma_slice['exportSettings']),
         **positioning.convert(figma_slice),
         'isFixedToViewport': False,
         'isFlippedHorizontal': False,

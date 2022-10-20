@@ -1,7 +1,6 @@
 import io
 from PIL import Image
 from . import decodefig, decodevectornetwork
-from .fignode import FigNode
 import utils
 
 
@@ -14,7 +13,7 @@ def convert_fig(reader):
 
     for node in fig['nodeChanges']:
         node = transform_node(fig, node, figma_zip)
-        node_id = node['id']
+        node_id = node['guid']
         id_map[node_id] = node
 
         if not root:
@@ -26,7 +25,7 @@ def convert_fig(reader):
         if 'parent' not in node:
             continue
 
-        id_map[node['parent']['id']]['children'].append(node)
+        id_map[node['parent']['guid']]['children'].append(node)
 
     # Sort children
     for node in id_map.values():
@@ -36,16 +35,13 @@ def convert_fig(reader):
 
 
 def transform_node(fig, node, figma_zip):
-    # Extract ID. TODO: This can be removed
-    guid = node.pop('guid')
-    node['id'] = guid
     node['children'] = []
 
     # Extract parent ID
     if 'parentIndex' in node:
         parent = node.pop('parentIndex')
         node['parent'] = {
-            'id': parent['guid'],
+            'guid': parent['guid'],
             'position': parent['position']
         }
 
@@ -74,4 +70,4 @@ def transform_node(fig, node, figma_zip):
             open(f'output/images/{fhash}.png', 'wb').write(out.getbuffer())
             paint['image']['filename'] = fhash
 
-    return FigNode(node)
+    return node

@@ -16,13 +16,13 @@ def convert(figma_instance):
         obj = {
             **base.base_shape(figma_instance),
             '_class': 'symbolInstance',
-            'name': figma_instance.name,
+            'name': figma_instance['name'],
             'symbolID': utils.gen_object_id(figma_instance['symbolData']['symbolID']),
             'overrideValues': sketch_overrides,
             'preservesSpaceWhenHidden': False,
             'scale': 1
         }
-        obj['style'] = Style(do_objectID=utils.gen_object_id(figma_instance.id, b'style'))
+        obj['style'] = Style(do_objectID=utils.gen_object_id(figma_instance['guid'], b'style'))
         return obj
 
 
@@ -30,15 +30,15 @@ def master_instance(figma_symbol):
     obj = {
         **base.base_shape(figma_symbol),
         '_class': 'symbolInstance',
-        'do_objectID': utils.gen_object_id(figma_symbol.id, b'master_instance'),
-        'name': figma_symbol.name,
-        'symbolID': utils.gen_object_id(figma_symbol.id),
+        'do_objectID': utils.gen_object_id(figma_symbol['guid'], b'master_instance'),
+        'name': figma_symbol['name'],
+        'symbolID': utils.gen_object_id(figma_symbol['guid']),
         'preservesSpaceWhenHidden': False,
         'overrideValues': [],
         'scale': 1
     }
     obj['style'] = Style(
-        do_objectID=utils.gen_object_id(figma_symbol.id, b'master_instance_style'))
+        do_objectID=utils.gen_object_id(figma_symbol['guid'], b'master_instance_style'))
     return obj
 
 
@@ -78,10 +78,10 @@ def convert_overrides(figma_instance):
     figma_master = context.figma_node(figma_instance['symbolData']['symbolID'])
     for prop in figma_instance.get('componentPropAssignments', []):
         # TODO: propdef.type needed?
-        # prop_def = [d for d in figma_master.componentPropDefs if d['id'] == prop['defID']]
+        # prop_def = [d for d in figma_master['componentPropDefs'] if d['id'] == prop['defID']]
 
         ref_prop, ref_node = find_ref(figma_master, prop['defID'])
-        uuid = utils.gen_object_id(ref_node['id'])
+        uuid = utils.gen_object_id(ref_node['guid'])
         if ref_prop['componentPropNodeField'] == 'OVERRIDDEN_SYMBOL_ID':
             symbol_id = utils.gen_object_id(prop['value']['guidValue'])
             sketch_overrides.append({
@@ -128,18 +128,18 @@ def detach_symbol(figma_instance):
         for o in figma_instance['symbolData']['symbolOverrides']
     }
     for c in detached_children:
-        apply_overrides(c, figma_instance.id, overrides)
+        apply_overrides(c, figma_instance['guid'], overrides)
 
     figma_instance['children'] = detached_children
 
 
 def apply_overrides(figma, instance_id, overrides):
-    ov = overrides.get(figma.id)
+    ov = overrides.get(figma['guid'])
     if ov:
         figma.update(ov)
 
     # Generate a unique ID by concatenating instance_id + node_id
-    figma['id'] = (*instance_id, *figma['id'])
+    figma['guid'] = (*instance_id, *figma['guid'])
 
-    for c in figma.children:
+    for c in figma['children']:
         apply_overrides(c, overrides)

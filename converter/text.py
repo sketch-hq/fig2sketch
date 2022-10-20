@@ -83,7 +83,7 @@ def convert(figma_text):
             'attributes': override_characters_style(figma_text),
         },
         # No good way to calculate this, so we overestimate by setting the frame
-        'glyphBounds': f'{{{{0, 0}}, {utils.point_to_string(figma_text.size)}}}',
+        'glyphBounds': f'{{{{0, 0}}, {utils.point_to_string(figma_text["size"])}}}',
         'lineSpacingBehaviour': 2,
         'textBehaviour': TEXT_BEHAVIOUR[text_resize]
     }
@@ -181,7 +181,7 @@ def override_characters_style(figma_text):
         if is_emoji:
             style_override['fontName'] = {'family': EMOJI_FONT, 'postscript': EMOJI_FONT}
             # The following makes Sketch follow Figma a bit more closely visually
-            font_size = style_override.get('fontSize', figma_text.fontSize)
+            font_size = style_override.get('fontSize', figma_text['fontSize'])
             scaled_font_size = EMOJI_SIZE_ADJUST.get(font_size)
             if scaled_font_size:
                 style_override['fontSize'] = scaled_font_size

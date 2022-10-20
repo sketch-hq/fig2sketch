@@ -7,7 +7,7 @@ from sketchformat.style import Style
 def convert(figma_frame):
     return {
         '_class': 'artboard',
-        'do_objectID': utils.gen_object_id(figma_frame.id),
+        'do_objectID': utils.gen_object_id(figma_frame['guid']),
         'booleanOperation': -1,
         'clippingMaskMode': 0,
         'exportOptions': {
@@ -49,12 +49,12 @@ def convert(figma_frame):
             'guides': []
         },
         'layerListExpandedType': 2,
-        'name': figma_frame.name,
+        'name': figma_frame['name'],
         'nameIsFixed': False,
         'resizingConstraint': 9,
         'resizingType': 0,
         'shouldBreakMaskChain': True,
-        'style': Style(do_objectID=utils.gen_object_id(figma_frame.id, b'style')),
+        'style': Style(do_objectID=utils.gen_object_id(figma_frame['guid'], b'style')),
         'hasClickThrough': False,
         'resizesContent': True,
         **prototyping_information(figma_frame),
@@ -64,7 +64,7 @@ def convert(figma_frame):
 
 def prototyping_information(figma_frame):
     # Some information about the prototype is in the Figma page
-    figma_canvas = context.figma_node(figma_frame['parent']['id'])
+    figma_canvas = context.figma_node(figma_frame['parent']['guid'])
     if 'prototypeDevice' not in figma_canvas:
         return {
             'isFlowHome': False,

@@ -4,7 +4,7 @@ from sketchformat.layer_common import *
 
 
 def convert(figma_canvas):
-    return make_page(figma_canvas.id, figma_canvas.name)
+    return make_page(figma_canvas['guid'], figma_canvas['name'])
 
 
 def symbols_page():

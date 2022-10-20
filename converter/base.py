@@ -15,14 +15,14 @@ CURVE_MODES = {
 
 def base_shape(figma_node):
     return {
-        'do_objectID': utils.gen_object_id(figma_node.id),
+        'do_objectID': utils.gen_object_id(figma_node['guid']),
         'booleanOperation': -1,
         'exportOptions': export_options(figma_node.get('exportSettings', [])),
         **positioning.convert(figma_node),
         **utils.masking(figma_node),
         'isFixedToViewport': False,
-        'isLocked': figma_node.locked,
-        'isVisible': figma_node.visible,
+        'isLocked': figma_node['locked'],
+        'isVisible': figma_node['visible'],
         'layerListExpandedType': 0,
         'nameIsFixed': False,
         'resizingConstraint': resizing_constraint(figma_node),
@@ -191,8 +191,8 @@ HORIZONTAL_CONSTRAINT = {
 
 # Vertical constraints are equivalent to horizontal ones, with a 3 bit shift
 def resizing_constraint(figma_node):
-    h = HORIZONTAL_CONSTRAINT[figma_node.horizontalConstraint]
-    v = HORIZONTAL_CONSTRAINT[figma_node.verticalConstraint] << 3
+    h = HORIZONTAL_CONSTRAINT[figma_node['horizontalConstraint']]
+    v = HORIZONTAL_CONSTRAINT[figma_node['verticalConstraint']] << 3
     return h + v
 
 

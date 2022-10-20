@@ -27,11 +27,11 @@ def convert(figma_symbol):
     master['overrideProperties'] = []
 
     master['style'] = Style(
-        do_objectID=utils.gen_object_id(figma_symbol.id, b'symbol_master_style'))
+        do_objectID=utils.gen_object_id(figma_symbol['guid'], b'symbol_master_style'))
 
     # Keep the base ID as the symbol reference, create a new one for the container
-    master['symbolID'] = utils.gen_object_id(figma_symbol.id)
-    master['do_objectID'] = utils.gen_object_id(figma_symbol.id, b'symbol_master')
+    master['symbolID'] = utils.gen_object_id(figma_symbol['guid'])
+    master['do_objectID'] = utils.gen_object_id(figma_symbol['guid'], b'symbol_master')
 
     # Also add group layout if auto-layout is enabled
     axis = LAYOUT_AXIS[figma_symbol.get('stackMode', 'NONE')]
