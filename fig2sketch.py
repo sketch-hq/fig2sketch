@@ -6,6 +6,7 @@ import json
 import shutil
 import utils
 import argparse
+from zipfile import ZipFile
 
 
 def clean_output():
@@ -29,8 +30,9 @@ if __name__ == '__main__':
         utils.id_salt = args.salt.encode('utf8')
 
     clean_output()
+    output = ZipFile('output/output.sketch', 'w')
 
-    figma_json, id_map = fig2json.convert_fig(args.fig_file)
+    figma_json, id_map = fig2json.convert_fig(args.fig_file, output)
 
     try:
         os.remove('example/figma.json')
@@ -39,4 +41,4 @@ if __name__ == '__main__':
 
     json.dump(figma_json, open(f'example/figma.json', 'w'), indent=2, ensure_ascii=False, default=lambda x: x.tolist())
 
-    convert.convert_json_to_sketch(figma_json, id_map)
+    convert.convert_json_to_sketch(figma_json, id_map, output)

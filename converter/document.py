@@ -1,9 +1,9 @@
 import utils
-from . import fonts
+from . import font
 from .context import context
 
 
-def convert(pages):
+def convert(pages, output_zip):
     return {
         '_class': 'document',
         'do_objectID': utils.gen_object_id((0, 0), b'document'),
@@ -49,7 +49,10 @@ def convert(pages):
             'objects': [component for component in context.sketch_components() if
                         component['_class'] == 'swatch']
         },
-        'fontReferences': convert_fonts(),
+        'fontReferences': sorted(
+            [font.convert(f, output_zip) for f in context.used_fonts()],
+            key=lambda x: x.do_objectID
+        ),
         'documentState': {
             '_class': 'documentState'
         },
@@ -61,34 +64,3 @@ def convert(pages):
             } for page in pages
         ]
     }
-
-
-def convert_fonts():
-    for ffamily in fonts.figma_fonts.keys():
-        fonts.download_and_unzip_webfont(ffamily)
-    fonts.organize_sketch_fonts()
-
-    font_references = []
-    for ffamily, ffamily_dict in fonts.figma_fonts.items():
-        for fsfamily, (font_hash, psname) in ffamily_dict.items():
-            font_references.append(
-                {
-                    '_class': 'fontReference',
-                    'do_objectID': utils.gen_object_id((0, 0), bytes.fromhex(font_hash)),
-                    'fontData': {
-                        '_class': 'MSJSONFileReference',
-                        '_ref_class': 'MSFontData',
-                        '_ref': 'fonts/%s' % font_hash
-                    },
-                    'fontFamilyName': ffamily,
-                    'fontFileName': '%s-%s.ttf' % (ffamily, fsfamily),
-                    'options': 3,  # Embedded and used
-                    'postscriptNames': [
-                        psname
-                    ]
-                })
-
-    print(fonts.figma_fonts)
-    font_references.sort(key=lambda f: f['do_objectID'])
-
-    return font_references

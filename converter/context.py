@@ -1,4 +1,4 @@
-from . import component, page
+from . import component, page, font
 
 
 class Context:
@@ -7,6 +7,7 @@ class Context:
         self._sketch_components = {}
         self.symbols_page = None
         self._node_by_id = id_map
+        self._used_fonts = set()
 
         # Where to position symbols of the specified width
         # width -> (x, y)
@@ -36,6 +37,13 @@ class Context:
 
     def figma_node(self, fid):
         return self._node_by_id[fid]
+
+    def record_font(self, figma_font_name):
+        font_descriptor = (figma_font_name['family'], figma_font_name['style'])
+        self._used_fonts.add(font_descriptor)
+
+    def used_fonts(self):
+        return self._used_fonts
 
     def _position_symbol(self, sketch_symbol):
         # Mimics Sketch positioning algorith:

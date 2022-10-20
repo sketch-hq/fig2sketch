@@ -1,7 +1,7 @@
 from . import base
 import utils
 import itertools
-from . import fonts
+from .context import context
 import copy
 
 AlignVertical = {
@@ -100,8 +100,7 @@ def convert(figma_text):
 
 def text_style(figma_text):
     if figma_text['fontName']['family'] != EMOJI_FONT:
-        fonts.record_figma_font(figma_text['fontName']['family'], figma_text['fontName']['style'],
-                                figma_text['fontName']['postscript'])
+        context.record_font(figma_text['fontName'])
     obj = {
         '_class': 'textStyle',
         'encodedAttributes': {

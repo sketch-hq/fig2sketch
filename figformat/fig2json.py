@@ -4,7 +4,7 @@ from . import decodefig, decodevectornetwork
 import utils
 
 
-def convert_fig(reader):
+def convert_fig(reader, output):
     fig, figma_zip = decodefig.decode(reader)
 
     # Load all nodes into a map
@@ -12,7 +12,7 @@ def convert_fig(reader):
     root = None
 
     for node in fig['nodeChanges']:
-        node = transform_node(fig, node, figma_zip)
+        node = transform_node(fig, node, figma_zip, output)
         node_id = node['guid']
         id_map[node_id] = node
 
@@ -34,7 +34,8 @@ def convert_fig(reader):
     return tree, id_map
 
 
-def transform_node(fig, node, figma_zip):
+converted_images = {}
+def transform_node(fig, node, figma_zip, output):
     node['children'] = []
 
     # Extract parent ID
@@ -56,18 +57,21 @@ def transform_node(fig, node, figma_zip):
     for paint in node.get('fillPaints', []):
         if 'image' in paint:
             fname = bytes(paint['image']['hash']).hex()
+            if fname not in converted_images:
+                if figma_zip is not None:
+                    image = Image.open(figma_zip.open(f'images/{fname}'))
+                else:
+                    image = Image.open(
+                        io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
 
-            if figma_zip is not None:
-                image = Image.open(figma_zip.open(f'images/{fname}'))
-            else:
-                image = Image.open(
-                    io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
+                # Save to memory, calculate hash, and save
+                out = io.BytesIO()
+                image.save(out, format='png')
+                fhash = utils.generate_file_ref(out.getbuffer())
 
-            # Save to memory, calculate hash, and save
-            out = io.BytesIO()
-            image.save(out, format='png')
-            fhash = utils.generate_file_ref(out.getbuffer())
-            open(f'output/images/{fhash}.png', 'wb').write(out.getbuffer())
-            paint['image']['filename'] = fhash
+                output.open(f'images/{fhash}.png', 'w').write(out.getbuffer())
+                converted_images[fname] = fhash
+
+            paint['image']['filename'] = converted_images[fname]
 
     return node

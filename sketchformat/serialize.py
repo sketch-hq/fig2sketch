@@ -1,4 +1,5 @@
 import json
+import codecs
 from dataclasses import asdict, is_dataclass
 
 
@@ -19,10 +20,11 @@ def convert_object(obj):
         return obj.to_json()
 
 
-def serialize(obj, path):
+def serialize(obj, file):
+    writer = codecs.getwriter('utf-8')(file)
     return json.dump(
         obj,
-        open(path, 'w'),
+        writer,
         default=convert_object,
         ensure_ascii=False,  # Write emoji directly, without surrogate pairs
         indent=2  # Makes debugging nicer. TODO: Remove

@@ -2,6 +2,7 @@ import uuid
 import hashlib
 import random
 import struct
+from typing import BinaryIO
 
 id_salt = random.randbytes(16)
 
