@@ -3,6 +3,7 @@ import zlib
 import zipfile
 import struct
 from .kiwi import *
+import numpy as np
 
 SUPPORTED_VERSION = 20
 
@@ -34,7 +35,8 @@ def decode(reader):
         segments.append(data)
 
     type_converters = {
-        'GUID': (lambda x: (x['sessionID'], x['localID']))
+        'GUID': lambda x: (x['sessionID'], x['localID']),
+        'Matrix': lambda m: np.array([[m['m00'], m['m01'], m['m02']], [m['m10'], m['m11'], m['m12']], [0, 0, 1]])
     }
     schema = KiwiSchema(io.BytesIO(segments[0]))
     return KiwiDecoder(schema, type_converters).decode(io.BytesIO(segments[1]), 'Message'), figma_zip

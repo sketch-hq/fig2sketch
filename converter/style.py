@@ -108,13 +108,7 @@ def convert_color(color, opacity=None) -> Color:
 
 def convert_gradient(figma_node, figma_fill) -> Gradient:
     # Convert positions depending on the gradient type
-    mat = np.array([
-        [figma_fill['transform']['m00'], figma_fill['transform']['m01'],
-         figma_fill['transform']['m02']],
-        [figma_fill['transform']['m10'], figma_fill['transform']['m11'],
-         figma_fill['transform']['m12']],
-        [0, 0, 1]
-    ])
+    mat = figma_fill['transform']
 
     invmat = np.linalg.inv(mat)
 
@@ -149,8 +143,8 @@ def convert_gradient(figma_node, figma_fill) -> Gradient:
         )
     else:
         # Angular gradients don't allow positioning, but we can at least rotate them
-        rotation_offset = math.atan2(-figma_fill['transform']['m10'],
-                                     figma_fill['transform']['m00']) / 2 / math.pi
+        rotation_offset = math.atan2(-figma_fill['transform'][1,0],
+                                     figma_fill['transform'][0,0]) / 2 / math.pi
 
         return Gradient.Angular(
             stops=convert_stops(figma_fill['stops'], rotation_offset)

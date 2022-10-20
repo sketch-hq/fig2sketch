@@ -37,6 +37,6 @@ if __name__ == '__main__':
     except:
         pass
 
-    json.dump(figma_json, open(f'example/figma.json', 'w'), indent=2, ensure_ascii=False)
+    json.dump(figma_json, open(f'example/figma.json', 'w'), indent=2, ensure_ascii=False, default=lambda x: x.tolist())
 
     convert.convert_json_to_sketch(figma_json, id_map)

@@ -22,7 +22,7 @@ def convert(figma_item):
 
 def transform_frame(item):
     # Calculate relative position
-    relative_position = np.array([item.x, item.y])
+    relative_position = item['transform'][:2,2]
 
     # Vector from rotation center to origin (0,0)
     vco = np.array([item.size['x'] / 2, item.size['y'] / 2])
@@ -39,10 +39,7 @@ def transform_frame(item):
 
 def apply_transform(item, vector):
     # Rotation/flip matrix
-    matrix = np.array((
-        (item['transform']['m00'], item['transform']['m01']),
-        (item['transform']['m10'], item['transform']['m11'])
-    ))
+    matrix = item['transform'][:2,:2]
 
     return matrix.dot(vector)
 
@@ -52,10 +49,10 @@ def guess_flip(figma_item):
 
     # Use a diagonal with big numbers to check for sign flips, to avoid floating point weirdness
     flip = [False, False]
-    if abs(tr['m11']) > 0.1:
-        flip[1] = bool(np.sign(tr['m11']) != np.sign(tr['m00']))
+    if abs(tr[1,1]) > 0.1:
+        flip[1] = bool(np.sign(tr[1,1]) != np.sign(tr[0,0]))
     else:
-        flip[1] = bool(np.sign(tr['m01']) == np.sign(tr['m10']))
+        flip[1] = bool(np.sign(tr[0,1]) == np.sign(tr[1,0]))
 
     angle = figma_item.rotation
     if flip[1]:
