@@ -205,11 +205,12 @@ class Fill:
         )
 
     @staticmethod
-    def Image(path: str, patternFillType: PatternFillType, isEnabled: bool):
+    def Image(path: str, patternFillType: PatternFillType, patternTileScale: float, isEnabled: bool):
         return Fill(
             image=Image(path),
             fillType=FillType.PATTERN,
             patternFillType=patternFillType,
+            patternTileScale=patternTileScale,
             isEnabled=isEnabled
         )
 

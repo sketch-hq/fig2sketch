@@ -101,6 +101,19 @@ def convert(figma_text):
 def text_style(figma_text):
     if figma_text['fontName']['family'] != EMOJI_FONT:
         context.record_font(figma_text['fontName'])
+
+    fills = figma_text.get('fillPaints', [{}])
+    if not fills:
+        # Set a transparent fill if no fill is set
+        fills = [{
+            'color': {
+                'r': 0,
+                'g': 0,
+                'b': 0,
+                'a': 0
+            }
+        }]
+
     obj = {
         '_class': 'textStyle',
         'encodedAttributes': {
@@ -115,10 +128,10 @@ def text_style(figma_text):
             },
             'MSAttributedStringColorAttribute': {
                 '_class': 'color',
-                'red': figma_text.get('fillPaints', [{}])[0].get('color', {}).get('r', 0),
-                'green': figma_text.get('fillPaints', [{}])[0].get('color', {}).get('g', 0),
-                'blue': figma_text.get('fillPaints', [{}])[0].get('color', {}).get('b', 0),
-                'alpha': figma_text.get('fillPaints', [{}])[0].get('color', {}).get('a', 1)
+                'red': fills[0].get('color', {}).get('r', 0),
+                'green': fills[0].get('color', {}).get('g', 0),
+                'blue': fills[0].get('color', {}).get('b', 0),
+                'alpha': fills[0].get('color', {}).get('a', 1)
             },
             'textStyleVerticalAlignmentKey': AlignVertical[figma_text['textAlignVertical']],
             **text_decoration(figma_text),
@@ -175,8 +188,9 @@ def override_characters_style(figma_text):
         # Compute the override for this character. Aside from Figma style override,
         # we have to set the emoji font if this is an emoji (Figma doesn't expose this change)
         style_override = copy.deepcopy(override_table[style_id])
-        is_emoji = override_table[current_glyph['styleID']].get('fillPaints', [{}])[0].get(
-            'type') == 'EMOJI'
+        override_fills = override_table[current_glyph['styleID']].get('fillPaints', [{}])
+        is_emoji = override_fills and override_fills[0].get('type') == 'EMOJI'
+
         if is_emoji:
             style_override['fontName'] = {'family': EMOJI_FONT, 'postscript': EMOJI_FONT}
             # The following makes Sketch follow Figma a bit more closely visually
