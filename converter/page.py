@@ -1,19 +1,20 @@
 import utils
 from sketchformat.style import Style
-from sketchformat.layer_common import *
+from sketchformat.layer_common import Rect
+from sketchformat.layer_group import *
 
 
-def convert(figma_canvas):
+def convert(figma_canvas) -> Page:
     return make_page(figma_canvas['guid'], figma_canvas['name'])
 
 
-def symbols_page():
+def symbols_page() -> Page:
     page = make_page((0, 0), 'Symbols', suffix=b'symbols_page')
 
     return page
 
 
-def make_page(guid, name, suffix=b''):
+def make_page(guid, name, suffix=b'') -> Page:
     return Page(
         do_objectID=utils.gen_object_id(guid, suffix),
         frame=Rect(

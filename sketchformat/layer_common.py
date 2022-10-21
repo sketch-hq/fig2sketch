@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Optional, List, Union
-from xml.dom.pulldom import default_bufsize
+
+from .prototype import FlowConnection
 from .style import Style
 
 
@@ -34,7 +35,7 @@ class BooleanOperation(IntEnum):
 class LayerListStatus(IntEnum):
     UNDECIDED = 0
     COLLAPSED = 1
-    EXPANDED  = 2
+    EXPANDED = 2
 
 
 class ClippingMaskMode(IntEnum):
@@ -47,14 +48,6 @@ class ResizeType(IntEnum):
     PIN_TO_EDGE = 1
     RESIZE = 2
     FLOAT = 2
-
-
-class AnimationType(IntEnum):
-    NONE = 0
-    SLIDE_FROM_LEFT = 1
-    SLIDE_FROM_RIGHT = 2
-    SLIDE_FROM_BOTTOM = 3
-    SLIDE_FROM_TOP = 4
 
 
 class LayoutAxis(IntEnum):
@@ -71,12 +64,12 @@ class LayoutAnchor(IntEnum):
 @dataclass(kw_only=True)
 class ExportFormat:
     _class: str = field(default='exportFormat', init=False)
-    absoluteSize: int = 0
     fileFormat: str
     name: str
+    visibleScaleType: VisibleScaleType
+    absoluteSize: int = 0
     namingScheme: ExportNamingScheme = ExportNamingScheme.PRIMARY_PREFIX
     scale: float = 1
-    visibleScaleType: VisibleScaleType
 
 
 @dataclass(kw_only=True)
@@ -91,27 +84,23 @@ class ExportOptions:
 @dataclass(kw_only=True)
 class Rect:
     _class: str = field(default='rect', init=False)
-    constrainProportions: bool = False
     height: float
     width: float
     x: float
     y: float
-
-
-@dataclass(kw_only=True)
-class FlowConnection:
-    _class: str = field(default='MSImmutableFlowConnection', init=False)
-    destinationArtboardID: str
-    animationType: AnimationType = AnimationType.NONE
-    maintainScrollPosition: bool = False
+    constrainProportions: bool = False
 
 
 @dataclass(kw_only=True)
 class AbstractLayer:
     do_objectID: str
+    frame: Rect
+    name: str
+    resizingConstraint: int
+    rotation: float
+    style: Style
     booleanOperation: BooleanOperation = BooleanOperation.NONE
     exportOptions: ExportOptions = field(default_factory=ExportOptions)
-    frame: Rect
     flow: Optional[FlowConnection] = None
     isFixedToViewport: bool = False
     isFlippedHorizontal: bool = False
@@ -120,22 +109,17 @@ class AbstractLayer:
     isTemplate: bool = False
     isVisible: bool = True
     layerListExpandedType: LayerListStatus = LayerListStatus.UNDECIDED
-    name: str
     nameIsFixed: bool = False
-    resizingConstraint: int
     resizingType: ResizeType = ResizeType.STRETCH
-    rotation: float
     sharedStyleID: Optional[str] = None
     shouldBreakMaskChain: bool = False
     hasClippingMask: bool = False
     clippingMaskMode: ClippingMaskMode = ClippingMaskMode.OUTLINE
-    style: Style
 
     # Makes compatible with dictionary access
     # TODO: Remove when conversion to dataclasses is complete
     def __getitem__(self, k):
         return getattr(self, k)
-
 
     def __setitem__(self, k, v):
         return setattr(self, k, v)
@@ -193,10 +177,6 @@ class AbstractRootLayer(AbstractLayer):
     verticalRulerData: RulerData = field(default_factory=RulerData)
     grid: SimpleGrid = field(default_factory=SimpleGrid)
     layout: Optional[LayoutGrid] = None
-    groupLayout: Union[FreeFormGroupLayout,InferredGroupLayout] = field(default_factory=FreeFormGroupLayout)
+    groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout] = field(
+        default_factory=FreeFormGroupLayout)
     layers: List[AbstractLayer] = field(default_factory=list)
-
-
-@dataclass(kw_only=True)
-class Page(AbstractRootLayer):
-    _class: str = field(default='page', init=False)

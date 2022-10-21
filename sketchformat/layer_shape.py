@@ -1,8 +1,8 @@
 from .layer_common import AbstractLayer
 from .common import Point
 from enum import IntEnum
-from typing import Optional, List, NamedTuple
-from dataclasses import dataclass, field, asdict, InitVar
+from typing import List, NamedTuple
+from dataclasses import dataclass, field, InitVar
 
 
 class PointRadiusBehaviour(IntEnum):
@@ -29,17 +29,17 @@ class CurveMode(IntEnum):
 @dataclass(kw_only=True)
 class CurvePoint:
     _class: str = field(default='curvePoint', init=False)
-    cornerRadius: float = 0
-    cornerStyle: CornerStyle = CornerStyle.ROUNDED
     curveFrom: Point
     curveTo: Point
+    point: Point
+    cornerRadius: float = 0.0
+    cornerStyle: CornerStyle = CornerStyle.ROUNDED
     hasCurveFrom: bool = False
     hasCurveTo: bool = False
     curveMode: CurveMode = CurveMode.UNDEFINED
-    point: Point
 
     @staticmethod
-    def Straight(point: Point, radius: float = 0) -> 'CurvePoint':
+    def Straight(point: Point, radius: float = 0.0) -> 'CurvePoint':
         return CurvePoint(
             curveFrom=point,
             curveTo=point,
@@ -51,10 +51,10 @@ class CurvePoint:
 
 @dataclass(kw_only=True)
 class AbstractShapeLayer(AbstractLayer):
-    edited: bool = False
     isClosed: bool
-    pointRadiusBehaviour: PointRadiusBehaviour = PointRadiusBehaviour.V1
     points: List[CurvePoint]
+    edited: bool = False
+    pointRadiusBehaviour: PointRadiusBehaviour = PointRadiusBehaviour.V1
 
 
 @dataclass(kw_only=True)
@@ -67,7 +67,7 @@ class Rectangle(AbstractShapeLayer):
 
     corners: InitVar[Corners]
     _class: str = field(default='rectangle', init=False)
-    fixedRadius: float = 0
+    fixedRadius: float = 0.0
     hasConvertedToNewRoundCorners: bool = True
     needsConvertionToNewRoundCorners: bool = False
     isClosed: bool = True

@@ -1,7 +1,13 @@
 from . import positioning, base
 from .context import context
-import utils
+from sketchformat.prototype import *
 from sketchformat.style import Style
+import utils
+
+OVERLAY_INTERACTION = {
+    'NONE': OverlayBackgroundInteraction.NONE,
+    'CLOSE_ON_CLICK_OUTSIDE': OverlayBackgroundInteraction.CLOSES_OVERLAY
+}
 
 
 def convert(figma_frame):
@@ -78,15 +84,18 @@ def prototyping_information(figma_frame):
 
     obj = {
         'isFlowHome': figma_frame['prototypeStartingPoint']['name'] != '',
-        'prototypeViewport': {
-            '_class': 'MSImmutablePrototypeViewport',
-            # 'libraryID': 'EB972BCC-0467-4E50-998E-0AC5A39517F0',
-            'name': figma_canvas['prototypeDevice']['presetIdentifier'],
-            'size': utils.point_to_string(figma_canvas['prototypeDevice']['size']),
-            # 'templateID': '55992B99-92E5-4A93-AF90-B3A461675C05'
-        },
-        'overlayBackgroundInteraction': 0,
-        'presentationStyle': 0
+        'prototypeViewport': PrototypeViewport(
+            name=figma_canvas['prototypeDevice']['presetIdentifier'],
+            size=utils.point_to_string(figma_canvas['prototypeDevice']['size'])
+        ),
+        'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
+        'presentationStyle': PrototypePresentationStyle.SCREEN
     }
+
+    if 'overlayBackgroundInteraction' in figma_frame:
+        obj['overlayBackgroundInteraction'] = OVERLAY_INTERACTION[
+            figma_frame['overlayBackgroundInteraction']]
+        obj['presentationStyle'] = PrototypePresentationStyle.OVERLAY
+        obj['overlaySettings'] = FlowOverlaySettings.Centered()
 
     return obj

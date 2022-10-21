@@ -1,9 +1,11 @@
 import utils
+from sketchformat.layer_common import *
+from sketchformat.prototype import AnimationType
+from sketchformat.style import *
+from typing import TypedDict
+
 from . import positioning, style
 from .context import context
-from sketchformat.style import *
-from sketchformat.layer_common import ExportOptions, ExportFormat, VisibleScaleType
-from typing import TypedDict
 
 CURVE_MODES = {
     'STRAIGHT': 1,
@@ -11,6 +13,29 @@ CURVE_MODES = {
     'ANGLE': 3,
     'NONE': 4
 }
+
+SUPPORTED_INHERIT_STYLES = {
+    'inheritFillStyleID': ('fills',),
+    'inheritFillStyleIDForStroke': ('borders',),
+    'inheritStrokeStyleID': None,  # Unused in Figma?
+    'inheritTextStyleID': ('textStyle',),
+    'inheritExportStyleID': None,  # Unused in Figma?
+    'inheritEffectStyleID': ('blur', 'shadows', 'innerShadows'),
+    'inheritGridStyleID': (),  # TODO: Implement grid styles. Don't make it crash for now
+    'inheritFillStyleIDForBackground': None,  # Unused in Figma?
+}
+
+TEXT_PROPERTIES = [
+    'fontName',
+    'textCase',
+    'fontSize',
+    'textAlignVertical',
+    'textAlignHorizontal',
+    'textDecoration',
+    'letterSpacing',
+    'lineHeight',
+    'paragraphSpacing'
+]
 
 
 def base_shape(figma_node):
@@ -35,17 +60,6 @@ def base_shape(figma_node):
 
 def process_styles(figma_node):
     style_attributes = {'style': style.convert(figma_node)}
-
-    SUPPORTED_INHERIT_STYLES = {
-        'inheritFillStyleID': ('fills',),
-        'inheritFillStyleIDForStroke': ('borders',),
-        'inheritStrokeStyleID': None,  # Unused in Figma?
-        'inheritTextStyleID': ('textStyle',),
-        'inheritExportStyleID': None,  # Unused in Figma?
-        'inheritEffectStyleID': ('blur', 'shadows', 'innerShadows'),
-        'inheritGridStyleID': (),  # TODO: Implement grid styles. Don't make it crash for now
-        'inheritFillStyleIDForBackground': None,  # Unused in Figma?
-    }
 
     for inherit_style, sketch_keys in SUPPORTED_INHERIT_STYLES.items():
         # MAX_INT = unset
@@ -83,17 +97,6 @@ def process_styles(figma_node):
                         # with the overrides and let that module deal with it
                         # TODO: Should we use this approach for everything else too?
                         if sketch_key == 'textStyle':
-                            TEXT_PROPERTIES = [
-                                'fontName',
-                                'textCase',
-                                'fontSize',
-                                'textAlignVertical',
-                                'textAlignHorizontal',
-                                'textDecoration',
-                                'letterSpacing',
-                                'lineHeight',
-                                'paragraphSpacing'
-                            ]
                             for p in TEXT_PROPERTIES:
                                 if p in figma_style:
                                     figma_node[p] = figma_style[p]
@@ -126,19 +129,19 @@ def export_scale(figma_constraint) -> _ExportScale:
             return {
                 'absoluteSize': 0,
                 'scale': scale,
-                'visibleScaleType': 0
+                'visibleScaleType': VisibleScaleType.SCALE
             }
         case {'type': 'CONTENT_WIDTH', 'value': size}:
             return {
                 'absoluteSize': size,
                 'scale': 0,
-                'visibleScaleType': 1
+                'visibleScaleType': VisibleScaleType.WIDTH
             }
         case {'type': 'CONTENT_HEIGHT', 'value': size}:
             return {
                 'absoluteSize': size,
                 'scale': 0,
-                'visibleScaleType': 2
+                'visibleScaleType': VisibleScaleType.HEIGHT
             }
 
 
@@ -197,36 +200,35 @@ def resizing_constraint(figma_node):
 
 
 ANIMATION_TYPE = {
-    'INSTANT_TRANSITION': -1,
-    'SLIDE_FROM_LEFT': 1,
-    'SLIDE_FROM_RIGHT': 0,
-    'SLIDE_FROM_TOP': 3,
-    'SLIDE_FROM_BOTTOM': 2,
-    'PUSH_FROM_LEFT': 1,
-    'PUSH_FROM_RIGHT': 0,
-    'PUSH_FROM_TOP': 3,
-    'PUSH_FROM_BOTTOM': 2,
-    'MOVE_FROM_LEFT': 1,
-    'MOVE_FROM_RIGHT': 0,
-    'MOVE_FROM_TOP': 3,
-    'MOVE_FROM_BOTTOM': 2,
-    'SLIDE_OUT_TO_LEFT': 1,
-    'SLIDE_OUT_TO_RIGHT': 0,
-    'SLIDE_OUT_TO_TOP': 3,
-    'SLIDE_OUT_TO_BOTTOM': 2,
-    'MOVE_OUT_TO_LEFT': 1,
-    'MOVE_OUT_TO_RIGHT': 0,
-    'MOVE_OUT_TO_TOP': 3,
-    'MOVE_OUT_TO_BOTTOM': 2,
-    'MAGIC_MOVE': -1,
-    'SMART_ANIMATE': -1,
-    'SCROLL_ANIMATE': -1,
+    'INSTANT_TRANSITION': AnimationType.NONE,
+    'SLIDE_FROM_LEFT': AnimationType.SLIDE_FROM_LEFT,
+    'SLIDE_FROM_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
+    'SLIDE_FROM_TOP': AnimationType.SLIDE_FROM_TOP,
+    'SLIDE_FROM_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
+    'PUSH_FROM_LEFT': AnimationType.SLIDE_FROM_LEFT,
+    'PUSH_FROM_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
+    'PUSH_FROM_TOP': AnimationType.SLIDE_FROM_TOP,
+    'PUSH_FROM_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
+    'MOVE_FROM_LEFT': AnimationType.SLIDE_FROM_LEFT,
+    'MOVE_FROM_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
+    'MOVE_FROM_TOP': AnimationType.SLIDE_FROM_TOP,
+    'MOVE_FROM_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
+    'SLIDE_OUT_TO_LEFT': AnimationType.SLIDE_FROM_LEFT,
+    'SLIDE_OUT_TO_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
+    'SLIDE_OUT_TO_TOP': AnimationType.SLIDE_FROM_TOP,
+    'SLIDE_OUT_TO_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
+    'MOVE_OUT_TO_LEFT': AnimationType.SLIDE_FROM_LEFT,
+    'MOVE_OUT_TO_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
+    'MOVE_OUT_TO_TOP': AnimationType.SLIDE_FROM_TOP,
+    'MOVE_OUT_TO_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
+    'MAGIC_MOVE': AnimationType.NONE,
+    'SMART_ANIMATE': AnimationType.NONE,
+    'SCROLL_ANIMATE': AnimationType.NONE,
 }
 
 
 # TODO: Is this called from every node type (groups?)
 def prototyping_flow(figma_node):
-    # TODO: Overlays
     # TODO: What happens with multiple actions?
     flow = None
     for interaction in figma_node.get('prototypeInteractions', []):
@@ -239,7 +241,7 @@ def prototyping_flow(figma_node):
 
         for action in interaction['actions']:
             # TODO: Back is SCROLL for some reason??? or just irrelevant?
-            if action['navigationType'] not in ['NAVIGATE', 'SCROLL']:
+            if action['navigationType'] not in ['NAVIGATE', 'SCROLL', 'OVERLAY']:
                 print('Unsupported action type')
                 continue
 
@@ -248,28 +250,23 @@ def prototyping_flow(figma_node):
                 continue
 
             # TODO: Connection type
-            if action['connectionType'] == 'BACK':
-                destination = 'back'
-            elif action['connectionType'] == 'INTERNAL_NODE':
-                if 'transitionNodeID' in action:
-                    destination = utils.gen_object_id(action['transitionNodeID'])
-                else:
+            match action['connectionType'], action.get('transitionNodeID', None):
+                case 'BACK', _:
+                    destination = 'back'
+                case 'INTERNAL_NODE', None:
                     destination = None
-            elif action['connectionType'] == 'NONE':
-                destination = None
-            else:
-                print(f"Unsupported connection type {action['connectionType']}")
-                continue
+                case 'INTERNAL_NODE', transition_node_id:
+                    destination = utils.gen_object_id(transition_node_id)
+                case 'NONE', _:
+                    destination = None
+                case _:
+                    print(f"Unsupported connection type {action['connectionType']}")
+                    continue
 
-            flow = {
-                '_class': 'MSImmutableFlowConnection',
-                'animationType': ANIMATION_TYPE[
-                    action.get('transitionType', 'INSTANT_TRANSITION')],
-                'maintainScrollPosition': action.get('transitionPreserveScroll', False),
-                'shouldCloseExistingOverlays': False  # TODO ???
-            }
-
-            if destination is not None:
-                flow['destinationArtboardID'] = destination
+            flow = FlowConnection(
+                destinationArtboardID=destination,
+                animationType=ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
+                maintainScrollPosition=action.get('transitionPreserveScroll', False)
+            )
 
     return {'flow': flow} if flow else {}
