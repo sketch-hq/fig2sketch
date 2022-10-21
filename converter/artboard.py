@@ -1,13 +1,6 @@
-from . import positioning, base
-from .context import context
-from sketchformat.prototype import *
+from . import positioning, prototype
 from sketchformat.style import Style
 import utils
-
-OVERLAY_INTERACTION = {
-    'NONE': OverlayBackgroundInteraction.NONE,
-    'CLOSE_ON_CLICK_OUTSIDE': OverlayBackgroundInteraction.CLOSES_OVERLAY
-}
 
 
 def convert(figma_frame):
@@ -63,39 +56,6 @@ def convert(figma_frame):
         'style': Style(do_objectID=utils.gen_object_id(figma_frame['guid'], b'style')),
         'hasClickThrough': False,
         'resizesContent': True,
-        **prototyping_information(figma_frame),
-        **base.prototyping_flow(figma_frame),
+        **prototype.convert_flow(figma_frame),
+        **prototype.prototyping_information(figma_frame)
     }
-
-
-def prototyping_information(figma_frame):
-    # Some information about the prototype is in the Figma page
-    figma_canvas = context.figma_node(figma_frame['parent']['guid'])
-    if 'prototypeDevice' not in figma_canvas:
-        return {
-            'isFlowHome': False,
-            'overlayBackgroundInteraction': 0,
-            'presentationStyle': 0
-        }
-
-    # TODO: Overflow scrolling means making the artboard bigger (fit the child bounds)
-    if figma_frame.get('scrollDirection', 'NONE') != 'NONE':
-        print('Scroll overflow direction not supported')
-
-    obj = {
-        'isFlowHome': figma_frame['prototypeStartingPoint']['name'] != '',
-        'prototypeViewport': PrototypeViewport(
-            name=figma_canvas['prototypeDevice']['presetIdentifier'],
-            size=utils.point_to_string(figma_canvas['prototypeDevice']['size'])
-        ),
-        'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
-        'presentationStyle': PrototypePresentationStyle.SCREEN
-    }
-
-    if 'overlayBackgroundInteraction' in figma_frame:
-        obj['overlayBackgroundInteraction'] = OVERLAY_INTERACTION[
-            figma_frame['overlayBackgroundInteraction']]
-        obj['presentationStyle'] = PrototypePresentationStyle.OVERLAY
-        obj['overlaySettings'] = FlowOverlaySettings.Centered()
-
-    return obj

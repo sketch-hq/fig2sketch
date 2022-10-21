@@ -1,10 +1,9 @@
 import utils
 from sketchformat.layer_common import *
-from sketchformat.prototype import AnimationType
 from sketchformat.style import *
 from typing import TypedDict
 
-from . import positioning, style
+from . import positioning, style, prototype
 from .context import context
 
 CURVE_MODES = {
@@ -53,7 +52,7 @@ def base_shape(figma_node):
         'resizingConstraint': resizing_constraint(figma_node),
         'resizingType': 0,
         **process_styles(figma_node),
-        **prototyping_flow(figma_node),
+        **prototype.convert_flow(figma_node),
         'isTemplate': False
     }
 
@@ -197,76 +196,3 @@ def resizing_constraint(figma_node):
     h = HORIZONTAL_CONSTRAINT[figma_node['horizontalConstraint']]
     v = HORIZONTAL_CONSTRAINT[figma_node['verticalConstraint']] << 3
     return h + v
-
-
-ANIMATION_TYPE = {
-    'INSTANT_TRANSITION': AnimationType.NONE,
-    'SLIDE_FROM_LEFT': AnimationType.SLIDE_FROM_LEFT,
-    'SLIDE_FROM_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
-    'SLIDE_FROM_TOP': AnimationType.SLIDE_FROM_TOP,
-    'SLIDE_FROM_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
-    'PUSH_FROM_LEFT': AnimationType.SLIDE_FROM_LEFT,
-    'PUSH_FROM_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
-    'PUSH_FROM_TOP': AnimationType.SLIDE_FROM_TOP,
-    'PUSH_FROM_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
-    'MOVE_FROM_LEFT': AnimationType.SLIDE_FROM_LEFT,
-    'MOVE_FROM_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
-    'MOVE_FROM_TOP': AnimationType.SLIDE_FROM_TOP,
-    'MOVE_FROM_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
-    'SLIDE_OUT_TO_LEFT': AnimationType.SLIDE_FROM_LEFT,
-    'SLIDE_OUT_TO_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
-    'SLIDE_OUT_TO_TOP': AnimationType.SLIDE_FROM_TOP,
-    'SLIDE_OUT_TO_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
-    'MOVE_OUT_TO_LEFT': AnimationType.SLIDE_FROM_LEFT,
-    'MOVE_OUT_TO_RIGHT': AnimationType.SLIDE_FROM_RIGHT,
-    'MOVE_OUT_TO_TOP': AnimationType.SLIDE_FROM_TOP,
-    'MOVE_OUT_TO_BOTTOM': AnimationType.SLIDE_FROM_BOTTOM,
-    'MAGIC_MOVE': AnimationType.NONE,
-    'SMART_ANIMATE': AnimationType.NONE,
-    'SCROLL_ANIMATE': AnimationType.NONE,
-}
-
-
-# TODO: Is this called from every node type (groups?)
-def prototyping_flow(figma_node):
-    # TODO: What happens with multiple actions?
-    flow = None
-    for interaction in figma_node.get('prototypeInteractions', []):
-        if interaction['isDeleted']:
-            continue
-
-        if interaction['event']['interactionType'] != 'ON_CLICK':
-            print('Unsupported interaction type')
-            continue
-
-        for action in interaction['actions']:
-            # TODO: Back is SCROLL for some reason??? or just irrelevant?
-            if action['navigationType'] not in ['NAVIGATE', 'SCROLL', 'OVERLAY']:
-                print('Unsupported action type')
-                continue
-
-            if flow is not None:
-                print('Unsupported multiple actions per layer')
-                continue
-
-            # TODO: Connection type
-            match action['connectionType'], action.get('transitionNodeID', None):
-                case 'BACK', _:
-                    destination = 'back'
-                case 'INTERNAL_NODE', None:
-                    destination = None
-                case 'INTERNAL_NODE', transition_node_id:
-                    destination = utils.gen_object_id(transition_node_id)
-                case 'NONE', _:
-                    destination = None
-                case _:
-                    print(f"Unsupported connection type {action['connectionType']}")
-                    continue
-
-            flow = FlowConnection(
-                destinationArtboardID=destination,
-                animationType=ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
-                maintainScrollPosition=action.get('transitionPreserveScroll', False)
-            )
-
-    return {'flow': flow} if flow else {}
