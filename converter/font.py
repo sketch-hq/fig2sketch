@@ -25,7 +25,7 @@ def retrieve_webfont(family):
 def get_webfont(family, subfamily):
     font_zip = retrieve_webfont(family)
     for fi in font_zip.infolist():
-        if not fi.filename.endswith(".ttf"):
+        if not fi.filename.endswith(('.ttf', '.otf')):
             continue
 
         font_file = font_zip.open(fi.filename, 'r')
