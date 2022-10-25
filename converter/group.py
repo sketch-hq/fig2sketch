@@ -8,7 +8,6 @@ def convert(figma_group):
     return {
         **base.base_shape(figma_group),
         '_class': 'group',
-        'name': figma_group['name'],
         'groupLayout': {
             '_class': 'MSImmutableFreeformGroupLayout'
         },
@@ -42,7 +41,8 @@ def post_process_frame(figma_group, sketch_group):
     if needs_clip_mask:
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
         # since the clipmask defines Sketch bounds (which match visible children)
-        sketch_group['layers'].insert(0, make_clipping_rect(figma_group['guid'], sketch_group['frame']))
+        sketch_group['layers'].insert(0, make_clipping_rect(figma_group['guid'],
+                                                            sketch_group['frame']))
     else:
         # When converting from a frame to a group, the bounding box should be adjusted
         # In Figma the frame box can be smalled than the children bounds, but not so in Sketch

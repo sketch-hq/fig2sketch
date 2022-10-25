@@ -11,7 +11,6 @@ def convert(figma_star):
     return {
         '_class': 'star',
         **base.base_shape(figma_star),
-        'name': figma_star['name'],
         'edited': False,
         'isClosed': True,
         'pointRadiusBehaviour': 1,

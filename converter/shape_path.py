@@ -21,7 +21,6 @@ def convert(figma_vector):
     obj = {
         '_class': 'shapePath',
         **base.base_shape(figma_vector),
-        'name': figma_vector['name'],
         'edited': True,
         'pointRadiusBehaviour': 1,
         **points,
@@ -43,7 +42,6 @@ def convert_line(figma_line):
     return {
         '_class': 'shapePath',
         **base.base_shape(figma_line),
-        'name': figma_line['name'],
         'edited': True,
         'isClosed': False,
         'pointRadiusBehaviour': 1,

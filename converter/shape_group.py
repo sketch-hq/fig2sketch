@@ -12,7 +12,6 @@ def convert(figma_bool_ops):
     return {
         '_class': 'shapeGroup',
         **base.base_shape(figma_bool_ops),
-        'name': figma_bool_ops['name'],
         'shouldBreakMaskChain': True,
         'hasClickThrough': False,
         'groupLayout': {

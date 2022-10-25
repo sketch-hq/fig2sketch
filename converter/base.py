@@ -40,6 +40,7 @@ TEXT_PROPERTIES = [
 def base_shape(figma_node):
     return {
         'do_objectID': utils.gen_object_id(figma_node['guid']),
+        'name': figma_node['name'],
         'booleanOperation': -1,
         'exportOptions': export_options(figma_node.get('exportSettings', [])),
         **positioning.convert(figma_node),

@@ -5,7 +5,6 @@ def convert(figma_ellipse):
     return {
         '_class': 'oval',
         **base.base_shape(figma_ellipse),
-        'name': figma_ellipse['name'],
         'edited': False,
         'isClosed': True,
         'pointRadiusBehaviour': 1,

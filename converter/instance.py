@@ -16,7 +16,6 @@ def convert(figma_instance):
         obj = {
             **base.base_shape(figma_instance),
             '_class': 'symbolInstance',
-            'name': figma_instance['name'],
             'symbolID': utils.gen_object_id(figma_instance['symbolData']['symbolID']),
             'overrideValues': sketch_overrides,
             'preservesSpaceWhenHidden': False,
@@ -31,7 +30,6 @@ def master_instance(figma_symbol):
         **base.base_shape(figma_symbol),
         '_class': 'symbolInstance',
         'do_objectID': utils.gen_object_id(figma_symbol['guid'], b'master_instance'),
-        'name': figma_symbol['name'],
         'symbolID': utils.gen_object_id(figma_symbol['guid']),
         'preservesSpaceWhenHidden': False,
         'overrideValues': [],

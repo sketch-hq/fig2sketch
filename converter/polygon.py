@@ -11,7 +11,6 @@ def convert(figma_polygon):
     return {
         '_class': 'polygon',
         **base.base_shape(figma_polygon),
-        'name': figma_polygon['name'],
         'edited': False,
         'isClosed': True,
         'pointRadiusBehaviour': 1,

@@ -1,17 +1,11 @@
-from genericpath import isdir
-from fontTools.ttLib import TTFont
+import appdirs
 import os
-import fnmatch
+import utils
 import urllib.request
 import urllib.parse
-import shutil
-from zipfile import ZipFile
-import appdirs
-import utils
-from collections import defaultdict
-from typing import Dict
+from fontTools.ttLib import TTFont
 from sketchformat.document import FontReference, JsonFileReference
-
+from zipfile import ZipFile
 
 fonts_cache_dir = appdirs.user_cache_dir('Figma2Sketch', 'Sketch') + '/fonts'
 os.makedirs(fonts_cache_dir, exist_ok=True)
@@ -74,5 +68,5 @@ def extract_names(font_file):
 
 def font_matches(figma, font_names):
     return figma['postscript'] == font_names['postscript'] or (
-        figma['family'] == font_names['family'] and
-        figma['style'] == font_names['subfamily'])
+            figma['family'] == font_names['family'] and
+            figma['style'] == font_names['subfamily'])
