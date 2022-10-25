@@ -20,6 +20,10 @@ def post_process_frame(figma_group, sketch_group):
     if figma_group['resizeToFit']:
         return sketch_group
 
+    # If the nested frame is empty in Figma we need to add a layers list attribute
+    if 'layers' not in sketch_group:
+        sketch_group['layers'] = []
+
     # Convert frame styles
     # - Fill/stroke/bgblur -> Rectangle on bottom with that style
     # - Layer blur -> Rectangle with bgblur on top

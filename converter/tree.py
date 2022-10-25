@@ -52,6 +52,9 @@ def convert_node(figma_node, parent_type):
 
 
 def get_node_type(figma_node, parent_type):
+    # We do this because Sketch does not support nested artboards
+    # If a Frame is detected inside another Frame, the internal one
+    # is considered a group
     if figma_node['type'] == 'FRAME':
         return 'ARTBOARD' if parent_type == 'CANVAS' else 'GROUP'
     else:
