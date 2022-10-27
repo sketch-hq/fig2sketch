@@ -1,4 +1,5 @@
 from . import base
+import utils
 from sketchformat.layer_shape import Rectangle, PointRadiusBehaviour
 
 
@@ -16,3 +17,13 @@ def convert(figma_rect) -> Rectangle:
             figma_rect.get('rectangleBottomLeftCornerRadius', 0)
         ),
     )
+
+def build_rectangle_for_frame(figma_frame):
+    background_rect = convert(figma_frame)
+    background_rect['frame']['x'] = 0
+    background_rect['frame']['y'] = 0
+    background_rect['rotation'] = 0
+    background_rect['name'] = 'Frame background'
+    background_rect['do_objectID'] = utils.gen_object_id(figma_frame['guid'], b'background')
+    background_rect['resizingConstraint'] = 63
+    return background_rect

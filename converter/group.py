@@ -29,14 +29,7 @@ def post_process_frame(figma_group, sketch_group):
     # - Layer blur -> Rectangle with bgblur on top
     # - Shadows -> If we have fill, add shadow to the fill. If not, add shadow to each child
     # TODO: Fix this and make it way less hacky
-    background_rect = rectangle.convert(figma_group)
-    background_rect['frame']['x'] = 0
-    background_rect['frame']['y'] = 0
-    background_rect['rotation'] = 0
-    sketch_group['layers'].insert(0, background_rect)
-    background_rect['name'] = 'Frame background'
-    background_rect['do_objectID'] = utils.gen_object_id(figma_group['guid'], b'background')
-    background_rect['resizingConstraint'] = 63
+    sketch_group['layers'].insert(0, rectangle.build_rectangle_for_frame(figma_group))
 
     # del sketch_group['style']
     sketch_group['style'] = Style(do_objectID=utils.gen_object_id(figma_group['guid'], b'style'))
