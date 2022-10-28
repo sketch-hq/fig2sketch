@@ -60,12 +60,12 @@ def convert(figma_node) -> Style:
     sketch_style = Style(
         do_objectID=utils.gen_object_id(figma_node['guid'], b'style'),
         borderOptions=BorderOptions(
-            lineCapStyle=LINE_CAP_STYLE[figma_node.get('strokeCap', BorderOptions.__dict__['lineCapStyle'])],
-            lineJoinStyle=LINE_JOIN_STYLE[figma_node.get('strokeJoin', BorderOptions.__dict__['lineCapStyle'])],
+            lineCapStyle=LINE_CAP_STYLE[figma_node['strokeCap']] if 'strokeCap' in figma_node else BorderOptions.__dict__['lineCapStyle'],
+            lineJoinStyle=LINE_JOIN_STYLE[figma_node['strokeJoin']] if 'strokeJoin' in figma_node else BorderOptions.__dict__['lineCapStyle'],
             dashPattern=figma_node.get('dashPattern', BorderOptions.__dict__['lineCapStyle'])
         ),
-        borders=[convert_border(figma_node, b) for b in figma_node['strokePaints']],
-        fills=[convert_fill(figma_node, f) for f in figma_node['fillPaints']],
+        borders=[convert_border(figma_node, b) for b in figma_node['strokePaints']] if 'strokePaints' in figma_node else [],
+        fills=[convert_fill(figma_node, f) for f in figma_node['fillPaints']] if 'fillPaints' in figma_node else [],
         **convert_effects(figma_node.get('effects', [])),
         contextSettings=context_settings(figma_node)
     )
