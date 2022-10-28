@@ -1,7 +1,9 @@
 import io
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from . import decodefig, decodevectornetwork
 import utils
+import functools
+import logging
 
 
 def convert_fig(reader, output):
@@ -34,7 +36,6 @@ def convert_fig(reader, output):
     return tree, id_map
 
 
-converted_images = {}
 def transform_node(fig, node, figma_zip, output):
     node['children'] = []
 
@@ -57,21 +58,28 @@ def transform_node(fig, node, figma_zip, output):
     for paint in node.get('fillPaints', []):
         if 'image' in paint:
             fname = bytes(paint['image']['hash']).hex()
-            if fname not in converted_images:
-                if figma_zip is not None:
-                    image = Image.open(figma_zip.open(f'images/{fname}'))
-                else:
-                    image = Image.open(
-                        io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
-
-                # Save to memory, calculate hash, and save
-                out = io.BytesIO()
-                image.save(out, format='png')
-                fhash = utils.generate_file_ref(out.getbuffer())
-
-                output.open(f'images/{fhash}.png', 'w').write(out.getbuffer())
-                converted_images[fname] = fhash
-
-            paint['image']['filename'] = converted_images[fname]
+            paint['image']['filename'] = convert_image(fname, figma_zip, output)
 
     return node
+
+
+@functools.cache
+def convert_image(fname, figma_zip, output):
+    try:
+        if figma_zip is not None:
+            image = Image.open(figma_zip.open(f'images/{fname}'))
+        else:
+            image = Image.open(
+                io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
+
+        # Save to memory, calculate hash, and save
+        out = io.BytesIO()
+        image.save(out, format='png')
+        fhash = utils.generate_file_ref(out.getbuffer())
+
+        output.open(f'images/{fhash}.png', 'w').write(out.getbuffer())
+        return fhash
+    except UnidentifiedImageError as e:
+        logging.critical(f"Could not convert image {fname}. It appears to be corrupted.")
+        logging.critical(f"Try passing `--force-convert-images` to ignore this error and try to convert the image anyway.")
+        exit(1)
