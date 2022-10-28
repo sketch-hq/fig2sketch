@@ -57,18 +57,19 @@ BLEND_MODE = {
 
 
 def convert(figma_node) -> Style:
-    return Style(
+    sketch_style = Style(
         do_objectID=utils.gen_object_id(figma_node['guid'], b'style'),
         borderOptions=BorderOptions(
-            lineCapStyle=LINE_CAP_STYLE[figma_node['strokeCap']],
-            lineJoinStyle=LINE_JOIN_STYLE[figma_node['strokeJoin']],
-            dashPattern=figma_node['dashPattern']
+            lineCapStyle=LINE_CAP_STYLE[figma_node.get('strokeCap', BorderOptions.__dict__['lineCapStyle'])],
+            lineJoinStyle=LINE_JOIN_STYLE[figma_node.get('strokeJoin', BorderOptions.__dict__['lineCapStyle'])],
+            dashPattern=figma_node.get('dashPattern', BorderOptions.__dict__['lineCapStyle'])
         ),
         borders=[convert_border(figma_node, b) for b in figma_node['strokePaints']],
         fills=[convert_fill(figma_node, f) for f in figma_node['fillPaints']],
         **convert_effects(figma_node.get('effects', [])),
         contextSettings=context_settings(figma_node)
     )
+    return sketch_style
 
 
 def convert_border(figma_node, figma_border) -> Border:

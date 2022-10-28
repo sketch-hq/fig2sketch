@@ -7,6 +7,7 @@ CONVERTERS = {
     'ARTBOARD': artboard.convert,
     'GROUP': group.convert,
     'ROUNDED_RECTANGLE': rectangle.convert,
+    'RECTANGLE': rectangle.convert,
     'ELLIPSE': oval.convert,
     'VECTOR': shape_path.convert,
     'STAR': star.convert,
