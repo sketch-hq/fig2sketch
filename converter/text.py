@@ -3,6 +3,7 @@ import utils
 import itertools
 from .context import context
 import copy
+import logging
 
 AlignVertical = {
     'TOP': 0,
@@ -164,8 +165,16 @@ def override_characters_style(figma_text):
 
     # List of glyphs, taken in pairs (AB, BC, CD). Used to know when to switch from
     # one glyph to another. Used to identify emojis that can span multiple codepoints
+    glyphs = figma_text['textData'].get('glyphs')
+    if not glyphs:
+        # Note, glyphs can be empty when there is a single character and that's still ok
+        if len(figma_text['textData']['characters']) != 1:
+            logging.warning(f"Figma text `{figma_text['name']}` is missing the glyphs property. If the text has unicode characters, it may not convert the format properly")
+
+        glyphs = [{'firstCharacter': 0, 'styleID': 0}]
+
     # Add a fake glyph to the end that never gets reached for iteration purposes
-    glyph_pairs = itertools.pairwise(figma_text['textData']['glyphs'] + [{'firstCharacter': -1}])
+    glyph_pairs = itertools.pairwise(glyphs + [{'firstCharacter': -1}])
     current_glyph, next_glyph = next(glyph_pairs)
 
     # Keep track of what the previous style was and when it started
