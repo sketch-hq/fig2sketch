@@ -50,7 +50,7 @@ def convert(pages, output_zip):
                         component['_class'] == 'swatch']
         },
         'fontReferences': sorted(
-            [font.convert(f, output_zip) for f in context.used_fonts()],
+            filter(lambda x: x is not None, [font.convert(f, output_zip) for f in context.used_fonts()]),
             key=lambda x: x.do_objectID
         ),
         'documentState': {

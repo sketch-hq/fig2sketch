@@ -10,6 +10,8 @@ from zipfile import ZipFile
 fonts_cache_dir = appdirs.user_cache_dir('Figma2Sketch', 'Sketch') + '/fonts'
 os.makedirs(fonts_cache_dir, exist_ok=True)
 
+class FontError(Exception):
+    pass
 
 def retrieve_webfont(family):
     WEB_FONT_BASE_URL = 'http://fonts.google.com/download?family='
@@ -34,27 +36,31 @@ def get_webfont(family, subfamily):
             font_file.seek(0)
             return font_file, font_names['postscript']
 
-    raise Exception(f'Could not find font {figma_font_name["postscript"]}')
+    raise FontError(f'Could not find font {family} {subfamily}')
 
 
 def convert(name, output_zip):
-    family, subfamily = name
-    font_file, postscript = get_webfont(family, subfamily)
-    data = font_file.read()
-    sha = utils.generate_file_ref(data)
-    path = f'fonts/{sha}'
-    output_zip.open(path, 'w').write(data)
+    try:
+        family, subfamily = name
+        font_file, postscript = get_webfont(family, subfamily)
+        data = font_file.read()
+        sha = utils.generate_file_ref(data)
+        path = f'fonts/{sha}'
+        output_zip.open(path, 'w').write(data)
 
-    return FontReference(
-        do_objectID=utils.gen_object_id((0, 0), bytes.fromhex(sha)),
-        fontData=JsonFileReference(
-            _ref_class='MSFontData',
-            _ref=path
-        ),
-        fontFamilyName=family,
-        fontFileName=f'{family}-{subfamily}.ttf',
-        postscriptNames=[postscript]
-    )
+        return FontReference(
+            do_objectID=utils.gen_object_id((0, 0), bytes.fromhex(sha)),
+            fontData=JsonFileReference(
+                _ref_class='MSFontData',
+                _ref=path
+            ),
+            fontFamilyName=family,
+            fontFileName=f'{family}-{subfamily}.ttf',
+            postscriptNames=[postscript]
+        )
+    except Exception:
+        print(f'Could not save font {family} {subfamily}') 
+        return None
 
 
 def extract_names(font_file):
