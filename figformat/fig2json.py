@@ -60,21 +60,37 @@ def transform_node(fig, node, figma_zip, output):
             fname = bytes(paint['image']['hash']).hex()
             paint['image']['filename'] = convert_image(fname, figma_zip, output)
 
+    if 'symbolData' in node:
+        for override in node['symbolData'].get('symbolOverrides', []):
+            for paint in override.get('fillPaints', []):
+                if 'image' in paint:
+                    fname = bytes(paint['image']['hash']).hex()
+                    paint['image']['filename'] = convert_image(fname, figma_zip, output)
+
     return node
 
 
 @functools.cache
 def convert_image(fname, figma_zip, output):
+    logging.info(f'Converting image {fname}')
     try:
         if figma_zip is not None:
-            image = Image.open(figma_zip.open(f'images/{fname}'))
+            fd = figma_zip.open(f'images/{fname}')
         else:
-            image = Image.open(
-                io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes'])))
+            fd = io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes']))
+
+        image = Image.open(fd)
 
         # Save to memory, calculate hash, and save
         out = io.BytesIO()
-        image.save(out, format='png')
+        if image.format == 'PNG':
+            # No need to convert if it's already a PNG
+            fd.seek(0)
+            while buf := fd.read(16536):
+                out.write(buf)
+        else:
+            image.save(out, format='png')
+
         fhash = utils.generate_file_ref(out.getbuffer())
 
         output.open(f'images/{fhash}.png', 'w').write(out.getbuffer())
