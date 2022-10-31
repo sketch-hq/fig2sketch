@@ -19,24 +19,21 @@ STROKE_CAP_TO_MARKER_TYPE = {
 
 def convert(figma_vector):
     regions = figma_vector['vectorNetwork']['regions']
-    if len(regions) > 1:
-        logging.warning("Multi-region shapes are not supported. Only the first region will be converted.")
-
-    if not regions or len(regions[0]['loops']) == 1:
-        # A single loop, or just segments. Convert as a shapePath
+    if not regions:
+        # A path that is not closed so it doesn't have any regions
         return convert_shape_path(figma_vector)
-    else:
-        # Multiple loops, convert as a shape group with shape paths as children (will happen in post process)
-        shape_paths = [convert_shape_path(figma_vector, loop) for loop in range(len(regions[0]['loops']))]
 
+    regions = [convert_region(figma_vector, region) for region in range(len(regions))]
+
+    if len(regions) > 1:
         # Ignore positioning for childs. TODO: We should probably be building these shapePaths by hand, instead
         # of relying on the generic convert_shape_path function
-        for i, s in enumerate(shape_paths):
+        for i, s in enumerate(regions):
             s['frame']['x'] = 0
             s['frame']['y'] = 0
-            s['do_objectID'] = utils.gen_object_id(figma_vector['guid'], f"loop{i}".encode())
+            s['booleanOperation'] = 0
 
-        return {
+        obj = {
             '_class': 'shapeGroup',
             **base.base_shape(figma_vector),
             'shouldBreakMaskChain': True,
@@ -44,15 +41,49 @@ def convert(figma_vector):
             'groupLayout': {
                 '_class': 'MSImmutableFreeformGroupLayout'
             },
-            'windingRule': 0,
-            'layers': shape_paths
+            'windingRule': 1,
+            'layers': regions
         }
 
-    return obj
+        obj['style'].windingRule = 1
+        return obj
+    else:
+        return regions[0]
+
+def convert_region(figma_vector, region_index=0):
+    region = figma_vector['vectorNetwork']['regions'][region_index]
+    if len(region['loops']) == 1:
+        # A single loop, or just segments. Convert as a shapePath
+        return convert_shape_path(figma_vector, region_index)
+    else:
+        # Multiple loops, convert as a shape group with shape paths as children (will happen in post process)
+        shape_paths = [convert_shape_path(figma_vector, region_index, loop) for loop in range(len(region['loops']))]
+
+        # Ignore positioning for childs. TODO: We should probably be building these shapePaths by hand, instead
+        # of relying on the generic convert_shape_path function
+        for i, s in enumerate(shape_paths):
+            s['frame']['x'] = 0
+            s['frame']['y'] = 0
+
+        obj = {
+            '_class': 'shapeGroup',
+            **base.base_shape(figma_vector),
+            'shouldBreakMaskChain': True,
+            'hasClickThrough': False,
+            'groupLayout': {
+                '_class': 'MSImmutableFreeformGroupLayout'
+            },
+            'windingRule': 1,
+            'layers': shape_paths,
+            'do_objectID': utils.gen_object_id(figma_vector['guid'], f"region{region_index}".encode())
+        }
+
+        obj['style'].windingRule = 1
+        return obj
 
 
-def convert_shape_path(figma_vector, loop=0):
-    points, styles = convert_points(figma_vector, loop)
+def convert_shape_path(figma_vector, region=0, loop=0):
+    points, styles = convert_points(figma_vector, region, loop)
 
     obj = {
         '_class': 'shapePath',
@@ -60,6 +91,7 @@ def convert_shape_path(figma_vector, loop=0):
         'edited': True,
         'pointRadiusBehaviour': 1,
         **points,
+        'do_objectID': utils.gen_object_id(figma_vector['guid'], f"region{region}loop{loop}".encode())
     }
 
     if styles:
@@ -107,12 +139,12 @@ def convert_line(figma_line):
     }
 
 
-def convert_points(figma_vector, loop):
+def convert_points(figma_vector, region, loop):
     vector_network = figma_vector['vectorNetwork']
     segments = vector_network['segments']
     vertices = vector_network['vertices']
 
-    segment_ids, is_closed = get_segments(vector_network, loop)
+    segment_ids, is_closed = get_segments(vector_network, region, loop)
     ordered_segments = [segments[i] for i in segment_ids]
 
     points_style = {}
@@ -138,9 +170,9 @@ def convert_points(figma_vector, loop):
     return {'points': list(points.values()), 'isClosed': is_closed}, points_style
 
 
-def get_segments(vector_network, loop):
+def get_segments(vector_network, region, loop):
     if vector_network['regions']:
-        return vector_network['regions'][0]['loops'][loop], True
+        return vector_network['regions'][region]['loops'][loop], True
     else:
         segments = vector_network['segments']
         # A polygon is closed if the first point is the same as the last point
@@ -154,6 +186,9 @@ def swap_segment(segment):
 
 
 def reorder_segments(segments):
+    if len(segments) < 2:
+        return
+
     if segments[0]['end'] not in (segments[1]['start'], segments[1]['end']):
         swap_segment(segments[0])
 
