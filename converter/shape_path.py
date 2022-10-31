@@ -2,6 +2,7 @@ from . import base, positioning
 import utils
 import numpy as np
 import dataclasses
+import logging
 
 STROKE_CAP_TO_MARKER_TYPE = {
     'NONE': 0,
@@ -16,7 +17,40 @@ STROKE_CAP_TO_MARKER_TYPE = {
 
 
 def convert(figma_vector):
-    points, styles = convert_points(figma_vector)
+    regions = figma_vector['vectorNetwork']['regions']
+    if len(regions) > 1:
+        logging.warning("Multi-region shapes are not supported. Only the first region will be converted.")
+
+    if not regions or len(regions[0]['loops']) == 1:
+        # A single loop, or just segments. Convert as a shapePath
+        return convert_shape_path(figma_vector)
+    else:
+        # Multiple loops, convert as a shape group with shape paths as children (will happen in post process)
+        shape_paths = [convert_shape_path(figma_vector, loop) for loop in range(len(regions[0]['loops']))]
+
+        # Ignore positioning for childs. TODO: We should probably be building these shapePaths by hand, instead
+        # of relying on the generic convert_shape_path function
+        for s in shape_paths:
+            s['frame']['x'] = 0
+            s['frame']['y'] = 0
+
+        return {
+            '_class': 'shapeGroup',
+            **base.base_shape(figma_vector),
+            'shouldBreakMaskChain': True,
+            'hasClickThrough': False,
+            'groupLayout': {
+                '_class': 'MSImmutableFreeformGroupLayout'
+            },
+            'windingRule': 0,
+            'layers': shape_paths
+        }
+
+    return obj
+
+
+def convert_shape_path(figma_vector, loop=0):
+    points, styles = convert_points(figma_vector, loop)
 
     obj = {
         '_class': 'shapePath',
@@ -71,12 +105,12 @@ def convert_line(figma_line):
     }
 
 
-def convert_points(figma_vector):
+def convert_points(figma_vector, loop):
     vector_network = figma_vector['vectorNetwork']
     segments = vector_network['segments']
     vertices = vector_network['vertices']
 
-    segment_ids, is_closed = get_segments(vector_network)
+    segment_ids, is_closed = get_segments(vector_network, loop)
     ordered_segments = [segments[i] for i in segment_ids]
 
     points_style = {}
@@ -96,9 +130,9 @@ def convert_points(figma_vector):
     return {'points': list(points.values()), 'isClosed': is_closed}, points_style
 
 
-def get_segments(vector_network):
+def get_segments(vector_network, loop):
     if vector_network['regions']:
-        return vector_network['regions'][0]['loops'][0], True
+        return vector_network['regions'][0]['loops'][loop], True
     else:
         segments = vector_network['segments']
         # A polygon is closed if the first point is the same as the last point
