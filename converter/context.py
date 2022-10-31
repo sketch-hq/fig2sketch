@@ -1,4 +1,4 @@
-from . import component, page, font
+from . import component, page
 
 
 class Context:

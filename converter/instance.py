@@ -1,4 +1,4 @@
-from . import base, tree, style, group
+from . import base, group
 import utils
 from .context import context
 import copy
@@ -19,9 +19,11 @@ def convert(figma_instance):
             'symbolID': utils.gen_object_id(figma_instance['symbolData']['symbolID']),
             'overrideValues': sketch_overrides,
             'preservesSpaceWhenHidden': False,
-            'scale': 1
+            'scale': 1,
         }
+        # Replace style
         obj['style'] = Style(do_objectID=utils.gen_object_id(figma_instance['guid'], b'style'))
+
         return obj
 
 
@@ -35,8 +37,11 @@ def master_instance(figma_symbol):
         'overrideValues': [],
         'scale': 1
     }
+
+    # Replace style
     obj['style'] = Style(
         do_objectID=utils.gen_object_id(figma_symbol['guid'], b'master_instance_style'))
+
     return obj
 
 
@@ -51,10 +56,10 @@ def convert_overrides(figma_instance):
         guid = override['guidPath']['guids'][0]
         uuid = utils.gen_object_id(guid)
 
-        for property, value in override.items():
-            if property == 'guidPath':
+        for prop, value in override.items():
+            if prop == 'guidPath':
                 continue
-            if property == 'textData':
+            if prop == 'textData':
                 # Text override.
                 if 'styleOverrideTable' in value:
                     # Sketch does not support multiple styles in text overrides -> detach
@@ -66,20 +71,22 @@ def convert_overrides(figma_instance):
                     'overrideName': f'{uuid}_stringValue',
                     'value': value['characters']
                 })
-            elif property == 'size':
+            elif prop == 'size':
                 pass  # I think we can ignore this (the frame will pick up the change)
             else:
                 # Unknown override
-                print(f"Unsupported override: {property}. Will detach")
+                print(f"Unsupported override: {prop}. Will detach")
                 return None
 
     figma_master = context.figma_node(figma_instance['symbolData']['symbolID'])
+
     for prop in figma_instance.get('componentPropAssignments', []):
         # TODO: propdef.type needed?
         # prop_def = [d for d in figma_master['componentPropDefs'] if d['id'] == prop['defID']]
 
         ref_prop, ref_node = find_ref(figma_master, prop['defID'])
         uuid = utils.gen_object_id(ref_node['guid'])
+
         if ref_prop['componentPropNodeField'] == 'OVERRIDDEN_SYMBOL_ID':
             symbol_id = utils.gen_object_id(prop['value']['guidValue'])
             sketch_overrides.append({

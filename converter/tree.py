@@ -1,5 +1,5 @@
 from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, \
-    shape_group, text, slice, context, instance, symbol
+    shape_group, text, slice, instance, symbol
 from dataclasses import is_dataclass
 
 CONVERTERS = {
@@ -61,11 +61,3 @@ def get_node_type(figma_node, parent_type):
         return 'ARTBOARD' if parent_type == 'CANVAS' else 'GROUP'
     else:
         return figma_node['type']
-
-
-def find_shared_style(figma_node):
-    match figma_node:
-        case {'inheritFillStyleID': shared_style}:
-            return context.component(shared_style)
-        case _:
-            return {}

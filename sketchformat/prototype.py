@@ -25,20 +25,36 @@ class AnimationType(IntEnum):
 @dataclass(kw_only=True)
 class FlowOverlaySettings:
     _class: str = field(default='MSImmutableFlowOverlaySettings', init=False)
-    offset: Point
     overlayAnchor: Point
     sourceAnchor: Point
-    overlayType: int = 1
+    offset: Point = Point(0, 0)
+    overlayType: int = 0
 
     @staticmethod
-    def Centered() -> 'FlowOverlaySettings':
-        point = Point(0.5, 0.5)
+    def Positioned(position) -> 'FlowOverlaySettings':
+        anchor = Point(0.5, 0.5)
 
-        return FlowOverlaySettings(
-            offset=Point(0, 0),
-            overlayAnchor=point,
-            sourceAnchor=point
-        )
+        match position:
+            case 'TOP_LEFT':
+                anchor = Point(0, 0)
+            case 'TOP_CENTER':
+                anchor = Point(0.5, 0)
+            case 'TOP_RIGHT':
+                anchor = Point(1, 0)
+            case 'BOTTOM_LEFT':
+                anchor = Point(0, 1)
+            case 'BOTTOM_CENTER':
+                anchor = Point(0.5, 1)
+            case 'BOTTOM_RIGHT':
+                anchor = Point(1, 1)
+
+        return FlowOverlaySettings(overlayAnchor=anchor, sourceAnchor=anchor)
+
+    @staticmethod
+    def RegularArtboard() -> 'FlowOverlaySettings':
+        anchor = Point(0.5, 0.5)
+
+        return FlowOverlaySettings(overlayAnchor=anchor, sourceAnchor=anchor)
 
 
 @dataclass(kw_only=True)
@@ -48,6 +64,7 @@ class FlowConnection:
     animationType: AnimationType = AnimationType.NONE
     maintainScrollPosition: bool = False
     shouldCloseExistingOverlays: bool = False
+    overlaySettings: FlowOverlaySettings = None
 
 
 @dataclass(kw_only=True)

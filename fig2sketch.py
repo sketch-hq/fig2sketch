@@ -1,11 +1,11 @@
 import os
 
 import figformat.fig2json as fig2json
-from converter import convert
 import json
 import shutil
 import utils
 import argparse
+from converter import convert
 from zipfile import ZipFile
 import logging
 
@@ -53,6 +53,7 @@ if __name__ == '__main__':
     except:
         pass
 
-    json.dump(figma_json, open(f'example/figma.json', 'w'), indent=2, ensure_ascii=False, default=lambda x: x.tolist())
+    json.dump(figma_json, open(f'example/figma.json', 'w'), indent=2, ensure_ascii=False,
+              default=lambda x: x.tolist())
 
     convert.convert_json_to_sketch(figma_json, id_map, output)

@@ -58,7 +58,9 @@ def convert_flow(figma_node):
                 continue
 
             # TODO: Connection type
-            match action['connectionType'], action.get('transitionNodeID', None):
+            transition_node_id = action.get('transitionNodeID', None)
+
+            match action['connectionType'], transition_node_id:
                 case 'BACK', _:
                     destination = 'back'
                 case 'INTERNAL_NODE', None:
@@ -74,7 +76,8 @@ def convert_flow(figma_node):
             flow = FlowConnection(
                 destinationArtboardID=destination,
                 animationType=ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
-                maintainScrollPosition=action.get('transitionPreserveScroll', False)
+                maintainScrollPosition=action.get('transitionPreserveScroll', False),
+                overlaySettings=overlay_settings(transition_node_id)
             )
 
     return {'flow': flow} if flow else {}
@@ -94,20 +97,34 @@ def prototyping_information(figma_frame):
     if figma_frame.get('scrollDirection', 'NONE') != 'NONE':
         print('Scroll overflow direction not supported')
 
-    obj = {
-        'isFlowHome': figma_frame['prototypeStartingPoint']['name'] != '',
-        'prototypeViewport': PrototypeViewport(
-            name=figma_canvas['prototypeDevice']['presetIdentifier'],
-            size=utils.point_to_string(figma_canvas['prototypeDevice']['size'])
-        ),
-        'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
-        'presentationStyle': PrototypePresentationStyle.SCREEN
-    }
-
     if 'overlayBackgroundInteraction' in figma_frame:
-        obj['overlayBackgroundInteraction'] = OVERLAY_INTERACTION[
-            figma_frame['overlayBackgroundInteraction']]
-        obj['presentationStyle'] = PrototypePresentationStyle.OVERLAY
-        obj['overlaySettings'] = FlowOverlaySettings.Centered()
+        obj = {
+            'overlayBackgroundInteraction': OVERLAY_INTERACTION[
+                figma_frame['overlayBackgroundInteraction']],
+            'presentationStyle': PrototypePresentationStyle.OVERLAY,
+            'overlaySettings': FlowOverlaySettings.Positioned(figma_frame['overlayPositionType'])
+        }
+    else:
+        obj = {
+            'isFlowHome': figma_frame['prototypeStartingPoint']['name'] != '',
+            'prototypeViewport': PrototypeViewport(
+                name=figma_canvas['prototypeDevice']['presetIdentifier'],
+                size=utils.point_to_string(figma_canvas['prototypeDevice']['size'])
+            ),
+            'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
+            'presentationStyle': PrototypePresentationStyle.SCREEN,
+            'overlaySettings': FlowOverlaySettings.RegularArtboard()
+        }
 
     return obj
+
+
+def overlay_settings(transition_node_id):
+    if transition_node_id is None:
+        return None
+
+    transition_node = context.figma_node(transition_node_id)
+    if 'overlayBackgroundInteraction' not in transition_node:
+        return None
+
+    return FlowOverlaySettings.Positioned(transition_node['overlayPositionType'])

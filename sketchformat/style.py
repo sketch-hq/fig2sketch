@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Optional, List
 from .common import Point
@@ -205,7 +205,8 @@ class Fill:
         )
 
     @staticmethod
-    def Image(path: str, patternFillType: PatternFillType, patternTileScale: float, isEnabled: bool):
+    def Image(path: str, patternFillType: PatternFillType, patternTileScale: float,
+              isEnabled: bool):
         return Fill(
             image=Image(path),
             fillType=FillType.PATTERN,
@@ -326,4 +327,3 @@ class Style:
                 self.startDecorationType = startMarkerType
             if endMarkerType < 4:
                 self.endDecorationType = endMarkerType
-
