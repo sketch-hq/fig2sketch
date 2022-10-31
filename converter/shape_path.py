@@ -3,6 +3,7 @@ import utils
 import numpy as np
 import dataclasses
 import logging
+import itertools
 
 STROKE_CAP_TO_MARKER_TYPE = {
     'NONE': 0,
@@ -30,9 +31,10 @@ def convert(figma_vector):
 
         # Ignore positioning for childs. TODO: We should probably be building these shapePaths by hand, instead
         # of relying on the generic convert_shape_path function
-        for s in shape_paths:
+        for i, s in enumerate(shape_paths):
             s['frame']['x'] = 0
             s['frame']['y'] = 0
+            s['do_objectID'] = utils.gen_object_id(figma_vector['guid'], f"loop{i}".encode())
 
         return {
             '_class': 'shapeGroup',
@@ -120,8 +122,14 @@ def convert_points(figma_vector, loop):
         last_point = vertices[ordered_segments[-1]['end']]
         points_style = points_marker_types(figma_vector, first_point, last_point)
 
-    points = {}
+    # Make sure segment[0].end == segment[1].start, etc.
+    # From VectorNetwork docs:
+    #   However, the order of the start and end points in the segments do not matter,
+    #   i.e. the end vertex of one segment does not need to match the start vertex of the next segment in the loop,
+    #   but can instead match the end vertex of that segment."
+    reorder_segments(ordered_segments)
 
+    points = {}
     for segment in ordered_segments:
         point1, point2 = process_segment(figma_vector, vertices, segment, points)
         points[segment['start']] = point1
@@ -138,6 +146,20 @@ def get_segments(vector_network, loop):
         # A polygon is closed if the first point is the same as the last point
         is_closed = segments[0]['start'] == segments[-1]['end']
         return range(len(segments)), is_closed
+
+
+def swap_segment(segment):
+    segment['start'], segment['end'] = segment['end'], segment['start']
+    segment['tangentStart'], segment['tangentEnd'] = segment['tangentEnd'], segment['tangentStart']
+
+
+def reorder_segments(segments):
+    if segments[0]['end'] not in (segments[1]['start'], segments[1]['end']):
+        swap_segment(segments[0])
+
+    for prev, cur in itertools.pairwise(segments):
+        if prev['end'] != cur['start']:
+            swap_segment(cur)
 
 
 def process_segment(figma_vector, vertices, segment, points):
