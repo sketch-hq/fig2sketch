@@ -57,27 +57,17 @@ def convert_flow(figma_node):
                 print('Unsupported multiple actions per layer')
                 continue
 
-            # TODO: Connection type
-            transition_node_id = action.get('transitionNodeID', None)
+            if action['connectionType'] not in ['BACK', 'INTERNAL_NODE', 'NONE']:
+                print(f"Unsupported connection type {action['connectionType']}")
+                continue
 
-            match action['connectionType'], transition_node_id:
-                case 'BACK', _:
-                    destination = 'back'
-                case 'INTERNAL_NODE', None:
-                    destination = None
-                case 'INTERNAL_NODE', transition_node_id:
-                    destination = utils.gen_object_id(transition_node_id)
-                case 'NONE', _:
-                    destination = None
-                case _:
-                    print(f"Unsupported connection type {action['connectionType']}")
-                    continue
+            destination, overlay_settings = get_destination_settings_if_any(action)
 
             flow = FlowConnection(
                 destinationArtboardID=destination,
                 animationType=ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
                 maintainScrollPosition=action.get('transitionPreserveScroll', False),
-                overlaySettings=overlay_settings(transition_node_id)
+                overlaySettings=overlay_settings
             )
 
     return {'flow': flow} if flow else {}
@@ -119,12 +109,26 @@ def prototyping_information(figma_frame):
     return obj
 
 
-def overlay_settings(transition_node_id):
-    if transition_node_id is None:
-        return None
+def get_destination_settings_if_any(action):
+    overlay_settings = None
 
-    transition_node = context.figma_node(transition_node_id)
-    if 'overlayBackgroundInteraction' not in transition_node:
-        return None
+    match action['connectionType'], action.get('transitionNodeID', None):
+        case 'BACK', _:
+            destination = 'back'
+        case 'INTERNAL_NODE', None:
+            destination = None
+        case 'INTERNAL_NODE', transition_node_id:
+            destination = utils.gen_object_id(transition_node_id)
+            transition_node = context.figma_node(transition_node_id)
 
-    return FlowOverlaySettings.Positioned(transition_node['overlayPositionType'])
+            if 'overlayBackgroundInteraction' in transition_node:
+                overlay_settings = FlowOverlaySettings.Positioned(
+                    transition_node['overlayPositionType'])
+
+        case 'NONE', _:
+            destination = None
+        case _:
+            print(f"Unsupported connection type {action['connectionType']}")
+            return
+
+    return destination, overlay_settings
