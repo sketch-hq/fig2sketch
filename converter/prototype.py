@@ -92,7 +92,7 @@ def prototyping_information(figma_frame):
             'overlayBackgroundInteraction': OVERLAY_INTERACTION[
                 figma_frame['overlayBackgroundInteraction']],
             'presentationStyle': PrototypePresentationStyle.OVERLAY,
-            'overlaySettings': FlowOverlaySettings.Positioned(figma_frame['overlayPositionType'])
+            'overlaySettings': FlowOverlaySettings.Positioned(figma_frame.get('overlayPositionType','CENTER'))
         }
     else:
         obj = {
@@ -123,7 +123,7 @@ def get_destination_settings_if_any(action):
 
             if 'overlayBackgroundInteraction' in transition_node:
                 overlay_settings = FlowOverlaySettings.Positioned(
-                    transition_node['overlayPositionType'])
+                    transition_node.get('overlayPositionType','CENTER'))
 
         case 'NONE', _:
             destination = None
