@@ -4,17 +4,19 @@ from sketchformat.layer_shape import Rectangle, PointRadiusBehaviour
 
 
 def convert(figma_rect) -> Rectangle:
+    corner_radius = figma_rect.get('cornerRadius', 0)
+
     return Rectangle(
         **base.base_shape(figma_rect),  # TODO: Type annotations
         # Sketch smooth corners are a boolean, Figma is a percent. I picked an arbitrary threshold
-        pointRadiusBehaviour=PointRadiusBehaviour.V1_SMOOTH if 'cornerSmoothing' in figma_rect and figma_rect['cornerSmoothing'] > 0.4 
+        pointRadiusBehaviour=PointRadiusBehaviour.V1_SMOOTH if 'cornerSmoothing' in figma_rect and figma_rect['cornerSmoothing'] > 0.4
             else PointRadiusBehaviour.V1,
-        fixedRadius=figma_rect.get('cornerRadius', Rectangle.__dict__['fixedRadius']),
+        fixedRadius=corner_radius,
         corners=Rectangle.Corners(
-            figma_rect.get('rectangleTopLeftCornerRadius', 0),
-            figma_rect.get('rectangleTopRightCornerRadius', 0),
-            figma_rect.get('rectangleBottomRightCornerRadius', 0),
-            figma_rect.get('rectangleBottomLeftCornerRadius', 0)
+            figma_rect.get('rectangleTopLeftCornerRadius', corner_radius),
+            figma_rect.get('rectangleTopRightCornerRadius', corner_radius),
+            figma_rect.get('rectangleBottomRightCornerRadius', corner_radius),
+            figma_rect.get('rectangleBottomLeftCornerRadius', corner_radius)
         ),
     )
 
