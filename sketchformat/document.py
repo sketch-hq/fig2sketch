@@ -4,14 +4,14 @@ from typing import List
 
 @dataclass(kw_only=True)
 class JsonFileReference:
-    _class: str = field(default='MSJSONFileReference', init=False)
+    _class: str = field(default='MSJSONFileReference')
     _ref_class: str
     _ref: str
 
 
 @dataclass(kw_only=True)
 class FontReference:
-    _class: str = field(default='fontReference', init=False)
+    _class: str = field(default='fontReference')
     do_objectID: str
     fontData: JsonFileReference
     fontFamilyName: str

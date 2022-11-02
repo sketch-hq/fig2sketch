@@ -1,14 +1,9 @@
 import os
-
-import figformat.fig2json as fig2json
-import json
-import shutil
-import utils
 import argparse
-from converter import convert
-from zipfile import ZipFile
 import logging
-
+import shutil
+import json
+from zipfile import ZipFile
 
 def clean_output():
     try:
@@ -29,19 +24,24 @@ if __name__ == '__main__':
     parser.add_argument('-v', action='count', dest='verbosity', help='return more details, can be repeated')
     args = parser.parse_args()
 
-    if args.salt:
-        utils.id_salt = args.salt.encode('utf8')
-
-    if args.force_convert_images:
-        from PIL import ImageFile
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-
     # Set log level
     level = logging.WARNING
     if args.verbosity:
         level = logging.INFO if args.verbosity == 1 else logging.DEBUG
 
     logging.basicConfig(level=level)
+
+    # Import after setting the log level
+    import figformat.fig2json as fig2json
+    import utils
+    from converter import convert
+
+    if args.salt:
+        utils.id_salt = args.salt.encode('utf8')
+
+    if args.force_convert_images:
+        from PIL import ImageFile
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
 
     clean_output()
     output = ZipFile('output/output.sketch', 'w')

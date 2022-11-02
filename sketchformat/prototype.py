@@ -24,7 +24,7 @@ class AnimationType(IntEnum):
 
 @dataclass(kw_only=True)
 class FlowOverlaySettings:
-    _class: str = field(default='MSImmutableFlowOverlaySettings', init=False)
+    _class: str = field(default='MSImmutableFlowOverlaySettings')
     overlayAnchor: Point
     sourceAnchor: Point
     offset: Point = Point(0, 0)
@@ -59,7 +59,7 @@ class FlowOverlaySettings:
 
 @dataclass(kw_only=True)
 class FlowConnection:
-    _class: str = field(default='MSImmutableFlowConnection', init=False)
+    _class: str = field(default='MSImmutableFlowConnection')
     destinationArtboardID: str = None
     animationType: AnimationType = AnimationType.NONE
     maintainScrollPosition: bool = False
@@ -69,7 +69,7 @@ class FlowConnection:
 
 @dataclass(kw_only=True)
 class PrototypeViewport:
-    _class: str = field(default='MSImmutablePrototypeViewport', init=False)
+    _class: str = field(default='MSImmutablePrototypeViewport')
     name: str
     size: str
     # libraryID: str = 'EB972BCC-0467-4E50-998E-0AC5A39517F0'

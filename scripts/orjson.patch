@@ -1,0 +1,26 @@
+diff --git a/src/serialize/dataclass.rs b/src/serialize/dataclass.rs
+index e93ab1f..ec4e0bb 100644
+--- a/src/serialize/dataclass.rs
++++ b/src/serialize/dataclass.rs
+@@ -57,9 +57,6 @@ impl Serialize for DataclassFastSerializer {
+                 err!(SerializeError::InvalidStr)
+             }
+             let key_as_str = data.unwrap();
+-            if unlikely!(key_as_str.as_bytes()[0] == b'_') {
+-                continue;
+-            }
+             let pyvalue = PyObjectSerializer::new(
+                 value,
+                 self.opts,
+@@ -67,6 +64,11 @@ impl Serialize for DataclassFastSerializer {
+                 self.recursion,
+                 self.default,
+             );
++
++            if unlikely!(if let ObType::None = pyobject_to_obtype(value, 0) { true } else { false }) {
++                continue;
++            }
++
+             map.serialize_key(key_as_str).unwrap();
+             map.serialize_value(&pyvalue)?;
+         }

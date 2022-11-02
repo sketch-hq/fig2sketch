@@ -22,7 +22,7 @@ def convert_object(obj):
 
 def serialize(obj, file):
     writer = codecs.getwriter('utf-8')(file)
-    return json.dump(
+    json.dump(
         obj,
         writer,
         default=convert_object,

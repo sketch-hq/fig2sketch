@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 from enum import IntEnum
 from typing import Optional, List
 from .common import Point
@@ -87,7 +87,7 @@ class BlurType(IntEnum):
 
 @dataclass(kw_only=True)
 class Color:
-    _class: str = field(default='color', init=False)
+    _class: str = field(default='color')
     red: float
     green: float
     blue: float
@@ -117,21 +117,24 @@ class Color:
 
 @dataclass(kw_only=True)
 class GradientStop:
-    _class: str = field(default='gradientStop', init=False)
+    _class: str = field(default='gradientStop')
     color: Color
     position: float
 
 
 @dataclass(kw_only=True)
 class Gradient:
-    _class: str = field(default='gradient', init=False)
+    _class: str = field(default='gradient')
     gradientType: GradientType = GradientType.LINEAR
     elipseLength: float = 0
-    from_: Point = Point(0.5, 0)
+    from_: InitVar[Point] = Point(0.5, 0)
     to: Point = Point(0.5, 1)
     stops: List[GradientStop] = field(
         default_factory=lambda: [GradientStop(color=Color.White(), position=0),
                                  GradientStop(color=Color.Black(), position=1)])
+
+    def __post_init__(self, from_):
+        setattr(self, 'from', from_)
 
     @staticmethod
     def Linear(from_: Point, to: Point, stops: List[GradientStop]):
@@ -162,21 +165,21 @@ class Gradient:
 
 @dataclass(kw_only=True)
 class ContextSettings:
-    _class: str = field(default='graphicsContextSettings', init=False)
+    _class: str = field(default='graphicsContextSettings')
     blendMode: BlendMode = BlendMode.NORMAL
     opacity: float = 1
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Image:
-    _class: str = field(default='MSJSONFileReference', init=False)
-    _ref_class: str = field(default='MSImageData', init=False)
+    _class: str = field(default='MSJSONFileReference')
+    _ref_class: str = field(default='MSImageData')
     _ref: str
 
 
 @dataclass(kw_only=True)
 class Fill:
-    _class: str = field(default='fill', init=False)
+    _class: str = field(default='fill')
     fillType: FillType
     isEnabled: bool = True
     color: Color = field(default_factory=Color.DefaultFill)
@@ -208,7 +211,7 @@ class Fill:
     def Image(path: str, patternFillType: PatternFillType, patternTileScale: float,
               isEnabled: bool):
         return Fill(
-            image=Image(path),
+            image=Image(_ref=path),
             fillType=FillType.PATTERN,
             patternFillType=patternFillType,
             patternTileScale=patternTileScale,
@@ -218,7 +221,7 @@ class Fill:
 
 @dataclass(kw_only=True)
 class Border:
-    _class: str = field(default='border', init=False)
+    _class: str = field(default='border')
     fillType: FillType
     position: BorderPosition
     thickness: int
@@ -242,7 +245,7 @@ class Border:
 
 @dataclass(kw_only=True)
 class ColorControls:
-    _class: str = field(default='colorControls', init=False)
+    _class: str = field(default='colorControls')
     isEnabled: bool = False
     brightness: float = 0
     contrast: float = 1
@@ -252,7 +255,7 @@ class ColorControls:
 
 @dataclass(kw_only=True)
 class BorderOptions:
-    _class: str = field(default='borderOptions', init=False)
+    _class: str = field(default='borderOptions')
     isEnabled: bool = True
     lineCapStyle: LineCapStyle = LineCapStyle.BUTT
     lineJoinStyle: LineJoinStyle = LineJoinStyle.MITER
@@ -261,7 +264,7 @@ class BorderOptions:
 
 @dataclass(kw_only=True)
 class Blur:
-    _class: str = field(default='blur', init=False)
+    _class: str = field(default='blur')
     isEnabled: bool = True
     center: Point = field(default_factory=lambda: Point(0.5, 0.5))
     motionAngle: float = 0
@@ -276,7 +279,7 @@ class Blur:
 
 @dataclass(kw_only=True)
 class Shadow:
-    _class: str = field(default='shadow', init=False)
+    _class: str = field(default='shadow')
     blurRadius: float
     offsetX: float
     offsetY: float
@@ -288,7 +291,7 @@ class Shadow:
 
 @dataclass(kw_only=True)
 class InnerShadow(Shadow):
-    _class: str = field(default='innerShadow', init=False)
+    _class: str = field(default='innerShadow')
 
 
 @dataclass(kw_only=True)
@@ -298,7 +301,7 @@ class TextStyle:
 
 @dataclass(kw_only=True)
 class Style:
-    _class: str = field(default='style', init=False)
+    _class: str = field(default='style')
     do_objectID: str
     borderOptions: BorderOptions = field(default_factory=BorderOptions)
     borders: List[Border] = field(default_factory=list)

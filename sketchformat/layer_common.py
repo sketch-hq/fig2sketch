@@ -63,7 +63,7 @@ class LayoutAnchor(IntEnum):
 
 @dataclass(kw_only=True)
 class ExportFormat:
-    _class: str = field(default='exportFormat', init=False)
+    _class: str = field(default='exportFormat')
     fileFormat: str
     name: str
     visibleScaleType: VisibleScaleType
@@ -74,7 +74,7 @@ class ExportFormat:
 
 @dataclass(kw_only=True)
 class ExportOptions:
-    _class: str = field(default='exportOptions', init=False)
+    _class: str = field(default='exportOptions')
     exportFormats: List[ExportFormat] = field(default_factory=list)
     includedLayerIds: List[str] = field(default_factory=list)
     layerOptions: ExportLayerOptions = ExportLayerOptions.ALL
@@ -83,7 +83,7 @@ class ExportOptions:
 
 @dataclass(kw_only=True)
 class Rect:
-    _class: str = field(default='rect', init=False)
+    _class: str = field(default='rect')
     height: float
     width: float
     x: float
@@ -127,14 +127,14 @@ class AbstractLayer:
 
 @dataclass(kw_only=True)
 class RulerData:
-    _class: str = field(default='rulerData', init=False)
+    _class: str = field(default='rulerData')
     base: int = 0
     guides: List[int] = field(default_factory=list)
 
 
 @dataclass(kw_only=True)
 class SimpleGrid:
-    _class: str = field(default='simpleGrid', init=False)
+    _class: str = field(default='simpleGrid')
     gridSize: int = 8
     thickGridTimes: int = 1
     isEnabled: bool = False
@@ -142,7 +142,7 @@ class SimpleGrid:
 
 @dataclass(kw_only=True)
 class LayoutGrid:
-    _class: str = field(default='layoutGrid', init=False)
+    _class: str = field(default='layoutGrid')
     columnWidth: int = 0
     gutterHeight: int = 0
     gutterWidth: int = 0
@@ -158,12 +158,12 @@ class LayoutGrid:
 
 @dataclass(kw_only=True)
 class FreeFormGroupLayout:
-    _class: str = field(default='MSImmutableFreeformGroupLayout', init=False)
+    _class: str = field(default='MSImmutableFreeformGroupLayout')
 
 
 @dataclass(kw_only=True)
 class InferredGroupLayout:
-    _class: str = field(default='MSImmutableInferredGroupLayout', init=False)
+    _class: str = field(default='MSImmutableInferredGroupLayout')
     axis: LayoutAxis
     layoutAnchor: LayoutAnchor
     maxSize: int = 0

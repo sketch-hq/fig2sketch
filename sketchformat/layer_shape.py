@@ -28,7 +28,7 @@ class CurveMode(IntEnum):
 
 @dataclass(kw_only=True)
 class CurvePoint:
-    _class: str = field(default='curvePoint', init=False)
+    _class: str = field(default='curvePoint')
     curveFrom: Point
     curveTo: Point
     point: Point
@@ -66,13 +66,13 @@ class Rectangle(AbstractShapeLayer):
         bottomLeft: float
 
     corners: InitVar[Corners]
-    _class: str = field(default='rectangle', init=False)
+    _class: str = field(default='rectangle')
     fixedRadius: float = 0.0
     hasConvertedToNewRoundCorners: bool = True
     needsConvertionToNewRoundCorners: bool = False
     isClosed: bool = True
     # Override points with fixed rectangle coordinates
-    points: List[CurvePoint] = field(default_factory=list, init=False)
+    points: List[CurvePoint] = field(default_factory=list)
 
     def __post_init__(self, corners):
         self.points = [
