@@ -128,7 +128,7 @@ class Gradient:
     gradientType: GradientType = GradientType.LINEAR
     elipseLength: float = 0
     from_: InitVar[Point] = Point(0.5, 0)
-    to: Point = Point(0.5, 1)
+    to: Point = field(default_factory=lambda: Point(0.5, 1))
     stops: List[GradientStop] = field(
         default_factory=lambda: [GradientStop(color=Color.White(), position=0),
                                  GradientStop(color=Color.Black(), position=1)])

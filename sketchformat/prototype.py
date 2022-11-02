@@ -27,7 +27,7 @@ class FlowOverlaySettings:
     _class: str = field(default='MSImmutableFlowOverlaySettings')
     overlayAnchor: Point
     sourceAnchor: Point
-    offset: Point = Point(0, 0)
+    offset: Point = field(default_factory=lambda:Point(0, 0))
     overlayType: int = 0
 
     @staticmethod
