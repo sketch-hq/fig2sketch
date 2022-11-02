@@ -4,10 +4,17 @@ from . import decodefig, decodevectornetwork
 import utils
 import functools
 import logging
+import shutil
 
 
 def convert_fig(reader, output):
     fig, figma_zip = decodefig.decode(reader)
+
+    if figma_zip is not None:
+        shutil.copyfileobj(
+            figma_zip.open(f'thumbnail.png', 'r'),
+            output.open(f'previews/preview.png', 'w')
+        )
 
     # Load all nodes into a map
     id_map = {}
