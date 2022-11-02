@@ -39,29 +39,23 @@ def get_webfont(family, subfamily):
     raise FontError(f'Could not find font {family} {subfamily}')
 
 
-def convert(name, output_zip):
-    try:
-        family, subfamily = name
-        font_file, postscript = get_webfont(family, subfamily)
-        data = font_file.read()
-        sha = utils.generate_file_ref(data)
-        path = f'fonts/{sha}'
-        output_zip.open(path, 'w').write(data)
+def convert(name, font_file, postscript, output_zip):
+    family, subfamily = name
+    data = font_file.read()
+    sha = utils.generate_file_ref(data)
+    path = f'fonts/{sha}'
+    output_zip.open(path, 'w').write(data)
 
-        return FontReference(
-            do_objectID=utils.gen_object_id((0, 0), bytes.fromhex(sha)),
-            fontData=JsonFileReference(
-                _ref_class='MSFontData',
-                _ref=path
-            ),
-            fontFamilyName=family,
-            fontFileName=f'{family}-{subfamily}.ttf',
-            postscriptNames=[postscript]
-        )
-    except Exception as e:
-        print(e)
-        print(f'Could not save font {family} {subfamily}')
-        return None
+    return FontReference(
+        do_objectID=utils.gen_object_id((0, 0), bytes.fromhex(sha)),
+        fontData=JsonFileReference(
+            _ref_class='MSFontData',
+            _ref=path
+        ),
+        fontFamilyName=family,
+        fontFileName=f'{family}-{subfamily}.ttf',
+        postscriptNames=[postscript]
+    )
 
 
 def extract_names(font_file):

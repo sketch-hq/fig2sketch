@@ -99,8 +99,10 @@ def convert(figma_text):
 
 
 def text_style(figma_text):
-    if figma_text['fontName']['family'] != EMOJI_FONT:
-        context.record_font(figma_text['fontName'])
+    if figma_text['fontName']['family'] == EMOJI_FONT:
+        font_name = EMOJI_FONT
+    else:
+        font_name = context.record_font(figma_text['fontName'])
 
     fills = figma_text.get('fillPaints', [{}])
     if not fills:
@@ -121,8 +123,7 @@ def text_style(figma_text):
             'MSAttributedStringFontAttribute': {
                 '_class': 'fontDescriptor',
                 'attributes': {
-                    'name': figma_text['fontName']['postscript'] or figma_text['fontName'][
-                        'family'],
+                    'name': font_name,
                     'size': figma_text['fontSize']
                 }
             },

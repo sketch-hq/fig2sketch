@@ -1,4 +1,5 @@
-from . import component, page
+from . import component, page, font
+import logging
 
 
 class Context:
@@ -7,7 +8,7 @@ class Context:
         self._sketch_components = {}
         self.symbols_page = None
         self._node_by_id = id_map
-        self._used_fonts = set()
+        self._used_fonts = {}
 
         # Where to position symbols of the specified width
         # width -> (x, y)
@@ -42,7 +43,22 @@ class Context:
 
     def record_font(self, figma_font_name):
         font_descriptor = (figma_font_name['family'], figma_font_name['style'])
-        self._used_fonts.add(font_descriptor)
+        font_info = self._used_fonts.get(font_descriptor)
+        if font_info:
+            return font_info[1]
+
+        try:
+            font_file, font_name = font.get_webfont(*font_descriptor)
+        except:
+            logging.warning(f"Could not download font {font_descriptor}")
+            font_file = None
+            if figma_font_name['postscript']:
+                font_name = figma_font_name['postscript']
+            else:
+                font_name = f"{figma_font_name['family']}-{figma_font_name['subfamily']}"
+
+        self._used_fonts[font_descriptor] = (font_file, font_name)
+        return font_name
 
     def used_fonts(self):
         return self._used_fonts
