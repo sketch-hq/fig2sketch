@@ -39,7 +39,7 @@ TEXT_PROPERTIES = [
 
 
 def base_shape(figma_node):
-    return {
+    obj = {
         'do_objectID': utils.gen_object_id(figma_node['guid']),
         'name': figma_node['name'],
         'booleanOperation': -1,
@@ -57,6 +57,15 @@ def base_shape(figma_node):
         **prototype.convert_flow(figma_node),
         'isTemplate': False
     }
+
+    if obj['hasClippingMask'] and obj['clippingMaskMode'] == 0:
+        # Outline mask behave differently in Figma and Sketch in regards to fill/stroke colors
+        # Remove fill
+        obj['style'].fills = []
+        # TODO: If we have stroke, we should remove it and enlarge ourselves to occupy that space
+        # which is quite tricky in things like shapePaths. This should be pretty rare in practice
+
+    return obj
 
 
 def process_styles(figma_node):
