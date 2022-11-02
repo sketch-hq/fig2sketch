@@ -96,7 +96,7 @@ def prototyping_information(figma_frame):
         }
     else:
         obj = {
-            'isFlowHome': figma_frame['prototypeStartingPoint']['name'] != '',
+            'isFlowHome': figma_frame.get('prototypeStartingPoint', {}).get('name', '') != '',
             'prototypeViewport': PrototypeViewport(
                 name=figma_canvas['prototypeDevice']['presetIdentifier'],
                 size=utils.point_to_string(figma_canvas['prototypeDevice']['size'])

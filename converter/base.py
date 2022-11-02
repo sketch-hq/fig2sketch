@@ -1,3 +1,4 @@
+import logging
 import utils
 from sketchformat.layer_common import *
 from sketchformat.style import *
@@ -67,7 +68,12 @@ def process_styles(figma_node):
             if sketch_keys is None:
                 raise Exception('Unhandled inherit style ', inherit_style)
 
-            figma_style, shared_style = context.component(figma_node[inherit_style])
+            component = context.component(figma_node[inherit_style])
+            if component is None:
+                logging.warning(f"Cannot find layer {figma_node[inherit_style]} to inherit {inherit_style} from, for layer {figma_node['name']}")
+                continue
+
+            figma_style, shared_style = component
 
             if shared_style is not None:
                 # At this moment, this is only styles that involve a single solid color

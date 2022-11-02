@@ -67,8 +67,8 @@ def decode(fig, blob_id, scale, style_override_table):
 
 def decode_vertex(x, y, scale, style_override_table=None, style_id=None):
     vertex = {
-        'x': x if x == 0 else x / scale['x'],
-        'y': y if y == 0 else y / scale['y']
+        'x': 0 if (x == 0 or scale['x'] == 0) else x / scale['x'],
+        'y': 0 if (y == 0 or scale['y'] == 0) else y / scale['y']
     }
 
     if style_id:

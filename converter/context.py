@@ -14,7 +14,9 @@ class Context:
         self._symbol_position = {0: [0, 0]}
 
     def component(self, cid):
-        figma_component = self._figma_components[cid]
+        figma_component = self._figma_components.get(cid)
+        if figma_component is None:
+            return None
 
         # See if we can convert this component to a Sketch swatch
         sketch_component = self._sketch_components.get(cid)

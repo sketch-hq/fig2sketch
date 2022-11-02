@@ -1,6 +1,7 @@
 from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, \
     shape_group, text, slice, instance, symbol
 from dataclasses import is_dataclass
+import logging
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -31,7 +32,7 @@ POST_PROCESSING = {
 def convert_node(figma_node, parent_type):
     name = figma_node['name']
     type_ = get_node_type(figma_node, parent_type)
-    print(f'{type_}: {name}')
+    logging.info(f'{type_}: {name}')
 
     sketch_item = CONVERTERS[type_](figma_node)
 
