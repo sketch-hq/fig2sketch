@@ -275,12 +275,16 @@ def line_height(figma_text):
                     'minimumLineHeight': figma_text['lineHeight']['value']
                 }
             case 'PERCENT':
-                # Relative to normal line height. We only see this in Figma as 100% when
-                # in Auto mode (natural baselines)
-                if figma_text['lineHeight']['value'] != 100:
-                    raise Exception(
-                        f"Unexpected lineHeight = {figma_text['lineHeight']['value']} PERCENT")
-                return {}
+                if figma_text['lineHeight']['value'] == 100:
+                    # Auto (natural baselines)
+                    return {}
+                else:
+                    # Similar to RAW, different natural baseline behaviour. Same TODO apply
+                    line_height = round(figma_text['fontSize'] * figma_text['lineHeight']['value'] / 100)
+                    return {
+                        'maximumLineHeight': line_height,
+                        'minimumLineHeight': line_height
+                    }
             case 'RAW':
                 # Relative to font size of each line.
                 # TODO: Sketch does not support this if text sizes change over lines.
