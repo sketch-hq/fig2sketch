@@ -32,7 +32,7 @@ def get_webfont(family, subfamily):
 
         font_file = font_zip.open(fi.filename, 'r')
         font_names = extract_names(font_file)
-        if font_names['subfamily'] == subfamily:
+        if font_names['family'].lower() == family.lower() and font_names['subfamily'].lower() == subfamily.lower():
             font_file.seek(0)
             return font_file, font_names['postscript']
 
@@ -58,8 +58,9 @@ def convert(name, output_zip):
             fontFileName=f'{family}-{subfamily}.ttf',
             postscriptNames=[postscript]
         )
-    except Exception:
-        print(f'Could not save font {family} {subfamily}') 
+    except Exception as e:
+        print(e)
+        print(f'Could not save font {family} {subfamily}')
         return None
 
 
