@@ -48,6 +48,10 @@ def convert_flow(figma_node):
             continue
 
         for action in interaction['actions']:
+            # Figma sometimes keeps empty interactions in the model, we just ignore them
+            if action == {}:
+                continue
+
             # TODO: Back is SCROLL for some reason??? or just irrelevant?
             if action['navigationType'] not in ['NAVIGATE', 'SCROLL', 'OVERLAY']:
                 print('Unsupported action type')
@@ -92,7 +96,8 @@ def prototyping_information(figma_frame):
             'overlayBackgroundInteraction': OVERLAY_INTERACTION[
                 figma_frame['overlayBackgroundInteraction']],
             'presentationStyle': PrototypePresentationStyle.OVERLAY,
-            'overlaySettings': FlowOverlaySettings.Positioned(figma_frame.get('overlayPositionType','CENTER'))
+            'overlaySettings': FlowOverlaySettings.Positioned(
+                figma_frame.get('overlayPositionType', 'CENTER'))
         }
     else:
         obj = {
@@ -123,7 +128,7 @@ def get_destination_settings_if_any(action):
 
             if 'overlayBackgroundInteraction' in transition_node:
                 overlay_settings = FlowOverlaySettings.Positioned(
-                    transition_node.get('overlayPositionType','CENTER'))
+                    transition_node.get('overlayPositionType', 'CENTER'))
 
         case 'NONE', _:
             destination = None
