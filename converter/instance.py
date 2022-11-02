@@ -187,8 +187,10 @@ def detach_symbol(figma_instance, all_overrides, derived_symbol_data, path=[]):
     # Recalculate size
     derived = [d for d in derived_symbol_data if d['guidPath']['guids'] == path]
     if derived:
-        figma_instance['size'] = derived[0]['size']
-        figma_instance['transform'] = derived[0]['transform']
+        if 'size' in derived[0]:
+            figma_instance['size'] = derived[0]['size']
+        if 'transform' in derived[0]:
+            figma_instance['transform'] = derived[0]['transform']
 
     # Apply overrides to children
     for c in detached_children:
@@ -209,14 +211,15 @@ def apply_overrides(figma, instance_id, overrides, derived_symbol_data, path=[])
             elif k == 'overriddenSymbolID':
                 figma['symbolData']['symbolID'] = v
             else:
-                print(f"{k}={v}")
                 figma[k] = v
 
     # Recalculate size
     derived = [d for d in derived_symbol_data if d['guidPath']['guids'] == path + [guid]]
     if derived:
-        figma['size'] = derived[0]['size']
-        figma['transform'] = derived[0]['transform']
+        if 'size' in derived[0]:
+            figma['size'] = derived[0]['size']
+        if 'transform' in derived[0]:
+            figma['transform'] = derived[0]['transform']
 
     # Generate a unique ID by concatenating instance_id + node_id
     figma['guid'] = tuple(j for i in (instance_id, *path, guid) for j in i)
@@ -227,4 +230,4 @@ def apply_overrides(figma, instance_id, overrides, derived_symbol_data, path=[])
         detach_symbol(figma, overrides, derived_symbol_data, path + [guid])
     else:
         for c in figma['children']:
-            apply_overrides(c, instance_id, derived_symbol_data, overrides)
+            apply_overrides(c, instance_id, overrides, derived_symbol_data)
