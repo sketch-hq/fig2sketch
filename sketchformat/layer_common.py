@@ -50,17 +50,6 @@ class ResizeType(IntEnum):
     FLOAT = 2
 
 
-class LayoutAxis(IntEnum):
-    HORIZONTAL = 0
-    VERTICAL = 1
-
-
-class LayoutAnchor(IntEnum):
-    MIN = 0
-    MIDDLE = 1
-    MAX = 2
-
-
 @dataclass(kw_only=True)
 class ExportFormat:
     _class: str = field(default='exportFormat')
@@ -111,15 +100,6 @@ class AbstractLayer:
     nameIsFixed: bool = False
     resizingType: ResizeType = ResizeType.STRETCH
     shouldBreakMaskChain: bool = False
-
-
-    # Makes compatible with dictionary access
-    # TODO: Remove when conversion to dataclasses is complete
-    def __getitem__(self, k):
-        return getattr(self, k)
-
-    def __setitem__(self, k, v):
-        return setattr(self, k, v)
 
 
 @dataclass(kw_only=True)

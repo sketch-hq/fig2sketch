@@ -2,33 +2,35 @@ import copy
 import itertools
 import logging
 import utils
-from . import base
+from . import base, style
 from .context import context
+from sketchformat.text import *
+
 
 AlignVertical = {
-    'TOP': 0,
-    'CENTER': 1,
-    'BOTTOM': 2
+    'TOP': TextVerticalAlignment.TOP,
+    'CENTER': TextVerticalAlignment.MIDDLE,
+    'BOTTOM': TextVerticalAlignment.BOTTOM
 }
 
 AlignHorizontal = {
-    'LEFT': 0,
-    'CENTER': 2,
-    'RIGHT': 1,
-    'JUSTIFIED': 3
+    'LEFT': TextAlignment.LEFT,
+    'CENTER': TextAlignment.CENTER,
+    'RIGHT': TextAlignment.RIGHT,
+    'JUSTIFIED': TextAlignment.JUSTIFIED
 }
 
 TextCase = {
-    'ORIGINAL': 0,
-    'UPPER': 1,
-    'LOWER': 2,
-    'TITLE': 0
+    'ORIGINAL': TextTransform.NONE,
+    'UPPER': TextTransform.UPPERCASE,
+    'LOWER': TextTransform.LOWERCASE,
+    'TITLE': TextTransform.NONE
 }
 
 TEXT_BEHAVIOUR = {
-    'NONE': 2,
-    'WIDTH_AND_HEIGHT': 0,
-    'HEIGHT': 1,
+    'NONE': TextBehaviour.FIXED_WIDTH_AND_HEIGHT,
+    'WIDTH_AND_HEIGHT': TextBehaviour.FLEXIBLE_WIDTH,
+    'HEIGHT': TextBehaviour.FIXED_WIDTH,
 }
 
 # Forces a mask on resizingContraints if the text is set to auto-width/height
@@ -72,28 +74,24 @@ EMOJI_FONT = 'AppleColorEmoji'
 
 def convert(figma_text):
     text_resize = figma_text.get('textAutoResize', 'NONE')
-    obj = {
-        '_class': 'text',
+    obj = Text(
         **base.base_shape(figma_text),
-        'automaticallyDrawOnUnderlyingPath': False,
-        'dontSynchroniseWithSymbol': False,
-        'attributedString': {
-            '_class': 'attributedString',
-            'string': figma_text['textData']['characters'],
-            'attributes': override_characters_style(figma_text),
-        },
+        attributedString=AttributedString(
+            string=figma_text['textData']['characters'],
+            attributes=override_characters_style(figma_text),
+        ),
         # No good way to calculate this, so we overestimate by setting the frame
-        'glyphBounds': f'{{{{0, 0}}, {utils.point_to_string(figma_text["size"])}}}',
-        'lineSpacingBehaviour': 2,
-        'textBehaviour': TEXT_BEHAVIOUR[text_resize]
-    }
-    obj['resizingConstraint'] &= CONSTRAINT_MASK_FOR_AUTO_RESIZE[text_resize]
+        glyphBounds=Bounds(Point(0,0), Point.from_dict(figma_text["size"])),
+        textBehaviour=TEXT_BEHAVIOUR[text_resize]
+    )
+    obj.resizingConstraint &= CONSTRAINT_MASK_FOR_AUTO_RESIZE[text_resize]
 
     # TODO: Implement TextStyle
-    obj['style'].textStyle = text_style(figma_text)
+    obj.style.textStyle = text_style(figma_text)
 
-    if len(obj['attributedString']['attributes']) > 1:
-        obj['style'].fills = []
+    # Potentially multiple colors, use the attributes instead of the top level color
+    if len(obj.attributedString.attributes) > 1:
+        obj.style.fills = []
 
     return obj
 
@@ -116,39 +114,27 @@ def text_style(figma_text):
             }
         }]
 
-    obj = {
-        '_class': 'textStyle',
-        'encodedAttributes': {
+    obj = TextStyle(
+        encodedAttributes=EncodedAttributes(
             **text_transformation(figma_text),
-            'MSAttributedStringFontAttribute': {
-                '_class': 'fontDescriptor',
-                'attributes': {
-                    'name': font_name,
-                    'size': figma_text['fontSize']
-                }
-            },
-            'MSAttributedStringColorAttribute': {
-                '_class': 'color',
-                'red': fills[0].get('color', {}).get('r', 0),
-                'green': fills[0].get('color', {}).get('g', 0),
-                'blue': fills[0].get('color', {}).get('b', 0),
-                'alpha': fills[0].get('color', {}).get('a', 1)
-            },
-            'textStyleVerticalAlignmentKey': AlignVertical[figma_text['textAlignVertical']],
+            MSAttributedStringFontAttribute=FontDescriptor(
+                name=font_name,
+                size=figma_text['fontSize']
+            ),
+            MSAttributedStringColorAttribute=style.convert_color(fills[0]['color']),
+            textStyleVerticalAlignmentKey=AlignVertical[figma_text['textAlignVertical']],
             **text_decoration(figma_text),
-            'kerning': kerning(figma_text),
-            'paragraphStyle': {
-                '_class': 'paragraphStyle',
-                'alignment': AlignHorizontal[figma_text['textAlignHorizontal']],
+            kerning=kerning(figma_text),
+            paragraphStyle=ParagraphStyle(
+                alignment=AlignHorizontal[figma_text['textAlignHorizontal']],
                 **line_height(figma_text),
-            }
-        },
-        'verticalAlignment': AlignVertical[figma_text['textAlignVertical']],
-    }
+            )
+        ),
+        verticalAlignment=AlignVertical[figma_text['textAlignVertical']],
+    )
 
     if figma_text.get('paragraphSpacing', 0) != 0:
-        obj['encodedAttributes']['paragraphStyle']['paragraphSpacing'] = figma_text[
-            'paragraphSpacing']
+        obj.encodedAttributes.paragraphStyle.paragraphSpacing = figma_text['paragraphSpacing']
 
     return obj
 
@@ -212,12 +198,11 @@ def override_characters_style(figma_text):
         # If the style changed (as seen by Sketch), convert the previous style run
         current_style = text_style({**figma_text, **style_override})
         if current_style != last_style and pos != 0:
-            attributes.append({
-                '_class': 'stringAttribute',
-                'location': first_pos,
-                'length': sketch_pos - first_pos,
-                'attributes': last_style['encodedAttributes']
-            })
+            attributes.append(StringAttribute(
+                location=first_pos,
+                length=sketch_pos - first_pos,
+                attributes=last_style.encodedAttributes
+            ))
             first_pos = sketch_pos
 
         last_style = current_style
@@ -230,12 +215,11 @@ def override_characters_style(figma_text):
             sketch_pos += 1
 
     # Save the last style run
-    attributes.append({
-        '_class': 'stringAttribute',
-        'location': first_pos,
-        'length': sketch_pos - first_pos,
-        'attributes': last_style['encodedAttributes']
-    })
+    attributes.append(StringAttribute(
+        location=first_pos,
+        length=sketch_pos - first_pos,
+        attributes=last_style.encodedAttributes
+    ))
 
     return attributes
 

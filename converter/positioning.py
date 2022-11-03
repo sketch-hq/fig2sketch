@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from sketchformat.layer_common import Rect
 
 
 def convert(figma_item):
@@ -7,14 +8,13 @@ def convert(figma_item):
     coordinates = transform_frame(figma_item)
 
     return {
-        'frame': {
-            '_class': 'rect',
-            'constrainProportions': figma_item.get('proportionsConstrained', False),
-            'height': figma_item['size']['y'],
-            'width': figma_item['size']['x'],
-            'x': coordinates[0],
-            'y': coordinates[1]
-        },
+        'frame': Rect(
+            constrainProportions=figma_item.get('proportionsConstrained', False),
+            height=figma_item['size']['y'],
+            width=figma_item['size']['x'],
+            x=coordinates[0],
+            y=coordinates[1]
+        ),
         'rotation': rotation or 0,
         'isFlippedHorizontal': flip[0],
         'isFlippedVertical': flip[1],

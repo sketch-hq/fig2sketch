@@ -95,7 +95,7 @@ def prototyping_information(figma_frame):
         obj = {
             'overlayBackgroundInteraction': OVERLAY_INTERACTION[
                 figma_frame['overlayBackgroundInteraction']],
-            'presentationStyle': PrototypePresentationStyle.OVERLAY,
+            'presentationStyle': PresentationStyle.OVERLAY,
             'overlaySettings': FlowOverlaySettings.Positioned(
                 figma_frame.get('overlayPositionType', 'CENTER'))
         }
@@ -107,7 +107,7 @@ def prototyping_information(figma_frame):
                 size=utils.point_to_string(figma_canvas['prototypeDevice']['size'])
             ),
             'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
-            'presentationStyle': PrototypePresentationStyle.SCREEN,
+            'presentationStyle': PresentationStyle.SCREEN,
             'overlaySettings': FlowOverlaySettings.RegularArtboard()
         }
 

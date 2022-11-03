@@ -31,9 +31,9 @@ def convert(figma_vector):
         # Ignore positioning for childs. TODO: We should probably be building these shapePaths by hand, instead
         # of relying on the generic convert_shape_path function
         for i, s in enumerate(regions):
-            s['frame']['x'] = 0
-            s['frame']['y'] = 0
-            s['booleanOperation'] = 0
+            s.frame.x = 0
+            s.frame.y = 0
+            s.booleanOperation = 0
 
         obj = ShapeGroup(
             **base.base_shape(figma_vector),
@@ -63,8 +63,8 @@ def convert_region(figma_vector, region_index=0):
         # TODO: We should probably be building these shapePaths by hand, instead of relying on the
         # generic convert_shape_path function
         for i, s in enumerate(shape_paths):
-            s['frame']['x'] = 0
-            s['frame']['y'] = 0
+            s.frame.x = 0
+            s.frame.y = 0
 
         obj = ShapeGroup(
             **base.base_shape(figma_vector),

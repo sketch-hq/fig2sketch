@@ -9,7 +9,7 @@ class OverlayBackgroundInteraction(IntEnum):
     CLOSES_OVERLAY = 1
 
 
-class PrototypePresentationStyle(IntEnum):
+class PresentationStyle(IntEnum):
     SCREEN = 0
     OVERLAY = 1
 

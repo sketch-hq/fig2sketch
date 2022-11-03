@@ -5,9 +5,9 @@ def convert(pages):
             page.do_objectID: {
                 'name': page.name,
                 'artboards': {
-                    artboard['do_objectID']: {'name': artboard['name']}
+                    artboard.do_objectID: {'name': artboard.name}
                     for artboard in page.layers
-                    if artboard['_class'] in ['artboard', 'symbolMaster']
+                    if artboard._class in ['artboard', 'symbolMaster']
                 }
             }
             for page in pages

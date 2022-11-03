@@ -3,6 +3,8 @@ import utils
 from .context import context
 import copy
 from sketchformat.style import Style
+from sketchformat.layer_group import SymbolInstance, OverrideValue
+from typing import Optional, List
 
 
 def convert(figma_instance):
@@ -14,34 +16,26 @@ def convert(figma_instance):
         detach_symbol(figma_instance, all_overrides, figma_instance['derivedSymbolData'])
         return group.convert(figma_instance)
     else:
-        obj = {
+        obj = SymbolInstance(
             **base.base_shape(figma_instance),
-            '_class': 'symbolInstance',
-            'symbolID': utils.gen_object_id(figma_instance['symbolData']['symbolID']),
-            'overrideValues': sketch_overrides,
-            'preservesSpaceWhenHidden': False,
-            'scale': 1,
-        }
+            symbolID=utils.gen_object_id(figma_instance['symbolData']['symbolID']),
+            overrideValues=sketch_overrides,
+        )
         # Replace style
-        obj['style'] = Style(do_objectID=utils.gen_object_id(figma_instance['guid'], b'style'))
+        obj.style = Style(do_objectID=utils.gen_object_id(figma_instance['guid'], b'style'))
 
         return obj
 
 
 def master_instance(figma_symbol):
-    obj = {
+    obj = SymbolInstance(
         **base.base_shape(figma_symbol),
-        '_class': 'symbolInstance',
-        'do_objectID': utils.gen_object_id(figma_symbol['guid'], b'master_instance'),
-        'symbolID': utils.gen_object_id(figma_symbol['guid']),
-        'preservesSpaceWhenHidden': False,
-        'overrideValues': [],
-        'scale': 1
-    }
+        symbolID=utils.gen_object_id(figma_symbol['guid']),
+    )
+    obj.do_objectID = utils.gen_object_id(figma_symbol['guid'], b'master_instance')
 
     # Replace style
-    obj['style'] = Style(
-        do_objectID=utils.gen_object_id(figma_symbol['guid'], b'master_instance_style'))
+    obj.style = Style(do_objectID=utils.gen_object_id(figma_symbol['guid'], b'master_instance_style'))
 
     return obj
 
@@ -83,7 +77,7 @@ def get_all_overrides(figma_instance):
     return all_overrides
 
 
-def convert_override(override):
+def convert_override(override) -> Optional[List[OverrideValue]]:
     sketch_overrides = []
 
     # Convert uuids in the path from top symbol to child instance
@@ -100,17 +94,15 @@ def convert_override(override):
                 print(f"Unsupported override: text with mixed styles. Will detach")
                 return None
 
-            sketch_overrides.append({
-                '_class': 'overrideValue',
-                'overrideName': f'{sketch_path_str}_stringValue',
-                'value': value['characters']
-            })
+            sketch_overrides.append(OverrideValue(
+                overrideName=f'{sketch_path_str}_stringValue',
+                value=value['characters']
+            ))
         elif prop == 'overriddenSymbolID':
-            sketch_overrides.append({
-                '_class': 'overrideValue',
-                'overrideName': f'{sketch_path_str}_symbolID',
-                'value': utils.gen_object_id(value)
-            })
+            sketch_overrides.append(OverrideValue(
+                overrideName=f'{sketch_path_str}_symbolID',
+                value=utils.gen_object_id(value)
+            ))
         elif prop == 'componentPropAssignments':
             sketch_overrides += [convert_prop_assigment(figma_master, prop, sketch_path) for prop in value]
         elif prop in ['size', 'pluginData']:

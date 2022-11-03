@@ -166,4 +166,3 @@ class Polygon(AbstractShapeLayer):
             x1 = 0.5 + (np.cos(angle) * 0.5)
             y1 = 0.5 + (np.sin(angle) * 0.5)
             self.points.append(CurvePoint.Straight(Point(x1, y1)))
-
