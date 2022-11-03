@@ -103,8 +103,6 @@ def convert_override(override) -> Optional[List[OverrideValue]]:
                 overrideName=f'{sketch_path_str}_symbolID',
                 value=utils.gen_object_id(value)
             ))
-        elif prop == 'componentPropAssignments':
-            sketch_overrides += [convert_prop_assigment(figma_master, prop, sketch_path) for prop in value]
         elif prop in ['size', 'pluginData']:
             pass
         else:

@@ -2,12 +2,12 @@ import uuid
 import hashlib
 import random
 import struct
-from typing import BinaryIO
+from typing import BinaryIO, List
 
 id_salt = random.randbytes(16)
 
 
-def gen_object_id(figma_id, suffix=b''):
+def gen_object_id(figma_id: List[int], suffix: bytes=b'') -> str:
     # Generate UUIDs by hashing the figma ID with a salt
     salted_id = id_salt + struct.pack('<' + 'I' * len(figma_id), *figma_id) + suffix
     uuid_bytes = bytearray(hashlib.shake_128(salted_id).digest(16))

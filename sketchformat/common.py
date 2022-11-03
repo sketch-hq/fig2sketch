@@ -8,25 +8,27 @@ class WindingRule(IntEnum):
 
 
 class Point:
-    def __init__(self, x, y):
+    def __init__(self, x, y) -> None:
         self.x = x
         self.y = y
 
-    def to_json(self):
+    def to_json(self) -> str:
         return f"{{{self.x}, {self.y}}}"
 
-    def from_array(array):
+    @staticmethod
+    def from_array(array) -> 'Point':
         return Point(x=array[0], y=array[1])
 
-    def from_dict(dict):
+    @staticmethod
+    def from_dict(dict) -> 'Point':
         return Point(dict['x'], dict['y'])
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if (isinstance(other, Point)):
             return self.x == other.x and self.y == other.y
         return False
 
-    def __add__(self, other):
+    def __add__(self, other) -> 'Point':
         return Point(
             self.x + other.x,
             self.y + other.y
