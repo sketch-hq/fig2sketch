@@ -1,8 +1,9 @@
-from .layer_common import AbstractLayer
+from .layer_common import AbstractStyledLayer
 from .common import Point
 from enum import IntEnum
 from typing import List, NamedTuple
 from dataclasses import dataclass, field, InitVar
+import numpy as np
 
 
 class PointRadiusBehaviour(IntEnum):
@@ -50,11 +51,17 @@ class CurvePoint:
 
 
 @dataclass(kw_only=True)
-class AbstractShapeLayer(AbstractLayer):
+class AbstractShapeLayer(AbstractStyledLayer):
     isClosed: bool
     points: List[CurvePoint]
     edited: bool = False
     pointRadiusBehaviour: PointRadiusBehaviour = PointRadiusBehaviour.V1
+
+
+@dataclass(kw_only=True)
+class ShapePath(AbstractShapeLayer):
+    _class: str = field(default='shapePath')
+    edited: bool = True
 
 
 @dataclass(kw_only=True)
@@ -71,7 +78,6 @@ class Rectangle(AbstractShapeLayer):
     hasConvertedToNewRoundCorners: bool = True
     needsConvertionToNewRoundCorners: bool = False
     isClosed: bool = True
-    # Override points with fixed rectangle coordinates
     points: List[CurvePoint] = field(default_factory=list)
 
     def __post_init__(self, corners):
@@ -81,3 +87,83 @@ class Rectangle(AbstractShapeLayer):
             CurvePoint.Straight(Point(1, 1), corners.bottomRight),
             CurvePoint.Straight(Point(1, 0), corners.bottomLeft),
         ]
+
+
+def oval_make_points() -> List[CurvePoint]:
+    P1=0.22385762510000001
+    P2=0.77614237490000004
+    return [
+        CurvePoint(
+            point=Point(0.5, 1),
+            curveFrom=Point(P2, 1),
+            curveTo=Point(P1, 1)
+        ),
+        CurvePoint(
+            point=Point(1, 0.5),
+            curveFrom=Point(1, P1),
+            curveTo=Point(1, P2)
+        ),
+        CurvePoint(
+            point=Point(0.5, 0),
+            curveFrom=Point(P1, 0),
+            curveTo=Point(P2, 0)
+        ),
+        CurvePoint(
+            point=Point(0, 0.5),
+            curveFrom=Point(0, P2),
+            curveTo=Point(0, P1)
+        ),
+    ]
+
+
+@dataclass(kw_only=True)
+class Oval(AbstractShapeLayer):
+    _class: str = field(default='oval')
+    points: List[CurvePoint] = field(default_factory=oval_make_points)
+    isClosed: bool = True
+
+
+@dataclass(kw_only=True)
+class Star(AbstractShapeLayer):
+    _class: str = field(default='star')
+    points: List[CurvePoint] = field(default_factory=list)
+    isClosed: bool = True
+    radius: float
+    numberOfPoints: float
+
+    def __post_init__(self):
+        for angle in np.arange(
+            -np.pi / 2,
+            2 * np.pi - np.pi / 2,
+            2 * np.pi / self.numberOfPoints):
+
+            angle2 = angle + np.pi / self.numberOfPoints
+
+            # Outer point
+            x1 = 0.5 + (np.cos(angle) * 0.5)
+            y1 = 0.5 + (np.sin(angle) * 0.5)
+            self.points.append(CurvePoint.Straight(Point(x1, y1)))
+
+            # Inner point shifted by half the angle
+            x2 = 0.5 + (np.cos(angle2) * 0.5 * self.radius)
+            y2 = 0.5 + (np.sin(angle2) * 0.5 * self.radius)
+            self.points.append(CurvePoint.Straight(Point(x2, y2)))
+
+
+@dataclass(kw_only=True)
+class Polygon(AbstractShapeLayer):
+    _class: str = field(default='polygon')
+    points: List[CurvePoint] = field(default_factory=list)
+    isClosed: bool = True
+    numberOfPoints: float
+
+    def __post_init__(self):
+        for angle in np.arange(
+            -np.pi / 2,
+            2 * np.pi - np.pi / 2,
+            2 * np.pi / self.numberOfPoints):
+
+            x1 = 0.5 + (np.cos(angle) * 0.5)
+            y1 = 0.5 + (np.sin(angle) * 0.5)
+            self.points.append(CurvePoint.Straight(Point(x1, y1)))
+

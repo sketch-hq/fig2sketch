@@ -38,14 +38,13 @@ TEXT_PROPERTIES = [
 ]
 
 
-def base_shape(figma_node):
-    obj = {
+def base_layer(figma_node):
+    return {
         'do_objectID': utils.gen_object_id(figma_node['guid']),
         'name': figma_node['name'],
         'booleanOperation': -1,
         'exportOptions': export_options(figma_node.get('exportSettings', [])),
         **positioning.convert(figma_node),
-        **utils.masking(figma_node),
         'isFixedToViewport': False,
         'isLocked': figma_node['locked'],
         'isVisible': figma_node['visible'],
@@ -53,10 +52,18 @@ def base_shape(figma_node):
         'nameIsFixed': False,
         'resizingConstraint': resizing_constraint(figma_node),
         'resizingType': 0,
-        **process_styles(figma_node),
         **prototype.convert_flow(figma_node),
         'isTemplate': False
     }
+
+
+def base_shape(figma_node):
+    obj = {
+        **base_layer(figma_node),
+        **utils.masking(figma_node),
+        **process_styles(figma_node),
+    }
+
 
     if obj['hasClippingMask'] and obj['clippingMaskMode'] == 0:
         # Outline mask behave differently in Figma and Sketch in regards to fill/stroke colors

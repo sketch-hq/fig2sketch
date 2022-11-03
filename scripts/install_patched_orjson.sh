@@ -28,4 +28,3 @@ maturin build --release --strip
 
 # Install
 pip3 install target/wheels/*.whl --force-reinstall
-

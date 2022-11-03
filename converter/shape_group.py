@@ -1,24 +1,20 @@
 from . import base
+from sketchformat.layer_group import ShapeGroup
+from sketchformat.layer_common import BooleanOperation
+
 
 BOOLEAN_OPERATIONS = {
-    'UNION': 0,
-    'INTERSECT': 2,
-    'SUBTRACT': 1,
-    'XOR': 3
+    'UNION': BooleanOperation.UNION,
+    'INTERSECT': BooleanOperation.INTERSECT,
+    'SUBTRACT': BooleanOperation.SUBTRACT,
+    'XOR': BooleanOperation.DIFFERENCE
 }
 
 
 def convert(figma_bool_ops):
-    return {
-        '_class': 'shapeGroup',
+    return ShapeGroup(
         **base.base_shape(figma_bool_ops),
-        'shouldBreakMaskChain': True,
-        'hasClickThrough': False,
-        'groupLayout': {
-            '_class': 'MSImmutableFreeformGroupLayout'
-        },
-        'windingRule': 0
-    }
+    )
 
 
 def post_process(figma_bool_ops, sketch_bool_ops):

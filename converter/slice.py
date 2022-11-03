@@ -1,5 +1,6 @@
 import utils
 from . import base, positioning
+from sketchformat.layer_common import Slice
 
 
 def convert(figma_slice):
@@ -8,30 +9,32 @@ def convert(figma_slice):
     # In any case, nobody should be rotating slices, it does not make sense.
 
     # Not using base because slices don't have many style/masking properties
-    return {
-        '_class': 'slice',
-        'name': figma_slice['name'],
-        'do_objectID': utils.gen_object_id(figma_slice['guid']),
-        'booleanOperation': -1,
-        'exportOptions': base.export_options(figma_slice['exportSettings']),
-        **positioning.convert(figma_slice),
-        'isFixedToViewport': False,
-        'isFlippedHorizontal': False,
-        'isFlippedVertical': False,
-        'isLocked': False,
-        'isVisible': True,
-        'layerListExpandedType': 0,
-        'nameIsFixed': False,
-        'resizingConstraint': 9,
-        'resizingType': 0,
-        'hasBackgroundColor': False,
-        'shouldBreakMaskChain': False,
-        'isTemplate': False,
-        'backgroundColor': {
-            '_class': 'color',
-            'alpha': 1,
-            'blue': 1,
-            'green': 1,
-            'red': 1
-        }
-    }
+    return Slice(
+        **base.base_layer(figma_slice),
+    )
+    #     '_class': 'slice',
+    #     'name': figma_slice['name'],
+    #     'do_objectID': utils.gen_object_id(figma_slice['guid']),
+    #     'booleanOperation': -1,
+    #     'exportOptions': base.export_options(figma_slice['exportSettings']),
+    #     **positioning.convert(figma_slice),
+    #     'isFixedToViewport': False,
+    #     'isFlippedHorizontal': False,
+    #     'isFlippedVertical': False,
+    #     'isLocked': False,
+    #     'isVisible': True,
+    #     'layerListExpandedType': 0,
+    #     'nameIsFixed': False,
+    #     'resizingConstraint': 9,
+    #     'resizingType': 0,
+    #     'hasBackgroundColor': False,
+    #     'shouldBreakMaskChain': False,
+    #     'isTemplate': False,
+    #     'backgroundColor': {
+    #         '_class': 'color',
+    #         'alpha': 1,
+    #         'blue': 1,
+    #         'green': 1,
+    #         'red': 1
+    #     }
+    # }

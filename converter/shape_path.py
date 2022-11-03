@@ -2,6 +2,10 @@ from . import base, positioning
 import utils
 import numpy as np
 import itertools
+from sketchformat.layer_group import ShapeGroup
+from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
+from sketchformat.common import WindingRule, Point
+
 
 STROKE_CAP_TO_MARKER_TYPE = {
     'NONE': 0,
@@ -31,19 +35,14 @@ def convert(figma_vector):
             s['frame']['y'] = 0
             s['booleanOperation'] = 0
 
-        obj = {
-            '_class': 'shapeGroup',
+        obj = ShapeGroup(
             **base.base_shape(figma_vector),
-            'shouldBreakMaskChain': True,
-            'hasClickThrough': False,
-            'groupLayout': {
-                '_class': 'MSImmutableFreeformGroupLayout'
-            },
-            'windingRule': 1,
-            'layers': regions
-        }
+            layers=regions,
+            windingRule=WindingRule.EVEN_ODD
+        )
 
-        obj['style'].windingRule = 1
+        # TODO: This feels incorrect
+        obj.style.windingRule = WindingRule.EVEN_ODD
         return obj
     else:
         return regions[0]
@@ -67,39 +66,28 @@ def convert_region(figma_vector, region_index=0):
             s['frame']['x'] = 0
             s['frame']['y'] = 0
 
-        obj = {
-            '_class': 'shapeGroup',
+        obj = ShapeGroup(
             **base.base_shape(figma_vector),
-            'shouldBreakMaskChain': True,
-            'hasClickThrough': False,
-            'groupLayout': {
-                '_class': 'MSImmutableFreeformGroupLayout'
-            },
-            'windingRule': 1,
-            'layers': shape_paths,
-            'do_objectID': utils.gen_object_id(figma_vector['guid'],
-                                               f"region{region_index}".encode())
-        }
+            windingRule=WindingRule.EVEN_ODD,
+            layers=shape_paths,
+        )
+        obj.do_objectID = utils.gen_object_id(figma_vector['guid'], f"region{region_index}".encode())
 
-        obj['style'].windingRule = 1
+        obj.style.windingRule = WindingRule.EVEN_ODD
         return obj
 
 
 def convert_shape_path(figma_vector, region=0, loop=0):
     points, styles = convert_points(figma_vector, region, loop)
 
-    obj = {
-        '_class': 'shapePath',
+    obj = ShapePath(
         **base.base_shape(figma_vector),
-        'edited': True,
-        'pointRadiusBehaviour': 1,
         **points,
-        'do_objectID': utils.gen_object_id(figma_vector['guid'],
-                                           f"region{region}loop{loop}".encode())
-    }
+    )
+    obj.do_objectID = utils.gen_object_id(figma_vector['guid'], f"region{region}loop{loop}".encode())
 
     if styles:
-        obj['style'].set_markers(styles['startMarkerType'], styles['endMarkerType'])
+        obj.style.set_markers(styles['startMarkerType'], styles['endMarkerType'])
 
     return obj
 
@@ -111,36 +99,14 @@ def convert_line(figma_line):
     figma_line['transform'][0][2] += vtr[0]
     figma_line['transform'][1][2] += vtr[1]
 
-    return {
-        '_class': 'shapePath',
+    return ShapePath(
         **base.base_shape(figma_line),
-        'edited': True,
-        'isClosed': False,
-        'pointRadiusBehaviour': 1,
-        'points': [
-            {
-                '_class': 'curvePoint',
-                'cornerRadius': 0,
-                'cornerStyle': 0,
-                'curveFrom': '{0, 0}',
-                'curveMode': 1,
-                'curveTo': '{0, 0}',
-                'hasCurveFrom': False,
-                'hasCurveTo': False,
-                'point': '{0, 0}'
-            },
-            {
-                '_class': 'curvePoint',
-                'cornerRadius': 0,
-                'cornerStyle': 0,
-                'curveFrom': '{1, 0}',
-                'curveMode': 1,
-                'curveTo': '{1, 0}',
-                'hasCurveFrom': False,
-                'hasCurveTo': False,
-                'point': '{1, 1}'
-            }],
-    }
+        isClosed=False,
+        points=[
+            CurvePoint.Straight(Point(0, 0)),
+            CurvePoint.Straight(Point(1, 1))
+        ]
+    )
 
 
 def convert_points(figma_vector, region, loop):
@@ -207,31 +173,37 @@ def process_segment(figma_vector, vertices, segment, points):
 
     if segment['tangentStart']['x'] != 0.0 or segment['tangentStart']['y'] != 0.0:
         vertex1 = vertices[segment['start']]
-        point1['hasCurveFrom'] = True
-        point1['curveFrom'] = get_point_curve(vertex1, segment['tangentStart'])
-        point1['curveMode'] = base.adjust_curve_mode(vertex1, figma_vector['handleMirroring'])
+        point1.hasCurveFrom = True
+        point1.curveFrom = Point.from_dict(vertex1) + Point.from_dict(segment['tangentStart'])
+        point1.curveMode = base.adjust_curve_mode(vertex1, figma_vector['handleMirroring'])
 
     if segment['tangentEnd']['x'] != 0.0 or segment['tangentEnd']['y'] != 0.0:
         vertex2 = vertices[segment['end']]
-        point2['hasCurveTo'] = True
-        point2['curveTo'] = get_point_curve(vertex2, segment['tangentEnd'])
-        point2['curveMode'] = base.adjust_curve_mode(vertex2, figma_vector['handleMirroring'])
+        point2.hasCurveTo = True
+        point2.curveTo = Point.from_dict(vertex2) + Point.from_dict(segment['tangentEnd'])
+        point2.curveMode = base.adjust_curve_mode(vertex2, figma_vector['handleMirroring'])
 
     return point1, point2
 
 
-def get_or_create_point(figma_vector, points, index, vertices):
+CURVE_MODES = {
+    'STRAIGHT': CurveMode.STRAIGHT,
+    'ANGLE_AND_LENGTH': CurveMode.MIRRORED,
+    'ANGLE': CurveMode.ASYMMETRIC,
+    'NONE': CurveMode.DISCONNECTED
+}
+
+
+def get_or_create_point(figma_vector, points, index, vertices) -> CurvePoint:
     if index in points:
         point = points[index]
     else:
         figma_point = vertices[index]
-        point = base.make_point(figma_vector, figma_point['x'], figma_point['y'], figma_point)
+        point = CurvePoint.Straight(Point(figma_point['x'], figma_point['y']))
+        point.curveMode = CURVE_MODES[figma_point.get('style', {}).get('handleMirroring', 'STRAIGHT')]
+        point.cornerRadius = figma_point.get('style', {}).get('cornerRadius', figma_vector['cornerRadius'])
 
     return point
-
-
-def get_point_curve(figma_point, tangent):
-    return utils.point_to_string(utils.add_points(figma_point, tangent))
 
 
 def points_marker_types(figma_vector, start_point, end_point):

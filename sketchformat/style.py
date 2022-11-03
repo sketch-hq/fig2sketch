@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, InitVar
 from enum import IntEnum
 from typing import Optional, List
-from .common import Point
+from .common import Point, WindingRule
 
 
 class LineCapStyle(IntEnum):
@@ -62,11 +62,6 @@ class PatternFillType(IntEnum):
     FIT = 3
 
 
-class WindingRule(IntEnum):
-    NON_ZERO = 0
-    EVEN_ODD = 1
-
-
 class MarkerType(IntEnum):
     NONE = 0
     OPEN_ARROW = 1
@@ -95,23 +90,23 @@ class Color:
     swatchID: Optional[str] = None
 
     @staticmethod
-    def Black():
+    def Black() -> 'Color':
         return Color(red=0, green=0, blue=0, alpha=1)
 
     @staticmethod
-    def White():
+    def White() -> 'Color':
         return Color(red=1, green=1, blue=1, alpha=1)
 
     @staticmethod
-    def Translucent():
+    def Translucent() -> 'Color':
         return Color(red=0, green=0, blue=0, alpha=0.5)
 
     @staticmethod
-    def DefaultFill():
+    def DefaultFill() -> 'Color':
         return Color(red=0.847, green=0.847, blue=0.847, alpha=1)
 
     @staticmethod
-    def DefaultBorder():
+    def DefaultBorder() -> 'Color':
         return Color(red=0.592, green=0.592, blue=0.592, alpha=1)
 
 
@@ -316,15 +311,14 @@ class Style:
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
     innerShadows: List[InnerShadow] = field(default_factory=list)
-    startDecorationType: Optional[MarkerType] = None
-    endDecorationType: Optional[MarkerType] = None
+    startDecorationType: Optional[MarkerType] = None # Legacy, should match startMarkerType
+    endDecorationType: Optional[MarkerType] = None # Legacy, should match endMarkerType
 
     def set_markers(self, startMarkerType: MarkerType, endMarkerType: MarkerType):
         self.startMarkerType = startMarkerType
         self.endMarkerType = endMarkerType
 
         # Legacy properties, can be skipped. Doing this to match Sketch exactly
-        # TODO: Should we remove this?
         if startMarkerType > 0 or endMarkerType > 0:
             if startMarkerType < 4:
                 self.startDecorationType = startMarkerType

@@ -9,8 +9,7 @@ def convert(figma_rect) -> Rectangle:
     return Rectangle(
         **base.base_shape(figma_rect),  # TODO: Type annotations
         # Sketch smooth corners are a boolean, Figma is a percent. I picked an arbitrary threshold
-        pointRadiusBehaviour=PointRadiusBehaviour.V1_SMOOTH if 'cornerSmoothing' in figma_rect and figma_rect['cornerSmoothing'] > 0.4
-            else PointRadiusBehaviour.V1,
+        pointRadiusBehaviour=PointRadiusBehaviour.V1_SMOOTH if figma_rect.get('cornerSmoothing', 0) > 0.4 else PointRadiusBehaviour.V1,
         fixedRadius=corner_radius,
         corners=Rectangle.Corners(
             figma_rect.get('rectangleTopLeftCornerRadius', corner_radius),

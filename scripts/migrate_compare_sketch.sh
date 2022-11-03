@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -e
 
 # Make a copy of the original file
 ORIGINAL=$1
