@@ -268,7 +268,7 @@ class Blur:
     type: BlurType = BlurType.GAUSSIAN
 
     @staticmethod
-    def Disabled():
+    def Disabled() -> 'Blur':
         return Blur(isEnabled=False)
 
 

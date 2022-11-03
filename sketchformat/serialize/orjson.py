@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 import io
 
-def serialize(obj, file):
+def serialize(obj, file) -> None:
     file.write(orjson.dumps(obj, default=lambda x: x.to_json(), option=orjson.OPT_SERIALIZE_NUMPY))
 
 # Check if orjson is patched

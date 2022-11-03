@@ -60,11 +60,11 @@ class FlowOverlaySettings:
 @dataclass(kw_only=True)
 class FlowConnection:
     _class: str = field(default='MSImmutableFlowConnection')
-    destinationArtboardID: str = None
+    destinationArtboardID: str
     animationType: AnimationType = AnimationType.NONE
     maintainScrollPosition: bool = False
     shouldCloseExistingOverlays: bool = False
-    overlaySettings: FlowOverlaySettings = None
+    overlaySettings: FlowOverlaySettings
 
 
 @dataclass(kw_only=True)

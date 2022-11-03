@@ -165,6 +165,13 @@ def export_scale(figma_constraint) -> _ExportScale:
                 'scale': 0,
                 'visibleScaleType': VisibleScaleType.HEIGHT
             }
+        case _:
+            logging.warning("Unknown export scale")
+            return {
+                'absoluteSize': 0,
+                'scale': 1,
+                'visibleScaleType': VisibleScaleType.SCALE
+            }
 
 
 def make_point(figma_node, x, y, figma_point={}):

@@ -20,7 +20,7 @@ def convert(figma_rect) -> Rectangle:
         ),
     )
 
-def build_rectangle_for_frame(figma_frame):
+def build_rectangle_for_frame(figma_frame) -> Rectangle:
     background_rect = convert(figma_frame)
     background_rect.frame.x = 0
     background_rect.frame.y = 0

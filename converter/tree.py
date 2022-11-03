@@ -2,6 +2,8 @@ from converter import artboard, group, oval, page, rectangle, shape_path, polygo
     shape_group, text, slice, instance, symbol
 from dataclasses import is_dataclass
 import logging
+from sketchformat.layer_common import AbstractLayer
+
 
 CONVERTERS = {
     'CANVAS': page.convert,
@@ -29,7 +31,7 @@ POST_PROCESSING = {
 }
 
 
-def convert_node(figma_node, parent_type):
+def convert_node(figma_node, parent_type) -> AbstractLayer:
     name = figma_node['name']
     type_ = get_node_type(figma_node, parent_type)
     logging.info(f'{type_}: {name}')
@@ -42,10 +44,7 @@ def convert_node(figma_node, parent_type):
     # TODO: Determine who needs layers per node type
     # e.g: rectangles never have children, groups do
     if children:
-        if is_dataclass(sketch_item):
-            sketch_item.layers = children
-        else:
-            sketch_item['layers'] = children
+        sketch_item.layers = children
 
     post_process = POST_PROCESSING.get(type_)
     if post_process:
@@ -54,7 +53,7 @@ def convert_node(figma_node, parent_type):
     return sketch_item
 
 
-def get_node_type(figma_node, parent_type):
+def get_node_type(figma_node, parent_type) -> str:
     # We do this because Sketch does not support nested artboards
     # If a Frame is detected inside another Frame, the internal one
     # is considered a group
