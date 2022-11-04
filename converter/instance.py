@@ -27,6 +27,11 @@ def convert(figma_instance):
         return obj
 
 
+def post_process(figma_instance, sketch_instance):
+    if sketch_instance._class == 'group':
+        return group.post_process_frame(figma_instance, sketch_instance)
+
+
 def master_instance(figma_symbol):
     obj = SymbolInstance(
         **base.base_shape(figma_symbol),
@@ -174,6 +179,31 @@ def detach_symbol(figma_instance, all_overrides, derived_symbol_data, path=[]):
     figma_master = context.figma_node(figma_instance['symbolData']['symbolID'])
     detached_children = copy.deepcopy(figma_master['children'], {})
 
+    # Convert overrides of this instance and add the path we are on
+    # TODO: Should we instead remove the path from the other overrides before recursing
+    instance_overrides = get_all_overrides(figma_instance)
+    for ov in instance_overrides:
+        ov['guidPath']['guids'] = path + ov['guidPath']['guids']
+        if 'opacity' in ov:
+            pass
+
+    # The overrides from this instance are less prioritary than those
+    # of the top-level one. So we put them first (and then apply in order)
+    all_overrides = instance_overrides + all_overrides
+
+    # Apply overrides to self TODO: This should be unified with the apply_overrides code
+    guid = figma_instance.get('overrideKey', figma_instance['guid'])
+    ov = [o for o in all_overrides if o['guidPath']['guids'] == path + [guid]]
+    for o in ov:
+        for k,v in o.items():
+            if k == 'guidPath':
+                continue
+            elif k == 'overriddenSymbolID':
+                figma_instance['symbolData']['symbolID'] = v
+            else:
+                figma_instance[k] = v
+
+
     # Recalculate size
     derived = [d for d in derived_symbol_data if d['guidPath']['guids'] == path]
     if derived:
@@ -190,6 +220,7 @@ def detach_symbol(figma_instance, all_overrides, derived_symbol_data, path=[]):
 
 
 def apply_overrides(figma, instance_id, overrides, derived_symbol_data, path=[]):
+    # TODO: Do we need to move overrideKey also to convert_properties?
     guid = figma.get('overrideKey', figma['guid'])
 
     # Apply overrides
@@ -217,6 +248,7 @@ def apply_overrides(figma, instance_id, overrides, derived_symbol_data, path=[])
     # If it's an instance, dettach it. Otherwise, convert the children
     if figma['type'] == 'INSTANCE':
         figma['type'] = 'FRAME'
+
         detach_symbol(figma, overrides, derived_symbol_data, path + [guid])
     else:
         for c in figma['children']:

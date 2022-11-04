@@ -25,8 +25,8 @@ def post_process_frame(figma_group, sketch_group):
     # TODO: Fix this and make it way less hacky
     sketch_group.layers.insert(0, rectangle.build_rectangle_for_frame(figma_group))
 
-    # del sketch_group.style
     sketch_group.style = Style(do_objectID=utils.gen_object_id(figma_group['guid'], b'style'))
+    sketch_group.style.contextSettings.opacity = figma_group['opacity']
 
     needs_clip_mask = not figma_group.get('frameMaskDisabled', False)
     if needs_clip_mask:
