@@ -181,7 +181,7 @@ def process_segment(figma_vector, vertices, segment, points):
         vertex2 = vertices[segment['end']]
         point2.hasCurveTo = True
         point2.curveTo = Point.from_dict(vertex2) + Point.from_dict(segment['tangentEnd'])
-        point2.curveMode = CURVE_MODES[vertex1.get('style', {}).get('handleMirroring', figma_vector['handleMirroring'])]
+        point2.curveMode = CURVE_MODES[vertex2.get('style', {}).get('handleMirroring', figma_vector['handleMirroring'])]
 
     return point1, point2
 
