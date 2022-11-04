@@ -16,8 +16,6 @@ SUPPORTED_INHERIT_STYLES = {
         'fontName',
         'textCase',
         'fontSize',
-        'textAlignVertical',
-        'textAlignHorizontal',
         'textDecoration',
         'letterSpacing',
         'lineHeight',
