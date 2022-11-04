@@ -3,6 +3,7 @@ import hashlib
 import random
 import struct
 from typing import BinaryIO, List
+import logging
 
 id_salt = random.randbytes(16)
 
@@ -93,3 +94,6 @@ def get_style_table_override(figma_item):
         override_table.update({s['styleID']: s for s in figma_item['styleOverrideTable']})
 
     return override_table
+
+def log_conversion_warning(warning_code: str, warning_message: str, figma_node: dict):
+    logging.warning(f"[{warning_code}] ({figma_node['type']} {figma_node['name']}) - {warning_message}")
