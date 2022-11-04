@@ -190,10 +190,10 @@ def detach_symbol(figma_instance, all_overrides, derived_symbol_data, path=[]):
 
 
 def apply_overrides(figma, instance_id, overrides, derived_symbol_data, path=[]):
-    guid = figma['guid']
+    guid = figma.get('overrideKey', figma['guid'])
 
     # Apply overrides
-    ov = [o for o in overrides if o['guidPath']['guids'] == path + [figma['guid']]]
+    ov = [o for o in overrides if o['guidPath']['guids'] == path + [guid]]
     for o in ov:
         for k,v in o.items():
             if k == 'guidPath':

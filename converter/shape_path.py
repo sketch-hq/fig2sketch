@@ -175,13 +175,13 @@ def process_segment(figma_vector, vertices, segment, points):
         vertex1 = vertices[segment['start']]
         point1.hasCurveFrom = True
         point1.curveFrom = Point.from_dict(vertex1) + Point.from_dict(segment['tangentStart'])
-        point1.curveMode = base.adjust_curve_mode(vertex1, figma_vector['handleMirroring'])
+        point1.curveMode = CURVE_MODES[vertex1.get('style', {}).get('handleMirroring', figma_vector['handleMirroring'])]
 
     if segment['tangentEnd']['x'] != 0.0 or segment['tangentEnd']['y'] != 0.0:
         vertex2 = vertices[segment['end']]
         point2.hasCurveTo = True
         point2.curveTo = Point.from_dict(vertex2) + Point.from_dict(segment['tangentEnd'])
-        point2.curveMode = base.adjust_curve_mode(vertex2, figma_vector['handleMirroring'])
+        point2.curveMode = CURVE_MODES[vertex1.get('style', {}).get('handleMirroring', figma_vector['handleMirroring'])]
 
     return point1, point2
 

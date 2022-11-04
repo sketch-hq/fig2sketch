@@ -4,7 +4,6 @@ import logging
 
 class Context:
     def init(self, components_page, id_map):
-        self._figma_components = {node['guid']: node for node in components_page['children']}
         self._sketch_components = {}
         self.symbols_page = None
         self._node_by_id = id_map
@@ -15,8 +14,9 @@ class Context:
         self._symbol_position = {0: [0, 0]}
 
     def component(self, cid):
-        figma_component = self._figma_components.get(cid)
+        figma_component = self._node_by_id.get(cid)
         if figma_component is None:
+            logging.warning(f"Figma component {cid} not found")
             return None
 
         # See if we can convert this component to a Sketch swatch

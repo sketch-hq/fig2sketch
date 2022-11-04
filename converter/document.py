@@ -47,7 +47,7 @@ def convert(pages, output_zip):
             '_class': 'swatchContainer',
             'do_objectID': utils.gen_object_id((0, 0), b'swatchContainer'),
             'objects': [component for component in context.sketch_components() if
-                        component['_class'] == 'swatch']
+                        component._class == 'swatch']
         },
         'fontReferences': sorted(
             [font.convert(name, font_file, postscript, output_zip) for name, (font_file, postscript) in context.used_fonts().items() if font_file],

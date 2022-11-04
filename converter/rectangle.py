@@ -5,6 +5,7 @@ from sketchformat.layer_shape import Rectangle, PointRadiusBehaviour
 
 def convert(figma_rect) -> Rectangle:
     corner_radius = figma_rect.get('cornerRadius', 0)
+    independent = figma_rect.get('rectangleCornerRadiiIndependent', True)
 
     return Rectangle(
         **base.base_shape(figma_rect),  # TODO: Type annotations
@@ -13,10 +14,10 @@ def convert(figma_rect) -> Rectangle:
         pointRadiusBehaviour=PointRadiusBehaviour.V1_SMOOTH if figma_rect.get('cornerSmoothing', 0) > 0.4 else PointRadiusBehaviour.V1,
         fixedRadius=corner_radius,
         corners=Rectangle.Corners(
-            figma_rect.get('rectangleTopLeftCornerRadius', corner_radius),
-            figma_rect.get('rectangleTopRightCornerRadius', corner_radius),
-            figma_rect.get('rectangleBottomRightCornerRadius', corner_radius),
-            figma_rect.get('rectangleBottomLeftCornerRadius', corner_radius)
+            figma_rect.get('rectangleTopLeftCornerRadius', 0) if independent else corner_radius,
+            figma_rect.get('rectangleTopRightCornerRadius', 0) if independent else corner_radius,
+            figma_rect.get('rectangleBottomRightCornerRadius', 0) if independent else corner_radius,
+            figma_rect.get('rectangleBottomLeftCornerRadius', 0) if independent else corner_radius
         ),
     )
 

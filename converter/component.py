@@ -1,18 +1,19 @@
 from . import style
+from sketchformat.document import Swatch, Color
 import utils
 
 
 def convert(figma_style):
     match figma_style:
-        # Fill with a single fill
+        # Fill with a single fill -> color variable
         case {'styleType': 'FILL', 'fillPaints': [{'type': 'SOLID'} as paint]}:
+            uuid = utils.gen_object_id(figma_style['guid'])
             color = style.convert_color(paint['color'], paint['opacity'])
-            color.swatchID = utils.gen_object_id(figma_style['guid'])
-            return {
-                '_class': 'swatch',
-                'do_objectID': color.swatchID,
-                'name': figma_style['name'],
-                'value': color
-            }
+            color.swatchID = uuid
+            return Swatch(
+                do_objectID=uuid,
+                name=figma_style['name'],
+                value=color
+            )
         case _:
             return None
