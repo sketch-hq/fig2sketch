@@ -49,6 +49,17 @@ class CurvePoint:
             curveMode=CurveMode.STRAIGHT
         )
 
+    @staticmethod
+    def Curved(point: Point, curveFrom: Point, curveTo: Point) -> 'CurvePoint':
+        return CurvePoint(
+            curveFrom=curveFrom,
+            curveTo=curveTo,
+            point=point,
+            hasCurveFrom=True,
+            hasCurveTo=True,
+            curveMode=CurveMode.MIRRORED
+        )
+
 
 @dataclass(kw_only=True)
 class AbstractShapeLayer(AbstractStyledLayer):
@@ -93,25 +104,25 @@ def oval_make_points() -> List[CurvePoint]:
     P1=0.22385762510000001
     P2=0.77614237490000004
     return [
-        CurvePoint(
+        CurvePoint.Curved(
             point=Point(0.5, 1),
             curveFrom=Point(P2, 1),
-            curveTo=Point(P1, 1)
+            curveTo=Point(P1, 1),
         ),
-        CurvePoint(
+        CurvePoint.Curved(
             point=Point(1, 0.5),
             curveFrom=Point(1, P1),
-            curveTo=Point(1, P2)
+            curveTo=Point(1, P2),
         ),
-        CurvePoint(
+        CurvePoint.Curved(
             point=Point(0.5, 0),
             curveFrom=Point(P1, 0),
-            curveTo=Point(P2, 0)
+            curveTo=Point(P2, 0),
         ),
-        CurvePoint(
+        CurvePoint.Curved(
             point=Point(0, 0.5),
             curveFrom=Point(0, P2),
-            curveTo=Point(0, P1)
+            curveTo=Point(0, P1),
         ),
     ]
 

@@ -38,7 +38,6 @@ def convert_node(figma_node, parent_type) -> AbstractLayer:
     logging.info(f'{type_}: {name}')
 
     sketch_item = CONVERTERS[type_](figma_node)
-
     children = [convert_node(child, figma_node['type']) for child in
                 figma_node.get('children', [])]
 
