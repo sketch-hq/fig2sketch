@@ -28,5 +28,5 @@ def build_rectangle_for_frame(figma_frame) -> Rectangle:
     background_rect.rotation = 0
     background_rect.name = 'Frame background'
     background_rect.do_objectID = utils.gen_object_id(figma_frame['guid'], b'background')
-    background_rect.resizingConstraint = 63
+    background_rect.resizingConstraint = 10 # Fixed to borders
     return background_rect
