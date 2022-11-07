@@ -12,29 +12,3 @@ def convert(figma_slice):
     return Slice(
         **base.base_layer(figma_slice),
     )
-    #     '_class': 'slice',
-    #     'name': figma_slice['name'],
-    #     'do_objectID': utils.gen_object_id(figma_slice['guid']),
-    #     'booleanOperation': -1,
-    #     'exportOptions': base.export_options(figma_slice['exportSettings']),
-    #     **positioning.convert(figma_slice),
-    #     'isFixedToViewport': False,
-    #     'isFlippedHorizontal': False,
-    #     'isFlippedVertical': False,
-    #     'isLocked': False,
-    #     'isVisible': True,
-    #     'layerListExpandedType': 0,
-    #     'nameIsFixed': False,
-    #     'resizingConstraint': 9,
-    #     'resizingType': 0,
-    #     'hasBackgroundColor': False,
-    #     'shouldBreakMaskChain': False,
-    #     'isTemplate': False,
-    #     'backgroundColor': {
-    #         '_class': 'color',
-    #         'alpha': 1,
-    #         'blue': 1,
-    #         'green': 1,
-    #         'red': 1
-    #     }
-    # }

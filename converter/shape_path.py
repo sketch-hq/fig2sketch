@@ -5,6 +5,8 @@ import itertools
 from sketchformat.layer_group import ShapeGroup
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
+from collections import defaultdict
+import logging
 
 
 STROKE_CAP_TO_MARKER_TYPE = {
@@ -114,8 +116,7 @@ def convert_points(figma_vector, region, loop):
     segments = vector_network['segments']
     vertices = vector_network['vertices']
 
-    segment_ids, is_closed = get_segments(vector_network, region, loop)
-    ordered_segments = [segments[i] for i in segment_ids]
+    ordered_segments, is_closed = get_segments(vector_network, region, loop)
 
     points_style = {}
 
@@ -123,13 +124,6 @@ def convert_points(figma_vector, region, loop):
         first_point = vertices[ordered_segments[0]['start']]
         last_point = vertices[ordered_segments[-1]['end']]
         points_style = points_marker_types(figma_vector, first_point, last_point)
-
-    # Make sure segment[0].end == segment[1].start, etc.
-    # From VectorNetwork docs:
-    #   "However, the order of the start and end points in the segments do not matter,
-    #   i.e. the end vertex of one segment does not need to match the start vertex of the next
-    #   segment in the loop, but can instead match the end vertex of that segment."
-    reorder_segments(ordered_segments)
 
     points = {}
     for segment in ordered_segments:
@@ -142,12 +136,15 @@ def convert_points(figma_vector, region, loop):
 
 def get_segments(vector_network, region, loop):
     if vector_network['regions']:
-        return vector_network['regions'][region]['loops'][loop], True
+        seg_ids = vector_network['regions'][region]['loops'][loop]
+        segments = [vector_network['segments'][i] for i in seg_ids]
+        reorder_segment_points(segments)
+        return segments, True
     else:
-        segments = vector_network['segments']
+        segments = reorder_segments(vector_network['segments'])
         # A polygon is closed if the first point is the same as the last point
         is_closed = segments[0]['start'] == segments[-1]['end']
-        return range(len(segments)), is_closed
+        return segments, is_closed
 
 
 def swap_segment(segment):
@@ -156,6 +153,77 @@ def swap_segment(segment):
 
 
 def reorder_segments(segments):
+    """
+    Order segments so that they are continuous
+
+    The input can be in an arbitraty order. This function will try to put the
+    segments in order such as seg[n].end == seg[n+1].start.
+    """
+    # Track which segments are still unordered and start/end on a given point
+    segments_with_point = defaultdict(list)
+    for s in segments:
+        segments_with_point[s['start']].append(s)
+        segments_with_point[s['end']].append(s)
+
+    # In case the path is open, we try to find an end (a point with a single segment)
+    # If we don't, the path should be closed and can choose an arbitrary one by default
+    start_segment = segments[0]
+    for v in segments_with_point.values():
+        if len(v) == 1:
+            start_segment = v[0]
+            break
+
+    # Start with this segment and remove it from consideration
+    ordered = [start_segment]
+    segments_with_point[start_segment['start']].remove(start_segment)
+    segments_with_point[start_segment['end']].remove(start_segment)
+
+    # See if we will be able to continue, if not, swap the start segment
+    if not segments_with_point[start_segment['end']]:
+        swap_segment(start_segment)
+
+    # Loop until we walked through all the segments or we close the loop
+    start_point = ordered[0]['start']
+    count = 1
+    total_segments = len(segments)
+    while ordered[-1]['end'] != start_point and count < total_segments:
+        ss = segments_with_point[ordered[-1]['end']]
+        # We should get a single candidate segment for a given point.
+        if len(ss) == 0:
+            logging.error("Could not reorder segments, no segments available.")
+            return segments
+        elif len(ss) >= 2:
+            logging.error("Could not reorder segments, multiple segments available.")
+            return segments
+
+        # Remove the segment from future consideration
+        segment = ss[0]
+        segments_with_point[segment['start']].remove(segment)
+        segments_with_point[segment['end']].remove(segment)
+
+        # Add the segment to our list, swapping start/end if needed
+        if segment['start'] != ordered[-1]['end']:
+            swap_segment(segment)
+
+        ordered.append(segment)
+        count += 1
+
+    if count != total_segments:
+        logging.error("Segment loop was closed without using all segments. Some geometry might be lost")
+
+    return ordered
+
+
+
+def reorder_segment_points(segments):
+    """
+    Make sure segment[0].end == segment[1].start, etc.
+
+    From VectorNetwork docs:
+      However, the order of the start and end points in the segments do not matter,
+      i.e. the end vertex of one segment does not need to match the start vertex of the next
+      segment in the loop, but can instead match the end vertex of that segment.
+    """
     if len(segments) < 2:
         return
 
