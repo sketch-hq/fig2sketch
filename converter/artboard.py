@@ -37,7 +37,7 @@ def convert(figma_frame) -> Artboard:
 def post_process_frame(figma_frame, sketch_artboard: Artboard) -> Artboard:
     # Sketch only supports one custom color as an artboard background
     # If the frame has more than one color or other custom style we just create
-    # the bacground rectangle with whatever style
+    # the background rectangle with whatever style
     # If the frame/artboard has just one color (and not any other custom style)
     # we set the background color in sketch property
     # We could just always create the rectangle to simplify the logic, but I guess

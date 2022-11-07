@@ -95,5 +95,9 @@ def get_style_table_override(figma_item):
 
     return override_table
 
-def log_conversion_warning(warning_code: str, warning_message: str, figma_node: dict):
-    logging.warning(f"[{warning_code}] ({figma_node['type']} {figma_node['name']}) - {warning_message}")
+def log_conversion_warning(warning_code: str, figma_node: dict):
+    WARNING_MESSAGES = {
+        "T01": f"Figma {figma_node['type']} '{figma_node['name']}' is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
+    }
+
+    logging.warning(f"[{warning_code}] {WARNING_MESSAGES[warning_code]}")
