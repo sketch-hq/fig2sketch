@@ -97,7 +97,8 @@ def get_style_table_override(figma_item):
 
 def log_conversion_warning(warning_code: str, figma_node: dict):
     WARNING_MESSAGES = {
-        "T01": f"Figma {figma_node['type']} '{figma_node['name']}' is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
+        "TXT001": f"Figma {figma_node['type']} '{figma_node['name']}' is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
+        "SHP001": f"Figma {figma_node['type']} '{figma_node['name']}' contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker"
     }
 
     logging.warning(f"[{warning_code}] {WARNING_MESSAGES[warning_code]}")

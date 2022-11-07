@@ -156,7 +156,7 @@ def override_characters_style(figma_text):
     if not glyphs:
         # Note, glyphs can be empty when there is a single character and that's still ok
         if len(figma_text['textData']['characters']) != 1:
-            utils.log_conversion_warning("T01", figma_text)
+            utils.log_conversion_warning("TXT001", figma_text)
 
         glyphs = [{'firstCharacter': 0, 'styleID': 0}]
 

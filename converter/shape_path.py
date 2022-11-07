@@ -216,6 +216,9 @@ def points_marker_types(figma_vector, start_point, end_point):
     if ('style' in end_point) and ('strokeCap' in end_point['style']):
         end_marker_type = STROKE_CAP_TO_MARKER_TYPE[end_point['style']['strokeCap']]
 
+    if STROKE_CAP_TO_MARKER_TYPE['TRIANGLE_FILLED'] in [start_marker_type, end_marker_type]:
+        utils.log_conversion_warning('SHP001', figma_vector)
+
     return {
         'startMarkerType': start_marker_type,
         'endMarkerType': end_marker_type
