@@ -118,3 +118,4 @@ jobs:
           files: '*zip'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.create_release.outputs.tag_name }}
+          
