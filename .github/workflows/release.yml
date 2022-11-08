@@ -141,8 +141,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Build 
         run: |
-          python -m pip install --upgrade pip wheel
-          pip install -r requirements.txt
+          python3 -m pip install --upgrade pip wheel
+          pip3 install -r requirements.txt
           pyinstaller fig2sketch.py -y --target-arch arm64
       - name: Create folder and adjust permissions
         run: |
