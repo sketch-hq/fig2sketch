@@ -112,7 +112,7 @@ jobs:
           python3 -m pip install --upgrade pip
           PYINSTALLER_COMPILE_BOOTLOADER=1 MACOSX_DEPLOYMENT_TARGET=10.9 pip3 install pyinstaller --no-binary pyinstaller
           pip3 install -r requirements.txt
-          pyinstaller fig2sketch.py -y --onefile --target-arch arm64
+          pyinstaller fig2sketch.py -y --onefile --target-arch universal2
       - name: Create folder and adjust permissions
         run: |
           mkdir dist/figma2sketch-macos
