@@ -130,7 +130,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install -r requirements.txt
-          pyinstaller fig2sketch.py -y --onefile --target-arch arm64
+          pyinstaller fig2sketch.py -y --onefile --target-arch universal2
       - name: Create folder and adjust permissions
         run: |
           mkdir dist/figma2sketch-macos
