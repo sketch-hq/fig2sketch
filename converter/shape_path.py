@@ -22,17 +22,13 @@ STROKE_CAP_TO_MARKER_TYPE = {
 
 
 def convert(figma_vector):
-    regions = figma_vector['vectorNetwork']['regions']
-    if not regions:
-        # A path that is not closed so it doesn't have any regions
-        return convert_shape_path(figma_vector)
-
-    regions = [convert_region(figma_vector, region) for region in range(len(regions))]
+    regions = get_all_segments(figma_vector['vectorNetwork'])
+    regions = [convert_region(figma_vector, region, i) for i, region in enumerate(regions)]
 
     if len(regions) > 1:
         # Ignore positioning for childs. TODO: We should probably be building these shapePaths by hand, instead
         # of relying on the generic convert_shape_path function
-        for i, s in enumerate(regions):
+        for s in regions:
             s.frame.x = 0
             s.frame.y = 0
             s.booleanOperation = 0
@@ -50,21 +46,19 @@ def convert(figma_vector):
         return regions[0]
 
 
-def convert_region(figma_vector, region_index=0):
-    region = figma_vector['vectorNetwork']['regions'][region_index]
-    if len(region['loops']) == 1:
+def convert_region(figma_vector, segments, region_index=0):
+    if len(segments) == 1:
         # A single loop, or just segments. Convert as a shapePath
-        return convert_shape_path(figma_vector, region_index)
+        return convert_shape_path(figma_vector, segments[0], region_index)
     else:
         # Multiple loops, convert as a shape group with shape paths as children (will happen in
         # post process)
-        shape_paths = [convert_shape_path(figma_vector, region_index, loop) for loop in
-                       range(len(region['loops']))]
+        shape_paths = [convert_shape_path(figma_vector, loop, region_index, i) for i, loop in enumerate(segments)]
 
         # Ignore positioning for children.
         # TODO: We should probably be building these shapePaths by hand, instead of relying on the
         # generic convert_shape_path function
-        for i, s in enumerate(shape_paths):
+        for s in shape_paths:
             s.frame.x = 0
             s.frame.y = 0
 
@@ -79,8 +73,8 @@ def convert_region(figma_vector, region_index=0):
         return obj
 
 
-def convert_shape_path(figma_vector, region=0, loop=0):
-    points, styles = convert_points(figma_vector, region, loop)
+def convert_shape_path(figma_vector, segments, region=0, loop=0):
+    points, styles = convert_points(figma_vector, segments)
 
     obj = ShapePath(
         **base.base_shape(figma_vector),
@@ -111,12 +105,10 @@ def convert_line(figma_line):
     )
 
 
-def convert_points(figma_vector, region, loop):
-    vector_network = figma_vector['vectorNetwork']
-    segments = vector_network['segments']
-    vertices = vector_network['vertices']
+def convert_points(figma_vector, ordered_segments):
+    vertices = figma_vector['vectorNetwork']['vertices']
 
-    ordered_segments, is_closed = get_segments(vector_network, region, loop)
+    is_closed = ordered_segments[0]['start'] == ordered_segments[-1]['end']
 
     points_style = {}
 
@@ -134,17 +126,19 @@ def convert_points(figma_vector, region, loop):
     return {'points': list(points.values()), 'isClosed': is_closed}, points_style
 
 
-def get_segments(vector_network, region, loop):
+def get_all_segments(vector_network):
     if vector_network['regions']:
-        seg_ids = vector_network['regions'][region]['loops'][loop]
-        segments = [vector_network['segments'][i] for i in seg_ids]
-        reorder_segment_points(segments)
-        return segments, True
+        return [
+            [
+                reorder_segment_points([
+                    vector_network['segments'][i] for i in loop
+                ]) for loop in region['loops']
+            ] for region in vector_network['regions']
+        ]
     else:
         segments = reorder_segments(vector_network['segments'])
         # A polygon is closed if the first point is the same as the last point
-        is_closed = segments[0]['start'] == segments[-1]['end']
-        return segments, is_closed
+        return [segments]
 
 
 def swap_segment(segment):
@@ -156,7 +150,7 @@ def reorder_segments(segments):
     """
     Order segments so that they are continuous
 
-    The input can be in an arbitraty order. This function will try to put the
+    The input can be in an arbitrary order. This function will try to put the
     segments in order such as seg[n].end == seg[n+1].start.
     """
     # Track which segments are still unordered and start/end on a given point
@@ -165,9 +159,21 @@ def reorder_segments(segments):
         segments_with_point[s['start']].append(s)
         segments_with_point[s['end']].append(s)
 
+    total_segments = len(segments)
+    count = 0
+    runs = []
+    while count < total_segments:
+        ordered_run, run_count = reorder_single_segment(segments_with_point)
+        count += run_count
+        runs.append(ordered_run)
+
+    return runs
+
+
+def reorder_single_segment(segments_with_point):
     # In case the path is open, we try to find an end (a point with a single segment)
     # If we don't, the path should be closed and can choose an arbitrary one by default
-    start_segment = segments[0]
+    start_segment = [s[0] for s in segments_with_point.values() if s][0]
     for v in segments_with_point.values():
         if len(v) == 1:
             start_segment = v[0]
@@ -185,16 +191,12 @@ def reorder_segments(segments):
     # Loop until we walked through all the segments or we close the loop
     start_point = ordered[0]['start']
     count = 1
-    total_segments = len(segments)
-    while ordered[-1]['end'] != start_point and count < total_segments:
+    while ordered[-1]['end'] != start_point:
         ss = segments_with_point[ordered[-1]['end']]
         # We should get a single candidate segment for a given point.
         if len(ss) == 0:
-            logging.error("Could not reorder segments, no segments available.")
-            return segments
-        elif len(ss) >= 2:
-            logging.error("Could not reorder segments, multiple segments available.")
-            return segments
+            # Cannot continue (open path ends)
+            break
 
         # Remove the segment from future consideration
         segment = ss[0]
@@ -208,11 +210,7 @@ def reorder_segments(segments):
         ordered.append(segment)
         count += 1
 
-    if count != total_segments:
-        logging.error("Segment loop was closed without using all segments. Some geometry might be lost")
-
-    return ordered
-
+    return ordered, count
 
 
 def reorder_segment_points(segments):
@@ -225,7 +223,7 @@ def reorder_segment_points(segments):
       segment in the loop, but can instead match the end vertex of that segment.
     """
     if len(segments) < 2:
-        return
+        return segments
 
     if segments[0]['end'] not in (segments[1]['start'], segments[1]['end']):
         swap_segment(segments[0])
@@ -233,6 +231,8 @@ def reorder_segment_points(segments):
     for prev, cur in itertools.pairwise(segments):
         if prev['end'] != cur['start']:
             swap_segment(cur)
+
+    return segments
 
 
 def process_segment(figma_vector, vertices, segment, points):
