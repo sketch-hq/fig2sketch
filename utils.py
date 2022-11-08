@@ -23,70 +23,6 @@ def generate_file_ref(data):
     return hashlib.sha1(hashlib.sha1(data).digest()).hexdigest()
 
 
-def add_points(point1, point2):
-    return {'x': point1['x'] + point2['x'], 'y': point1['y'] + point2['y']}
-
-
-def np_point_to_string(point):
-    return x_y_to_string(point[0], point[1])
-
-
-def point_to_string(point):
-    return x_y_to_string(point['x'], point['y'])
-
-
-def x_y_to_string(x, y):
-    # Remove .0 from "integers"
-    # This is to make it more similar to Sketch (easier to compare docs)
-    # But works without it
-    # TODO: Should we remove this for speed?
-    if x == int(x): x = int(x)
-    if y == int(y): y = int(y)
-    return f"{{{x}, {y}}}"
-
-
-# TODO: Call this function from every shape/image/etc
-# TODO: Check if image masks work
-def masking(figma):
-    CLIPPING_MODE = {
-        'ALPHA': 1,
-        'OUTLINE': 0,  # TODO This works differently in Sketch vs Figma
-        # Sketch masks only the fill and draws border normally and fill as background
-        # Figma masks including the borders and ignores the stroke/fill properties
-        # 'LUMINANCE': UNSUPPORTED
-    }
-    sketch = {
-        'shouldBreakMaskChain': False
-    }
-    if figma['mask']:
-        sketch['hasClippingMask'] = True
-        sketch['clippingMaskMode'] = CLIPPING_MODE[figma['maskType']]
-    else:
-        sketch['hasClippingMask'] = False
-        sketch['clippingMaskMode'] = 0
-
-    return sketch
-
-
-def resizing_constraints(figma_item):
-    # TODO: Figma is returning MIN so I assigned it to the defaults (TOP & LEFT respectively)
-    v = {
-        'MIN': 32,
-        'BOTTOM': 8,
-        'CENTER': 16,
-        'TOP_BOTTOM': 40,
-        'SCALE': 0,
-    }
-    h = {
-        'MIN': 4,
-        'RIGHT': 1,
-        'CENTER': 2,
-        'LEFT_RIGHT': 5,
-        'SCALE': 0,
-    }
-    return h[figma_item['horizontalConstraint']] + v[figma_item['verticalConstraint']]
-
-
 def get_style_table_override(figma_item):
     override_table = {0: {}}
 
@@ -97,8 +33,9 @@ def get_style_table_override(figma_item):
 
 def log_conversion_warning(warning_code: str, figma_node: dict):
     WARNING_MESSAGES = {
-        "TXT001": f"Figma {figma_node['type']} '{figma_node['name']}' is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
-        "SHP001": f"Figma {figma_node['type']} '{figma_node['name']}' contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker"
+        "TXT001": f"is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
+        "SHP001": f"contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
+        "STY001": f"contains a layer blur and a background blur. Only one will be converted",
     }
 
-    logging.warning(f"[{warning_code}] {WARNING_MESSAGES[warning_code]}")
+    logging.warning(f"[{warning_code}] Figma {figma_node['type']} '{figma_node['name']}' {WARNING_MESSAGES[warning_code]}")

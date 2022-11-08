@@ -71,6 +71,6 @@ class FlowConnection:
 class PrototypeViewport:
     _class: str = field(default='MSImmutablePrototypeViewport')
     name: str
-    size: str
+    size: Point
     # libraryID: str = 'EB972BCC-0467-4E50-998E-0AC5A39517F0'
     # templateID: str = '55992B99-92E5-4A93-AF90-B3A461675C05'

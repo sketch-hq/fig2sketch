@@ -66,7 +66,7 @@ def convert(figma_node) -> Style:
         ),
         borders=[convert_border(figma_node, b) for b in figma_node['strokePaints']] if 'strokePaints' in figma_node else [],
         fills=[convert_fill(figma_node, f) for f in figma_node['fillPaints']] if 'fillPaints' in figma_node else [],
-        **convert_effects(figma_node.get('effects', [])),
+        **convert_effects(figma_node),
         contextSettings=context_settings(figma_node)
     )
     return sketch_style
@@ -192,14 +192,14 @@ class _Effects(TypedDict):
     innerShadows: List[InnerShadow]
 
 
-def convert_effects(effects) -> _Effects:
+def convert_effects(figma_node) -> _Effects:
     sketch: _Effects = {
         'blur': Blur.Disabled(),
         'shadows': [],
         'innerShadows': []
     }
 
-    for e in effects:
+    for e in figma_node.get('effects', []):
         if e['type'] == 'INNER_SHADOW':
             sketch['innerShadows'].append(InnerShadow(
                 blurRadius=e['radius'],
@@ -220,7 +220,8 @@ def convert_effects(effects) -> _Effects:
 
         elif e['type'] == 'FOREGROUND_BLUR':
             if sketch['blur'].isEnabled:
-                raise Exception(f'Cannot support multuple blurs')
+                utils.log_conversion_warning("STY001", figma_node)
+                continue
 
             sketch['blur'] = Blur(
                 radius=e['radius'] / 2,  # Looks best dividing by 2, no idea why,
@@ -229,7 +230,8 @@ def convert_effects(effects) -> _Effects:
 
         elif e['type'] == 'BACKGROUND_BLUR':
             if sketch['blur'].isEnabled:
-                raise Exception(f'Cannot support multiple blurs')
+                utils.log_conversion_warning("STY001", figma_node)
+                continue
 
             sketch['blur'] = Blur(
                 radius=e['radius'] / 2,  # Looks best dividing by 2, no idea why,

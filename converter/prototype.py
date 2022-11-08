@@ -104,7 +104,7 @@ def prototyping_information(figma_frame):
             'isFlowHome': figma_frame.get('prototypeStartingPoint', {}).get('name', '') != '',
             'prototypeViewport': PrototypeViewport(
                 name=figma_canvas['prototypeDevice']['presetIdentifier'],
-                size=utils.point_to_string(figma_canvas['prototypeDevice']['size'])
+                size=Point.from_dict(figma_canvas['prototypeDevice']['size'])
             ),
             'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
             'presentationStyle': PresentationStyle.SCREEN,

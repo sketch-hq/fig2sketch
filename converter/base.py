@@ -49,7 +49,7 @@ def base_layer(figma_node):
 def base_shape(figma_node):
     obj = {
         **base_layer(figma_node),
-        **utils.masking(figma_node),
+        **masking(figma_node),
         'style': process_styles(figma_node),
     }
 
@@ -169,3 +169,26 @@ def resizing_constraint(figma_node):
     h = HORIZONTAL_CONSTRAINT[figma_node['horizontalConstraint']]
     v = HORIZONTAL_CONSTRAINT[figma_node['verticalConstraint']] << 3
     return h + v
+
+
+# TODO: Call this function from every shape/image/etc
+# TODO: Check if image masks work
+def masking(figma):
+    CLIPPING_MODE = {
+        'ALPHA': 1,
+        'OUTLINE': 0,  # TODO This works differently in Sketch vs Figma
+        # Sketch masks only the fill and draws border normally and fill as background
+        # Figma masks including the borders and ignores the stroke/fill properties
+        # 'LUMINANCE': UNSUPPORTED
+    }
+    sketch = {
+        'shouldBreakMaskChain': False
+    }
+    if figma['mask']:
+        sketch['hasClippingMask'] = True
+        sketch['clippingMaskMode'] = CLIPPING_MODE[figma['maskType']]
+    else:
+        sketch['hasClippingMask'] = False
+        sketch['clippingMaskMode'] = 0
+
+    return sketch
