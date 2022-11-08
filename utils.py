@@ -34,7 +34,11 @@ def get_style_table_override(figma_item):
 def log_conversion_warning(warning_code: str, figma_node: dict):
     WARNING_MESSAGES = {
         "TXT001": f"is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
+        "TXT002": f"has multiple text fill colors. Only the first one will be converted",
+        "TXT003": f"has a non-solid text color (gradient or image) which is not supported by Sketch",
+
         "SHP001": f"contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
+
         "STY001": f"contains a layer blur and a background blur. Only one will be converted",
     }
 

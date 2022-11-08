@@ -114,6 +114,20 @@ def text_style(figma_text):
             }
         }]
 
+    if len(fills) >= 2:
+        utils.log_conversion_warning("TXT002", figma_text)
+
+    if fills[0]['type'] == 'SOLID':
+        color = style.convert_color(fills[0]['color'])
+    else:
+        # Text fill is not solid (gradient or image). Sketch doesn't support this
+        utils.log_conversion_warning("TXT003", figma_text)
+        if fills[0].get('stops', []):
+            color = style.convert_color(fills[0]['stops'][0]['color'])
+        else:
+            color = Color.Black()
+
+
     obj = TextStyle(
         encodedAttributes=EncodedAttributes(
             **text_transformation(figma_text),
@@ -121,7 +135,7 @@ def text_style(figma_text):
                 name=font_name,
                 size=figma_text['fontSize']
             ),
-            MSAttributedStringColorAttribute=style.convert_color(fills[0]['color']),
+            MSAttributedStringColorAttribute=color,
             textStyleVerticalAlignmentKey=AlignVertical[figma_text['textAlignVertical']],
             **text_decoration(figma_text),
             kerning=kerning(figma_text),
