@@ -8,6 +8,11 @@ from typing import Optional, List
 
 
 def convert(figma_instance):
+    if figma_instance['symbolData']['symbolID'][0] == 4294967295:
+        # Broken instance, return a placeholder in its place
+        utils.log_conversion_warning("SYM001", figma_instance)
+        return group.convert(figma_instance)
+
     all_overrides = get_all_overrides(figma_instance)
     sketch_overrides = convert_overrides(all_overrides)
 

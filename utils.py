@@ -40,6 +40,8 @@ def log_conversion_warning(warning_code: str, figma_node: dict):
         "SHP001": f"contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
 
         "STY001": f"contains a layer blur and a background blur. Only one will be converted",
+
+        "SYM001": f"references an invalid symbol. It will be converted to an empty placeholder group",
     }
 
     logging.warning(f"[{warning_code}] Figma {figma_node['type']} '{figma_node['name']}' {WARNING_MESSAGES[warning_code]}")
