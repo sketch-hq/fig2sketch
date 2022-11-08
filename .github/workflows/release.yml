@@ -49,11 +49,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pyinstaller fig2sketch.py -y --onefile
-      - name: Create folder and adjust permissions
-        run: |
-          mkdir dist/figma2sketch-windows
-          mv dist/fig2sketch dist/figma2sketch-windows/
-          chmod +x dist/figma2sketch-windows/fig2sketch
       - name: Zip directory
         uses: vimtor/action-zip@v1
         with:
