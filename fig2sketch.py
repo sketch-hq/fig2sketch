@@ -5,23 +5,15 @@ import shutil
 import json
 from zipfile import ZipFile
 
-def clean_output():
-    try:
-        shutil.rmtree('output')
-        os.mkdir('output')
-    except:
-        pass
-
-    os.mkdir('output/pages')
-    os.mkdir('output/images')
-
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Converts a .fig document to .sketch')
     parser.add_argument('fig_file', type=argparse.FileType('rb'))
+    parser.add_argument('sketch_file')
     parser.add_argument('--salt', type=str, help='salt used to generate ids, defaults to random')
     parser.add_argument('--force-convert-images', action='store_true', help='try to convert corrupted images')
     parser.add_argument('-v', action='count', dest='verbosity', help='return more details, can be repeated')
+    parser.add_argument('--dump-fig-json', type=argparse.FileType('w'), help='output a fig representation in json for debugging purposes')
     args = parser.parse_args()
 
     # Set log level
@@ -43,17 +35,10 @@ if __name__ == '__main__':
         from PIL import ImageFile
         ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-    clean_output()
-    output = ZipFile('output/output.sketch', 'w')
-
+    output = ZipFile(args.sketch_file, 'w')
     figma_json, id_map = fig2json.convert_fig(args.fig_file, output)
 
-    try:
-        os.remove('example/figma.json')
-    except:
-        pass
-
-    json.dump(figma_json, open(f'example/figma.json', 'w'), indent=2, ensure_ascii=False,
-              default=lambda x: x.tolist())
+    if args.dump_fig_json:
+        json.dump(figma_json, args.dump_fig_json, indent=2, ensure_ascii=False, default=lambda x: x.tolist())
 
     convert.convert_json_to_sketch(figma_json, id_map, output)
