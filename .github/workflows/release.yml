@@ -100,50 +100,19 @@ jobs:
 
   build-macos-arm64:
     runs-on: macos-11
-    env:
-      PYTHON_VERSION: "3.10.0"
-      MACOSX_DEPLOYMENT_TARGET: "10.9"
-      CFLAGS: -arch arm64 -arch x86_64
     steps:
-      - uses: actions/checkout@v2
-      - name: Cache Python download
-        id: cache-python-download
-        uses: actions/cache@v2
-        with:
-          path: ~/python.pkg
-          key: macOS-Python-${{ env.PYTHON_VERSION }}
-      - name: Get Python
-        if: steps.cache-python-download.outputs.cache-hit != 'true'
-        run: curl https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-macos11.pkg -o ~/python.pkg
-      - name: Install Python
-        run: sudo installer -pkg ~/python.pkg -target /
-      - name: Install Python dependencies
-        run: |
-          python3 --version
-          pip3 install --upgrade pip wheel
-          pip3 install --upgrade -r requirements.txt --no-binary sabyenc3
-      - name: Checkout PyInstaller
-        uses: actions/checkout@v2
-        with:
-          repository: pyinstaller/pyinstaller
-          path: pyinstaller
-      - name: Build PyInstaller bootloader for macOS 10.9 support
-        run: |
-          python3 --version
-          cd pyinstaller/bootloader
-          git fetch --tags
-          git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
-          python3 ./waf all
-          cd ..
-          python3 -m pip install .
-          cd ..
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
       - name: Build 
         run: |
-          python3 -m pip install --upgrade pip wheel
+          python3 -m pip install --upgrade pip
+          PYINSTALLER_COMPILE_BOOTLOADER=1 MACOSX_DEPLOYMENT_TARGET=10.9 pip3 install pyinstaller --no-binary pyinstaller
           pip3 install -r requirements.txt
-          /Library/Frameworks/Python.framework/Versions/3.10/bin/pyinstaller fig2sketch.py -y --target-arch universal2
+          pyinstaller fig2sketch.py -y --onefile --target-arch arm64
       - name: Create folder and adjust permissions
         run: |
           mkdir dist/figma2sketch-macos
