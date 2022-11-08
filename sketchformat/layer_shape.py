@@ -94,9 +94,9 @@ class Rectangle(AbstractShapeLayer):
     def __post_init__(self, corners):
         self.points = [
             CurvePoint.Straight(Point(0, 0), corners.topLeft),
-            CurvePoint.Straight(Point(0, 1), corners.topRight),
+            CurvePoint.Straight(Point(0, 1), corners.bottomLeft),
             CurvePoint.Straight(Point(1, 1), corners.bottomRight),
-            CurvePoint.Straight(Point(1, 0), corners.bottomLeft),
+            CurvePoint.Straight(Point(1, 0), corners.topRight),
         ]
 
 
