@@ -35,10 +35,10 @@ if __name__ == '__main__':
         from PIL import ImageFile
         ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-    output = ZipFile(args.sketch_file, 'w')
-    figma_json, id_map = fig2json.convert_fig(args.fig_file, output)
+    with ZipFile(args.sketch_file, 'w') as output:
+        figma_json, id_map = fig2json.convert_fig(args.fig_file, output)
 
-    if args.dump_fig_json:
-        json.dump(figma_json, args.dump_fig_json, indent=2, ensure_ascii=False, default=lambda x: x.tolist())
+        if args.dump_fig_json:
+            json.dump(figma_json, args.dump_fig_json, indent=2, ensure_ascii=False, default=lambda x: x.tolist())
 
-    convert.convert_json_to_sketch(figma_json, id_map, output)
+        convert.convert_json_to_sketch(figma_json, id_map, output)
