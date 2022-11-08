@@ -2,11 +2,12 @@ import uuid
 import hashlib
 import random
 import struct
-from typing import BinaryIO, List
+from typing import BinaryIO, List, Dict
 import logging
 
 id_salt = random.randbytes(16)
 
+issued_warnings: Dict[tuple[int, int], list[str]] = {}
 
 def gen_object_id(figma_id: List[int], suffix: bytes=b'') -> str:
     # Generate UUIDs by hashing the figma ID with a salt
@@ -36,6 +37,7 @@ def log_conversion_warning(warning_code: str, figma_node: dict):
         "TXT001": f"is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
         "TXT002": f"has multiple text fill colors. Only the first one will be converted",
         "TXT003": f"has a non-solid text color (gradient or image) which is not supported by Sketch",
+        "TXT004": f"contains a 'TITLE' transformation. Sketch does not support this text transformation, so no transformation is applied",
 
         "SHP001": f"contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
 
@@ -44,4 +46,10 @@ def log_conversion_warning(warning_code: str, figma_node: dict):
         "SYM001": f"references an invalid symbol. It will be converted to an empty placeholder group",
     }
 
+    if not figma_node['guid'] in issued_warnings:
+        issued_warnings[figma_node['guid']] = [warning_code]
+    elif not warning_code in issued_warnings[figma_node['guid']]:
+        issued_warnings[figma_node['guid']].append(warning_code)
+    else: 
+        return
     logging.warning(f"[{warning_code}] Figma {figma_node['type']} '{figma_node['name']}' {WARNING_MESSAGES[warning_code]}")

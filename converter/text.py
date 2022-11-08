@@ -308,6 +308,8 @@ def line_height(figma_text):
 
 def text_transformation(figma_text):
     if 'textCase' in figma_text:
+        if figma_text['textCase'] == 'TITLE':
+            utils.log_conversion_warning('TXT004', figma_text)
         return ({'MSAttributedStringTextTransformAttribute': TextCase[figma_text['textCase']]})
     else:
         return {}
