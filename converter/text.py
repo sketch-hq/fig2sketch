@@ -106,6 +106,7 @@ def text_style(figma_text):
     if not fills:
         # Set a transparent fill if no fill is set
         fills = [{
+            'type': 'SOLID',
             'color': {
                 'r': 0,
                 'g': 0,
