@@ -1,6 +1,8 @@
 import utils
 from .context import context
 from sketchformat.prototype import *
+from typing import TypedDict, Tuple, Optional
+
 
 OVERLAY_INTERACTION = {
     'NONE': OverlayBackgroundInteraction.NONE,
@@ -35,8 +37,12 @@ ANIMATION_TYPE = {
 }
 
 
+class _Flow(TypedDict, total=False):
+    flow: FlowConnection
+
+
 # TODO: Is this called from every node type (groups?)
-def convert_flow(figma_node):
+def convert_flow(figma_node: dict) -> _Flow:
     # TODO: What happens with multiple actions?
     flow = None
     for interaction in figma_node.get('prototypeInteractions', []):
@@ -67,24 +73,33 @@ def convert_flow(figma_node):
 
             destination, overlay_settings = get_destination_settings_if_any(action)
 
-            flow = FlowConnection(
-                destinationArtboardID=destination,
-                animationType=ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
-                maintainScrollPosition=action.get('transitionPreserveScroll', False),
-                overlaySettings=overlay_settings
-            )
+            if destination is not None:
+                flow = FlowConnection(
+                    destinationArtboardID=destination,
+                    animationType=ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
+                    maintainScrollPosition=action.get('transitionPreserveScroll', False),
+                    overlaySettings=overlay_settings
+                )
 
     return {'flow': flow} if flow else {}
 
 
-def prototyping_information(figma_frame):
+class _PrototypingInformation(TypedDict, total=False):
+    isFlowHome: bool
+    overlayBackgroundInteraction: OverlayBackgroundInteraction
+    presentationStyle: PresentationStyle
+    overlaySettings: FlowOverlaySettings
+    prototypeViewport: PrototypeViewport
+
+
+def prototyping_information(figma_frame: dict) -> _PrototypingInformation:
     # Some information about the prototype is in the Figma page
     figma_canvas = context.figma_node(figma_frame['parent']['guid'])
     if 'prototypeDevice' not in figma_canvas:
         return {
             'isFlowHome': False,
-            'overlayBackgroundInteraction': 0,
-            'presentationStyle': 0
+            'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
+            'presentationStyle': PresentationStyle.SCREEN
         }
 
     # TODO: Overflow scrolling means making the artboard bigger (fit the child bounds)
@@ -92,7 +107,8 @@ def prototyping_information(figma_frame):
         print('Scroll overflow direction not supported')
 
     if 'overlayBackgroundInteraction' in figma_frame:
-        obj = {
+        return {
+            'isFlowHome': False,
             'overlayBackgroundInteraction': OVERLAY_INTERACTION[
                 figma_frame['overlayBackgroundInteraction']],
             'presentationStyle': PresentationStyle.OVERLAY,
@@ -100,7 +116,7 @@ def prototyping_information(figma_frame):
                 figma_frame.get('overlayPositionType', 'CENTER'))
         }
     else:
-        obj = {
+        return {
             'isFlowHome': figma_frame.get('prototypeStartingPoint', {}).get('name', '') != '',
             'prototypeViewport': PrototypeViewport(
                 name=figma_canvas['prototypeDevice']['presetIdentifier'],
@@ -111,11 +127,10 @@ def prototyping_information(figma_frame):
             'overlaySettings': FlowOverlaySettings.RegularArtboard()
         }
 
-    return obj
 
-
-def get_destination_settings_if_any(action):
+def get_destination_settings_if_any(action: dict) -> Tuple[Optional[str], Optional[FlowOverlaySettings]]:
     overlay_settings = None
+    destination = None
 
     match action['connectionType'], action.get('transitionNodeID', None):
         case 'BACK', _:
@@ -134,6 +149,6 @@ def get_destination_settings_if_any(action):
             destination = None
         case _:
             print(f"Unsupported connection type {action['connectionType']}")
-            return
+
 
     return destination, overlay_settings

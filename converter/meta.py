@@ -1,4 +1,7 @@
-def convert(pages):
+from sketchformat.layer_group import Page, Artboard, SymbolMaster
+from typing import List
+
+def convert(pages: List[Page]) -> dict:
     return {
         'commit': '1899e24f63af087a9dd3c66f73b492b72c27c2c8',
         'pagesAndArtboards': {
@@ -7,7 +10,7 @@ def convert(pages):
                 'artboards': {
                     artboard.do_objectID: {'name': artboard.name}
                     for artboard in page.layers
-                    if artboard._class in ['artboard', 'symbolMaster']
+                    if isinstance(artboard, Artboard) or isinstance(artboard, SymbolMaster)
                 }
             }
             for page in pages

@@ -3,7 +3,7 @@ import utils
 from sketchformat.layer_shape import Rectangle, PointRadiusBehaviour
 
 
-def convert(figma_rect) -> Rectangle:
+def convert(figma_rect: dict) -> Rectangle:
     corner_radius = figma_rect.get('cornerRadius', 0)
     independent = figma_rect.get('rectangleCornerRadiiIndependent', True)
 
@@ -21,7 +21,7 @@ def convert(figma_rect) -> Rectangle:
         ),
     )
 
-def build_rectangle_for_frame(figma_frame) -> Rectangle:
+def build_rectangle_for_frame(figma_frame: dict) -> Rectangle:
     background_rect = convert(figma_frame)
     background_rect.frame.x = 0
     background_rect.frame.y = 0

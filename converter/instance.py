@@ -89,7 +89,7 @@ def get_all_overrides(figma_instance):
     return all_overrides
 
 
-def convert_override(override) -> Optional[List[OverrideValue]]:
+def convert_override(override: dict) -> Optional[List[OverrideValue]]:
     sketch_overrides = []
 
     # Convert uuids in the path from top symbol to child instance

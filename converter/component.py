@@ -1,9 +1,10 @@
 from . import style
 from sketchformat.document import Swatch, Color
 import utils
+from typing import Optional
 
 
-def convert(figma_style):
+def convert(figma_style: dict) -> Optional[Swatch]:
     match figma_style:
         # Fill with a single fill -> color variable
         case {'styleType': 'FILL', 'fillPaints': [{'type': 'SOLID'} as paint]}:

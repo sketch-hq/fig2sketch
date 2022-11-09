@@ -2,7 +2,9 @@ import numpy as np
 import math
 import utils
 from sketchformat.style import *
-from typing import List, TypedDict
+from typing import List, TypedDict, Sequence
+import numpy.typing as npt
+
 
 BORDER_POSITION = {
     'CENTER': BorderPosition.CENTER,
@@ -56,7 +58,7 @@ BLEND_MODE = {
 }
 
 
-def convert(figma_node) -> Style:
+def convert(figma_node: dict) -> Style:
     sketch_style = Style(
         do_objectID=utils.gen_object_id(figma_node['guid'], b'style'),
         borderOptions=BorderOptions(
@@ -72,7 +74,7 @@ def convert(figma_node) -> Style:
     return sketch_style
 
 
-def convert_border(figma_node, figma_border) -> Border:
+def convert_border(figma_node: dict, figma_border: dict) -> Border:
     return Border.from_fill(
         convert_fill(figma_node, figma_border),
         position=BORDER_POSITION[figma_node['strokeAlign']],
@@ -80,7 +82,7 @@ def convert_border(figma_node, figma_border) -> Border:
     )
 
 
-def convert_fill(figma_node, figma_fill) -> Fill:
+def convert_fill(figma_node: dict, figma_fill: dict) -> Fill:
     match figma_fill:
         case {'type': 'EMOJI'}:
             raise Exception("Unsupported fill: EMOJI")
@@ -99,7 +101,7 @@ def convert_fill(figma_node, figma_fill) -> Fill:
                                  isEnabled=figma_fill['visible'])
 
 
-def convert_color(color, opacity=None) -> Color:
+def convert_color(color: dict, opacity: Optional[float]=None) -> Color:
     return Color(
         red=color['r'],
         green=color['g'],
@@ -108,7 +110,7 @@ def convert_color(color, opacity=None) -> Color:
     )
 
 
-def convert_gradient(figma_node, figma_fill) -> Gradient:
+def convert_gradient(figma_node: dict, figma_fill: dict) -> Gradient:
     # Convert positions depending on the gradient type
     mat = figma_fill['transform']
 
@@ -153,7 +155,7 @@ def convert_gradient(figma_node, figma_fill) -> Gradient:
         )
 
 
-def convert_stops(figma_stops, rotation_offset=0.0) -> List[GradientStop]:
+def convert_stops(figma_stops: List[dict], rotation_offset: float=0.0) -> List[GradientStop]:
     stops = [
         GradientStop(
             color=convert_color(stop['color']),
@@ -170,12 +172,12 @@ def convert_stops(figma_stops, rotation_offset=0.0) -> List[GradientStop]:
     return stops
 
 
-def scaled_distance(a, b, x_scale) -> float:
+def scaled_distance(a: npt.NDArray[np.float64], b: npt.NDArray[np.float64], x_scale: float) -> float:
     v = a - b
     return np.hypot(v[0] * x_scale, v[1])
 
 
-def rotated_stop(position, offset) -> float:
+def rotated_stop(position: float, offset: float) -> float:
     pos = position + offset
     if pos > 1:
         pos -= 1
@@ -192,7 +194,7 @@ class _Effects(TypedDict):
     innerShadows: List[InnerShadow]
 
 
-def convert_effects(figma_node) -> _Effects:
+def convert_effects(figma_node: dict) -> _Effects:
     sketch: _Effects = {
         'blur': Blur.Disabled(),
         'shadows': [],
@@ -244,7 +246,7 @@ def convert_effects(figma_node) -> _Effects:
     return sketch
 
 
-def context_settings(figma_node) -> ContextSettings:
+def context_settings(figma_node: dict) -> ContextSettings:
     blend_mode = BLEND_MODE[figma_node['blendMode']]
     opacity = figma_node['opacity']
 

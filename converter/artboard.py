@@ -21,7 +21,7 @@ DEFAULT_FIGMA_ARTBOARD_FILL = {
     ]
 }
 
-def convert(figma_frame) -> Artboard:
+def convert(figma_frame: dict) -> Artboard:
     obj = Artboard(
         **base.base_shape(figma_frame),
         **prototype.prototyping_information(figma_frame)
@@ -34,7 +34,7 @@ def convert(figma_frame) -> Artboard:
 
     return obj
 
-def post_process_frame(figma_frame, sketch_artboard: Artboard) -> Artboard:
+def post_process_frame(figma_frame: dict, sketch_artboard: Artboard) -> Artboard:
     # Sketch only supports one custom color as an artboard background
     # If the frame has more than one color or other custom style we just create
     # the background rectangle with whatever style

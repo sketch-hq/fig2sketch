@@ -262,7 +262,7 @@ CURVE_MODES = {
 }
 
 
-def get_or_create_point(figma_vector, points, index, vertices) -> CurvePoint:
+def get_or_create_point(figma_vector, points, index, vertices):
     if index in points:
         point = points[index]
     else:

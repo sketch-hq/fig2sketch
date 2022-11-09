@@ -132,7 +132,7 @@ class Gradient:
         setattr(self, 'from', from_)
 
     @staticmethod
-    def Linear(from_: Point, to: Point, stops: List[GradientStop]):
+    def Linear(from_: Point, to: Point, stops: List[GradientStop]) -> 'Gradient':
         return Gradient(
             gradientType=GradientType.LINEAR,
             from_=from_,
@@ -141,7 +141,7 @@ class Gradient:
         )
 
     @staticmethod
-    def Radial(from_: Point, to: Point, elipseLength: float, stops: List[GradientStop]):
+    def Radial(from_: Point, to: Point, elipseLength: float, stops: List[GradientStop]) -> 'Gradient':
         return Gradient(
             gradientType=GradientType.RADIAL,
             from_=from_,
@@ -151,7 +151,7 @@ class Gradient:
         )
 
     @staticmethod
-    def Angular(stops: List[GradientStop]):
+    def Angular(stops: List[GradientStop]) -> 'Gradient':
         return Gradient(
             gradientType=GradientType.ANGULAR,
             stops=stops
@@ -187,7 +187,7 @@ class Fill:
     image: Optional[Image] = None
 
     @staticmethod
-    def Color(color: Color, isEnabled: bool = True):
+    def Color(color: Color, isEnabled: bool = True) -> 'Fill':
         return Fill(
             color=color,
             fillType=FillType.COLOR,
@@ -195,7 +195,7 @@ class Fill:
         )
 
     @staticmethod
-    def Gradient(gradient: Gradient, isEnabled: bool):
+    def Gradient(gradient: Gradient, isEnabled: bool) -> 'Fill':
         return Fill(
             gradient=gradient,
             fillType=FillType.GRADIENT,
@@ -204,7 +204,7 @@ class Fill:
 
     @staticmethod
     def Image(path: str, patternFillType: PatternFillType, patternTileScale: float,
-              isEnabled: bool):
+              isEnabled: bool) -> 'Fill':
         return Fill(
             image=Image(_ref=path),
             fillType=FillType.PATTERN,
@@ -314,7 +314,7 @@ class Style:
     startDecorationType: Optional[MarkerType] = None # Legacy, should match startMarkerType
     endDecorationType: Optional[MarkerType] = None # Legacy, should match endMarkerType
 
-    def set_markers(self, startMarkerType: MarkerType, endMarkerType: MarkerType):
+    def set_markers(self, startMarkerType: MarkerType, endMarkerType: MarkerType) -> None:
         self.startMarkerType = startMarkerType
         self.endMarkerType = endMarkerType
 

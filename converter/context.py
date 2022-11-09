@@ -1,8 +1,10 @@
 from . import component, page, font
 import logging
+from typing import Sequence, Tuple, Optional, Union, Dict, IO, List
+from sketchformat.document import Swatch
 
 
-def find_symbols(node):
+def find_symbols(node: dict) -> List[Sequence[int]]:
     if node['type'] == 'SYMBOL':
         return [node['guid']]
 
@@ -13,22 +15,19 @@ def find_symbols(node):
     return found
 
 class Context:
-    def init(self, components_page, id_map):
-        self._sketch_components = {}
+    def init(self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict]) -> None:
+        self._sketch_components: Dict[Sequence[int], Swatch] = {}
         self.symbols_page = None
         self._node_by_id = id_map
-        self._used_fonts = {}
-        self._component_symbols = {s: False for s in find_symbols(components_page)}
+        self._used_fonts: Dict[Tuple[str,str], Tuple[IO[bytes], str]] = {}
+        self._component_symbols = {s: False for s in find_symbols(components_page)} if components_page else {}
 
         # Where to position symbols of the specified width
         # width -> (x, y)
         self._symbol_position = {0: [0, 0]}
 
-    def component(self, cid):
-        figma_component = self._node_by_id.get(cid)
-        if figma_component is None:
-            logging.warning(f"Figma component {cid} not found")
-            return None
+    def component(self, cid: Sequence[int]) -> Tuple[dict, Optional[Swatch]]:
+        figma_component = self.figma_node(cid)
 
         # See if we can convert this component to a Sketch swatch
         sketch_component = self._sketch_components.get(cid)
@@ -39,8 +38,8 @@ class Context:
 
         return figma_component, sketch_component
 
-    def sketch_components(self):
-        return self._sketch_components.values()
+    def sketch_components(self) -> List[Swatch]:
+        return list(self._sketch_components.values())
 
     def add_symbol(self, sketch_symbol):
         if not self.symbols_page:
@@ -49,7 +48,7 @@ class Context:
         self.symbols_page.layers.append(sketch_symbol)
         self._position_symbol(sketch_symbol)
 
-    def figma_node(self, fid):
+    def figma_node(self, fid: Sequence[int]) -> dict:
         return self._node_by_id[fid]
 
     def record_font(self, figma_font_name):
@@ -71,15 +70,15 @@ class Context:
         self._used_fonts[font_descriptor] = (font_file, font_name)
         return font_name
 
-    def used_fonts(self):
+    def used_fonts(self) -> Dict[Tuple[str,str], Tuple[IO[bytes], str]]:
         return self._used_fonts
 
-    def find_symbol(self, sid):
+    def find_symbol(self, sid: Sequence[int]) -> dict:
         symbol = self.figma_node(sid)
         if not self._component_symbols.get(sid, True):
             # The symbol is in the component page and has not been converted yet, do it now
             from . import tree
-            tree.convert_node(symbol, None)
+            tree.convert_node(symbol, '')
             self._component_symbols[sid] = True
 
         return symbol

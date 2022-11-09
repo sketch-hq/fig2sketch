@@ -1,5 +1,5 @@
 from enum import IntEnum
-
+from typing import Optional
 from .common import Point
 from dataclasses import dataclass, field
 
@@ -31,7 +31,7 @@ class FlowOverlaySettings:
     overlayType: int = 0
 
     @staticmethod
-    def Positioned(position) -> 'FlowOverlaySettings':
+    def Positioned(position: str) -> 'FlowOverlaySettings':
         anchor = Point(0.5, 0.5)
 
         match position:
@@ -64,7 +64,7 @@ class FlowConnection:
     animationType: AnimationType = AnimationType.NONE
     maintainScrollPosition: bool = False
     shouldCloseExistingOverlays: bool = False
-    overlaySettings: FlowOverlaySettings
+    overlaySettings: Optional[FlowOverlaySettings]
 
 
 @dataclass(kw_only=True)

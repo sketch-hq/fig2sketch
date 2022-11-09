@@ -4,9 +4,10 @@ from sketchformat.layer_common import Rect
 from sketchformat.layer_group import *
 from sketchformat.layer_shape import Rectangle
 from . import style, positioning
+from typing import Sequence
 
 
-def convert(figma_canvas) -> Page:
+def convert(figma_canvas: dict) -> Page:
     return make_page(figma_canvas['guid'], figma_canvas['name'])
 
 
@@ -16,7 +17,7 @@ def symbols_page() -> Page:
     return page
 
 
-def make_page(guid, name, suffix=b'') -> Page:
+def make_page(guid: Sequence[int], name: str, suffix: bytes=b'') -> Page:
     return Page(
         do_objectID=utils.gen_object_id(guid, suffix),
         frame=Rect(

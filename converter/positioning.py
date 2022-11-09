@@ -1,9 +1,18 @@
 import numpy as np
+import numpy.typing as npt
 import math
 from sketchformat.layer_common import Rect
+from typing import TypedDict, Tuple, List
 
 
-def convert(figma_item):
+class _Positioning(TypedDict):
+    frame: Rect
+    rotation: float
+    isFlippedHorizontal: bool
+    isFlippedVertical: bool
+
+
+def convert(figma_item: dict) -> _Positioning:
     flip, rotation = guess_flip(figma_item)
     coordinates = transform_frame(figma_item)
 
@@ -21,7 +30,7 @@ def convert(figma_item):
     }
 
 
-def transform_frame(item):
+def transform_frame(item: dict) -> npt.NDArray[np.float64]:
     # Calculate relative position
     relative_position = item['transform'][:2,2]
 
@@ -38,14 +47,14 @@ def transform_frame(item):
     return relative_position + origin_translation
 
 
-def apply_transform(item, vector):
+def apply_transform(item: dict, vector: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     # Rotation/flip matrix
     matrix = item['transform'][:2,:2]
 
     return matrix.dot(vector)
 
 
-def guess_flip(figma_item):
+def guess_flip(figma_item: dict) -> Tuple[List[bool], float]:
     tr = figma_item['transform']
 
     # Use a diagonal with big numbers to check for sign flips, to avoid floating point weirdness

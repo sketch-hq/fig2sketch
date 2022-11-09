@@ -5,9 +5,11 @@ import utils
 import functools
 import logging
 import shutil
+from zipfile import ZipFile
+from typing import Tuple, Sequence, Dict, IO
 
 
-def convert_fig(reader, output):
+def convert_fig(reader: IO[bytes], output: ZipFile) -> Tuple[dict, Dict[Sequence[int], dict]]:
     fig, figma_zip = decodefig.decode(reader)
 
     if figma_zip is not None:

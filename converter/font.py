@@ -6,6 +6,7 @@ import urllib.parse
 from fontTools.ttLib import TTFont
 from sketchformat.document import FontReference, JsonFileReference
 from zipfile import ZipFile
+from typing import IO, Tuple
 
 fonts_cache_dir = appdirs.user_cache_dir('Figma2Sketch', 'Sketch') + '/fonts'
 os.makedirs(fonts_cache_dir, exist_ok=True)
@@ -39,7 +40,7 @@ def get_webfont(family, subfamily):
     raise FontError(f'Could not find font {family} {subfamily}')
 
 
-def convert(name, font_file, postscript, output_zip):
+def convert(name: Tuple[str, str], font_file: IO[bytes], postscript: str, output_zip: ZipFile) -> FontReference:
     family, subfamily = name
     data = font_file.read()
     sha = utils.generate_file_ref(data)

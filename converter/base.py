@@ -11,8 +11,8 @@ from .context import context
 
 SUPPORTED_INHERIT_STYLES = {
     'inheritFillStyleID': ('fillPaints',),
-    'inheritFillStyleIDForStroke': None, # Special cased below
-    'inheritStrokeStyleID': None,  # Unused in Figma?
+    'inheritFillStyleIDForStroke': (), # Special cased below
+    'inheritStrokeStyleID': (),  # Unused in Figma?
     'inheritTextStyleID': (
         'fontName',
         'textCase',
@@ -22,13 +22,27 @@ SUPPORTED_INHERIT_STYLES = {
         'lineHeight',
         'paragraphSpacing'
     ),
-    'inheritExportStyleID': None,  # Unused in Figma?
+    'inheritExportStyleID': (),  # Unused in Figma?
     'inheritEffectStyleID': ('blur', 'shadows', 'innerShadows'),
     'inheritGridStyleID': ('layoutGrids'),
-    'inheritFillStyleIDForBackground': None,  # Unused in Figma?
+    'inheritFillStyleIDForBackground': (),  # Unused in Figma?
 }
 
-def base_layer(figma_node):
+class _BaseLayer(positioning._Positioning, prototype._Flow):
+    do_objectID: str
+    name: str
+    booleanOperation: BooleanOperation
+    exportOptions: ExportOptions
+    isFixedToViewport: bool
+    isLocked: bool
+    isVisible: bool
+    layerListExpandedType: LayerListStatus
+    nameIsFixed: bool
+    resizingConstraint: int
+    resizingType: ResizeType
+    isTemplate: bool
+
+def base_layer(figma_node: dict) -> _BaseLayer:
     # TODO: Hack for groups that only contain non-visible items
     if math.isnan(figma_node['size']['x']):
         figma_node['size'] = {'x':1, 'y':1}
@@ -38,23 +52,27 @@ def base_layer(figma_node):
         'name': figma_node['name'],
         'booleanOperation': -1,
         'exportOptions': export_options(figma_node.get('exportSettings', [])),
-        **positioning.convert(figma_node),
+        **positioning.convert(figma_node), # type: ignore
         'isFixedToViewport': False,
         'isLocked': figma_node['locked'],
         'isVisible': figma_node['visible'],
         'layerListExpandedType': 0,
         'nameIsFixed': False,
         'resizingConstraint': resizing_constraint(figma_node),
-        'resizingType': 0,
-        **prototype.convert_flow(figma_node),
+        'resizingType': ResizeType.STRETCH,
+        **prototype.convert_flow(figma_node), # type: ignore
         'isTemplate': False
     }
 
 
-def base_shape(figma_node):
-    obj = {
-        **base_layer(figma_node),
-        **masking(figma_node),
+class _BaseShape(_BaseLayer, _Masking):
+    style: Style
+
+
+def base_shape(figma_node: dict) -> _BaseShape:
+    obj: _BaseShape = {
+        **base_layer(figma_node), # type: ignore
+        **masking(figma_node), # type: ignore
         'style': process_styles(figma_node),
     }
 
@@ -68,7 +86,7 @@ def base_shape(figma_node):
     return obj
 
 
-def process_styles(figma_node) -> Style:
+def process_styles(figma_node: dict) -> Style:
     # First we apply any overrides that we may have (from inherit* properties)
     # If any of them can be linked as a shared style, we keep track of them to add the IDs at the end
     components = {}
@@ -87,7 +105,7 @@ def process_styles(figma_node) -> Style:
                 else:
                     figma_node.pop(key, None)
         else:
-            logger.warning(f"Unsupported {inherit_style}, it will not be copied")
+            logging.warning(f"Unsupported {inherit_style}, it will not be copied")
 
         if sketch_component:
             components[inherit_style] = sketch_component
@@ -100,12 +118,12 @@ def process_styles(figma_node) -> Style:
         elif key == 'inheritFillStyleIDForStroke':
             st.borders[0].color = value.value
         else:
-            logger.error(f"Unexpected component for {key}")
+            logging.error(f"Unexpected component for {key}")
 
     return st
 
 
-def export_options(figma_export_settings) -> ExportOptions:
+def export_options(figma_export_settings: dict) -> ExportOptions:
     return ExportOptions(
         exportFormats=[
             ExportFormat(
@@ -121,7 +139,7 @@ class _ExportScale(TypedDict):
     visibleScaleType: VisibleScaleType
 
 
-def export_scale(figma_constraint) -> _ExportScale:
+def export_scale(figma_constraint: dict) -> _ExportScale:
     match figma_constraint:
         case {'type': 'CONTENT_SCALE', 'value': scale}:
             return {
@@ -170,30 +188,27 @@ HORIZONTAL_CONSTRAINT = {
 
 
 # Vertical constraints are equivalent to horizontal ones, with a 3 bit shift
-def resizing_constraint(figma_node):
+def resizing_constraint(figma_node: dict) -> int:
     h = HORIZONTAL_CONSTRAINT[figma_node['horizontalConstraint']]
     v = HORIZONTAL_CONSTRAINT[figma_node['verticalConstraint']] << 3
     return h + v
 
 
+class _Masking(TypedDict):
+    shouldBreakMaskChain: bool
+    hasClippingMask: bool
+    clippingMaskMode: ClippingMaskMode
+
+
 # TODO: Call this function from every shape/image/etc
 # TODO: Check if image masks work
-def masking(figma):
+def masking(figma: dict) -> _Masking:
     CLIPPING_MODE = {
-        'ALPHA': 1,
-        'OUTLINE': 0,  # TODO This works differently in Sketch vs Figma
-        # Sketch masks only the fill and draws border normally and fill as background
-        # Figma masks including the borders and ignores the stroke/fill properties
-        # 'LUMINANCE': UNSUPPORTED
+        'ALPHA': ClippingMaskMode.ALPHA,
+        'OUTLINE': ClippingMaskMode.OUTLINE,
     }
-    sketch = {
-        'shouldBreakMaskChain': False
+    return {
+        'shouldBreakMaskChain': False,
+        'hasClippingMask': 'mask' in figma,
+        'clippingMaskMode': CLIPPING_MODE[figma.get('maskType', 'OUTLINE')]
     }
-    if figma['mask']:
-        sketch['hasClippingMask'] = True
-        sketch['clippingMaskMode'] = CLIPPING_MODE[figma['maskType']]
-    else:
-        sketch['hasClippingMask'] = False
-        sketch['clippingMaskMode'] = 0
-
-    return sketch

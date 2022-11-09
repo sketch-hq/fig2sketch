@@ -1,10 +1,11 @@
 import orjson
 import logging
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, IO
 import io
 
-def serialize(obj, file) -> None:
+
+def serialize(obj: object, file: IO[bytes]) -> None:
     file.write(orjson.dumps(obj, default=lambda x: x.to_json(), option=orjson.OPT_SERIALIZE_NUMPY))
 
 # Check if orjson is patched

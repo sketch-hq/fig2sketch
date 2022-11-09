@@ -1,9 +1,11 @@
 import utils
 from . import font
 from .context import context
+import zipfile
+from sketchformat.layer_group import Page
+from typing import List
 
-
-def convert(pages, output_zip):
+def convert(pages: List[Page], output_zip: zipfile.ZipFile) -> dict:
     return {
         '_class': 'document',
         'do_objectID': utils.gen_object_id((0, 0), b'document'),
@@ -46,8 +48,7 @@ def convert(pages, output_zip):
         'sharedSwatches': {
             '_class': 'swatchContainer',
             'do_objectID': utils.gen_object_id((0, 0), b'swatchContainer'),
-            'objects': [component for component in context.sketch_components() if
-                        component._class == 'swatch']
+            'objects': context.sketch_components()
         },
         'fontReferences': sorted(
             [font.convert(name, font_file, postscript, output_zip) for name, (font_file, postscript) in context.used_fonts().items() if font_file],

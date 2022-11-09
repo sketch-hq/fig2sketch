@@ -3,9 +3,11 @@ from converter import artboard, group, oval, page, rectangle, shape_path, polygo
 from dataclasses import is_dataclass
 import logging
 from sketchformat.layer_common import AbstractLayer
+from sketchformat.layer_group import AbstractLayerGroup
+from typing import Dict, Callable, Any
 
 
-CONVERTERS = {
+CONVERTERS: Dict[str,Callable[[dict], AbstractLayer]] = {
     'CANVAS': page.convert,
     'ARTBOARD': artboard.convert,
     'GROUP': group.convert,
@@ -23,7 +25,7 @@ CONVERTERS = {
     'INSTANCE': instance.convert,
 }
 
-POST_PROCESSING = {
+POST_PROCESSING: Dict[str,Callable[[dict, Any], AbstractLayer]] = {
     'BOOLEAN_OPERATION': shape_group.post_process,
     'SYMBOL': symbol.move_to_symbols_page,
     'GROUP': group.post_process_frame,
@@ -33,7 +35,7 @@ POST_PROCESSING = {
 }
 
 
-def convert_node(figma_node, parent_type) -> AbstractLayer:
+def convert_node(figma_node: dict, parent_type: str) -> AbstractLayer:
     name = figma_node['name']
     type_ = get_node_type(figma_node, parent_type)
     logging.info(f'{type_}: {name}')
@@ -44,7 +46,7 @@ def convert_node(figma_node, parent_type) -> AbstractLayer:
 
     # TODO: Determine who needs layers per node type
     # e.g: rectangles never have children, groups do
-    if children:
+    if children and isinstance(sketch_item, AbstractLayerGroup):
         sketch_item.layers = children
 
     post_process = POST_PROCESSING.get(type_)
@@ -54,7 +56,7 @@ def convert_node(figma_node, parent_type) -> AbstractLayer:
     return sketch_item
 
 
-def get_node_type(figma_node, parent_type) -> str:
+def get_node_type(figma_node: dict, parent_type: str) -> str:
     # We do this because Sketch does not support nested artboards
     # If a Frame is detected inside another Frame, the internal one
     # is considered a group
