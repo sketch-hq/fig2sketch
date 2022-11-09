@@ -11,10 +11,6 @@ def convert_json_to_sketch(figma, id_map, output):
     # and store there the components, for consistency purposes
     context.init(components_page, id_map)
 
-    # Convert component page symbols. Ignore the result since we just care about the symbols
-    # being added to the symbols page.
-    tree.convert_node(components_page, 'DOCUMENT')
-
     # Convert all normal pages
     sketch_pages = convert_pages(figma_pages, output)
 

@@ -23,7 +23,7 @@ CONVERTERS = {
     'INSTANCE': instance.convert,
 }
 
-POST_PROCESSING = {  
+POST_PROCESSING = {
     'BOOLEAN_OPERATION': shape_group.post_process,
     'SYMBOL': symbol.move_to_symbols_page,
     'GROUP': group.post_process_frame,

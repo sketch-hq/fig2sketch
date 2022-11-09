@@ -2,12 +2,23 @@ from . import component, page, font
 import logging
 
 
+def find_symbols(node):
+    if node['type'] == 'SYMBOL':
+        return [node['guid']]
+
+    found = []
+    for child in node.get('children', []):
+        found += find_symbols(child)
+
+    return found
+
 class Context:
     def init(self, components_page, id_map):
         self._sketch_components = {}
         self.symbols_page = None
         self._node_by_id = id_map
         self._used_fonts = {}
+        self._component_symbols = {s: False for s in find_symbols(components_page)}
 
         # Where to position symbols of the specified width
         # width -> (x, y)
@@ -62,6 +73,16 @@ class Context:
 
     def used_fonts(self):
         return self._used_fonts
+
+    def find_symbol(self, sid):
+        symbol = self.figma_node(sid)
+        if not self._component_symbols.get(sid, True):
+            # The symbol is in the component page and has not been converted yet, do it now
+            from . import tree
+            tree.convert_node(symbol, None)
+            self._component_symbols[sid] = True
+
+        return symbol
 
     def _position_symbol(self, sketch_symbol):
         # Mimics Sketch positioning algorith:

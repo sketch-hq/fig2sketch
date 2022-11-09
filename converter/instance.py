@@ -1,4 +1,4 @@
-from . import base, group
+from . import base, group, tree
 import utils
 from .context import context
 import copy
@@ -69,7 +69,7 @@ def get_all_overrides(figma_instance):
     """Gets all overrides of a symbol, including component assignments"""
 
     # Convert top-level properties to overrides
-    figma_master = context.figma_node(figma_instance['symbolData']['symbolID'])
+    figma_master = context.find_symbol(figma_instance['symbolData']['symbolID'])
     all_overrides = convert_properties_to_overrides(figma_master, figma_instance.get('componentPropAssignments', []))
 
     # Sort overrides by length of path. This ensures top level overrides are processed before nested ones
@@ -139,7 +139,7 @@ def find_symbol_master(root_symbol, guid_path, overrides):
             instance = context.figma_node(guid)
             symbol_id = instance['symbolData']['symbolID']
 
-        current_symbol = context.figma_node(symbol_id)
+        current_symbol = context.find_symbol(symbol_id)
 
     return current_symbol
 

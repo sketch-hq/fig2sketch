@@ -34,7 +34,7 @@ def base_layer(figma_node):
         figma_node['size'] = {'x':1, 'y':1}
 
     return {
-        'do_objectID': utils.gen_object_id(figma_node['guid']),
+        'do_objectID': utils.gen_object_id(figma_node.get('overrideKey', figma_node['guid'])),
         'name': figma_node['name'],
         'booleanOperation': -1,
         'exportOptions': export_options(figma_node.get('exportSettings', [])),
