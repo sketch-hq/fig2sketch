@@ -43,7 +43,7 @@ def convert_flow(figma_node):
         if interaction['isDeleted']:
             continue
 
-        if interaction['event']['interactionType'] != 'ON_CLICK':
+        if interaction['event'].get('interactionType') != 'ON_CLICK':
             print('Unsupported interaction type')
             continue
 
