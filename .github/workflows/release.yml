@@ -99,7 +99,7 @@ jobs:
           path: figma2sketch-macos-x86_64.zip
 
   build-macos-arm64:
-    runs-on: macos-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v2
