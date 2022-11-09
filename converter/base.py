@@ -31,7 +31,7 @@ SUPPORTED_INHERIT_STYLES = {
 def base_layer(figma_node):
     # TODO: Hack for groups that only contain non-visible items
     if math.isnan(figma_node['size']['x']):
-        figma_node['size'] = {'x':0, 'y':0}
+        figma_node['size'] = {'x':1, 'y':1}
 
     return {
         'do_objectID': utils.gen_object_id(figma_node['guid']),

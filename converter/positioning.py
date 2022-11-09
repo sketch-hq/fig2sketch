@@ -10,8 +10,8 @@ def convert(figma_item):
     return {
         'frame': Rect(
             constrainProportions=figma_item.get('proportionsConstrained', False),
-            height=figma_item['size']['y'],
-            width=figma_item['size']['x'],
+            height=max(figma_item['size']['y'], 1),
+            width=max(figma_item['size']['x'], 1),
             x=coordinates[0],
             y=coordinates[1]
         ),
