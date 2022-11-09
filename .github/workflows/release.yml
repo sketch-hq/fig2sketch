@@ -107,7 +107,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.11.0
-          architecture: x64
+          architecture: x64 # Otherwise the runner will try to download Python arm64, which is not available. x64 has support for both archs (universal2).
       - name: Build 
         run: |
           python -m pip install --upgrade pip
