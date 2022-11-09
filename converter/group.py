@@ -1,4 +1,4 @@
-from . import base, rectangle
+from . import base, rectangle, positioning
 import utils
 import numpy as np
 from sketchformat.style import Style
@@ -39,16 +39,7 @@ def post_process_frame(figma_group, sketch_group):
         # In Figma the frame box can be smalled than the children bounds, but not so in Sketch
         # To do so, we resize the frame to match the children bbox and also move the children
         # so that the top-left corner sits at 0,0
-        child_bboxes = [
-            bbox_from_frame(child)
-            for child in sketch_group.layers
-        ]
-        children_bbox = [
-            min([b[0] for b in child_bboxes]),
-            max([b[1] for b in child_bboxes]),
-            min([b[2] for b in child_bboxes]),
-            max([b[3] for b in child_bboxes]),
-        ]
+        children_bbox = positioning.group_bbox(sketch_group.layers)
         vector = [children_bbox[0], children_bbox[2]]
 
         for child in sketch_group.layers:
@@ -62,35 +53,6 @@ def post_process_frame(figma_group, sketch_group):
         sketch_group.frame.height = children_bbox[3] - children_bbox[2]
 
     return sketch_group
-
-
-# TODO: Extract this and share code with positioning
-def bbox_from_frame(child):
-    frame = child.frame
-    theta = np.radians(child.rotation)
-    c, s = np.cos(theta), np.sin(theta)
-    matrix = np.array(((c, -s), (s, c)))
-    # Rotate the frame to the original position and calculate corners
-    x1 = frame.x
-    x2 = x1 + frame.width
-    y1 = frame.y
-    y2 = y1 + frame.height
-
-    w2 = frame.width / 2
-    h2 = frame.height / 2
-    points = [
-        matrix.dot(np.array([-w2, -h2])) - np.array([-w2, -h2]) + np.array([x1, y1]),
-        matrix.dot(np.array([w2, -h2])) - np.array([w2, -h2]) + np.array([x2, y1]),
-        matrix.dot(np.array([w2, h2])) - np.array([w2, h2]) + np.array([x2, y2]),
-        matrix.dot(np.array([-w2, h2])) - np.array([-w2, h2]) + np.array([x1, y2]),
-    ]
-
-    return [
-        min(p[0] for p in points),
-        max(p[0] for p in points),
-        min(p[1] for p in points),
-        max(p[1] for p in points),
-    ]
 
 
 def make_clipping_rect(guid, frame):
@@ -108,5 +70,4 @@ def make_clipping_rect(guid, frame):
         style=Style(do_objectID=utils.gen_object_id(guid, b'frame_mask_style')),
         resizingConstraint=0,
         rotation=0,
-        corners=Rectangle.Corners(0, 0, 0, 0)
     )

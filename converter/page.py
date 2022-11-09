@@ -1,7 +1,9 @@
 import utils
-from sketchformat.style import Style
+from sketchformat.style import Style, Fill, Color
 from sketchformat.layer_common import Rect
 from sketchformat.layer_group import *
+from sketchformat.layer_shape import Rectangle
+from . import style, positioning
 
 
 def convert(figma_canvas) -> Page:
@@ -29,3 +31,29 @@ def make_page(guid, name, suffix=b'') -> Page:
         style=Style(do_objectID=utils.gen_object_id(guid, suffix + b'style')),
         hasClickThrough=True
     )
+
+
+DEFAULT_CANVAS_BACKGROUND = Color(red=0.9607843160629272, green=0.9607843160629272, blue=0.9607843160629272, alpha=1)
+import math
+def add_page_background(figma_canvas, sketch_page):
+    background_color = style.convert_color(figma_canvas['backgroundColor'], figma_canvas['backgroundOpacity'])
+    if background_color != DEFAULT_CANVAS_BACKGROUND:
+        page_bbox = positioning.group_bbox(sketch_page.layers)
+        sketch_page.layers.insert(0, Rectangle(
+            do_objectID=utils.gen_object_id(figma_canvas['guid'], b'background'),
+            name="Page background",
+            style=Style(
+                do_objectID=utils.gen_object_id(figma_canvas['guid'], b'background_style'),
+                fills=[Fill.Color(background_color)]
+            ),
+            resizingConstraint=0,
+            rotation=0,
+            frame=Rect(
+                x=page_bbox[0] - 1000,
+                y=page_bbox[2] - 1000,
+                width=(page_bbox[1]-page_bbox[0]) + 2000,
+                height=(page_bbox[3]-page_bbox[2]) + 2000
+            )
+        ))
+
+    return sketch_page

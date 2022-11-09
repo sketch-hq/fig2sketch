@@ -90,18 +90,19 @@ def convert_image(fname, figma_zip, output):
 
         # Save to memory, calculate hash, and save
         out = io.BytesIO()
-        if image.format == 'PNG':
-            # No need to convert if it's already a PNG
+        if image.format in ['PNG', 'JPEG']:
+            # No need to convert if it's already a PNG or JPEG
             fd.seek(0)
             while buf := fd.read(16536):
                 out.write(buf)
+            extension = '' if image.format == 'JPEG' else '.png'
         else:
             image.save(out, format='png')
+            extension = '.png'
 
         fhash = utils.generate_file_ref(out.getbuffer())
-
-        output.open(f'images/{fhash}.png', 'w').write(out.getbuffer())
-        return fhash
+        output.open(f'images/{fhash}{extension}', 'w').write(out.getbuffer())
+        return f'{fhash}{extension}'
     except UnidentifiedImageError as e:
         logging.critical(f"Could not convert image {fname}. It appears to be corrupted.")
         logging.critical(f"Try passing `--force-convert-images` to ignore this error and try to convert the image anyway.")

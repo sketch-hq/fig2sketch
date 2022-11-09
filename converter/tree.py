@@ -28,7 +28,8 @@ POST_PROCESSING = {
     'SYMBOL': symbol.move_to_symbols_page,
     'GROUP': group.post_process_frame,
     'ARTBOARD': artboard.post_process_frame,
-    'INSTANCE': instance.post_process
+    'INSTANCE': instance.post_process,
+    'CANVAS': page.add_page_background
 }
 
 

@@ -83,7 +83,7 @@ class Rectangle(AbstractShapeLayer):
         bottomRight: float
         bottomLeft: float
 
-    corners: InitVar[Corners]
+    corners: InitVar[Corners] = Corners(0, 0, 0, 0)
     _class: str = field(default='rectangle')
     fixedRadius: float = 0.0
     hasConvertedToNewRoundCorners: bool = True

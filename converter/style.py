@@ -89,7 +89,7 @@ def convert_fill(figma_node, figma_fill) -> Fill:
                               isEnabled=figma_fill['visible'])
         case {'type': 'IMAGE'}:
             return Fill.Image(
-                f'images/{figma_fill["image"]["filename"]}.png',
+                f'images/{figma_fill["image"]["filename"]}',
                 patternFillType=PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
                 patternTileScale=figma_fill.get('scale', 1),
                 isEnabled=figma_fill['visible']

@@ -43,12 +43,12 @@ def post_process_frame(figma_frame, sketch_artboard: Artboard) -> Artboard:
     # We could just always create the rectangle to simplify the logic, but I guess
     # adding always a background rectangle is an overhead for the document itself
     artboard_style = style.convert(figma_frame)
+
     match artboard_style.fills:
         case [Fill(fillType=FillType.COLOR, color=color)]:
-            if color != Color.White():
-                # Single color, apply to artboard
-                sketch_artboard.backgroundColor = color
-                sketch_artboard.hasBackgroundColor = True
+            # Single color, apply to artboard
+            sketch_artboard.backgroundColor = color
+            sketch_artboard.hasBackgroundColor = True
         case _:
             # Anything else, add a background rect
             sketch_artboard.layers.insert(0, rectangle.build_rectangle_for_frame(figma_frame))

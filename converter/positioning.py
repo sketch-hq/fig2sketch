@@ -73,3 +73,48 @@ def guess_flip(figma_item):
         angle = (angle + 180) % 360
 
     return flip, angle
+
+
+def group_bbox(children):
+    if not children:
+        return [0, 0, 0, 0]
+
+    child_bboxes = [
+        bbox_from_frame(child)
+        for child in children
+    ]
+    return [
+        min([b[0] for b in child_bboxes]),
+        max([b[1] for b in child_bboxes]),
+        min([b[2] for b in child_bboxes]),
+        max([b[3] for b in child_bboxes]),
+    ]
+
+
+# TODO: Extract this and share code with positioning
+def bbox_from_frame(child):
+    frame = child.frame
+    theta = np.radians(child.rotation)
+    c, s = np.cos(theta), np.sin(theta)
+    matrix = np.array(((c, -s), (s, c)))
+    # Rotate the frame to the original position and calculate corners
+    x1 = frame.x
+    x2 = x1 + frame.width
+    y1 = frame.y
+    y2 = y1 + frame.height
+
+    w2 = frame.width / 2
+    h2 = frame.height / 2
+    points = [
+        matrix.dot(np.array([-w2, -h2])) - np.array([-w2, -h2]) + np.array([x1, y1]),
+        matrix.dot(np.array([w2, -h2])) - np.array([w2, -h2]) + np.array([x2, y1]),
+        matrix.dot(np.array([w2, h2])) - np.array([w2, h2]) + np.array([x2, y2]),
+        matrix.dot(np.array([-w2, h2])) - np.array([-w2, h2]) + np.array([x1, y2]),
+    ]
+
+    return [
+        min(p[0] for p in points),
+        max(p[0] for p in points),
+        min(p[1] for p in points),
+        max(p[1] for p in points),
+    ]

@@ -187,7 +187,7 @@ class Fill:
     image: Optional[Image] = None
 
     @staticmethod
-    def Color(color: Color, isEnabled: bool):
+    def Color(color: Color, isEnabled: bool = True):
         return Fill(
             color=color,
             fillType=FillType.COLOR,

@@ -115,7 +115,9 @@ def convert_override(override) -> Optional[List[OverrideValue]]:
                 overrideName=f'{sketch_path_str}_symbolID',
                 value=utils.gen_object_id(value)
             ))
-        elif prop in ['size', 'pluginData', 'name']:
+        elif prop in ['size', 'pluginData', 'name', 'exportSettings']:
+            # Size is handled by applying derivedSymbolData
+            # The rest are surely not worth detaching for
             pass
         else:
             # Unknown override
