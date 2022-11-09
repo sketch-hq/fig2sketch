@@ -190,6 +190,12 @@ def override_characters_style(figma_text):
     # Iterate over all characters in Figma input, including their style id and position
     for pos, (style_id, character) in enumerate(
             zip(all_character_styles, figma_text['textData']['characters'])):
+
+        # A glyph without a character is an added bullet point (for lists). Skip it
+        while 'firstCharacter' not in next_glyph:
+            utils.log_conversion_warning("TXT005", figma_text)
+            current_glyph, next_glyph = next(glyph_pairs)
+
         # Check if we are still in the same glyph or we have to advance
         # We always advance except in multi-codepoint emojis (e.g: families)
         if pos == next_glyph['firstCharacter']:

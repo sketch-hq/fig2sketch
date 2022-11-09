@@ -32,12 +32,14 @@ def get_style_table_override(figma_item):
 
     return override_table
 
+
 def log_conversion_warning(warning_code: str, figma_node: dict):
     WARNING_MESSAGES = {
         "TXT001": f"is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
         "TXT002": f"has multiple text fill colors. Only the first one will be converted",
         "TXT003": f"has a non-solid text color (gradient or image) which is not supported by Sketch",
         "TXT004": f"contains a 'TITLE' transformation. Sketch does not support this text transformation, so no transformation is applied",
+        "TXT005": f"contains bullet points. They will be removed",
 
         "SHP001": f"contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
 
@@ -50,6 +52,6 @@ def log_conversion_warning(warning_code: str, figma_node: dict):
         issued_warnings[figma_node['guid']] = [warning_code]
     elif not warning_code in issued_warnings[figma_node['guid']]:
         issued_warnings[figma_node['guid']].append(warning_code)
-    else: 
+    else:
         return
     logging.warning(f"[{warning_code}] Figma {figma_node['type']} '{figma_node['name']}' {WARNING_MESSAGES[warning_code]}")
