@@ -4,11 +4,11 @@ set -eu
 patch=$PWD/$(dirname $0)/orjson.patch
 
 # Check dependencies
-if ! command -v maturin &> /dev/null
-then
-    echo 'Installing maturin'
-    brew install maturin
-fi
+#if ! command -v maturin &> /dev/null
+#then
+#    echo 'Installing maturin'
+#    brew install maturin
+#fi
 
 # Download orjson
 if [ ! -d /tmp/orjson ]
