@@ -19,8 +19,8 @@ def convert(fig_item: dict) -> _Positioning:
     return {
         'frame': Rect(
             constrainProportions=fig_item.get('proportionsConstrained', False),
-            height=max(fig_item['size']['y'], 1),
-            width=max(fig_item['size']['x'], 1),
+            height=fig_item['size']['y'],
+            width=fig_item['size']['x'],
             x=coordinates[0],
             y=coordinates[1]
         ),

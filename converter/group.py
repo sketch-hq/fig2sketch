@@ -18,16 +18,13 @@ def post_process_frame(fig_group, sketch_group):
     if fig_group['resizeToFit']:
         return sketch_group
 
-    # Convert frame styles
-    # - Fill/stroke/bgblur -> Rectangle on bottom with that style
-    # - Layer blur -> Rectangle with bgblur on top
-    # - Shadows -> If we have fill, add shadow to the fill. If not, add shadow to each child
-    # TODO: Fix this and make it way less hacky
-    sketch_group.layers.insert(0, rectangle.build_rectangle_for_frame(fig_group))
+    convert_frame_style(fig_group, sketch_group)
+    convert_frame_to_group(fig_group, sketch_group)
 
-    sketch_group.style = Style(do_objectID=utils.gen_object_id(fig_group['guid'], b'style'))
-    sketch_group.style.contextSettings.opacity = fig_group['opacity']
+    return sketch_group
 
+
+def convert_frame_to_group(fig_group, sketch_group):
     needs_clip_mask = not fig_group.get('frameMaskDisabled', False)
     if needs_clip_mask:
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
@@ -46,28 +43,61 @@ def post_process_frame(fig_group, sketch_group):
             child.frame.x -= vector[0]
             child.frame.y -= vector[1]
 
-        # TODO: This probably breaks with rotation of the group
         sketch_group.frame.x += vector[0]
         sketch_group.frame.y += vector[1]
         sketch_group.frame.width = children_bbox[1] - children_bbox[0]
         sketch_group.frame.height = children_bbox[3] - children_bbox[2]
 
-    return sketch_group
+
+def convert_frame_style(fig_group, sketch_group):
+    # Convert frame styles
+    # - Fill/stroke/bgblur -> Rectangle on bottom with that style
+    # - Layer blur -> Rectangle with bgblur on top
+    # - Shadows -> Keep in the group
+    # TODO: This is one case where we could have both background blur and layer blur
+    style = sketch_group.style
+    has_fills = any([f.isEnabled for f in style.fills])
+    has_borders = any([b.isEnabled for b in style.borders])
+    has_bgblur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
+    has_blur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
+
+    if has_fills or has_borders or has_bgblur:
+        bgrect = make_background_rect(fig_group['guid'], sketch_group.frame, 'Frame Background')
+        bgrect.style.fills = style.fills
+        bgrect.style.borders = style.borders
+        if has_bgblur:
+            bgrect.style.blur = style.blur
+
+        sketch_group.layers.insert(0, bgrect)
+    elif has_blur:
+        blurrect = make_background_rect(fig_group['guid'], sketch_group.frame, 'Frame Blur')
+        bgrect.style.blur = style.blur
+
+        sketch_group.layers.insert(0, bgrect)
+
+    style.fills = []
+    style.borders = []
+    style.blur.isEnabled = False
 
 
-def make_clipping_rect(guid, frame):
-    return Rectangle(
-        do_objectID=utils.gen_object_id(guid, b'frame_mask'),
-        name='Clip',
+def make_background_rect(guid, frame, name):
+     return Rectangle(
+        do_objectID=utils.gen_object_id(guid, name.encode()),
+        name=name,
         frame=Rect(
             height=frame.height,
             width=frame.width,
             x=0,
             y=0
         ),
-        hasClippingMask=True,
-        clippingMaskMode=ClippingMaskMode.OUTLINE,
-        style=Style(do_objectID=utils.gen_object_id(guid, b'frame_mask_style')),
-        resizingConstraint=0,
+        style=Style(do_objectID=utils.gen_object_id(guid, f'{name}_style'.encode())),
+        resizingConstraint=10,
         rotation=0,
     )
+
+
+def make_clipping_rect(guid, frame):
+    obj = make_background_rect(guid, frame, "Clip")
+    obj.hasClippingMask = True
+    obj.clippingMaskMode = ClippingMaskMode.OUTLINE
+    return obj

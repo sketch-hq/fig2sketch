@@ -45,7 +45,7 @@ def convert(fig_symbol):
 
 def move_to_symbols_page(fig_symbol, sketch_symbol):
     # Apply frame transforms
-    group.post_process_frame(fig_symbol, sketch_symbol)
+    group.convert_frame_style(fig_symbol, sketch_symbol)
 
     # After the entire symbol is converted, move it to the Symbols page
     context.add_symbol(sketch_symbol)
