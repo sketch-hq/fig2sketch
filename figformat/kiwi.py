@@ -117,7 +117,7 @@ class KiwiDecoder:
         type_converter = self.type_converters.get(self.schema.types[type_id]['name'])
         if not array and type_converter:
             obj = type_converter(obj)
-        
+
         return obj
 
 

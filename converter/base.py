@@ -28,6 +28,11 @@ SUPPORTED_INHERIT_STYLES = {
     'inheritFillStyleIDForBackground': (),  # Unused in Figma?
 }
 
+class _Masking(TypedDict):
+    shouldBreakMaskChain: bool
+    hasClippingMask: bool
+    clippingMaskMode: ClippingMaskMode
+
 class _BaseLayer(positioning._Positioning, prototype._Flow):
     do_objectID: str
     name: str
@@ -192,12 +197,6 @@ def resizing_constraint(figma_node: dict) -> int:
     h = HORIZONTAL_CONSTRAINT[figma_node['horizontalConstraint']]
     v = HORIZONTAL_CONSTRAINT[figma_node['verticalConstraint']] << 3
     return h + v
-
-
-class _Masking(TypedDict):
-    shouldBreakMaskChain: bool
-    hasClippingMask: bool
-    clippingMaskMode: ClippingMaskMode
 
 
 # TODO: Call this function from every shape/image/etc
