@@ -44,6 +44,14 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     # adding always a background rectangle is an overhead for the document itself
     artboard_style = style.convert(fig_frame)
 
+    for corner in ['rectangleTopLeftCornerRadius',
+        'rectangleTopLeftCornerRadius',
+        'rectangleTopLeftCornerRadius',
+        'rectangleTopLeftCornerRadius']:
+        if fig_frame.get(corner, 0) != 0:
+            utils.log_conversion_warning("ART001", fig_frame)
+            break
+
     match artboard_style.fills:
         case [Fill(fillType=FillType.COLOR, color=color)]:
             # Single color, apply to artboard

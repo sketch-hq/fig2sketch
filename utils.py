@@ -46,6 +46,8 @@ def log_conversion_warning(warning_code: str, fig_node: dict) -> None:
         "STY001": f"contains a layer blur and a background blur. Only one will be converted",
 
         "SYM001": f"references an invalid symbol. It will be converted to an empty placeholder group",
+
+        "ART001": f"frame has at least one corner radius which is not supported by sketch artboards. The corner radius will be ignored"
     }
 
     if not fig_node['guid'] in issued_warnings:
