@@ -80,16 +80,12 @@ jobs:
         with:
           files: dist/
           dest: fig2sketch-windows.zip
-      - name: Pack files
-        run: |
-          tar zcvf fig2sketch-windows.tar.gz dist/
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
           path: | 
             fig2sketch-windows.zip
-            fig2sketch-windows.tar.gz
 
   build-macos-x86_64:
     runs-on: macos-latest
