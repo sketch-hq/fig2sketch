@@ -22,7 +22,7 @@ def convert(fig_instance):
         return group.convert(fig_instance)
     else:
         obj = SymbolInstance(
-            **base.base_shape(fig_instance),
+            **base.base_styled(fig_instance),
             symbolID=utils.gen_object_id(fig_instance['symbolData']['symbolID']),
             overrideValues=sketch_overrides,
         )
@@ -41,7 +41,7 @@ def post_process(fig_instance, sketch_instance):
 
 def master_instance(fig_symbol):
     obj = SymbolInstance(
-        **base.base_shape(fig_symbol),
+        **base.base_styled(fig_symbol),
         symbolID=utils.gen_object_id(fig_symbol['guid']),
     )
     obj.do_objectID = utils.gen_object_id(fig_symbol['guid'], b'master_instance')

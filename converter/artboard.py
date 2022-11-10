@@ -23,7 +23,7 @@ DEFAULT_fig_ARTBOARD_FILL = {
 
 def convert(fig_frame: dict) -> Artboard:
     obj = Artboard(
-        **base.base_shape(fig_frame),
+        **base.base_styled(fig_frame),
         **prototype.prototyping_information(fig_frame)
     )
 

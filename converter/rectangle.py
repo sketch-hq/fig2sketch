@@ -8,10 +8,7 @@ def convert(fig_rect: dict) -> Rectangle:
     independent = fig_rect.get('rectangleCornerRadiiIndependent', True)
 
     return Rectangle(
-        **base.base_shape(fig_rect),  # TODO: Type annotations
-        # Sketch smooth corners are a boolean, but here it's a percent. Use an arbitrary threshold
-        # TODO: Apply this to other shapes
-        pointRadiusBehaviour=PointRadiusBehaviour.V1_SMOOTH if fig_rect.get('cornerSmoothing', 0) > 0.4 else PointRadiusBehaviour.V1,
+        **base.base_shape(fig_rect),
         fixedRadius=corner_radius,
         corners=Rectangle.Corners(
             fig_rect.get('rectangleTopLeftCornerRadius', 0) if independent else corner_radius,

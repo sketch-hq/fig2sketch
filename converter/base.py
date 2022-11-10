@@ -2,6 +2,7 @@ import logging
 import math
 import utils
 from sketchformat.layer_common import *
+from sketchformat.layer_shape import *
 from sketchformat.style import *
 from typing import TypedDict
 
@@ -70,11 +71,11 @@ def base_layer(fig_node: dict) -> _BaseLayer:
     }
 
 
-class _BaseShape(_BaseLayer, _Masking):
+class _BaseStyled(_BaseLayer, _Masking):
     style: Style
 
 
-def base_shape(fig_node: dict) -> _BaseShape:
+def base_styled(fig_node: dict) -> _BaseStyled:
     obj: _BaseShape = {
         **base_layer(fig_node), # type: ignore
         **masking(fig_node), # type: ignore
@@ -95,6 +96,18 @@ def base_shape(fig_node: dict) -> _BaseShape:
         utils.log_conversion_warning("BSE001", fig_node)
 
     return obj
+
+
+class _BaseShape(_BaseStyled):
+    pointRadiusBehaviour: PointRadiusBehaviour
+
+
+def base_shape(fig_node: dict) -> _BaseShape:
+    return {
+        **base_styled(fig_node), # type: ignore
+        # Sketch smooth corners are a boolean, but here it's a percent. Use an arbitrary threshold
+        'pointRadiusBehaviour': PointRadiusBehaviour.V1_SMOOTH if fig_node.get('cornerSmoothing', 0) > 0.4 else PointRadiusBehaviour.V1
+    }
 
 
 def process_styles(fig_node: dict) -> Style:
@@ -212,6 +225,6 @@ def masking(fig_node: dict) -> _Masking:
     }
     return {
         'shouldBreakMaskChain': False,
-        'hasClippingMask': fig_node.get('mask'),
+        'hasClippingMask': bool(fig_node.get('mask')),
         'clippingMaskMode': CLIPPING_MODE[fig_node.get('maskType', 'OUTLINE')]
     }

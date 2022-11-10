@@ -22,7 +22,7 @@ LAYOUT_ANCHOR = {
 def convert(fig_symbol):
     # A symbol is an artboard with a symbolID
     master = SymbolMaster(
-        **base.base_shape(fig_symbol),
+        **base.base_styled(fig_symbol),
         **prototype.prototyping_information(fig_symbol),
         symbolID=utils.gen_object_id(fig_symbol['guid'])
     )

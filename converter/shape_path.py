@@ -34,7 +34,7 @@ def convert(fig_vector):
             s.booleanOperation = 0
 
         obj = ShapeGroup(
-            **base.base_shape(fig_vector),
+            **base.base_styled(fig_vector),
             layers=regions,
             windingRule=WindingRule.EVEN_ODD
         )
@@ -63,7 +63,7 @@ def convert_region(fig_vector, segments, region_index=0):
             s.frame.y = 0
 
         obj = ShapeGroup(
-            **base.base_shape(fig_vector),
+            **base.base_styled(fig_vector),
             windingRule=WindingRule.EVEN_ODD,
             layers=shape_paths,
         )

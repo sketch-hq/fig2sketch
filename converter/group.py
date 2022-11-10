@@ -9,7 +9,7 @@ from sketchformat.layer_shape import Rectangle
 
 def convert(fig_group):
     return Group(
-        **base.base_shape(fig_group),
+        **base.base_styled(fig_group),
     )
 
 

@@ -13,7 +13,7 @@ BOOLEAN_OPERATIONS = {
 
 def convert(fig_bool_ops):
     return ShapeGroup(
-        **base.base_shape(fig_bool_ops),
+        **base.base_styled(fig_bool_ops),
     )
 
 

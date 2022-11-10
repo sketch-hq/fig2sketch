@@ -75,7 +75,7 @@ EMOJI_FONT = 'AppleColorEmoji'
 def convert(fig_text):
     text_resize = fig_text.get('textAutoResize', 'NONE')
     obj = Text(
-        **base.base_shape(fig_text),
+        **base.base_styled(fig_text),
         attributedString=AttributedString(
             string=fig_text['textData']['characters'],
             attributes=override_characters_style(fig_text),
