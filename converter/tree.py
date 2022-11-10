@@ -5,6 +5,7 @@ import logging
 from sketchformat.layer_common import AbstractLayer
 from sketchformat.layer_group import AbstractLayerGroup
 from typing import Dict, Callable, Any
+import traceback
 
 
 CONVERTERS: Dict[str,Callable[[dict], AbstractLayer]] = {
@@ -41,8 +42,13 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
     logging.info(f'{type_}: {name}')
 
     sketch_item = CONVERTERS[type_](fig_node)
-    children = [convert_node(child, fig_node['type']) for child in
-                fig_node.get('children', [])]
+
+    children = []
+    for child in fig_node.get('children', []):
+        try:
+            children.append(convert_node(child, fig_node['type']))
+        except Exception as e:
+            logging.error(f'An unexpected error occurred when converting {child["type"]}: {child["name"]}. It will be skipped\n' + ''.join(traceback.format_exception(e)))
 
     # TODO: Determine who needs layers per node type
     # e.g: rectangles never have children, groups do
