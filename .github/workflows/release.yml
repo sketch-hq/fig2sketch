@@ -37,11 +37,16 @@ jobs:
         with:
           files: dist/
           dest: fig2sketch-linux.zip
+      - name: Pack files
+        run: |
+          tar zcvf fig2sketch-linux.tar.gz dist/
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-linux.zip
+          path: | 
+            fig2sketch-linux.zip
+            fig2sketch-linux.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -75,11 +80,16 @@ jobs:
         with:
           files: dist/
           dest: fig2sketch-windows.zip
+      - name: Pack files
+        run: |
+          tar zcvf fig2sketch-windows.tar.gz dist/
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-windows.zip
+          path: | 
+            fig2sketch-windows.zip
+            fig2sketch-windows.tar.gz
 
   build-macos-x86_64:
     runs-on: macos-latest
@@ -113,11 +123,16 @@ jobs:
         with:
           files: dist/
           dest: fig2sketch-macos-x86_64.zip
+      - name: Pack files
+        run: |
+          tar zcvf fig2sketch-macos-x86_64.tar.gz dist/
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-macos-x86_64.zip
+          path: | 
+            fig2sketch-macos-x86_64.zip
+            fig2sketch-macos-x86_64.tar.gz
 
   build-macos-arm64:
     runs-on: self-hosted
@@ -152,11 +167,16 @@ jobs:
         with:
           files: dist/
           dest: fig2sketch-macos-arm64.zip
+      - name: Pack files
+        run: |
+          tar zcvf fig2sketch-macos-arm64.tar.gz dist/
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-macos-arm64.zip
+          path: | 
+            fig2sketch-macos-arm64.zip
+            fig2sketch-macos-arm64.tar.gz
 
   build-macos-universal:
     needs: [ build-macos-x86_64, build-macos-arm64 ]
@@ -179,11 +199,16 @@ jobs:
         with:
           files: dist/
           dest: fig2sketch-macos-universal.zip
+      - name: Pack files
+        run: |
+          tar zcvf fig2sketch-macos-universal.tar.gz dist/
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-macos-universal.zip
+          path: | 
+            fig2sketch-macos-universal.zip
+            fig2sketch-macos-universal.tar.gz
 
 
   create-release:
@@ -206,6 +231,6 @@ jobs:
       - name: Upload release assets
         uses: AButler/upload-release-assets@v2.0
         with:
-          files: '*zip'
+          files: '*zip;*tar.gz'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.create_release.outputs.tag_name }}
