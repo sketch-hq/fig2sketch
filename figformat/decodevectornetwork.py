@@ -61,7 +61,7 @@ def decode(fig, blob_id, scale, style_override_table):
         regions.append({
             'loops': loops,
             'style': style_override_table[style_id],
-            'windindRule': 'NONZERO' if winding_rule == 0 else 'ODD'
+            'windingRule': 'NONZERO' if winding_rule == 0 else 'ODD'
         })
 
     return {

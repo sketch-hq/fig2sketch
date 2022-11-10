@@ -141,7 +141,8 @@ def get_all_segments(vector_network):
             'loops': [reorder_segment_points([
                 vector_network['segments'][use_segment(i)] for i in loop
             ]) for loop in region['loops']],
-            'style': region['style']
+            'style': region['style'],
+            'windingRule': region['windingRule']
         } for region in vector_network['regions']]
 
     if unused_segments:
@@ -150,6 +151,7 @@ def get_all_segments(vector_network):
             'windingRule': 'NONZERO',
             'loops': reorder_segments([vector_network['segments'][i] for i in unused_segments]),
         }]
+
     return regions
 
 
