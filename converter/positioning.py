@@ -12,15 +12,15 @@ class _Positioning(TypedDict):
     isFlippedVertical: bool
 
 
-def convert(figma_item: dict) -> _Positioning:
-    flip, rotation = guess_flip(figma_item)
-    coordinates = transform_frame(figma_item)
+def convert(fig_item: dict) -> _Positioning:
+    flip, rotation = guess_flip(fig_item)
+    coordinates = transform_frame(fig_item)
 
     return {
         'frame': Rect(
-            constrainProportions=figma_item.get('proportionsConstrained', False),
-            height=max(figma_item['size']['y'], 1),
-            width=max(figma_item['size']['x'], 1),
+            constrainProportions=fig_item.get('proportionsConstrained', False),
+            height=fig_item['size']['y'],
+            width=fig_item['size']['x'],
             x=coordinates[0],
             y=coordinates[1]
         ),
@@ -54,8 +54,8 @@ def apply_transform(item: dict, vector: npt.NDArray[np.float64]) -> npt.NDArray[
     return matrix.dot(vector)
 
 
-def guess_flip(figma_item: dict) -> Tuple[List[bool], float]:
-    tr = figma_item['transform']
+def guess_flip(fig_item: dict) -> Tuple[List[bool], float]:
+    tr = fig_item['transform']
 
     # Use a diagonal with big numbers to check for sign flips, to avoid floating point weirdness
     flip = [False, False]
@@ -65,8 +65,8 @@ def guess_flip(figma_item: dict) -> Tuple[List[bool], float]:
         flip[1] = bool(np.sign(tr[0,1]) == np.sign(tr[1,0]))
 
     angle = math.degrees(math.atan2(
-        -figma_item['transform'][1,0],
-        figma_item['transform'][0,0]
+        -fig_item['transform'][1,0],
+        fig_item['transform'][0,0]
     ))
     if flip[1]:
         angle *= -1

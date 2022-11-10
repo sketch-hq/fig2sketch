@@ -42,10 +42,10 @@ class _Flow(TypedDict, total=False):
 
 
 # TODO: Is this called from every node type (groups?)
-def convert_flow(figma_node: dict) -> _Flow:
+def convert_flow(fig_node: dict) -> _Flow:
     # TODO: What happens with multiple actions?
     flow = None
-    for interaction in figma_node.get('prototypeInteractions', []):
+    for interaction in fig_node.get('prototypeInteractions', []):
         if interaction['isDeleted']:
             continue
 
@@ -54,7 +54,7 @@ def convert_flow(figma_node: dict) -> _Flow:
             continue
 
         for action in interaction['actions']:
-            # Figma sometimes keeps empty interactions in the model, we just ignore them
+            # There can be  empty interactions in the model, we just ignore them
             if action == {}:
                 continue
 
@@ -92,10 +92,10 @@ class _PrototypingInformation(TypedDict, total=False):
     prototypeViewport: PrototypeViewport
 
 
-def prototyping_information(figma_frame: dict) -> _PrototypingInformation:
-    # Some information about the prototype is in the Figma page
-    figma_canvas = context.figma_node(figma_frame['parent']['guid'])
-    if 'prototypeDevice' not in figma_canvas:
+def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
+    # Some information about the prototype is in the canvas/page
+    fig_canvas = context.fig_node(fig_frame['parent']['guid'])
+    if 'prototypeDevice' not in fig_canvas:
         return {
             'isFlowHome': False,
             'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
@@ -103,24 +103,24 @@ def prototyping_information(figma_frame: dict) -> _PrototypingInformation:
         }
 
     # TODO: Overflow scrolling means making the artboard bigger (fit the child bounds)
-    if figma_frame.get('scrollDirection', 'NONE') != 'NONE':
+    if fig_frame.get('scrollDirection', 'NONE') != 'NONE':
         print('Scroll overflow direction not supported')
 
-    if 'overlayBackgroundInteraction' in figma_frame:
+    if 'overlayBackgroundInteraction' in fig_frame:
         return {
             'isFlowHome': False,
             'overlayBackgroundInteraction': OVERLAY_INTERACTION[
-                figma_frame['overlayBackgroundInteraction']],
+                fig_frame['overlayBackgroundInteraction']],
             'presentationStyle': PresentationStyle.OVERLAY,
             'overlaySettings': FlowOverlaySettings.Positioned(
-                figma_frame.get('overlayPositionType', 'CENTER'))
+                fig_frame.get('overlayPositionType', 'CENTER'))
         }
     else:
         return {
-            'isFlowHome': figma_frame.get('prototypeStartingPoint', {}).get('name', '') != '',
+            'isFlowHome': fig_frame.get('prototypeStartingPoint', {}).get('name', '') != '',
             'prototypeViewport': PrototypeViewport(
-                name=figma_canvas['prototypeDevice']['presetIdentifier'],
-                size=Point.from_dict(figma_canvas['prototypeDevice']['size'])
+                name=fig_canvas['prototypeDevice']['presetIdentifier'],
+                size=Point.from_dict(fig_canvas['prototypeDevice']['size'])
             ),
             'overlayBackgroundInteraction': OverlayBackgroundInteraction.NONE,
             'presentationStyle': PresentationStyle.SCREEN,
@@ -139,7 +139,7 @@ def get_destination_settings_if_any(action: dict) -> Tuple[Optional[str], Option
             destination = None
         case 'INTERNAL_NODE', transition_node_id:
             destination = utils.gen_object_id(transition_node_id)
-            transition_node = context.figma_node(transition_node_id)
+            transition_node = context.fig_node(transition_node_id)
 
             if 'overlayBackgroundInteraction' in transition_node:
                 overlay_settings = FlowOverlaySettings.Positioned(

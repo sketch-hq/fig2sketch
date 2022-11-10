@@ -7,47 +7,47 @@ from sketchformat.layer_group import SymbolInstance, OverrideValue
 from typing import Optional, List
 
 
-def convert(figma_instance):
-    if figma_instance['symbolData']['symbolID'][0] == 4294967295:
+def convert(fig_instance):
+    if fig_instance['symbolData']['symbolID'][0] == 4294967295:
         # Broken instance, return a placeholder in its place
-        utils.log_conversion_warning("SYM001", figma_instance)
-        return group.convert(figma_instance)
+        utils.log_conversion_warning("SYM001", fig_instance)
+        return group.convert(fig_instance)
 
-    all_overrides = get_all_overrides(figma_instance)
+    all_overrides = get_all_overrides(fig_instance)
     sketch_overrides = convert_overrides(all_overrides)
 
     if sketch_overrides is None:
-        # Modify Figma tree in place, with the detached symbol subtree
-        detach_symbol(figma_instance, all_overrides)
-        return group.convert(figma_instance)
+        # Modify input tree in place, with the detached symbol subtree
+        detach_symbol(fig_instance, all_overrides)
+        return group.convert(fig_instance)
     else:
         obj = SymbolInstance(
-            **base.base_shape(figma_instance),
-            symbolID=utils.gen_object_id(figma_instance['symbolData']['symbolID']),
+            **base.base_styled(fig_instance),
+            symbolID=utils.gen_object_id(fig_instance['symbolData']['symbolID']),
             overrideValues=sketch_overrides,
         )
         # Replace style
-        obj.style = Style(do_objectID=utils.gen_object_id(figma_instance['guid'], b'style'))
+        obj.style = Style(do_objectID=utils.gen_object_id(fig_instance['guid'], b'style'))
 
         return obj
 
 
-def post_process(figma_instance, sketch_instance):
+def post_process(fig_instance, sketch_instance):
     if sketch_instance._class == 'group':
-        return group.post_process_frame(figma_instance, sketch_instance)
+        return group.post_process_frame(fig_instance, sketch_instance)
     else:
         return sketch_instance
 
 
-def master_instance(figma_symbol):
+def master_instance(fig_symbol):
     obj = SymbolInstance(
-        **base.base_shape(figma_symbol),
-        symbolID=utils.gen_object_id(figma_symbol['guid']),
+        **base.base_styled(fig_symbol),
+        symbolID=utils.gen_object_id(fig_symbol['guid']),
     )
-    obj.do_objectID = utils.gen_object_id(figma_symbol['guid'], b'master_instance')
+    obj.do_objectID = utils.gen_object_id(fig_symbol['guid'], b'master_instance')
 
     # Replace style
-    obj.style = Style(do_objectID=utils.gen_object_id(figma_symbol['guid'], b'master_instance_style'))
+    obj.style = Style(do_objectID=utils.gen_object_id(fig_symbol['guid'], b'master_instance_style'))
 
     return obj
 
@@ -65,21 +65,21 @@ def convert_overrides(all_overrides):
     return sketch_overrides
 
 
-def get_all_overrides(figma_instance):
+def get_all_overrides(fig_instance):
     """Gets all overrides of a symbol, including component assignments"""
 
     # Convert top-level properties to overrides
-    figma_master = context.find_symbol(figma_instance['symbolData']['symbolID'])
-    all_overrides = convert_properties_to_overrides(figma_master, figma_instance.get('componentPropAssignments', []))
+    fig_master = context.find_symbol(fig_instance['symbolData']['symbolID'])
+    all_overrides = convert_properties_to_overrides(fig_master, fig_instance.get('componentPropAssignments', []))
 
     # Sort overrides by length of path. This ensures top level overrides are processed before nested ones
     # which is required because a top override may change the symbol instance that is used by child overrides
-    for override in sorted(figma_instance['symbolData']['symbolOverrides'], key=lambda x: len(x['guidPath']['guids'])):
+    for override in sorted(fig_instance['symbolData']['symbolOverrides'], key=lambda x: len(x['guidPath']['guids'])):
         guid_path = override['guidPath']['guids']
         new_override = {'guidPath': override['guidPath']}
         for prop, value in override.items():
             if prop == 'componentPropAssignments':
-                nested_master = find_symbol_master(figma_master, guid_path, all_overrides)
+                nested_master = find_symbol_master(fig_master, guid_path, all_overrides)
                 all_overrides += convert_properties_to_overrides(nested_master, value, guid_path)
             else:
                 new_override[prop] = value
@@ -138,7 +138,7 @@ def find_symbol_master(root_symbol, guid_path, overrides):
             symbol_id = symbol_id[0]
         else:
             # Otherwise, find the instance
-            instance = context.figma_node(guid)
+            instance = context.fig_node(guid)
             symbol_id = instance['symbolData']['symbolID']
 
         current_symbol = context.find_symbol(symbol_id)
@@ -146,13 +146,13 @@ def find_symbol_master(root_symbol, guid_path, overrides):
     return current_symbol
 
 
-def convert_properties_to_overrides(figma_master, properties, guid_path=[]):
-    """Convert Figma property assigments to Figma overrides.
+def convert_properties_to_overrides(fig_master, properties, guid_path=[]):
+    """Convert .fig property assigments to overrides.
        This makes it easier to work with them in a unified way."""
     overrides = []
 
     for prop in properties:
-        for (ref_prop, ref_guid) in find_refs(figma_master, prop['defID']):
+        for (ref_prop, ref_guid) in find_refs(fig_master, prop['defID']):
             if ref_prop['componentPropNodeField'] == 'OVERRIDDEN_SYMBOL_ID':
                 override = { 'overriddenSymbolID': prop['value']['guidValue'] }
             elif ref_prop['componentPropNodeField'] == 'TEXT_DATA':
@@ -183,21 +183,20 @@ def find_refs(node, ref_id):
     return refs
 
 
-def detach_symbol(figma_instance, all_overrides):
+def detach_symbol(fig_instance, all_overrides):
     # Find symbol master
-    figma_master = context.figma_node(figma_instance['symbolData']['symbolID'])
-    detached_children = copy.deepcopy(figma_master['children'], {})
+    fig_master = context.fig_node(fig_instance['symbolData']['symbolID'])
+    detached_children = copy.deepcopy(fig_master['children'], {})
 
     # Apply overrides to children
     for c in detached_children:
-        apply_overrides(c, figma_instance['guid'], all_overrides, figma_instance['derivedSymbolData'])
+        apply_overrides(c, fig_instance['guid'], all_overrides, fig_instance['derivedSymbolData'])
 
-    figma_instance['children'] = detached_children
+    fig_instance['children'] = detached_children
 
 
-def apply_overrides(figma, instance_id, overrides, derived_symbol_data):
-    # TODO: Do we need to move overrideKey also to convert_properties?
-    guid = figma.get('overrideKey', figma['guid'])
+def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
+    guid = fig_node.get('overrideKey', fig_node['guid'])
 
     # Apply overrides
     child_overrides = []
@@ -212,9 +211,9 @@ def apply_overrides(figma, instance_id, overrides, derived_symbol_data):
                 if k == 'guidPath':
                     continue
                 elif k == 'overriddenSymbolID':
-                    figma['symbolData']['symbolID'] = v
+                    fig_node['symbolData']['symbolID'] = v
                 else:
-                    figma[k] = v
+                    fig_node[k] = v
 
     # Recalculate size
     child_derived_data = []
@@ -226,17 +225,17 @@ def apply_overrides(figma, instance_id, overrides, derived_symbol_data):
             child_derived_data.append({**derived, 'guidPath':{'guids':guids[1:]}})
         else:
             if 'size' in derived:
-                figma['size'] = derived['size']
+                fig_node['size'] = derived['size']
             if 'transform' in derived:
-                figma['transform'] = derived['transform']
+                fig_node['transform'] = derived['transform']
 
     # Generate a unique ID by concatenating instance_id + node_id
-    figma['guid'] = tuple(j for i in (instance_id, guid) for j in i)
+    fig_node['guid'] = tuple(j for i in (instance_id, guid) for j in i)
 
     # If it's an instance, pass the overrides down. Otherwise, convert the children
-    if figma['type'] == 'INSTANCE':
-        figma['symbolData']['symbolOverrides'] += child_overrides
-        figma['derivedSymbolData'] += child_derived_data
+    if fig_node['type'] == 'INSTANCE':
+        fig_node['symbolData']['symbolOverrides'] += child_overrides
+        fig_node['derivedSymbolData'] += child_derived_data
     else:
-        for c in figma['children']:
+        for c in fig_node['children']:
             apply_overrides(c, instance_id, overrides, derived_symbol_data)

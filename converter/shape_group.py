@@ -11,14 +11,14 @@ BOOLEAN_OPERATIONS = {
 }
 
 
-def convert(figma_bool_ops):
+def convert(fig_bool_ops):
     return ShapeGroup(
-        **base.base_shape(figma_bool_ops),
+        **base.base_styled(fig_bool_ops),
     )
 
 
-def post_process(figma_bool_ops, sketch_bool_ops):
-    op = BOOLEAN_OPERATIONS[figma_bool_ops['booleanOperation']]
+def post_process(fig_bool_ops, sketch_bool_ops):
+    op = BOOLEAN_OPERATIONS[fig_bool_ops['booleanOperation']]
     for l in sketch_bool_ops.layers:
         l.booleanOperation = op
 

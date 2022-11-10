@@ -2,7 +2,7 @@ from . import base, positioning
 import utils
 import numpy as np
 import itertools
-from sketchformat.layer_group import ShapeGroup
+from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
 from collections import defaultdict
@@ -20,10 +20,15 @@ STROKE_CAP_TO_MARKER_TYPE = {
     'SQUARE': 0
 }
 
+WINDING_RULE = {
+    'NONZERO': WindingRule.NON_ZERO,
+    'ODD': WindingRule.EVEN_ODD
+}
 
-def convert(figma_vector):
-    regions = get_all_segments(figma_vector['vectorNetwork'])
-    regions = [convert_region(figma_vector, region, i) for i, region in enumerate(regions)]
+
+def convert(fig_vector):
+    regions = get_all_segments(fig_vector['vectorNetwork'])
+    regions = [convert_region(fig_vector, region, i) for i, region in enumerate(regions)]
 
     if len(regions) > 1:
         # Ignore positioning for childs. TODO: We should probably be building these shapePaths by hand, instead
@@ -31,56 +36,56 @@ def convert(figma_vector):
         for s in regions:
             s.frame.x = 0
             s.frame.y = 0
-            s.booleanOperation = 0
 
-        obj = ShapeGroup(
-            **base.base_shape(figma_vector),
+        obj = Group(
+            **base.base_styled(fig_vector),
             layers=regions,
-            windingRule=WindingRule.EVEN_ODD
+            # # TODO: This feels incorrect
+            # windingRule=WindingRule.EVEN_ODD
         )
+        # TODO: Full reset styles?
+        obj.style.fills = []
 
-        # TODO: This feels incorrect
-        obj.style.windingRule = WindingRule.EVEN_ODD
+        # obj.style.windingRule = obj.windingRule
         return obj
     else:
         return regions[0]
 
 
-def convert_region(figma_vector, segments, region_index=0):
-    if len(segments) == 1:
-        # A single loop, or just segments. Convert as a shapePath
-        return convert_shape_path(figma_vector, segments[0], region_index)
-    else:
-        # Multiple loops, convert as a shape group with shape paths as children (will happen in
-        # post process)
-        shape_paths = [convert_shape_path(figma_vector, loop, region_index, i) for i, loop in enumerate(segments)]
+def convert_region(fig_vector, region, region_index=0):
+    loops = [convert_shape_path(fig_vector, region['style'], loop, region_index, i) for i, loop in enumerate(region['loops'])]
 
+    if len(loops) > 1:
         # Ignore positioning for children.
-        # TODO: We should probably be building these shapePaths by hand, instead of relying on the
-        # generic convert_shape_path function
-        for s in shape_paths:
+        for s in loops:
             s.frame.x = 0
             s.frame.y = 0
 
         obj = ShapeGroup(
-            **base.base_shape(figma_vector),
-            windingRule=WindingRule.EVEN_ODD,
-            layers=shape_paths,
+            **base.base_styled({**fig_vector, **region['style']}),
+            layers=loops,
+            windingRule=WINDING_RULE[region['windingRule']],
         )
-        obj.do_objectID = utils.gen_object_id(figma_vector['guid'], f"region{region_index}".encode())
+        obj.do_objectID = utils.gen_object_id(fig_vector['guid'], f"region{region_index}".encode())
 
-        obj.style.windingRule = WindingRule.EVEN_ODD
+        # obj.style.windingRule=WINDING_RULE[region['windingRule']],
+
+        # obj.style.windingRule = obj.windingRule
         return obj
+    else:
+        return loops[0]
 
 
-def convert_shape_path(figma_vector, segments, region=0, loop=0):
-    points, styles = convert_points(figma_vector, segments)
+
+
+def convert_shape_path(fig_vector, style, segments, region=0, loop=0):
+    points, styles = convert_points(fig_vector, segments)
 
     obj = ShapePath(
-        **base.base_shape(figma_vector),
+        **base.base_shape({**fig_vector, **style}),
         **points,
     )
-    obj.do_objectID = utils.gen_object_id(figma_vector['guid'], f"region{region}loop{loop}".encode())
+    obj.do_objectID = utils.gen_object_id(fig_vector['guid'], f"region{region}loop{loop}".encode())
 
     if styles:
         obj.style.set_markers(styles['startMarkerType'], styles['endMarkerType'])
@@ -88,15 +93,15 @@ def convert_shape_path(figma_vector, segments, region=0, loop=0):
     return obj
 
 
-def convert_line(figma_line):
+def convert_line(fig_line):
     # Shift line by half its width
-    vt = np.array([0, -figma_line['strokeWeight'] / 2])
-    vtr = positioning.apply_transform(figma_line, vt)
-    figma_line['transform'][0][2] += vtr[0]
-    figma_line['transform'][1][2] += vtr[1]
+    vt = np.array([0, -fig_line['strokeWeight'] / 2])
+    vtr = positioning.apply_transform(fig_line, vt)
+    fig_line['transform'][0][2] += vtr[0]
+    fig_line['transform'][1][2] += vtr[1]
 
     return ShapePath(
-        **base.base_shape(figma_line),
+        **base.base_shape(fig_line),
         isClosed=False,
         points=[
             CurvePoint.Straight(Point(0, 0)),
@@ -105,8 +110,8 @@ def convert_line(figma_line):
     )
 
 
-def convert_points(figma_vector, ordered_segments):
-    vertices = figma_vector['vectorNetwork']['vertices']
+def convert_points(fig_vector, ordered_segments):
+    vertices = fig_vector['vectorNetwork']['vertices']
 
     is_closed = ordered_segments[0]['start'] == ordered_segments[-1]['end']
 
@@ -115,11 +120,11 @@ def convert_points(figma_vector, ordered_segments):
     if not is_closed:
         first_point = vertices[ordered_segments[0]['start']]
         last_point = vertices[ordered_segments[-1]['end']]
-        points_style = points_marker_types(figma_vector, first_point, last_point)
+        points_style = points_marker_types(fig_vector, first_point, last_point)
 
     points = {}
     for segment in ordered_segments:
-        point1, point2 = process_segment(figma_vector, vertices, segment, points)
+        point1, point2 = process_segment(fig_vector, vertices, segment, points)
         points[segment['start']] = point1
         points[segment['end']] = point2
 
@@ -127,18 +132,25 @@ def convert_points(figma_vector, ordered_segments):
 
 
 def get_all_segments(vector_network):
-    if vector_network['regions']:
-        return [
-            [
-                reorder_segment_points([
-                    vector_network['segments'][i] for i in loop
-                ]) for loop in region['loops']
-            ] for region in vector_network['regions']
-        ]
-    else:
-        segments = reorder_segments(vector_network['segments'])
-        # A polygon is closed if the first point is the same as the last point
-        return [segments]
+    unused_segments = set(range(len(vector_network['segments'])))
+    def use_segment(i):
+        unused_segments.discard(i)
+        return i
+
+    regions = [{
+            'loops': [reorder_segment_points([
+                vector_network['segments'][use_segment(i)] for i in loop
+            ]) for loop in region['loops']],
+            'style': region['style']
+        } for region in vector_network['regions']]
+
+    if unused_segments:
+        regions += [{
+            'style': {'fillPaints': []},
+            'windingRule': 'NONZERO',
+            'loops': reorder_segments([vector_network['segments'][i] for i in unused_segments]),
+        }]
+    return regions
 
 
 def swap_segment(segment):
@@ -235,21 +247,21 @@ def reorder_segment_points(segments):
     return segments
 
 
-def process_segment(figma_vector, vertices, segment, points):
-    point1 = get_or_create_point(figma_vector, points, segment['start'], vertices)
-    point2 = get_or_create_point(figma_vector, points, segment['end'], vertices)
+def process_segment(fig_vector, vertices, segment, points):
+    point1 = get_or_create_point(fig_vector, points, segment['start'], vertices)
+    point2 = get_or_create_point(fig_vector, points, segment['end'], vertices)
 
     if segment['tangentStart']['x'] != 0.0 or segment['tangentStart']['y'] != 0.0:
         vertex1 = vertices[segment['start']]
         point1.hasCurveFrom = True
         point1.curveFrom = Point.from_dict(vertex1) + Point.from_dict(segment['tangentStart'])
-        point1.curveMode = CURVE_MODES[vertex1.get('style', {}).get('handleMirroring', figma_vector['handleMirroring'])]
+        point1.curveMode = CURVE_MODES[vertex1.get('style', {}).get('handleMirroring', fig_vector['handleMirroring'])]
 
     if segment['tangentEnd']['x'] != 0.0 or segment['tangentEnd']['y'] != 0.0:
         vertex2 = vertices[segment['end']]
         point2.hasCurveTo = True
         point2.curveTo = Point.from_dict(vertex2) + Point.from_dict(segment['tangentEnd'])
-        point2.curveMode = CURVE_MODES[vertex2.get('style', {}).get('handleMirroring', figma_vector['handleMirroring'])]
+        point2.curveMode = CURVE_MODES[vertex2.get('style', {}).get('handleMirroring', fig_vector['handleMirroring'])]
 
     return point1, point2
 
@@ -262,21 +274,21 @@ CURVE_MODES = {
 }
 
 
-def get_or_create_point(figma_vector, points, index, vertices):
+def get_or_create_point(fig_vector, points, index, vertices):
     if index in points:
         point = points[index]
     else:
-        figma_point = vertices[index]
-        point = CurvePoint.Straight(Point(figma_point['x'], figma_point['y']))
-        point.curveMode = CURVE_MODES[figma_point.get('style', {}).get('handleMirroring', 'STRAIGHT')]
-        point.cornerRadius = figma_point.get('style', {}).get('cornerRadius', figma_vector['cornerRadius'])
+        fig_point = vertices[index]
+        point = CurvePoint.Straight(Point(fig_point['x'], fig_point['y']))
+        point.curveMode = CURVE_MODES[fig_point.get('style', {}).get('handleMirroring', 'STRAIGHT')]
+        point.cornerRadius = fig_point.get('style', {}).get('cornerRadius', fig_vector['cornerRadius'])
 
     return point
 
 
-def points_marker_types(figma_vector, start_point, end_point):
-    start_marker_type = STROKE_CAP_TO_MARKER_TYPE[figma_vector['strokeCap']]
-    end_marker_type = STROKE_CAP_TO_MARKER_TYPE[figma_vector['strokeCap']]
+def points_marker_types(fig_vector, start_point, end_point):
+    start_marker_type = STROKE_CAP_TO_MARKER_TYPE[fig_vector['strokeCap']]
+    end_marker_type = STROKE_CAP_TO_MARKER_TYPE[fig_vector['strokeCap']]
 
     if ('style' in start_point) and ('strokeCap' in start_point['style']):
         start_marker_type = STROKE_CAP_TO_MARKER_TYPE[start_point['style']['strokeCap']]
@@ -285,7 +297,7 @@ def points_marker_types(figma_vector, start_point, end_point):
         end_marker_type = STROKE_CAP_TO_MARKER_TYPE[end_point['style']['strokeCap']]
 
     if STROKE_CAP_TO_MARKER_TYPE['TRIANGLE_FILLED'] in [start_marker_type, end_marker_type]:
-        utils.log_conversion_warning('SHP001', figma_vector)
+        utils.log_conversion_warning('SHP001', fig_vector)
 
     return {
         'startMarkerType': start_marker_type,

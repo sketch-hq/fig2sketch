@@ -43,6 +43,8 @@ def decode(fig, blob_id, scale, style_override_table):
     for region in range(num_regions):
         # Flags should include winding rule
         flags, num_loops = struct.unpack('<II', network[i:i + 8])
+        winding_rule = flags % 2
+        style_id = flags >> 1
         i += 8
 
         loops = []
@@ -56,7 +58,11 @@ def decode(fig, blob_id, scale, style_override_table):
                 i += 4
             loops.append(loop_vertices)
 
-        regions.append({'loops': loops})
+        regions.append({
+            'loops': loops,
+            'style': style_override_table[style_id],
+            'windindRule': 'NONZERO' if winding_rule == 0 else 'ODD'
+        })
 
     return {
         'regions': regions,

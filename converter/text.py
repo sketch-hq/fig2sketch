@@ -41,7 +41,7 @@ CONSTRAINT_MASK_FOR_AUTO_RESIZE = {
 }
 
 # Sketch (CoreText?) scales up emojis for small font sizes.
-# This table undoes this conversation, so we can match Figma better
+# This table undoes this conversation, so we can match  the .fig doc better
 EMOJI_SIZE_ADJUST = {
     2: 1.5,
     3: 2,
@@ -72,22 +72,21 @@ EMOJI_SIZE_ADJUST = {
 EMOJI_FONT = 'AppleColorEmoji'
 
 
-def convert(figma_text):
-    text_resize = figma_text.get('textAutoResize', 'NONE')
+def convert(fig_text):
+    text_resize = fig_text.get('textAutoResize', 'NONE')
     obj = Text(
-        **base.base_shape(figma_text),
+        **base.base_styled(fig_text),
         attributedString=AttributedString(
-            string=figma_text['textData']['characters'],
-            attributes=override_characters_style(figma_text),
+            string=fig_text['textData']['characters'],
+            attributes=override_characters_style(fig_text),
         ),
         # No good way to calculate this, so we overestimate by setting the frame
-        glyphBounds=Bounds(Point(0,0), Point.from_dict(figma_text["size"])),
+        glyphBounds=Bounds(Point(0,0), Point.from_dict(fig_text["size"])),
         textBehaviour=TEXT_BEHAVIOUR[text_resize]
     )
     obj.resizingConstraint &= CONSTRAINT_MASK_FOR_AUTO_RESIZE[text_resize]
 
-    # TODO: Implement TextStyle
-    obj.style.textStyle = text_style(figma_text)
+    obj.style.textStyle = text_style(fig_text)
 
     # Potentially multiple colors, use the attributes instead of the top level color
     if len(obj.attributedString.attributes) > 1:
@@ -96,13 +95,13 @@ def convert(figma_text):
     return obj
 
 
-def text_style(figma_text):
-    if figma_text['fontName']['family'] == EMOJI_FONT:
+def text_style(fig_text):
+    if fig_text['fontName']['family'] == EMOJI_FONT:
         font_name = EMOJI_FONT
     else:
-        font_name = context.record_font(figma_text['fontName'])
+        font_name = context.record_font(fig_text['fontName'])
 
-    fills = figma_text.get('fillPaints', [{}])
+    fills = fig_text.get('fillPaints', [{}])
     if not fills:
         # Set a transparent fill if no fill is set
         fills = [{
@@ -116,13 +115,13 @@ def text_style(figma_text):
         }]
 
     if len(fills) >= 2:
-        utils.log_conversion_warning("TXT002", figma_text)
+        utils.log_conversion_warning("TXT002", fig_text)
 
     if fills[0]['type'] == 'SOLID':
         color = style.convert_color(fills[0]['color'])
     else:
         # Text fill is not solid (gradient or image). Sketch doesn't support this
-        utils.log_conversion_warning("TXT003", figma_text)
+        utils.log_conversion_warning("TXT003", fig_text)
         if fills[0].get('stops', []):
             color = style.convert_color(fills[0]['stops'][0]['color'])
         else:
@@ -131,47 +130,47 @@ def text_style(figma_text):
 
     obj = TextStyle(
         encodedAttributes=EncodedAttributes(
-            **text_transformation(figma_text),
+            **text_transformation(fig_text),
             MSAttributedStringFontAttribute=FontDescriptor(
                 name=font_name,
-                size=figma_text['fontSize']
+                size=fig_text['fontSize']
             ),
             MSAttributedStringColorAttribute=color,
-            textStyleVerticalAlignmentKey=AlignVertical[figma_text['textAlignVertical']],
-            **text_decoration(figma_text),
-            kerning=kerning(figma_text),
+            textStyleVerticalAlignmentKey=AlignVertical[fig_text['textAlignVertical']],
+            **text_decoration(fig_text),
+            kerning=kerning(fig_text),
             paragraphStyle=ParagraphStyle(
-                alignment=AlignHorizontal[figma_text['textAlignHorizontal']],
-                **line_height(figma_text),
+                alignment=AlignHorizontal[fig_text['textAlignHorizontal']],
+                **line_height(fig_text),
             )
         ),
-        verticalAlignment=AlignVertical[figma_text['textAlignVertical']],
+        verticalAlignment=AlignVertical[fig_text['textAlignVertical']],
     )
 
-    if figma_text.get('paragraphSpacing', 0) != 0:
-        obj.encodedAttributes.paragraphStyle.paragraphSpacing = figma_text['paragraphSpacing']
+    if fig_text.get('paragraphSpacing', 0) != 0:
+        obj.encodedAttributes.paragraphStyle.paragraphSpacing = fig_text['paragraphSpacing']
 
     return obj
 
 
-def override_characters_style(figma_text):
+def override_characters_style(fig_text):
     # The attributes of the Sketch string, our output
     attributes = []
 
-    # Map from Figma styleID to the overridden properties
-    override_table = utils.get_style_table_override(figma_text['textData'])
+    # Map from styleID to the overridden properties
+    override_table = utils.get_style_table_override(fig_text['textData'])
 
     # List of character styles. For each style, points to the appropriate styleID
-    character_styles = figma_text['textData'].get('characterStyleIDs', [])
+    character_styles = fig_text['textData'].get('characterStyleIDs', [])
     all_character_styles = itertools.chain(character_styles, itertools.repeat(0))
 
     # List of glyphs, taken in pairs (AB, BC, CD). Used to know when to switch from
     # one glyph to another. Used to identify emojis that can span multiple codepoints
-    glyphs = figma_text['textData'].get('glyphs')
+    glyphs = fig_text['textData'].get('glyphs')
     if not glyphs:
         # Note, glyphs can be empty when there is a single character and that's still ok
-        if len(figma_text['textData']['characters']) != 1:
-            utils.log_conversion_warning("TXT001", figma_text)
+        if len(fig_text['textData']['characters']) != 1:
+            utils.log_conversion_warning("TXT001", fig_text)
 
         glyphs = [{'firstCharacter': 0, 'styleID': 0}]
 
@@ -180,20 +179,20 @@ def override_characters_style(figma_text):
     current_glyph, next_glyph = next(glyph_pairs)
 
     # Keep track of what the previous style was and when it started
-    last_style = text_style(figma_text)
+    last_style = text_style(fig_text)
     first_pos = 0
 
-    # Lengths in Figma are given in codepoints. In Sketch, they are given in UTF16 code-units
+    # Lengths in .fig docs are given in codepoints. In Sketch, they are given in UTF16 code-units
     # So we keep the Sketch position independently, taking into account UTF16 encoding
     sketch_pos = 0
 
-    # Iterate over all characters in Figma input, including their style id and position
+    # Iterate over all characters in input, including their style id and position
     for pos, (style_id, character) in enumerate(
-            zip(all_character_styles, figma_text['textData']['characters'])):
+            zip(all_character_styles, fig_text['textData']['characters'])):
 
         # A glyph without a character is an added bullet point (for lists). Skip it
         while 'firstCharacter' not in next_glyph:
-            utils.log_conversion_warning("TXT005", figma_text)
+            utils.log_conversion_warning("TXT005", fig_text)
             current_glyph, next_glyph = next(glyph_pairs)
 
         # Check if we are still in the same glyph or we have to advance
@@ -201,22 +200,22 @@ def override_characters_style(figma_text):
         if pos == next_glyph['firstCharacter']:
             current_glyph, next_glyph = next(glyph_pairs)
 
-        # Compute the override for this character. Aside from Figma style override,
-        # we have to set the emoji font if this is an emoji (Figma doesn't expose this change)
+        # Compute the override for this character. Aside from style override,
+        # we have to set the emoji font if this is an emoji
         style_override = copy.deepcopy(override_table[style_id])
         override_fills = override_table[current_glyph['styleID']].get('fillPaints', [{}])
         is_emoji = override_fills and override_fills[0].get('type') == 'EMOJI'
 
         if is_emoji:
             style_override['fontName'] = {'family': EMOJI_FONT, 'postscript': EMOJI_FONT}
-            # The following makes Sketch follow Figma a bit more closely visually
-            font_size = style_override.get('fontSize', figma_text['fontSize'])
+            # This undoes the tweaking of emoji sizes that Sketch does
+            font_size = style_override.get('fontSize', fig_text['fontSize'])
             scaled_font_size = EMOJI_SIZE_ADJUST.get(font_size)
             if scaled_font_size:
                 style_override['fontSize'] = scaled_font_size
 
         # If the style changed (as seen by Sketch), convert the previous style run
-        current_style = text_style({**figma_text, **style_override})
+        current_style = text_style({**fig_text, **style_override})
         if current_style != last_style and pos != 0:
             attributes.append(StringAttribute(
                 location=first_pos,
@@ -244,11 +243,11 @@ def override_characters_style(figma_text):
     return attributes
 
 
-def text_decoration(figma_text):
+def text_decoration(fig_text):
     decoration = {}
 
-    if 'textDecoration' in figma_text:
-        match figma_text['textDecoration']:
+    if 'textDecoration' in fig_text:
+        match fig_text['textDecoration']:
             case 'UNDERLINE':
                 decoration = {'underlineStyle': 1}
             case 'STRIKETHROUGH':
@@ -257,35 +256,35 @@ def text_decoration(figma_text):
     return decoration
 
 
-def kerning(figma_text):
-    if 'letterSpacing' in figma_text:
-        match figma_text['letterSpacing']:
+def kerning(fig_text):
+    if 'letterSpacing' in fig_text:
+        match fig_text['letterSpacing']:
             case {'units': 'PIXELS', 'value': pixels}:
                 return pixels
             case {'units': 'PERCENT', 'value': percent}:
-                return figma_text['fontSize'] * percent / 100
+                return fig_text['fontSize'] * percent / 100
             case _:
                 raise Exception(f'Unknown letter spacing unit')
     else:
         return 0
 
 
-def line_height(figma_text):
-    if 'lineHeight' in figma_text:
-        match figma_text['lineHeight']['units']:
+def line_height(fig_text):
+    if 'lineHeight' in fig_text:
+        match fig_text['lineHeight']['units']:
             case 'PIXELS':
                 # Fixed line height
                 return {
-                    'maximumLineHeight': figma_text['lineHeight']['value'],
-                    'minimumLineHeight': figma_text['lineHeight']['value']
+                    'maximumLineHeight': fig_text['lineHeight']['value'],
+                    'minimumLineHeight': fig_text['lineHeight']['value']
                 }
             case 'PERCENT':
-                if figma_text['lineHeight']['value'] == 100:
+                if fig_text['lineHeight']['value'] == 100:
                     # Auto (natural baselines)
                     return {}
                 else:
                     # Similar to RAW, different natural baseline behaviour. Same TODO apply
-                    line_height = round(figma_text['fontSize'] * figma_text['lineHeight']['value'] / 100)
+                    line_height = round(fig_text['fontSize'] * fig_text['lineHeight']['value'] / 100)
                     return {
                         'maximumLineHeight': line_height,
                         'minimumLineHeight': line_height
@@ -294,14 +293,14 @@ def line_height(figma_text):
                 # Relative to font size of each line.
                 # TODO: Sketch does not support this if text sizes change over lines.
                 # We just set constant baseline as appropriate for the first line.
-                # We can do better using figma.textData.baselines information (applying lineHeight
+                # We can do better using fig.textData.baselines information (applying lineHeight
                 # overrides to our attributedString)
 
-                # TODO: If < 1, Figma and Sketch calculate the first line position differently
-                # Sketch seems to set it to min(lineHeight, lineAscent). In Figma, you can check
+                # TODO: If < 1, .fig and Sketch calculate the first line position differently
+                # Sketch seems to set it to min(lineHeight, lineAscent). We can check
                 # baselines[0][position]
                 # Maybe we should change the frame position in Sketch to account for this?
-                line_height = round(figma_text['fontSize'] * figma_text['lineHeight']['value'])
+                line_height = round(fig_text['fontSize'] * fig_text['lineHeight']['value'])
                 return {
                     'maximumLineHeight': line_height,
                     'minimumLineHeight': line_height
@@ -312,10 +311,10 @@ def line_height(figma_text):
         return 0
 
 
-def text_transformation(figma_text):
-    if 'textCase' in figma_text:
-        if figma_text['textCase'] == 'TITLE':
-            utils.log_conversion_warning('TXT004', figma_text)
-        return ({'MSAttributedStringTextTransformAttribute': TextCase[figma_text['textCase']]})
+def text_transformation(fig_text):
+    if 'textCase' in fig_text:
+        if fig_text['textCase'] == 'TITLE':
+            utils.log_conversion_warning('TXT004', fig_text)
+        return ({'MSAttributedStringTextTransformAttribute': TextCase[fig_text['textCase']]})
     else:
         return {}

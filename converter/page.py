@@ -7,8 +7,8 @@ from . import style, positioning
 from typing import Sequence
 
 
-def convert(figma_canvas: dict) -> Page:
-    return make_page(figma_canvas['guid'], figma_canvas['name'])
+def convert(fig_canvas: dict) -> Page:
+    return make_page(fig_canvas['guid'], fig_canvas['name'])
 
 
 def symbols_page() -> Page:
@@ -36,15 +36,15 @@ def make_page(guid: Sequence[int], name: str, suffix: bytes=b'') -> Page:
 
 DEFAULT_CANVAS_BACKGROUND = Color(red=0.9607843160629272, green=0.9607843160629272, blue=0.9607843160629272, alpha=1)
 import math
-def add_page_background(figma_canvas, sketch_page):
-    background_color = style.convert_color(figma_canvas['backgroundColor'], figma_canvas['backgroundOpacity'])
+def add_page_background(fig_canvas, sketch_page):
+    background_color = style.convert_color(fig_canvas['backgroundColor'], fig_canvas['backgroundOpacity'])
     if background_color != DEFAULT_CANVAS_BACKGROUND:
         page_bbox = positioning.group_bbox(sketch_page.layers)
         sketch_page.layers.insert(0, Rectangle(
-            do_objectID=utils.gen_object_id(figma_canvas['guid'], b'background'),
+            do_objectID=utils.gen_object_id(fig_canvas['guid'], b'background'),
             name="Page background",
             style=Style(
-                do_objectID=utils.gen_object_id(figma_canvas['guid'], b'background_style'),
+                do_objectID=utils.gen_object_id(fig_canvas['guid'], b'background_style'),
                 fills=[Fill.Color(background_color)]
             ),
             resizingConstraint=0,

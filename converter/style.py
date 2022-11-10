@@ -40,11 +40,11 @@ BLEND_MODE = {
     'NORMAL': BlendMode.NORMAL,
     'DARKEN': BlendMode.DARKEN,
     'MULTIPLY': BlendMode.MULTIPLY,
-    # 'LINEAR_BURN': , Cannot be set on Figma
+    # 'LINEAR_BURN': , Unused?
     'COLOR_BURN': BlendMode.COLOR_BURN,
     'LIGHTEN': BlendMode.LIGHTEN,
     'SCREEN': BlendMode.SCREEN,
-    # 'LINEAR_DODGE': , Cannot be set on Figma
+    # 'LINEAR_DODGE': , Unused?
     'COLOR_DODGE': BlendMode.COLOR_DODGE,
     'OVERLAY': BlendMode.OVERLAY,
     'SOFT_LIGHT': BlendMode.SOFT_LIGHT,
@@ -58,47 +58,47 @@ BLEND_MODE = {
 }
 
 
-def convert(figma_node: dict) -> Style:
+def convert(fig_node: dict) -> Style:
     sketch_style = Style(
-        do_objectID=utils.gen_object_id(figma_node['guid'], b'style'),
+        do_objectID=utils.gen_object_id(fig_node['guid'], b'style'),
         borderOptions=BorderOptions(
-            lineCapStyle=LINE_CAP_STYLE[figma_node['strokeCap']] if 'strokeCap' in figma_node else BorderOptions.__dict__['lineCapStyle'],
-            lineJoinStyle=LINE_JOIN_STYLE[figma_node['strokeJoin']] if 'strokeJoin' in figma_node else BorderOptions.__dict__['lineCapStyle'],
-            dashPattern=figma_node.get('dashPattern', [])
+            lineCapStyle=LINE_CAP_STYLE[fig_node['strokeCap']] if 'strokeCap' in fig_node else BorderOptions.__dict__['lineCapStyle'],
+            lineJoinStyle=LINE_JOIN_STYLE[fig_node['strokeJoin']] if 'strokeJoin' in fig_node else BorderOptions.__dict__['lineCapStyle'],
+            dashPattern=fig_node.get('dashPattern', [])
         ),
-        borders=[convert_border(figma_node, b) for b in figma_node['strokePaints']] if 'strokePaints' in figma_node else [],
-        fills=[convert_fill(figma_node, f) for f in figma_node['fillPaints']] if 'fillPaints' in figma_node else [],
-        **convert_effects(figma_node),
-        contextSettings=context_settings(figma_node)
+        borders=[convert_border(fig_node, b) for b in fig_node['strokePaints']] if 'strokePaints' in fig_node else [],
+        fills=[convert_fill(fig_node, f) for f in fig_node['fillPaints']] if 'fillPaints' in fig_node else [],
+        **convert_effects(fig_node),
+        contextSettings=context_settings(fig_node)
     )
     return sketch_style
 
 
-def convert_border(figma_node: dict, figma_border: dict) -> Border:
+def convert_border(fig_node: dict, fig_border: dict) -> Border:
     return Border.from_fill(
-        convert_fill(figma_node, figma_border),
-        position=BORDER_POSITION[figma_node['strokeAlign']],
-        thickness=figma_node['strokeWeight'],
+        convert_fill(fig_node, fig_border),
+        position=BORDER_POSITION[fig_node['strokeAlign']],
+        thickness=fig_node['strokeWeight'],
     )
 
 
-def convert_fill(figma_node: dict, figma_fill: dict) -> Fill:
-    match figma_fill:
+def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
+    match fig_fill:
         case {'type': 'EMOJI'}:
             raise Exception("Unsupported fill: EMOJI")
         case {'type': 'SOLID'}:
-            return Fill.Color(convert_color(figma_fill['color'], figma_fill['opacity']),
-                              isEnabled=figma_fill['visible'])
+            return Fill.Color(convert_color(fig_fill['color'], fig_fill['opacity']),
+                              isEnabled=fig_fill['visible'])
         case {'type': 'IMAGE'}:
             return Fill.Image(
-                f'images/{figma_fill["image"]["filename"]}',
-                patternFillType=PATTERN_FILL_TYPE[figma_fill['imageScaleMode']],
-                patternTileScale=figma_fill.get('scale', 1),
-                isEnabled=figma_fill['visible']
+                f'images/{fig_fill["image"]["filename"]}',
+                patternFillType=PATTERN_FILL_TYPE[fig_fill['imageScaleMode']],
+                patternTileScale=fig_fill.get('scale', 1),
+                isEnabled=fig_fill['visible']
             )
         case _:
-            return Fill.Gradient(convert_gradient(figma_node, figma_fill),
-                                 isEnabled=figma_fill['visible'])
+            return Fill.Gradient(convert_gradient(fig_node, fig_fill),
+                                 isEnabled=fig_fill['visible'])
 
 
 def convert_color(color: dict, opacity: Optional[float]=None) -> Color:
@@ -110,23 +110,26 @@ def convert_color(color: dict, opacity: Optional[float]=None) -> Color:
     )
 
 
-def convert_gradient(figma_node: dict, figma_fill: dict) -> Gradient:
+def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
     # Convert positions depending on the gradient type
-    mat = figma_fill['transform']
+    mat = fig_fill['transform']
 
     invmat = np.linalg.inv(mat)
 
     rotation_offset = 0.0
-    if figma_fill['type'] == 'GRADIENT_LINEAR':
+    if fig_fill['type'] == 'GRADIENT_LINEAR':
         # Linear gradients always go from (0, .5) to (1, .5)
         # We just apply the transform to get the coordinates (in a 1x1 square)
         return Gradient.Linear(
             from_=Point.from_array(invmat.dot([0, 0.5, 1])),
             to=Point.from_array(invmat.dot([1, 0.5, 1])),
-            stops=convert_stops(figma_fill['stops'])
+            stops=convert_stops(fig_fill['stops'])
         )
-    elif figma_fill['type'] in ['GRADIENT_RADIAL', 'GRADIENT_DIAMOND']:
-        # Figma angular gradients have the center at (.5, .5), the vertex at (1, .5)
+    elif fig_fill['type'] in ['GRADIENT_RADIAL', 'GRADIENT_DIAMOND']:
+        if fig_fill['type'] == 'GRADIENT_DIAMOND':
+            utils.log_conversion_warning("STY002", fig_node)
+        
+        # Angular gradients have the center at (.5, .5), the vertex at (1, .5)
         # and the co-vertex at (.5, 1). We transform them to the coordinates in a 1x1 square
         point_from = invmat.dot([0.5, 0.5, 1])  # Center
         point_to = invmat.dot([1, 0.5, 1])
@@ -135,7 +138,7 @@ def convert_gradient(figma_node: dict, figma_fill: dict) -> Gradient:
         # Sketch defines the ratio between axis in the item reference point (not the 1x1 square)
         # So we scale the 1x1 square coordinates to fit the ratio of the item frame before
         # calculating the ellipse's ratio
-        x_scale = figma_node['size']['x'] / figma_node['size']['y']
+        x_scale = fig_node['size']['x'] / fig_node['size']['y']
         ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
             point_from, point_to, x_scale)
 
@@ -143,25 +146,25 @@ def convert_gradient(figma_node: dict, figma_fill: dict) -> Gradient:
             from_=Point.from_array(point_from),
             to=Point.from_array(point_to),
             elipseLength=ellipse_ratio,
-            stops=convert_stops(figma_fill['stops'])
+            stops=convert_stops(fig_fill['stops'])
         )
     else:
         # Angular gradients don't allow positioning, but we can at least rotate them
-        rotation_offset = math.atan2(-figma_fill['transform'][1,0],
-                                     figma_fill['transform'][0,0]) / 2 / math.pi
+        rotation_offset = math.atan2(-fig_fill['transform'][1,0],
+                                     fig_fill['transform'][0,0]) / 2 / math.pi
 
         return Gradient.Angular(
-            stops=convert_stops(figma_fill['stops'], rotation_offset)
+            stops=convert_stops(fig_fill['stops'], rotation_offset)
         )
 
 
-def convert_stops(figma_stops: List[dict], rotation_offset: float=0.0) -> List[GradientStop]:
+def convert_stops(fig_stops: List[dict], rotation_offset: float=0.0) -> List[GradientStop]:
     stops = [
         GradientStop(
             color=convert_color(stop['color']),
             position=rotated_stop(stop['position'], rotation_offset),
         )
-        for stop in figma_stops
+        for stop in fig_stops
     ]
 
     if rotation_offset:
@@ -194,14 +197,14 @@ class _Effects(TypedDict):
     innerShadows: List[InnerShadow]
 
 
-def convert_effects(figma_node: dict) -> _Effects:
+def convert_effects(fig_node: dict) -> _Effects:
     sketch: _Effects = {
         'blur': Blur.Disabled(),
         'shadows': [],
         'innerShadows': []
     }
 
-    for e in figma_node.get('effects', []):
+    for e in fig_node.get('effects', []):
         if e['type'] == 'INNER_SHADOW':
             sketch['innerShadows'].append(InnerShadow(
                 blurRadius=e['radius'],
@@ -222,7 +225,7 @@ def convert_effects(figma_node: dict) -> _Effects:
 
         elif e['type'] == 'FOREGROUND_BLUR':
             if sketch['blur'].isEnabled:
-                utils.log_conversion_warning("STY001", figma_node)
+                utils.log_conversion_warning("STY001", fig_node)
                 continue
 
             sketch['blur'] = Blur(
@@ -232,7 +235,7 @@ def convert_effects(figma_node: dict) -> _Effects:
 
         elif e['type'] == 'BACKGROUND_BLUR':
             if sketch['blur'].isEnabled:
-                utils.log_conversion_warning("STY001", figma_node)
+                utils.log_conversion_warning("STY001", fig_node)
                 continue
 
             sketch['blur'] = Blur(
@@ -246,11 +249,11 @@ def convert_effects(figma_node: dict) -> _Effects:
     return sketch
 
 
-def context_settings(figma_node: dict) -> ContextSettings:
-    blend_mode = BLEND_MODE[figma_node['blendMode']]
-    opacity = figma_node['opacity']
+def context_settings(fig_node: dict) -> ContextSettings:
+    blend_mode = BLEND_MODE[fig_node['blendMode']]
+    opacity = fig_node['opacity']
 
-    if figma_node['blendMode'] == 'NORMAL' and opacity == 1:
+    if fig_node['blendMode'] == 'NORMAL' and opacity == 1:
         # Sketch interprets normal at 100% opacity as pass-through
         opacity = 0.99
 

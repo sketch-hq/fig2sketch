@@ -10,11 +10,11 @@ from typing import Tuple, Sequence, Dict, IO
 
 
 def convert_fig(reader: IO[bytes], output: ZipFile) -> Tuple[dict, Dict[Sequence[int], dict]]:
-    fig, figma_zip = decodefig.decode(reader)
+    fig, fig_zip = decodefig.decode(reader)
 
-    if figma_zip is not None:
+    if fig_zip is not None:
         shutil.copyfileobj(
-            figma_zip.open(f'thumbnail.png', 'r'),
+            fig_zip.open(f'thumbnail.png', 'r'),
             output.open(f'previews/preview.png', 'w')
         )
 
@@ -23,7 +23,7 @@ def convert_fig(reader: IO[bytes], output: ZipFile) -> Tuple[dict, Dict[Sequence
     root = None
 
     for node in fig['nodeChanges']:
-        node = transform_node(fig, node, figma_zip, output)
+        node = transform_node(fig, node, fig_zip, output)
         node_id = node['guid']
         id_map[node_id] = node
 
@@ -45,7 +45,7 @@ def convert_fig(reader: IO[bytes], output: ZipFile) -> Tuple[dict, Dict[Sequence
     return tree, id_map
 
 
-def transform_node(fig, node, figma_zip, output):
+def transform_node(fig, node, fig_zip, output):
     node['children'] = []
 
     # Extract parent ID
@@ -67,24 +67,24 @@ def transform_node(fig, node, figma_zip, output):
     for paint in node.get('fillPaints', []):
         if 'image' in paint:
             fname = bytes(paint['image']['hash']).hex()
-            paint['image']['filename'] = convert_image(fname, figma_zip, output)
+            paint['image']['filename'] = convert_image(fname, fig_zip, output)
 
     if 'symbolData' in node:
         for override in node['symbolData'].get('symbolOverrides', []):
             for paint in override.get('fillPaints', []):
                 if 'image' in paint:
                     fname = bytes(paint['image']['hash']).hex()
-                    paint['image']['filename'] = convert_image(fname, figma_zip, output)
+                    paint['image']['filename'] = convert_image(fname, fig_zip, output)
 
     return node
 
 
 @functools.cache
-def convert_image(fname, figma_zip, output):
+def convert_image(fname, fig_zip, output):
     logging.info(f'Converting image {fname}')
     try:
-        if figma_zip is not None:
-            fd = figma_zip.open(f'images/{fname}')
+        if fig_zip is not None:
+            fd = fig_zip.open(f'images/{fname}')
         else:
             fd = io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes']))
 

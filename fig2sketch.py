@@ -36,9 +36,9 @@ if __name__ == '__main__':
         ImageFile.LOAD_TRUNCATED_IMAGES = True
 
     with ZipFile(args.sketch_file, 'w') as output:
-        figma_json, id_map = fig2json.convert_fig(args.fig_file, output)
+        fig_json, id_map = fig2json.convert_fig(args.fig_file, output)
 
         if args.dump_fig_json:
-            json.dump(figma_json, args.dump_fig_json, indent=2, ensure_ascii=False, default=lambda x: x.tolist())
+            json.dump(fig_json, args.dump_fig_json, indent=2, ensure_ascii=False, default=lambda x: x.tolist())
 
-        convert.convert_json_to_sketch(figma_json, id_map, output)
+        convert.convert_json_to_sketch(fig_json, id_map, output)
