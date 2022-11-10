@@ -130,8 +130,40 @@ jobs:
           name: builds
           path: figma2sketch-macos-arm64.zip
 
+  build-macos-universal2:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11.0
+          architecture: x64 # Otherwise the runner will try to download Python arm64, which is not available. x64 has support for both archs (universal2).
+      - name: Build 
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+          pyinstaller fig2sketch.py -y --onefile --target-arch universal2
+      - name: Create folder and adjust permissions
+        run: |
+          mkdir dist/figma2sketch-macos
+          mv dist/fig2sketch dist/figma2sketch-macos/
+          chmod +x dist/figma2sketch-macos/fig2sketch
+      - name: Zip directory
+        uses: vimtor/action-zip@v1
+        with:
+          files: dist/
+          dest: figma2sketch-macos-universal2.zip
+      - name: Upload artifact    
+        uses: actions/upload-artifact@v3
+        with:
+          name: builds
+          path: figma2sketch-macos-universal2.zip
+
   release-on-push:
-    needs: [ build-linux, build-windows, build-macos-x86_64, build-macos-arm64 ]
+    needs: [ build-linux, build-windows, build-macos-x86_64, build-macos-arm64, build-macos-universal2 ]
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
