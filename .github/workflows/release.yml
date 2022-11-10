@@ -142,20 +142,20 @@ jobs:
         run: |
           mkdir x86_64
           mkdir arm64
-          mkdir -p dist/figma2sketch-universal
-          unzip figma2sketch-macos-x86_64.zip -d x86_64/
-          unzip figma2sketch-macos-arm64.zip -d arm64/
-          lipo -create x86_64/figma2sketch-macos/fig2sketch arm64/figma2sketch-macos/fig2sketch -output dist/figma2sketch-universal/fig2sketch
+          mkdir -p dist/fig2sketch-universal
+          unzip fig2sketch-macos-x86_64.zip -d x86_64/
+          unzip fig2sketch-macos-arm64.zip -d arm64/
+          lipo -create x86_64/fig2sketch-macos/fig2sketch arm64/fig2sketch-macos/fig2sketch -output dist/fig2sketch-universal/fig2sketch
       - name: Zip directory
         uses: vimtor/action-zip@v1
         with:
           files: dist/
-          dest: figma2sketch-macos-universal.zip
-      - name: Upload artifact    
+          dest: fig2sketch-macos-universal.zip
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: figma2sketch-macos-universal.zip
+          path: fig2sketch-macos-universal.zip
 
 
   create-release:
