@@ -146,7 +146,7 @@ jobs:
           ls -ltr
           unzip figma2sketch-macos-x86_64.zip -d x86_64/
           unzip figma2sketch-macos-arm64.zip -d arm64/
-          lipo -create x86_64/fig2sketch arm64/fig2sketch -output dist/figma2sketch-universal/fig2sketch
+          lipo -create x86_64/figma2sketch-macos/fig2sketch arm64/figma2sketch-macos/fig2sketch -output dist/figma2sketch-universal/fig2sketch
           ls -ltR
       - name: Zip directory
         uses: vimtor/action-zip@v1
