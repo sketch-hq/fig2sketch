@@ -126,6 +126,9 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
             stops=convert_stops(fig_fill['stops'])
         )
     elif fig_fill['type'] in ['GRADIENT_RADIAL', 'GRADIENT_DIAMOND']:
+        if fig_fill['type'] == 'GRADIENT_DIAMOND':
+            utils.log_conversion_warning("STY002", fig_node)
+        
         # Angular gradients have the center at (.5, .5), the vertex at (1, .5)
         # and the co-vertex at (.5, 1). We transform them to the coordinates in a 1x1 square
         point_from = invmat.dot([0.5, 0.5, 1])  # Center
