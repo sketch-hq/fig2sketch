@@ -86,7 +86,6 @@ def convert(fig_text):
     )
     obj.resizingConstraint &= CONSTRAINT_MASK_FOR_AUTO_RESIZE[text_resize]
 
-    # TODO: Implement TextStyle
     obj.style.textStyle = text_style(fig_text)
 
     # Potentially multiple colors, use the attributes instead of the top level color

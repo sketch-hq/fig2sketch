@@ -27,5 +27,4 @@ def serialize(obj, file):
         writer,
         default=convert_object,
         ensure_ascii=False,  # Write emoji directly, without surrogate pairs
-        indent=2  # Makes debugging nicer. TODO: Remove
     )

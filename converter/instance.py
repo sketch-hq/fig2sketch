@@ -196,7 +196,6 @@ def detach_symbol(fig_instance, all_overrides):
 
 
 def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
-    # TODO: Do we need to move overrideKey also to convert_properties?
     guid = fig_node.get('overrideKey', fig_node['guid'])
 
     # Apply overrides

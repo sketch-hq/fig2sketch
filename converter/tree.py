@@ -50,8 +50,6 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
         except Exception as e:
             logging.error(f'An unexpected error occurred when converting {child["type"]}: {child["name"]}. It will be skipped\n' + ''.join(traceback.format_exception(e)))
 
-    # TODO: Determine who needs layers per node type
-    # e.g: rectangles never have children, groups do
     if children and isinstance(sketch_item, AbstractLayerGroup):
         sketch_item.layers = children
 

@@ -199,8 +199,6 @@ def resizing_constraint(fig_node: dict) -> int:
     return h + v
 
 
-# TODO: Call this function from every shape/image/etc
-# TODO: Check if image masks work
 def masking(fig_node: dict) -> _Masking:
     CLIPPING_MODE = {
         'ALPHA': ClippingMaskMode.ALPHA,
