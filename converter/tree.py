@@ -38,8 +38,6 @@ POST_PROCESSING: Dict[str,Callable[[dict, Any], AbstractLayer]] = {
 
 def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
     name = fig_node['name']
-    if name=='FrameNestedIn2':
-        print("wadus")
     type_ = get_node_type(fig_node, parent_type)
     logging.info(f'{type_}: {name}')
 

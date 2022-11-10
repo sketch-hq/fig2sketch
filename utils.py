@@ -47,7 +47,9 @@ def log_conversion_warning(warning_code: str, fig_node: dict) -> None:
 
         "SYM001": f"references an invalid symbol. It will be converted to an empty placeholder group",
 
-        "ART001": f"frame has at least one corner radius which is not supported by sketch artboards. The corner radius will be ignored"
+        "ART001": f"has at least one corner radius which is not supported by sketch artboards. The corner radius will be ignored",
+
+        "BSE001": f"has a layout grid enabled. This functionality is not yet implemented"
     }
 
     if not fig_node['guid'] in issued_warnings:
