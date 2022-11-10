@@ -44,6 +44,7 @@ def log_conversion_warning(warning_code: str, fig_node: dict) -> None:
         "SHP001": f"contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
 
         "STY001": f"contains a layer blur and a background blur. Only one will be converted",
+        "STY002": f"contains a DIAMOND gradient, which is not supported. It is converted to a RADIAL gradient",
 
         "SYM001": f"references an invalid symbol. It will be converted to an empty placeholder group",
 
