@@ -2,7 +2,7 @@ from . import base, positioning
 import utils
 import numpy as np
 import itertools
-from sketchformat.layer_group import ShapeGroup
+from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
 from collections import defaultdict
@@ -20,6 +20,11 @@ STROKE_CAP_TO_MARKER_TYPE = {
     'SQUARE': 0
 }
 
+WINDING_RULE = {
+    'NONZERO': WindingRule.NON_ZERO,
+    'ODD': WindingRule.EVEN_ODD
+}
+
 
 def convert(fig_vector):
     regions = get_all_segments(fig_vector['vectorNetwork'])
@@ -31,53 +36,53 @@ def convert(fig_vector):
         for s in regions:
             s.frame.x = 0
             s.frame.y = 0
-            s.booleanOperation = 0
 
-        obj = ShapeGroup(
+        obj = Group(
             **base.base_styled(fig_vector),
             layers=regions,
-            windingRule=WindingRule.EVEN_ODD
+            # # TODO: This feels incorrect
+            # windingRule=WindingRule.EVEN_ODD
         )
+        # TODO: Full reset styles?
+        obj.style.fills = []
 
-        # TODO: This feels incorrect
-        obj.style.windingRule = WindingRule.EVEN_ODD
+        # obj.style.windingRule = obj.windingRule
         return obj
     else:
         return regions[0]
 
 
-def convert_region(fig_vector, segments, region_index=0):
-    if len(segments) == 1:
-        # A single loop, or just segments. Convert as a shapePath
-        return convert_shape_path(fig_vector, segments[0], region_index)
-    else:
-        # Multiple loops, convert as a shape group with shape paths as children (will happen in
-        # post process)
-        shape_paths = [convert_shape_path(fig_vector, loop, region_index, i) for i, loop in enumerate(segments)]
+def convert_region(fig_vector, region, region_index=0):
+    loops = [convert_shape_path(fig_vector, region['style'], loop, region_index, i) for i, loop in enumerate(region['loops'])]
 
+    if len(loops) > 1:
         # Ignore positioning for children.
-        # TODO: We should probably be building these shapePaths by hand, instead of relying on the
-        # generic convert_shape_path function
-        for s in shape_paths:
+        for s in loops:
             s.frame.x = 0
             s.frame.y = 0
 
         obj = ShapeGroup(
-            **base.base_styled(fig_vector),
-            windingRule=WindingRule.EVEN_ODD,
-            layers=shape_paths,
+            **base.base_styled({**fig_vector, **region['style']}),
+            layers=loops,
+            windingRule=WINDING_RULE[region['windingRule']],
         )
         obj.do_objectID = utils.gen_object_id(fig_vector['guid'], f"region{region_index}".encode())
 
-        obj.style.windingRule = WindingRule.EVEN_ODD
+        # obj.style.windingRule=WINDING_RULE[region['windingRule']],
+
+        # obj.style.windingRule = obj.windingRule
         return obj
+    else:
+        return loops[0]
 
 
-def convert_shape_path(fig_vector, segments, region=0, loop=0):
+
+
+def convert_shape_path(fig_vector, style, segments, region=0, loop=0):
     points, styles = convert_points(fig_vector, segments)
 
     obj = ShapePath(
-        **base.base_shape(fig_vector),
+        **base.base_shape({**fig_vector, **style}),
         **points,
     )
     obj.do_objectID = utils.gen_object_id(fig_vector['guid'], f"region{region}loop{loop}".encode())
@@ -127,18 +132,25 @@ def convert_points(fig_vector, ordered_segments):
 
 
 def get_all_segments(vector_network):
-    if vector_network['regions']:
-        return [
-            [
-                reorder_segment_points([
-                    vector_network['segments'][i] for i in loop
-                ]) for loop in region['loops']
-            ] for region in vector_network['regions']
-        ]
-    else:
-        segments = reorder_segments(vector_network['segments'])
-        # A polygon is closed if the first point is the same as the last point
-        return [segments]
+    unused_segments = set(range(len(vector_network['segments'])))
+    def use_segment(i):
+        unused_segments.discard(i)
+        return i
+
+    regions = [{
+            'loops': [reorder_segment_points([
+                vector_network['segments'][use_segment(i)] for i in loop
+            ]) for loop in region['loops']],
+            'style': region['style']
+        } for region in vector_network['regions']]
+
+    if unused_segments:
+        regions += [{
+            'style': {'fillPaints': []},
+            'windingRule': 'NONZERO',
+            'loops': reorder_segments([vector_network['segments'][i] for i in unused_segments]),
+        }]
+    return regions
 
 
 def swap_segment(segment):

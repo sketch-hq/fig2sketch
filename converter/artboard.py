@@ -2,24 +2,7 @@ from . import positioning, prototype, rectangle, style, base
 from sketchformat.style import Style, BorderOptions, Fill, Color, FillType
 from sketchformat.layer_group import Artboard
 import utils
-import copy
 
-DEFAULT_fig_ARTBOARD_FILL = {
-    "fillPaints": [
-        {
-            "type": "SOLID",
-            "color": {
-                "r": 1.0,
-                "g": 1.0,
-                "b": 1.0,
-                "a": 1.0
-            },
-            "opacity": 1.0,
-            "visible": True,
-            "blendMode": "NORMAL"
-        }
-    ]
-}
 
 def convert(fig_frame: dict) -> Artboard:
     obj = Artboard(
