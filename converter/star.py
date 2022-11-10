@@ -2,9 +2,9 @@ from . import base
 from sketchformat.layer_shape import Star
 
 
-def convert(figma_star):
+def convert(fig_star):
     return Star(
-        **base.base_shape(figma_star),
-        numberOfPoints=figma_star['count'],
-        radius=figma_star['starInnerScale']
+        **base.base_shape(fig_star),
+        numberOfPoints=fig_star['count'],
+        radius=fig_star['starInnerScale']
     )

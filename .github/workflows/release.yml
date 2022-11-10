@@ -14,7 +14,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-      - name: Build 
+      - name: Build
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
@@ -22,19 +22,19 @@ jobs:
           pyinstaller fig2sketch.py -y --onefile
       - name: Create folder and adjust permissions
         run: |
-          mkdir dist/figma2sketch-linux
-          mv dist/fig2sketch dist/figma2sketch-linux/
-          chmod +x dist/figma2sketch-linux/fig2sketch
+          mkdir dist/fig2sketch-linux
+          mv dist/fig2sketch dist/fig2sketch-linux/
+          chmod +x dist/fig2sketch-linux/fig2sketch
       - name: Zip directory
         uses: vimtor/action-zip@v1
         with:
           files: dist/
-          dest: figma2sketch-linux.zip
-      - name: Upload artifact    
+          dest: fig2sketch-linux.zip
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: figma2sketch-linux.zip
+          path: fig2sketch-linux.zip
 
   build-windows:
     runs-on: windows-latest
@@ -45,7 +45,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-      - name: Build 
+      - name: Build
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
@@ -53,19 +53,19 @@ jobs:
           pyinstaller fig2sketch.py -y --onefile
       - name: Create folder and adjust permissions
         run: |
-          mkdir dist/figma2sketch-windows
-          mv dist/fig2sketch.exe dist/figma2sketch-windows/
-          chmod +x dist/figma2sketch-windows/fig2sketch.exe
+          mkdir dist/fig2sketch-windows
+          mv dist/fig2sketch.exe dist/fig2sketch-windows/
+          chmod +x dist/fig2sketch-windows/fig2sketch.exe
       - name: Zip directory
         uses: vimtor/action-zip@v1
         with:
           files: dist/
-          dest: figma2sketch-windows.zip
-      - name: Upload artifact    
+          dest: fig2sketch-windows.zip
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: figma2sketch-windows.zip
+          path: fig2sketch-windows.zip
 
   build-macos-x86_64:
     runs-on: macos-latest
@@ -76,7 +76,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-      - name: Build 
+      - name: Build
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
@@ -84,19 +84,19 @@ jobs:
           pyinstaller fig2sketch.py -y --onefile --target-arch x86_64
       - name: Create folder and adjust permissions
         run: |
-          mkdir dist/figma2sketch-macos
-          mv dist/fig2sketch dist/figma2sketch-macos/
-          chmod +x dist/figma2sketch-macos/fig2sketch
+          mkdir dist/fig2sketch-macos
+          mv dist/fig2sketch dist/fig2sketch-macos/
+          chmod +x dist/fig2sketch-macos/fig2sketch
       - name: Zip directory
         uses: vimtor/action-zip@v1
         with:
           files: dist/
-          dest: figma2sketch-macos-x86_64.zip
-      - name: Upload artifact    
+          dest: fig2sketch-macos-x86_64.zip
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: figma2sketch-macos-x86_64.zip
+          path: fig2sketch-macos-x86_64.zip
 
   build-macos-arm64:
     runs-on: self-hosted
@@ -108,7 +108,7 @@ jobs:
         with:
           python-version: 3.11.0
           architecture: x64 # Otherwise the runner will try to download Python arm64, which is not available. x64 has support for both archs (universal2).
-      - name: Build 
+      - name: Build
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
@@ -116,19 +116,19 @@ jobs:
           pyinstaller fig2sketch.py -y --onefile --target-arch arm64
       - name: Create folder and adjust permissions
         run: |
-          mkdir dist/figma2sketch-macos
-          mv dist/fig2sketch dist/figma2sketch-macos/
-          chmod +x dist/figma2sketch-macos/fig2sketch
+          mkdir dist/fig2sketch-macos
+          mv dist/fig2sketch dist/fig2sketch-macos/
+          chmod +x dist/fig2sketch-macos/fig2sketch
       - name: Zip directory
         uses: vimtor/action-zip@v1
         with:
           files: dist/
-          dest: figma2sketch-macos-arm64.zip
-      - name: Upload artifact    
+          dest: fig2sketch-macos-arm64.zip
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: figma2sketch-macos-arm64.zip
+          path: fig2sketch-macos-arm64.zip
 
   release-on-push:
     needs: [ build-linux, build-windows, build-macos-x86_64, build-macos-arm64 ]

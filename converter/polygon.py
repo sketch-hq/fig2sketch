@@ -2,8 +2,8 @@ from . import base
 from sketchformat.layer_shape import Polygon
 
 
-def convert(figma_polygon):
+def convert(fig_polygon):
     return Polygon(
-        **base.base_shape(figma_polygon),
-        numberOfPoints=figma_polygon['count']
+        **base.base_shape(fig_polygon),
+        numberOfPoints=fig_polygon['count']
     )

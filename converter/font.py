@@ -8,7 +8,7 @@ from sketchformat.document import FontReference, JsonFileReference
 from zipfile import ZipFile
 from typing import IO, Tuple
 
-fonts_cache_dir = appdirs.user_cache_dir('Figma2Sketch', 'Sketch') + '/fonts'
+fonts_cache_dir = appdirs.user_cache_dir('Fig2Sketch', 'Sketch') + '/fonts'
 os.makedirs(fonts_cache_dir, exist_ok=True)
 
 class FontError(Exception):
@@ -68,7 +68,7 @@ def extract_names(font_file):
     }
 
 
-def font_matches(figma, font_names):
-    return figma['postscript'] == font_names['postscript'] or (
-            figma['family'] == font_names['family'] and
-            figma['style'] == font_names['subfamily'])
+def font_matches(fig, font_names):
+    return fig['postscript'] == font_names['postscript'] or (
+            fig['family'] == font_names['family'] and
+            fig['style'] == font_names['subfamily'])

@@ -7,15 +7,15 @@ from sketchformat.layer_common import Rect, ClippingMaskMode
 from sketchformat.layer_shape import Rectangle
 
 
-def convert(figma_group):
+def convert(fig_group):
     return Group(
-        **base.base_shape(figma_group),
+        **base.base_shape(fig_group),
     )
 
 
-def post_process_frame(figma_group, sketch_group):
-    # Do nothing for Figma groups, they translate directly to Sketch
-    if figma_group['resizeToFit']:
+def post_process_frame(fig_group, sketch_group):
+    # Do nothing for fig groups, they translate directly to Sketch
+    if fig_group['resizeToFit']:
         return sketch_group
 
     # Convert frame styles
@@ -23,20 +23,20 @@ def post_process_frame(figma_group, sketch_group):
     # - Layer blur -> Rectangle with bgblur on top
     # - Shadows -> If we have fill, add shadow to the fill. If not, add shadow to each child
     # TODO: Fix this and make it way less hacky
-    sketch_group.layers.insert(0, rectangle.build_rectangle_for_frame(figma_group))
+    sketch_group.layers.insert(0, rectangle.build_rectangle_for_frame(fig_group))
 
-    sketch_group.style = Style(do_objectID=utils.gen_object_id(figma_group['guid'], b'style'))
-    sketch_group.style.contextSettings.opacity = figma_group['opacity']
+    sketch_group.style = Style(do_objectID=utils.gen_object_id(fig_group['guid'], b'style'))
+    sketch_group.style.contextSettings.opacity = fig_group['opacity']
 
-    needs_clip_mask = not figma_group.get('frameMaskDisabled', False)
+    needs_clip_mask = not fig_group.get('frameMaskDisabled', False)
     if needs_clip_mask:
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
         # since the clipmask defines Sketch bounds (which match visible children)
-        sketch_group.layers.insert(0, make_clipping_rect(figma_group['guid'],
+        sketch_group.layers.insert(0, make_clipping_rect(fig_group['guid'],
                                                             sketch_group.frame))
     else:
         # When converting from a frame to a group, the bounding box should be adjusted
-        # In Figma the frame box can be smalled than the children bounds, but not so in Sketch
+        # The frame box in a fig doc can be smalled than the children bounds, but not so in Sketch
         # To do so, we resize the frame to match the children bbox and also move the children
         # so that the top-left corner sits at 0,0
         children_bbox = positioning.group_bbox(sketch_group.layers)

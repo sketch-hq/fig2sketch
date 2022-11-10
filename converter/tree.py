@@ -35,14 +35,14 @@ POST_PROCESSING: Dict[str,Callable[[dict, Any], AbstractLayer]] = {
 }
 
 
-def convert_node(figma_node: dict, parent_type: str) -> AbstractLayer:
-    name = figma_node['name']
-    type_ = get_node_type(figma_node, parent_type)
+def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
+    name = fig_node['name']
+    type_ = get_node_type(fig_node, parent_type)
     logging.info(f'{type_}: {name}')
 
-    sketch_item = CONVERTERS[type_](figma_node)
-    children = [convert_node(child, figma_node['type']) for child in
-                figma_node.get('children', [])]
+    sketch_item = CONVERTERS[type_](fig_node)
+    children = [convert_node(child, fig_node['type']) for child in
+                fig_node.get('children', [])]
 
     # TODO: Determine who needs layers per node type
     # e.g: rectangles never have children, groups do
@@ -51,19 +51,19 @@ def convert_node(figma_node: dict, parent_type: str) -> AbstractLayer:
 
     post_process = POST_PROCESSING.get(type_)
     if post_process:
-        sketch_item = post_process(figma_node, sketch_item)
+        sketch_item = post_process(fig_node, sketch_item)
 
     return sketch_item
 
 
-def get_node_type(figma_node: dict, parent_type: str) -> str:
+def get_node_type(fig_node: dict, parent_type: str) -> str:
     # We do this because Sketch does not support nested artboards
     # If a Frame is detected inside another Frame, the internal one
     # is considered a group
-    if figma_node['type'] == 'FRAME':
-        if parent_type == 'CANVAS' and not figma_node['resizeToFit']:
+    if fig_node['type'] == 'FRAME':
+        if parent_type == 'CANVAS' and not fig_node['resizeToFit']:
             return 'ARTBOARD'
         else:
             return 'GROUP'
     else:
-        return figma_node['type']
+        return fig_node['type']

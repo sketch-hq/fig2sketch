@@ -4,7 +4,7 @@ from sketchformat.layer_group import Artboard
 import utils
 import copy
 
-DEFAULT_FIGMA_ARTBOARD_FILL = {
+DEFAULT_fig_ARTBOARD_FILL = {
     "fillPaints": [
         {
             "type": "SOLID",
@@ -21,10 +21,10 @@ DEFAULT_FIGMA_ARTBOARD_FILL = {
     ]
 }
 
-def convert(figma_frame: dict) -> Artboard:
+def convert(fig_frame: dict) -> Artboard:
     obj = Artboard(
-        **base.base_shape(figma_frame),
-        **prototype.prototyping_information(figma_frame)
+        **base.base_shape(fig_frame),
+        **prototype.prototyping_information(fig_frame)
     )
 
     # Remove style from artboards. TODO: Is this needed?
@@ -34,7 +34,7 @@ def convert(figma_frame: dict) -> Artboard:
 
     return obj
 
-def post_process_frame(figma_frame: dict, sketch_artboard: Artboard) -> Artboard:
+def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     # Sketch only supports one custom color as an artboard background
     # If the frame has more than one color or other custom style we just create
     # the background rectangle with whatever style
@@ -42,7 +42,7 @@ def post_process_frame(figma_frame: dict, sketch_artboard: Artboard) -> Artboard
     # we set the background color in sketch property
     # We could just always create the rectangle to simplify the logic, but I guess
     # adding always a background rectangle is an overhead for the document itself
-    artboard_style = style.convert(figma_frame)
+    artboard_style = style.convert(fig_frame)
 
     match artboard_style.fills:
         case [Fill(fillType=FillType.COLOR, color=color)]:
@@ -51,6 +51,6 @@ def post_process_frame(figma_frame: dict, sketch_artboard: Artboard) -> Artboard
             sketch_artboard.hasBackgroundColor = True
         case _:
             # Anything else, add a background rect
-            sketch_artboard.layers.insert(0, rectangle.build_rectangle_for_frame(figma_frame))
+            sketch_artboard.layers.insert(0, rectangle.build_rectangle_for_frame(fig_frame))
 
     return sketch_artboard

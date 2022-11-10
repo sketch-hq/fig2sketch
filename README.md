@@ -1,4 +1,4 @@
-# Figma to Sketch converter
+# .fig to Sketch converter
 
 ## Install
 
@@ -15,7 +15,7 @@ pip install -r requirements.txt
 2. Open the resulting `output/output.sketch` in Sketch
 
 
-## Documentation about Figma format
+## Documentation about .fig format
 https://www.notion.so/sketch-hq/Figma-converter-d66dcb6c51f14baebf9b508141c095c2
 
 

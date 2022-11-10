@@ -27,16 +27,16 @@ class Context:
         self._symbol_position = {0: [0, 0]}
 
     def component(self, cid: Sequence[int]) -> Tuple[dict, Optional[Swatch]]:
-        figma_component = self.figma_node(cid)
+        fig_component = self.fig_node(cid)
 
         # See if we can convert this component to a Sketch swatch
         sketch_component = self._sketch_components.get(cid)
         if not sketch_component:
-            sketch_component = component.convert(figma_component)
+            sketch_component = component.convert(fig_component)
             if sketch_component is not None:
                 self._sketch_components[cid] = sketch_component
 
-        return figma_component, sketch_component
+        return fig_component, sketch_component
 
     def sketch_components(self) -> List[Swatch]:
         return list(self._sketch_components.values())
@@ -48,11 +48,11 @@ class Context:
         self.symbols_page.layers.append(sketch_symbol)
         self._position_symbol(sketch_symbol)
 
-    def figma_node(self, fid: Sequence[int]) -> dict:
+    def fig_node(self, fid: Sequence[int]) -> dict:
         return self._node_by_id[fid]
 
-    def record_font(self, figma_font_name):
-        font_descriptor = (figma_font_name['family'], figma_font_name['style'])
+    def record_font(self, fig_font_name):
+        font_descriptor = (fig_font_name['family'], fig_font_name['style'])
         font_info = self._used_fonts.get(font_descriptor)
         if font_info:
             return font_info[1]
@@ -62,10 +62,10 @@ class Context:
         except:
             logging.warning(f"Could not download font {font_descriptor}")
             font_file = None
-            if figma_font_name['postscript']:
-                font_name = figma_font_name['postscript']
+            if fig_font_name['postscript']:
+                font_name = fig_font_name['postscript']
             else:
-                font_name = f"{figma_font_name['family']}-{figma_font_name['subfamily']}"
+                font_name = f"{fig_font_name['family']}-{fig_font_name['subfamily']}"
 
         self._used_fonts[font_descriptor] = (font_file, font_name)
         return font_name
@@ -74,7 +74,7 @@ class Context:
         return self._used_fonts
 
     def find_symbol(self, sid: Sequence[int]) -> dict:
-        symbol = self.figma_node(sid)
+        symbol = self.fig_node(sid)
         if not self._component_symbols.get(sid, True):
             # The symbol is in the component page and has not been converted yet, do it now
             from . import tree
