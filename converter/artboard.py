@@ -35,6 +35,9 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
             utils.log_conversion_warning("ART001", fig_frame)
             break
 
+    if sketch_artboard.rotation != 0:
+        utils.log_conversion_warning("ART002", fig_frame)
+
     match artboard_style.fills:
         case [Fill(fillType=FillType.COLOR, color=color)]:
             # Single color, apply to artboard
