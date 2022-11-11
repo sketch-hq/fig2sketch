@@ -6,7 +6,7 @@ from typing import Optional, IO
 
 
 def serialize(obj: object, file: IO[bytes]) -> None:
-    file.write(orjson.dumps(obj, default=lambda x: x.to_json(), option=orjson.OPT_SERIALIZE_NUMPY))
+    file.write(orjson.dumps(obj, default=lambda x: x.to_json()))
 
 
 # Check if orjson is patched

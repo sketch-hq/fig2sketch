@@ -1,9 +1,8 @@
 import math
-import numpy as np
-import numpy.typing as npt
 import utils
 from sketchformat.style import *
 from typing import List, TypedDict
+from .positioning import Vector, Matrix
 
 BORDER_POSITION = {
     'CENTER': BorderPosition.CENTER,
@@ -117,7 +116,7 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
     # Convert positions depending on the gradient type
     mat = fig_fill['transform']
 
-    invmat = np.linalg.inv(mat)
+    invmat = mat.inv()
 
     rotation_offset = 0.0
     if fig_fill['type'] == 'GRADIENT_LINEAR':
@@ -153,8 +152,8 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
         )
     else:
         # Angular gradients don't allow positioning, but we can at least rotate them
-        rotation_offset = math.atan2(-fig_fill['transform'][1, 0],
-                                     fig_fill['transform'][0, 0]) / 2 / math.pi
+        rotation_offset = math.atan2(-fig_fill['transform'][1][0],
+                                     fig_fill['transform'][0][0]) / 2 / math.pi
 
         return Gradient.Angular(
             stops=convert_stops(fig_fill['stops'], rotation_offset)
@@ -178,10 +177,9 @@ def convert_stops(fig_stops: List[dict], rotation_offset: float = 0.0) -> List[G
     return stops
 
 
-def scaled_distance(a: npt.NDArray[np.float64], b: npt.NDArray[np.float64],
-                    x_scale: float) -> float:
+def scaled_distance(a: Vector, b: Vector, x_scale: float) -> float:
     v = a - b
-    return np.hypot(v[0] * x_scale, v[1])
+    return ((v[0] * x_scale)**2 + v[1]**2)**0.5
 
 
 def rotated_stop(position: float, offset: float) -> float:

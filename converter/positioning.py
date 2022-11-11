@@ -1,8 +1,41 @@
 import math
-import numpy as np
-import numpy.typing as npt
 from sketchformat.layer_common import Rect
 from typing import TypedDict, Tuple, List
+
+
+class Vector(list):
+    def __init__(self, x, y):
+        super().__init__([x, y])
+
+    def __add__(self, other):
+        return Vector(self[0]+other[0], self[1]+other[1])
+
+    def __sub__(self, other):
+        return Vector(self[0]-other[0], self[1]-other[1])
+
+
+class Matrix(list):
+    def __init__(self, m):
+        super().__init__(m)
+
+    def dot(self, v):
+        return Vector(
+            self[0][2] + self[0][0]*v[0] + self[0][1]*v[1],
+            self[1][2] + self[1][0]*v[0] + self[1][1]*v[1],
+        )
+
+    def dot2(self, v):
+        return Vector(
+            self[0][0]*v[0] + self[0][1]*v[1],
+            self[1][0]*v[0] + self[1][1]*v[1],
+        )
+
+    def inv(self):
+        return Matrix([
+            [self[1][1]/(self[0][0]*self[1][1]-self[0][1]*self[1][0]), self[0][1]/(self[0][1]*self[1][0]-self[0][0]*self[1][1]), (self[0][2]*self[1][1]-self[0][1]*self[1][2])/(self[0][1]*self[1][0]-self[0][0]*self[1][1])],
+            [self[1][0]/(self[0][1]*self[1][0]-self[0][0]*self[1][1]), self[0][0]/(self[0][0]*self[1][1]-self[0][1]*self[1][0]), (self[0][2]*self[1][0]-self[0][0]*self[1][2])/(self[0][0]*self[1][1]-self[0][1]*self[1][0])],
+            [0,0,1]
+        ])
 
 
 class _Positioning(TypedDict):
@@ -30,12 +63,12 @@ def convert(fig_item: dict) -> _Positioning:
     }
 
 
-def transform_frame(item: dict) -> npt.NDArray[np.float64]:
+def transform_frame(item: dict) -> Vector:
     # Calculate relative position
-    relative_position = item['transform'][:2, 2]
+    relative_position = Vector(item['transform'][0][2], item['transform'][1][2])
 
     # Vector from rotation center to origin (0,0)
-    vco = np.array([item['size']['x'] / 2, item['size']['y'] / 2])
+    vco = Vector(item['size']['x'] / 2, item['size']['y'] / 2)
 
     # Apply rotation to vector
     vco_rotated = apply_transform(item, vco)
@@ -47,11 +80,11 @@ def transform_frame(item: dict) -> npt.NDArray[np.float64]:
     return relative_position + origin_translation
 
 
-def apply_transform(item: dict, vector: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+def apply_transform(item: dict, vector: Vector) -> Vector:
     # Rotation/flip matrix
-    matrix = item['transform'][:2, :2]
+    matrix = item['transform']
 
-    return matrix.dot(vector)
+    return matrix.dot2(vector)
 
 
 def guess_flip(fig_item: dict) -> Tuple[List[bool], float]:
@@ -59,14 +92,14 @@ def guess_flip(fig_item: dict) -> Tuple[List[bool], float]:
 
     # Use a diagonal with big numbers to check for sign flips, to avoid floating point weirdness
     flip = [False, False]
-    if abs(tr[1, 1]) > 0.1:
-        flip[1] = bool(np.sign(tr[1, 1]) != np.sign(tr[0, 0]))
+    if abs(tr[1][1]) > 0.1:
+        flip[1] = bool(math.copysign(1, tr[1][1]) != math.copysign(1, tr[0][0]))
     else:
-        flip[1] = bool(np.sign(tr[0, 1]) == np.sign(tr[1, 0]))
+        flip[1] = bool(math.copysign(1, tr[0][1]) == math.copysign(1, tr[1][0]))
 
     angle = math.degrees(math.atan2(
-        -fig_item['transform'][1, 0],
-        fig_item['transform'][0, 0]
+        -fig_item['transform'][1][0],
+        fig_item['transform'][0][0]
     ))
     if flip[1]:
         angle *= -1
@@ -92,6 +125,7 @@ def group_bbox(children):
         bbox_from_frame(child)
         for child in children
     ]
+
     return [
         min([b[0] for b in child_bboxes]),
         max([b[1] for b in child_bboxes]),
@@ -103,9 +137,9 @@ def group_bbox(children):
 # TODO: Extract this and share code with positioning
 def bbox_from_frame(child):
     frame = child.frame
-    theta = np.radians(child.rotation)
-    c, s = np.cos(theta), np.sin(theta)
-    matrix = np.array(((c, -s), (s, c)))
+    theta = math.radians(child.rotation)
+    c, s = math.cos(theta), math.sin(theta)
+    matrix = Matrix([[c, -s], [s, c]])
     # Rotate the frame to the original position and calculate corners
     x1 = frame.x
     x2 = x1 + frame.width
@@ -115,10 +149,10 @@ def bbox_from_frame(child):
     w2 = frame.width / 2
     h2 = frame.height / 2
     points = [
-        matrix.dot(np.array([-w2, -h2])) - np.array([-w2, -h2]) + np.array([x1, y1]),
-        matrix.dot(np.array([w2, -h2])) - np.array([w2, -h2]) + np.array([x2, y1]),
-        matrix.dot(np.array([w2, h2])) - np.array([w2, h2]) + np.array([x2, y2]),
-        matrix.dot(np.array([-w2, h2])) - np.array([-w2, h2]) + np.array([x1, y2]),
+        matrix.dot2(Vector(-w2, -h2)) - Vector(-w2, -h2) + Vector(x1, y1),
+        matrix.dot2(Vector(w2, -h2)) - Vector(w2, -h2) + Vector(x2, y1),
+        matrix.dot2(Vector(w2, h2)) - Vector(w2, h2) + Vector(x2, y2),
+        matrix.dot2(Vector(-w2, h2)) - Vector(-w2, h2) + Vector(x1, y2),
     ]
 
     return [

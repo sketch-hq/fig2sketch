@@ -1,9 +1,9 @@
 import io
-import numpy as np
 import zipfile
 import zlib
 import struct
 from .kiwi import *
+from converter.positioning import Matrix
 
 SUPPORTED_VERSION = 20
 
@@ -36,7 +36,7 @@ def decode(reader):
 
     type_converters = {
         'GUID': lambda x: (x['sessionID'], x['localID']),
-        'Matrix': lambda m: np.array(
+        'Matrix': lambda m: Matrix(
             [[m['m00'], m['m01'], m['m02']], [m['m10'], m['m11'], m['m12']], [0, 0, 1]])
     }
     schema = KiwiSchema(io.BytesIO(segments[0]))

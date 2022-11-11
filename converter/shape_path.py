@@ -1,6 +1,5 @@
 from . import base, positioning
 import utils
-import numpy as np
 import itertools
 from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
@@ -93,7 +92,7 @@ def convert_shape_path(fig_vector, style, segments, region=0, loop=0):
 
 def convert_line(fig_line):
     # Shift line by half its width
-    vt = np.array([0, -fig_line['strokeWeight'] / 2])
+    vt = [0, -fig_line['strokeWeight'] / 2, 1]
     vtr = positioning.apply_transform(fig_line, vt)
     fig_line['transform'][0][2] += vtr[0]
     fig_line['transform'][1][2] += vtr[1]
