@@ -1,6 +1,6 @@
-from . import style
-from sketchformat.document import Swatch, Color
 import utils
+from . import style
+from sketchformat.document import Swatch
 from typing import Optional
 
 

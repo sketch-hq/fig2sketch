@@ -1,10 +1,9 @@
-import numpy as np
 import math
+import numpy as np
+import numpy.typing as npt
 import utils
 from sketchformat.style import *
-from typing import List, TypedDict, Sequence
-import numpy.typing as npt
-
+from typing import List, TypedDict
 
 BORDER_POSITION = {
     'CENTER': BorderPosition.CENTER,
@@ -62,12 +61,16 @@ def convert(fig_node: dict) -> Style:
     sketch_style = Style(
         do_objectID=utils.gen_object_id(fig_node['guid'], b'style'),
         borderOptions=BorderOptions(
-            lineCapStyle=LINE_CAP_STYLE[fig_node['strokeCap']] if 'strokeCap' in fig_node else BorderOptions.__dict__['lineCapStyle'],
-            lineJoinStyle=LINE_JOIN_STYLE[fig_node['strokeJoin']] if 'strokeJoin' in fig_node else BorderOptions.__dict__['lineCapStyle'],
+            lineCapStyle=LINE_CAP_STYLE[fig_node['strokeCap']] if 'strokeCap' in fig_node else
+            BorderOptions.__dict__['lineCapStyle'],
+            lineJoinStyle=LINE_JOIN_STYLE[fig_node['strokeJoin']] if 'strokeJoin' in fig_node else
+            BorderOptions.__dict__['lineCapStyle'],
             dashPattern=fig_node.get('dashPattern', [])
         ),
-        borders=[convert_border(fig_node, b) for b in fig_node['strokePaints']] if 'strokePaints' in fig_node else [],
-        fills=[convert_fill(fig_node, f) for f in fig_node['fillPaints']] if 'fillPaints' in fig_node else [],
+        borders=[convert_border(fig_node, b) for b in
+                 fig_node['strokePaints']] if 'strokePaints' in fig_node else [],
+        fills=[convert_fill(fig_node, f) for f in
+               fig_node['fillPaints']] if 'fillPaints' in fig_node else [],
         **convert_effects(fig_node),
         contextSettings=context_settings(fig_node)
     )
@@ -101,7 +104,7 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                                  isEnabled=fig_fill['visible'])
 
 
-def convert_color(color: dict, opacity: Optional[float]=None) -> Color:
+def convert_color(color: dict, opacity: Optional[float] = None) -> Color:
     return Color(
         red=color['r'],
         green=color['g'],
@@ -128,7 +131,7 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
     elif fig_fill['type'] in ['GRADIENT_RADIAL', 'GRADIENT_DIAMOND']:
         if fig_fill['type'] == 'GRADIENT_DIAMOND':
             utils.log_conversion_warning("STY002", fig_node)
-        
+
         # Angular gradients have the center at (.5, .5), the vertex at (1, .5)
         # and the co-vertex at (.5, 1). We transform them to the coordinates in a 1x1 square
         point_from = invmat.dot([0.5, 0.5, 1])  # Center
@@ -150,15 +153,15 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
         )
     else:
         # Angular gradients don't allow positioning, but we can at least rotate them
-        rotation_offset = math.atan2(-fig_fill['transform'][1,0],
-                                     fig_fill['transform'][0,0]) / 2 / math.pi
+        rotation_offset = math.atan2(-fig_fill['transform'][1, 0],
+                                     fig_fill['transform'][0, 0]) / 2 / math.pi
 
         return Gradient.Angular(
             stops=convert_stops(fig_fill['stops'], rotation_offset)
         )
 
 
-def convert_stops(fig_stops: List[dict], rotation_offset: float=0.0) -> List[GradientStop]:
+def convert_stops(fig_stops: List[dict], rotation_offset: float = 0.0) -> List[GradientStop]:
     stops = [
         GradientStop(
             color=convert_color(stop['color']),
@@ -175,7 +178,8 @@ def convert_stops(fig_stops: List[dict], rotation_offset: float=0.0) -> List[Gra
     return stops
 
 
-def scaled_distance(a: npt.NDArray[np.float64], b: npt.NDArray[np.float64], x_scale: float) -> float:
+def scaled_distance(a: npt.NDArray[np.float64], b: npt.NDArray[np.float64],
+                    x_scale: float) -> float:
     v = a - b
     return np.hypot(v[0] * x_scale, v[1])
 

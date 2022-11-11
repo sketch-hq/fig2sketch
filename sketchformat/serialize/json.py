@@ -1,5 +1,5 @@
-import json
 import codecs
+import json
 from dataclasses import asdict, is_dataclass
 
 

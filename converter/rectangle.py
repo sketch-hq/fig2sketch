@@ -1,6 +1,6 @@
-from . import base
 import utils
-from sketchformat.layer_shape import Rectangle, PointRadiusBehaviour
+from . import base
+from sketchformat.layer_shape import Rectangle
 
 
 def convert(fig_rect: dict) -> Rectangle:
@@ -18,6 +18,7 @@ def convert(fig_rect: dict) -> Rectangle:
         ),
     )
 
+
 def build_rectangle_for_frame(fig_frame: dict) -> Rectangle:
     background_rect = convert(fig_frame)
     background_rect.frame.x = 0
@@ -25,5 +26,5 @@ def build_rectangle_for_frame(fig_frame: dict) -> Rectangle:
     background_rect.rotation = 0
     background_rect.name = 'Frame background'
     background_rect.do_objectID = utils.gen_object_id(fig_frame['guid'], b'background')
-    background_rect.resizingConstraint = 10 # Fixed to borders
+    background_rect.resizingConstraint = 10  # Fixed to borders
     return background_rect

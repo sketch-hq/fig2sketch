@@ -1,7 +1,7 @@
-from . import positioning, prototype, rectangle, style, base
-from sketchformat.style import Style, BorderOptions, Fill, Color, FillType
-from sketchformat.layer_group import Artboard
 import utils
+from . import prototype, rectangle, style, base
+from sketchformat.layer_group import Artboard
+from sketchformat.style import BorderOptions, Fill, FillType
 
 
 def convert(fig_frame: dict) -> Artboard:
@@ -17,6 +17,7 @@ def convert(fig_frame: dict) -> Artboard:
 
     return obj
 
+
 def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     # Sketch only supports one custom color as an artboard background
     # If the frame has more than one color or other custom style we just create
@@ -28,9 +29,9 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     artboard_style = style.convert(fig_frame)
 
     for corner in ['rectangleTopLeftCornerRadius',
-        'rectangleTopLeftCornerRadius',
-        'rectangleTopLeftCornerRadius',
-        'rectangleTopLeftCornerRadius']:
+                   'rectangleTopLeftCornerRadius',
+                   'rectangleTopLeftCornerRadius',
+                   'rectangleTopLeftCornerRadius']:
         if fig_frame.get(corner, 0) != 0:
             utils.log_conversion_warning("ART001", fig_frame)
             break

@@ -1,9 +1,9 @@
+from .common import Point
+from .layer_common import AbstractStyledLayer
 from .style import Color
 from dataclasses import dataclass, field, InitVar
 from enum import IntEnum
 from typing import Optional, List, Dict
-from .layer_common import AbstractStyledLayer
-from .common import Point
 
 
 class TextVerticalAlignment(IntEnum):
@@ -56,9 +56,9 @@ class ParagraphStyle:
 @dataclass(kw_only=True)
 class FontDescriptor:
     _class: str = field(default='fontDescriptor')
-    attributes: Dict = field(default_factory=dict)
     name: InitVar[str]
     size: InitVar[float]
+    attributes: Dict = field(default_factory=dict)
 
     def __post_init__(self, name, size):
         self.attributes = {
@@ -72,11 +72,11 @@ class EncodedAttributes:
     MSAttributedStringFontAttribute: FontDescriptor
     MSAttributedStringColorAttribute: Color
     textStyleVerticalAlignmentKey: TextVerticalAlignment
+    kerning: float
+    paragraphStyle: ParagraphStyle
     MSAttributedStringTextTransformAttribute: Optional[TextTransform] = None
     underlineStyle: Optional[UnderlineStyle] = None
     strikethroughStyle: Optional[UnderlineStyle] = None
-    kerning: float
-    paragraphStyle: ParagraphStyle
 
 
 @dataclass(kw_only=True)
@@ -97,12 +97,12 @@ class AttributedString:
 @dataclass(kw_only=True)
 class Text(AbstractStyledLayer):
     _class: str = field(default='text')
-    automaticallyDrawOnUnderlyingPath: bool = False
-    dontSynchroniseWithSymbol: bool = False
     attributedString: AttributedString
     glyphBounds: Bounds
-    lineSpacingBehaviour: int = 2 # This is more or less a version number
     textBehaviour: TextBehaviour
+    automaticallyDrawOnUnderlyingPath: bool = False
+    dontSynchroniseWithSymbol: bool = False
+    lineSpacingBehaviour: int = 2  # This is more or less a version number
 
 
 @dataclass(kw_only=True)

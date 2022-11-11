@@ -1,9 +1,10 @@
 import utils
+import zipfile
 from . import font
 from .context import context
-import zipfile
 from sketchformat.layer_group import Page
 from typing import List
+
 
 def convert(pages: List[Page], output_zip: zipfile.ZipFile) -> dict:
     return {
@@ -51,7 +52,8 @@ def convert(pages: List[Page], output_zip: zipfile.ZipFile) -> dict:
             'objects': context.sketch_components()
         },
         'fontReferences': sorted(
-            [font.convert(name, font_file, postscript, output_zip) for name, (font_file, postscript) in context.used_fonts().items() if font_file],
+            [font.convert(name, font_file, postscript, output_zip) for
+             name, (font_file, postscript) in context.used_fonts().items() if font_file],
             key=lambda x: x.do_objectID
         ),
         'documentState': {

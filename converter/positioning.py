@@ -1,6 +1,6 @@
+import math
 import numpy as np
 import numpy.typing as npt
-import math
 from sketchformat.layer_common import Rect
 from typing import TypedDict, Tuple, List
 
@@ -32,7 +32,7 @@ def convert(fig_item: dict) -> _Positioning:
 
 def transform_frame(item: dict) -> npt.NDArray[np.float64]:
     # Calculate relative position
-    relative_position = item['transform'][:2,2]
+    relative_position = item['transform'][:2, 2]
 
     # Vector from rotation center to origin (0,0)
     vco = np.array([item['size']['x'] / 2, item['size']['y'] / 2])
@@ -49,7 +49,7 @@ def transform_frame(item: dict) -> npt.NDArray[np.float64]:
 
 def apply_transform(item: dict, vector: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     # Rotation/flip matrix
-    matrix = item['transform'][:2,:2]
+    matrix = item['transform'][:2, :2]
 
     return matrix.dot(vector)
 
@@ -59,14 +59,14 @@ def guess_flip(fig_item: dict) -> Tuple[List[bool], float]:
 
     # Use a diagonal with big numbers to check for sign flips, to avoid floating point weirdness
     flip = [False, False]
-    if abs(tr[1,1]) > 0.1:
-        flip[1] = bool(np.sign(tr[1,1]) != np.sign(tr[0,0]))
+    if abs(tr[1, 1]) > 0.1:
+        flip[1] = bool(np.sign(tr[1, 1]) != np.sign(tr[0, 0]))
     else:
-        flip[1] = bool(np.sign(tr[0,1]) == np.sign(tr[1,0]))
+        flip[1] = bool(np.sign(tr[0, 1]) == np.sign(tr[1, 0]))
 
     angle = math.degrees(math.atan2(
-        -fig_item['transform'][1,0],
-        fig_item['transform'][0,0]
+        -fig_item['transform'][1, 0],
+        fig_item['transform'][0, 0]
     ))
     if flip[1]:
         angle *= -1

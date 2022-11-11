@@ -5,14 +5,16 @@ import urllib.request
 import urllib.parse
 from fontTools.ttLib import TTFont
 from sketchformat.document import FontReference, JsonFileReference
-from zipfile import ZipFile
 from typing import IO, Tuple
+from zipfile import ZipFile
 
 fonts_cache_dir = appdirs.user_cache_dir('Fig2Sketch', 'Sketch') + '/fonts'
 os.makedirs(fonts_cache_dir, exist_ok=True)
 
+
 class FontError(Exception):
     pass
+
 
 def retrieve_webfont(family):
     WEB_FONT_BASE_URL = 'http://fonts.google.com/download?family='
@@ -33,14 +35,16 @@ def get_webfont(family, subfamily):
 
         font_file = font_zip.open(fi.filename, 'r')
         font_names = extract_names(font_file)
-        if font_names['family'].lower() == family.lower() and font_names['subfamily'].lower() == subfamily.lower():
+        if font_names['family'].lower() == family.lower() and font_names[
+            'subfamily'].lower() == subfamily.lower():
             font_file.seek(0)
             return font_file, font_names['postscript']
 
     raise FontError(f'Could not find font {family} {subfamily}')
 
 
-def convert(name: Tuple[str, str], font_file: IO[bytes], postscript: str, output_zip: ZipFile) -> FontReference:
+def convert(name: Tuple[str, str], font_file: IO[bytes], postscript: str,
+            output_zip: ZipFile) -> FontReference:
     family, subfamily = name
     data = font_file.read()
     sha = utils.generate_file_ref(data)

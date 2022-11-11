@@ -1,7 +1,6 @@
 from . import base
-from sketchformat.layer_group import ShapeGroup
 from sketchformat.layer_common import BooleanOperation
-
+from sketchformat.layer_group import ShapeGroup
 
 BOOLEAN_OPERATIONS = {
     'UNION': BooleanOperation.UNION,

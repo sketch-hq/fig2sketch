@@ -1,10 +1,9 @@
-from . import base, rectangle, positioning
 import utils
-import numpy as np
-from sketchformat.style import Style
-from sketchformat.layer_group import Group
+from . import base, positioning
 from sketchformat.layer_common import Rect, ClippingMaskMode
+from sketchformat.layer_group import Group
 from sketchformat.layer_shape import Rectangle
+from sketchformat.style import Style
 
 
 def convert(fig_group):
@@ -30,7 +29,7 @@ def convert_frame_to_group(fig_group, sketch_group):
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
         # since the clipmask defines Sketch bounds (which match visible children)
         sketch_group.layers.insert(0, make_clipping_rect(fig_group['guid'],
-                                                            sketch_group.frame))
+                                                         sketch_group.frame))
     else:
         # When converting from a frame to a group, the bounding box should be adjusted
         # The frame box in a fig doc can be smalled than the children bounds, but not so in Sketch
@@ -81,7 +80,7 @@ def convert_frame_style(fig_group, sketch_group):
 
 
 def make_background_rect(guid, frame, name):
-     return Rectangle(
+    return Rectangle(
         do_objectID=utils.gen_object_id(guid, name.encode()),
         name=name,
         frame=Rect(

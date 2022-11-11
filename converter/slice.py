@@ -1,5 +1,4 @@
-import utils
-from . import base, positioning
+from . import base
 from sketchformat.layer_common import Slice
 
 

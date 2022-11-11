@@ -1,9 +1,9 @@
+import numpy as np
 from .layer_common import AbstractStyledLayer
 from .common import Point
 from enum import IntEnum
-from typing import List, NamedTuple
 from dataclasses import dataclass, field, InitVar
-import numpy as np
+from typing import List, NamedTuple
 
 
 class PointRadiusBehaviour(IntEnum):
@@ -101,8 +101,8 @@ class Rectangle(AbstractShapeLayer):
 
 
 def oval_make_points() -> List[CurvePoint]:
-    P1=0.22385762510000001
-    P2=0.77614237490000004
+    P1 = 0.22385762510000001
+    P2 = 0.77614237490000004
     return [
         CurvePoint.Curved(
             point=Point(0.5, 1),
@@ -137,17 +137,16 @@ class Oval(AbstractShapeLayer):
 @dataclass(kw_only=True)
 class Star(AbstractShapeLayer):
     _class: str = field(default='star')
-    points: List[CurvePoint] = field(default_factory=list)
-    isClosed: bool = True
     radius: float
     numberOfPoints: float
+    isClosed: bool = True
+    points: List[CurvePoint] = field(default_factory=list)
 
     def __post_init__(self):
         for angle in np.arange(
-            -np.pi / 2,
-            2 * np.pi - np.pi / 2,
-            2 * np.pi / self.numberOfPoints):
-
+                -np.pi / 2,
+                2 * np.pi - np.pi / 2,
+                2 * np.pi / self.numberOfPoints):
             angle2 = angle + np.pi / self.numberOfPoints
 
             # Outer point
@@ -164,16 +163,15 @@ class Star(AbstractShapeLayer):
 @dataclass(kw_only=True)
 class Polygon(AbstractShapeLayer):
     _class: str = field(default='polygon')
+    numberOfPoints: float
     points: List[CurvePoint] = field(default_factory=list)
     isClosed: bool = True
-    numberOfPoints: float
 
     def __post_init__(self):
         for angle in np.arange(
-            -np.pi / 2,
-            2 * np.pi - np.pi / 2,
-            2 * np.pi / self.numberOfPoints):
-
+                -np.pi / 2,
+                2 * np.pi - np.pi / 2,
+                2 * np.pi / self.numberOfPoints):
             x1 = 0.5 + (np.cos(angle) * 0.5)
             y1 = 0.5 + (np.sin(angle) * 0.5)
             self.points.append(CurvePoint.Straight(Point(x1, y1)))

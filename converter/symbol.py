@@ -1,7 +1,6 @@
-from . import artboard, instance, group, base, prototype
-from .context import context
 import utils
-from sketchformat.style import Style
+from . import instance, group, base, prototype
+from .context import context
 from sketchformat.layer_group import *
 
 LAYOUT_AXIS = {

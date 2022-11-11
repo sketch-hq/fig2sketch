@@ -1,6 +1,7 @@
 from sketchformat.layer_group import Page
 from typing import List
 
+
 def convert(pages: List[Page]) -> dict:
     return {
         'document': {

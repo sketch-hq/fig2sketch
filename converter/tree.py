@@ -7,8 +7,7 @@ from sketchformat.layer_group import AbstractLayerGroup
 from typing import Dict, Callable, Any
 import traceback
 
-
-CONVERTERS: Dict[str,Callable[[dict], AbstractLayer]] = {
+CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
     'CANVAS': page.convert,
     'ARTBOARD': artboard.convert,
     'GROUP': group.convert,
@@ -26,7 +25,7 @@ CONVERTERS: Dict[str,Callable[[dict], AbstractLayer]] = {
     'INSTANCE': instance.convert,
 }
 
-POST_PROCESSING: Dict[str,Callable[[dict, Any], AbstractLayer]] = {
+POST_PROCESSING: Dict[str, Callable[[dict, Any], AbstractLayer]] = {
     'BOOLEAN_OPERATION': shape_group.post_process,
     'SYMBOL': symbol.move_to_symbols_page,
     'GROUP': group.post_process_frame,
@@ -48,7 +47,9 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
         try:
             children.append(convert_node(child, fig_node['type']))
         except Exception as e:
-            logging.error(f'An unexpected error occurred when converting {child["type"]}: {child["name"]}. It will be skipped\n' + ''.join(traceback.format_exception(e)))
+            logging.error(
+                f'An unexpected error occurred when converting {child["type"]}: {child["name"]}. It will be skipped\n' + ''.join(
+                    traceback.format_exception(e)))
 
     if children and isinstance(sketch_item, AbstractLayerGroup):
         sketch_item.layers = children

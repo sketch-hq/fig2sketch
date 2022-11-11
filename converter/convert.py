@@ -1,12 +1,13 @@
-from sketchformat.serialize import serialize
+import zipfile
 from . import document, meta, tree, user
 from .context import context
-import zipfile
+from sketchformat.layer_group import Page
+from sketchformat.serialize import serialize
 from typing import Dict, Sequence, List, Tuple, Optional
-from sketchformat.layer_group import Page, AbstractLayer
 
 
-def convert_json_to_sketch(fig: dict, id_map: Dict[Sequence[int], dict], output: zipfile.ZipFile) -> None:
+def convert_json_to_sketch(fig: dict, id_map: Dict[Sequence[int], dict],
+                           output: zipfile.ZipFile) -> None:
     fig_pages, components_page = separate_pages(fig['document']['children'])
 
     # We should either bring the fonts to the same indexed_components to pass
@@ -50,10 +51,11 @@ def convert_pages(fig_pages: List[dict], output: zipfile.ZipFile) -> List[Page]:
         serialize(page, output.open(f"pages/{page.do_objectID}.json", 'w'))
         pages.append(page)
 
-    return pages # type: ignore
+    return pages  # type: ignore
 
 
-def write_sketch_file(sketch_document: dict, sketch_user: dict, sketch_meta: dict, output: zipfile.ZipFile) -> None:
+def write_sketch_file(sketch_document: dict, sketch_user: dict, sketch_meta: dict,
+                      output: zipfile.ZipFile) -> None:
     serialize(sketch_document, output.open('document.json', 'w'))
     serialize(sketch_user, output.open('user.json', 'w'))
     serialize(sketch_meta, output.open('meta.json', 'w'))

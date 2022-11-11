@@ -1,12 +1,12 @@
-import io
-from PIL import Image, UnidentifiedImageError
-from . import decodefig, decodevectornetwork
-import utils
 import functools
+import io
 import logging
 import shutil
-from zipfile import ZipFile
 from typing import Tuple, Sequence, Dict, IO
+import utils
+from zipfile import ZipFile
+from . import decodefig, decodevectornetwork
+from PIL import Image, UnidentifiedImageError
 
 
 def convert_fig(reader: IO[bytes], output: ZipFile) -> Tuple[dict, Dict[Sequence[int], dict]]:
@@ -107,5 +107,6 @@ def convert_image(fname, fig_zip, output):
         return f'{fhash}{extension}'
     except UnidentifiedImageError as e:
         logging.critical(f"Could not convert image {fname}. It appears to be corrupted.")
-        logging.critical(f"Try passing `--force-convert-images` to ignore this error and try to convert the image anyway.")
+        logging.critical(
+            f"Try passing `--force-convert-images` to ignore this error and try to convert the image anyway.")
         exit(1)

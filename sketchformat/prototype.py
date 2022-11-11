@@ -1,7 +1,7 @@
-from enum import IntEnum
-from typing import Optional
 from .common import Point
 from dataclasses import dataclass, field
+from enum import IntEnum
+from typing import Optional
 
 
 class OverlayBackgroundInteraction(IntEnum):
@@ -27,7 +27,7 @@ class FlowOverlaySettings:
     _class: str = field(default='MSImmutableFlowOverlaySettings')
     overlayAnchor: Point
     sourceAnchor: Point
-    offset: Point = field(default_factory=lambda:Point(0, 0))
+    offset: Point = field(default_factory=lambda: Point(0, 0))
     overlayType: int = 0
 
     @staticmethod
@@ -61,10 +61,10 @@ class FlowOverlaySettings:
 class FlowConnection:
     _class: str = field(default='MSImmutableFlowConnection')
     destinationArtboardID: str
+    overlaySettings: Optional[FlowOverlaySettings]
     animationType: AnimationType = AnimationType.NONE
     maintainScrollPosition: bool = False
     shouldCloseExistingOverlays: bool = False
-    overlaySettings: Optional[FlowOverlaySettings]
 
 
 @dataclass(kw_only=True)

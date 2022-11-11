@@ -3,7 +3,6 @@ from .context import context
 from sketchformat.prototype import *
 from typing import TypedDict, Tuple, Optional
 
-
 OVERLAY_INTERACTION = {
     'NONE': OverlayBackgroundInteraction.NONE,
     'CLOSE_ON_CLICK_OUTSIDE': OverlayBackgroundInteraction.CLOSES_OVERLAY
@@ -76,7 +75,8 @@ def convert_flow(fig_node: dict) -> _Flow:
             if destination is not None:
                 flow = FlowConnection(
                     destinationArtboardID=destination,
-                    animationType=ANIMATION_TYPE[action.get('transitionType', 'INSTANT_TRANSITION')],
+                    animationType=ANIMATION_TYPE[
+                        action.get('transitionType', 'INSTANT_TRANSITION')],
                     maintainScrollPosition=action.get('transitionPreserveScroll', False),
                     overlaySettings=overlay_settings
                 )
@@ -128,7 +128,8 @@ def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
         }
 
 
-def get_destination_settings_if_any(action: dict) -> Tuple[Optional[str], Optional[FlowOverlaySettings]]:
+def get_destination_settings_if_any(action: dict) -> Tuple[
+    Optional[str], Optional[FlowOverlaySettings]]:
     overlay_settings = None
     destination = None
 
@@ -149,6 +150,5 @@ def get_destination_settings_if_any(action: dict) -> Tuple[Optional[str], Option
             destination = None
         case _:
             print(f"Unsupported connection type {action['connectionType']}")
-
 
     return destination, overlay_settings
