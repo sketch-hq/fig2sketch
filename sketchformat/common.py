@@ -1,6 +1,5 @@
 from enum import IntEnum
-from dataclasses import dataclass
-from typing import Sequence, Dict, TypedDict
+from typing import Sequence, TypedDict
 
 
 class WindingRule(IntEnum):

@@ -9,10 +9,9 @@ from typing import TypedDict
 from . import positioning, style, prototype
 from .context import context
 
-
 SUPPORTED_INHERIT_STYLES = {
     'inheritFillStyleID': ('fillPaints',),
-    'inheritFillStyleIDForStroke': (), # Special cased below
+    'inheritFillStyleIDForStroke': (),  # Special cased below
     'inheritStrokeStyleID': (),  # Unused?
     'inheritTextStyleID': (
         'fontName',
@@ -29,10 +28,12 @@ SUPPORTED_INHERIT_STYLES = {
     'inheritFillStyleIDForBackground': (),  # Unused?
 }
 
+
 class _Masking(TypedDict):
     shouldBreakMaskChain: bool
     hasClippingMask: bool
     clippingMaskMode: ClippingMaskMode
+
 
 class _BaseLayer(positioning._Positioning, prototype._Flow):
     do_objectID: str
@@ -48,17 +49,18 @@ class _BaseLayer(positioning._Positioning, prototype._Flow):
     resizingType: ResizeType
     isTemplate: bool
 
+
 def base_layer(fig_node: dict) -> _BaseLayer:
     # TODO: Hack for groups that only contain non-visible items
     if math.isnan(fig_node['size']['x']):
-        fig_node['size'] = {'x':1, 'y':1}
+        fig_node['size'] = {'x': 1, 'y': 1}
 
     return {
         'do_objectID': utils.gen_object_id(fig_node.get('overrideKey', fig_node['guid'])),
         'name': fig_node['name'],
         'booleanOperation': -1,
         'exportOptions': export_options(fig_node.get('exportSettings', [])),
-        **positioning.convert(fig_node), # type: ignore
+        **positioning.convert(fig_node),  # type: ignore
         'isFixedToViewport': False,
         'isLocked': fig_node['locked'],
         'isVisible': fig_node['visible'],
@@ -66,7 +68,7 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         'nameIsFixed': False,
         'resizingConstraint': resizing_constraint(fig_node),
         'resizingType': ResizeType.STRETCH,
-        **prototype.convert_flow(fig_node), # type: ignore
+        **prototype.convert_flow(fig_node),  # type: ignore
         'isTemplate': False
     }
 
@@ -77,8 +79,8 @@ class _BaseStyled(_BaseLayer, _Masking):
 
 def base_styled(fig_node: dict) -> _BaseStyled:
     obj: _BaseShape = {
-        **base_layer(fig_node), # type: ignore
-        **masking(fig_node), # type: ignore
+        **base_layer(fig_node),  # type: ignore
+        **masking(fig_node),  # type: ignore
         'style': process_styles(fig_node),
     }
 
@@ -104,9 +106,10 @@ class _BaseShape(_BaseStyled):
 
 def base_shape(fig_node: dict) -> _BaseShape:
     return {
-        **base_styled(fig_node), # type: ignore
+        **base_styled(fig_node),  # type: ignore
         # Sketch smooth corners are a boolean, but here it's a percent. Use an arbitrary threshold
-        'pointRadiusBehaviour': PointRadiusBehaviour.V1_SMOOTH if fig_node.get('cornerSmoothing', 0) > 0.4 else PointRadiusBehaviour.V1
+        'pointRadiusBehaviour': PointRadiusBehaviour.V1_SMOOTH if fig_node.get('cornerSmoothing',
+                                                                               0) > 0.4 else PointRadiusBehaviour.V1
     }
 
 

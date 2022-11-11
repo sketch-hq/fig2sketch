@@ -1,9 +1,9 @@
-from . import base, group, tree
-import utils
-from .context import context
 import copy
-from sketchformat.style import Style
+import utils
+from . import base, group
+from .context import context
 from sketchformat.layer_group import SymbolInstance, OverrideValue
+from sketchformat.style import Style
 from typing import Optional, List
 
 
@@ -47,7 +47,8 @@ def master_instance(fig_symbol):
     obj.do_objectID = utils.gen_object_id(fig_symbol['guid'], b'master_instance')
 
     # Replace style
-    obj.style = Style(do_objectID=utils.gen_object_id(fig_symbol['guid'], b'master_instance_style'))
+    obj.style = Style(
+        do_objectID=utils.gen_object_id(fig_symbol['guid'], b'master_instance_style'))
 
     return obj
 
@@ -70,11 +71,15 @@ def get_all_overrides(fig_instance):
 
     # Convert top-level properties to overrides
     fig_master = context.find_symbol(fig_instance['symbolData']['symbolID'])
-    all_overrides = convert_properties_to_overrides(fig_master, fig_instance.get('componentPropAssignments', []))
+    all_overrides = convert_properties_to_overrides(fig_master,
+                                                    fig_instance.get('componentPropAssignments',
+                                                                     []))
 
-    # Sort overrides by length of path. This ensures top level overrides are processed before nested ones
-    # which is required because a top override may change the symbol instance that is used by child overrides
-    for override in sorted(fig_instance['symbolData']['symbolOverrides'], key=lambda x: len(x['guidPath']['guids'])):
+    # Sort overrides by length of path. This ensures top level overrides are processed before
+    # nested ones which is required because a top override may change the symbol instance that is
+    # used by child overrides
+    for override in sorted(fig_instance['symbolData']['symbolOverrides'],
+                           key=lambda x: len(x['guidPath']['guids'])):
         guid_path = override['guidPath']['guids']
         new_override = {'guidPath': override['guidPath']}
         for prop, value in override.items():
@@ -133,7 +138,8 @@ def find_symbol_master(root_symbol, guid_path, overrides):
     for guid in guid_path:
         path.append(guid)
         # See if we have overriden the symbol_id
-        symbol_id = [o['overriddenSymbolID'] for o in overrides if o['guidPath']['guids'] == path and 'overriddenSymbolID' in o]
+        symbol_id = [o['overriddenSymbolID'] for o in overrides if
+                     o['guidPath']['guids'] == path and 'overriddenSymbolID' in o]
         if symbol_id:
             symbol_id = symbol_id[0]
         else:
@@ -147,19 +153,19 @@ def find_symbol_master(root_symbol, guid_path, overrides):
 
 
 def convert_properties_to_overrides(fig_master, properties, guid_path=[]):
-    """Convert .fig property assigments to overrides.
+    """Convert .fig property assignments to overrides.
        This makes it easier to work with them in a unified way."""
     overrides = []
 
     for prop in properties:
         for (ref_prop, ref_guid) in find_refs(fig_master, prop['defID']):
             if ref_prop['componentPropNodeField'] == 'OVERRIDDEN_SYMBOL_ID':
-                override = { 'overriddenSymbolID': prop['value']['guidValue'] }
+                override = {'overriddenSymbolID': prop['value']['guidValue']}
             elif ref_prop['componentPropNodeField'] == 'TEXT_DATA':
                 override = {'textData': prop['value']['textValue']}
             elif ref_prop['componentPropNodeField'] == 'VISIBLE':
                 override = {'visible': prop['value']['boolValue']}
-            else: # INHERIT_FILL_STYLE_ID
+            else:  # INHERIT_FILL_STYLE_ID
                 raise Exception(f"Unexpected property {ref_prop['componentPropNodeField']}")
 
             overrides.append({
@@ -205,9 +211,9 @@ def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
         if guids[0] != guid:
             continue
         if len(guids) > 1:
-            child_overrides.append({**override, 'guidPath':{'guids':guids[1:]}})
+            child_overrides.append({**override, 'guidPath': {'guids': guids[1:]}})
         else:
-            for k,v in override.items():
+            for k, v in override.items():
                 if k == 'guidPath':
                     continue
                 elif k == 'overriddenSymbolID':
@@ -222,7 +228,7 @@ def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
         if guids[0] != guid:
             continue
         if len(guids) > 1:
-            child_derived_data.append({**derived, 'guidPath':{'guids':guids[1:]}})
+            child_derived_data.append({**derived, 'guidPath': {'guids': guids[1:]}})
         else:
             if 'size' in derived:
                 fig_node['size'] = derived['size']

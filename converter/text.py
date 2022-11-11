@@ -1,11 +1,9 @@
 import copy
 import itertools
-import logging
 import utils
 from . import base, style
 from .context import context
 from sketchformat.text import *
-
 
 AlignVertical = {
     'TOP': TextVerticalAlignment.TOP,
@@ -81,7 +79,7 @@ def convert(fig_text):
             attributes=override_characters_style(fig_text),
         ),
         # No good way to calculate this, so we overestimate by setting the frame
-        glyphBounds=Bounds(Point(0,0), Point.from_dict(fig_text["size"])),
+        glyphBounds=Bounds(Point(0, 0), Point.from_dict(fig_text["size"])),
         textBehaviour=TEXT_BEHAVIOUR[text_resize]
     )
     obj.resizingConstraint &= CONSTRAINT_MASK_FOR_AUTO_RESIZE[text_resize]
@@ -126,7 +124,6 @@ def text_style(fig_text):
             color = style.convert_color(fills[0]['stops'][0]['color'])
         else:
             color = Color.Black()
-
 
     obj = TextStyle(
         encodedAttributes=EncodedAttributes(
@@ -284,7 +281,8 @@ def line_height(fig_text):
                     return {}
                 else:
                     # Similar to RAW, different natural baseline behaviour. Same TODO apply
-                    line_height = round(fig_text['fontSize'] * fig_text['lineHeight']['value'] / 100)
+                    line_height = round(
+                        fig_text['fontSize'] * fig_text['lineHeight']['value'] / 100)
                     return {
                         'maximumLineHeight': line_height,
                         'minimumLineHeight': line_height

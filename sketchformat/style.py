@@ -1,7 +1,7 @@
+from .common import Point, WindingRule
 from dataclasses import dataclass, field, InitVar
 from enum import IntEnum
 from typing import Optional, List
-from .common import Point, WindingRule
 
 
 class LineCapStyle(IntEnum):
@@ -141,7 +141,8 @@ class Gradient:
         )
 
     @staticmethod
-    def Radial(from_: Point, to: Point, elipseLength: float, stops: List[GradientStop]) -> 'Gradient':
+    def Radial(from_: Point, to: Point, elipseLength: float,
+               stops: List[GradientStop]) -> 'Gradient':
         return Gradient(
             gradientType=GradientType.RADIAL,
             from_=from_,
@@ -311,8 +312,8 @@ class Style:
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
     innerShadows: List[InnerShadow] = field(default_factory=list)
-    startDecorationType: Optional[MarkerType] = None # Legacy, should match startMarkerType
-    endDecorationType: Optional[MarkerType] = None # Legacy, should match endMarkerType
+    startDecorationType: Optional[MarkerType] = None  # Legacy, should match startMarkerType
+    endDecorationType: Optional[MarkerType] = None  # Legacy, should match endMarkerType
 
     def set_markers(self, startMarkerType: MarkerType, endMarkerType: MarkerType) -> None:
         self.startMarkerType = startMarkerType

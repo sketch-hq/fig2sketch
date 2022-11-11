@@ -1,15 +1,16 @@
-import uuid
 import hashlib
+import logging
 import random
 import struct
-from typing import BinaryIO, Sequence, Dict
-import logging
+import uuid
+from typing import Sequence, Dict
 
 id_salt = random.randbytes(16)
 
 issued_warnings: Dict[tuple[int, int], list[str]] = {}
 
-def gen_object_id(fig_id: Sequence[int], suffix: bytes=b'') -> str:
+
+def gen_object_id(fig_id: Sequence[int], suffix: bytes = b'') -> str:
     # Generate UUIDs by hashing the fig GUID with a salt
     salted_id = id_salt + struct.pack('<' + 'I' * len(fig_id), *fig_id) + suffix
     uuid_bytes = bytearray(hashlib.shake_128(salted_id).digest(16))
@@ -19,6 +20,7 @@ def gen_object_id(fig_id: Sequence[int], suffix: bytes=b'') -> str:
     uuid_bytes[8] = (uuid_bytes[8] & 0x3f) | 0x80
 
     return str(uuid.UUID(bytes=bytes(uuid_bytes))).upper()
+
 
 def generate_file_ref(data: bytes) -> str:
     return hashlib.sha1(hashlib.sha1(data).digest()).hexdigest()
@@ -54,10 +56,11 @@ def log_conversion_warning(warning_code: str, fig_node: dict) -> None:
         "BSE001": f"has a layout grid enabled. This functionality is not yet implemented"
     }
 
-    if not fig_node['guid'] in issued_warnings:
+    if fig_node['guid'] not in issued_warnings:
         issued_warnings[fig_node['guid']] = [warning_code]
-    elif not warning_code in issued_warnings[fig_node['guid']]:
+    elif warning_code not in issued_warnings[fig_node['guid']]:
         issued_warnings[fig_node['guid']].append(warning_code)
     else:
         return
-    logging.warning(f"[{warning_code}] {fig_node['type']} '{fig_node['name']}' {WARNING_MESSAGES[warning_code]}")
+    logging.warning(
+        f"[{warning_code}] {fig_node['type']} '{fig_node['name']}' {WARNING_MESSAGES[warning_code]}")

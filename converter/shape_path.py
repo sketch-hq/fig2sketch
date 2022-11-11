@@ -8,7 +8,6 @@ from sketchformat.common import WindingRule, Point
 from collections import defaultdict
 import logging
 
-
 STROKE_CAP_TO_MARKER_TYPE = {
     'NONE': 0,
     'ARROW_LINES': 1,
@@ -31,8 +30,8 @@ def convert(fig_vector):
     regions = [convert_region(fig_vector, region, i) for i, region in enumerate(regions)]
 
     if len(regions) > 1:
-        # Ignore positioning for childs. TODO: We should probably be building these shapePaths by hand, instead
-        # of relying on the generic convert_shape_path function
+        # Ignore positioning for children. TODO: We should probably be building these shapePaths by
+        # hand, instead of relying on the generic convert_shape_path function
         for s in regions:
             s.frame.x = 0
             s.frame.y = 0
@@ -53,7 +52,8 @@ def convert(fig_vector):
 
 
 def convert_region(fig_vector, region, region_index=0):
-    loops = [convert_shape_path(fig_vector, region['style'], loop, region_index, i) for i, loop in enumerate(region['loops'])]
+    loops = [convert_shape_path(fig_vector, region['style'], loop, region_index, i) for i, loop in
+             enumerate(region['loops'])]
 
     if len(loops) > 1:
         # Ignore positioning for children.
@@ -74,8 +74,6 @@ def convert_region(fig_vector, region, region_index=0):
         return obj
     else:
         return loops[0]
-
-
 
 
 def convert_shape_path(fig_vector, style, segments, region=0, loop=0):
@@ -133,17 +131,18 @@ def convert_points(fig_vector, ordered_segments):
 
 def get_all_segments(vector_network):
     unused_segments = set(range(len(vector_network['segments'])))
+
     def use_segment(i):
         unused_segments.discard(i)
         return i
 
     regions = [{
-            'loops': [reorder_segment_points([
-                vector_network['segments'][use_segment(i)] for i in loop
-            ]) for loop in region['loops']],
-            'style': region['style'],
-            'windingRule': region['windingRule']
-        } for region in vector_network['regions']]
+        'loops': [reorder_segment_points([
+            vector_network['segments'][use_segment(i)] for i in loop
+        ]) for loop in region['loops']],
+        'style': region['style'],
+        'windingRule': region['windingRule']
+    } for region in vector_network['regions']]
 
     if unused_segments:
         regions += [{
@@ -257,13 +256,15 @@ def process_segment(fig_vector, vertices, segment, points):
         vertex1 = vertices[segment['start']]
         point1.hasCurveFrom = True
         point1.curveFrom = Point.from_dict(vertex1) + Point.from_dict(segment['tangentStart'])
-        point1.curveMode = CURVE_MODES[vertex1.get('style', {}).get('handleMirroring', fig_vector['handleMirroring'])]
+        point1.curveMode = CURVE_MODES[
+            vertex1.get('style', {}).get('handleMirroring', fig_vector['handleMirroring'])]
 
     if segment['tangentEnd']['x'] != 0.0 or segment['tangentEnd']['y'] != 0.0:
         vertex2 = vertices[segment['end']]
         point2.hasCurveTo = True
         point2.curveTo = Point.from_dict(vertex2) + Point.from_dict(segment['tangentEnd'])
-        point2.curveMode = CURVE_MODES[vertex2.get('style', {}).get('handleMirroring', fig_vector['handleMirroring'])]
+        point2.curveMode = CURVE_MODES[
+            vertex2.get('style', {}).get('handleMirroring', fig_vector['handleMirroring'])]
 
     return point1, point2
 
@@ -282,8 +283,10 @@ def get_or_create_point(fig_vector, points, index, vertices):
     else:
         fig_point = vertices[index]
         point = CurvePoint.Straight(Point(fig_point['x'], fig_point['y']))
-        point.curveMode = CURVE_MODES[fig_point.get('style', {}).get('handleMirroring', 'STRAIGHT')]
-        point.cornerRadius = fig_point.get('style', {}).get('cornerRadius', fig_vector['cornerRadius'])
+        point.curveMode = CURVE_MODES[
+            fig_point.get('style', {}).get('handleMirroring', 'STRAIGHT')]
+        point.cornerRadius = fig_point.get('style', {}).get('cornerRadius',
+                                                            fig_vector['cornerRadius'])
 
     return point
 

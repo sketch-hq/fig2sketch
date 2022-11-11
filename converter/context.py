@@ -1,7 +1,7 @@
-from . import component, page, font
 import logging
-from typing import Sequence, Tuple, Optional, Union, Dict, IO, List
+from . import component, page, font
 from sketchformat.document import Swatch
+from typing import Sequence, Tuple, Optional, Dict, IO, List
 
 
 def find_symbols(node: dict) -> List[Sequence[int]]:
@@ -14,13 +14,15 @@ def find_symbols(node: dict) -> List[Sequence[int]]:
 
     return found
 
+
 class Context:
     def init(self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict]) -> None:
         self._sketch_components: Dict[Sequence[int], Swatch] = {}
         self.symbols_page = None
         self._node_by_id = id_map
-        self._used_fonts: Dict[Tuple[str,str], Tuple[IO[bytes], str]] = {}
-        self._component_symbols = {s: False for s in find_symbols(components_page)} if components_page else {}
+        self._used_fonts: Dict[Tuple[str, str], Tuple[IO[bytes], str]] = {}
+        self._component_symbols = {s: False for s in
+                                   find_symbols(components_page)} if components_page else {}
 
         # Where to position symbols of the specified width
         # width -> (x, y)
@@ -70,7 +72,7 @@ class Context:
         self._used_fonts[font_descriptor] = (font_file, font_name)
         return font_name
 
-    def used_fonts(self) -> Dict[Tuple[str,str], Tuple[IO[bytes], str]]:
+    def used_fonts(self) -> Dict[Tuple[str, str], Tuple[IO[bytes], str]]:
         return self._used_fonts
 
     def find_symbol(self, sid: Sequence[int]) -> dict:

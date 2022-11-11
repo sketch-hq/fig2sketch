@@ -1,9 +1,8 @@
 import utils
-from sketchformat.style import Style, Fill, Color
-from sketchformat.layer_common import Rect
+from . import style, positioning
 from sketchformat.layer_group import *
 from sketchformat.layer_shape import Rectangle
-from . import style, positioning
+from sketchformat.style import Fill
 from typing import Sequence
 
 
@@ -17,7 +16,7 @@ def symbols_page() -> Page:
     return page
 
 
-def make_page(guid: Sequence[int], name: str, suffix: bytes=b'') -> Page:
+def make_page(guid: Sequence[int], name: str, suffix: bytes = b'') -> Page:
     return Page(
         do_objectID=utils.gen_object_id(guid, suffix),
         frame=Rect(
@@ -34,10 +33,13 @@ def make_page(guid: Sequence[int], name: str, suffix: bytes=b'') -> Page:
     )
 
 
-DEFAULT_CANVAS_BACKGROUND = Color(red=0.9607843160629272, green=0.9607843160629272, blue=0.9607843160629272, alpha=1)
-import math
+DEFAULT_CANVAS_BACKGROUND = Color(red=0.9607843160629272, green=0.9607843160629272,
+                                  blue=0.9607843160629272, alpha=1)
+
+
 def add_page_background(fig_canvas, sketch_page):
-    background_color = style.convert_color(fig_canvas['backgroundColor'], fig_canvas['backgroundOpacity'])
+    background_color = style.convert_color(fig_canvas['backgroundColor'],
+                                           fig_canvas['backgroundOpacity'])
     if background_color != DEFAULT_CANVAS_BACKGROUND:
         page_bbox = positioning.group_bbox(sketch_page.layers)
         sketch_page.layers.insert(0, Rectangle(
@@ -52,8 +54,8 @@ def add_page_background(fig_canvas, sketch_page):
             frame=Rect(
                 x=page_bbox[0] - 1000,
                 y=page_bbox[2] - 1000,
-                width=(page_bbox[1]-page_bbox[0]) + 2000,
-                height=(page_bbox[3]-page_bbox[2]) + 2000
+                width=(page_bbox[1] - page_bbox[0]) + 2000,
+                height=(page_bbox[3] - page_bbox[2]) + 2000
             )
         ))
 

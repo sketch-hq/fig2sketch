@@ -1,6 +1,6 @@
 import codecs
-from collections import OrderedDict
 import ctypes
+from collections import OrderedDict
 
 
 class KiwiReader:
@@ -119,7 +119,6 @@ class KiwiDecoder:
             obj = type_converter(obj)
 
         return obj
-
 
     def _decode_type_inner(self, kw, type_id, array):
         if array:

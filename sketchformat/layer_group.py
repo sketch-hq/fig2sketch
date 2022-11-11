@@ -1,5 +1,4 @@
 from .layer_common import *
-from dataclasses import dataclass, field
 from .common import WindingRule
 from .prototype import *
 from enum import IntEnum
@@ -82,7 +81,7 @@ class Page(AbstractLayerGroup):
 @dataclass(kw_only=True)
 class ShapeGroup(AbstractLayerGroup):
     _class: str = field(default='shapeGroup')
-    windingRule: WindingRule = WindingRule.NON_ZERO # Legacy, should match style.windingRule
+    windingRule: WindingRule = WindingRule.NON_ZERO  # Legacy, should match style.windingRule
 
 
 @dataclass(kw_only=True)

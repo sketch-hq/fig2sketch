@@ -1,6 +1,6 @@
+from .style import Color
 from dataclasses import dataclass, field
 from typing import List
-from .style import Color
 
 
 @dataclass(kw_only=True)
@@ -17,8 +17,8 @@ class FontReference:
     fontData: JsonFileReference
     fontFamilyName: str
     fontFileName: str
-    options: int = 3 # Embedded and used
     postscriptNames: List[str]
+    options: int = 3  # Embedded and used
 
 
 @dataclass(kw_only=True)
