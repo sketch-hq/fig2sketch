@@ -11,8 +11,17 @@ pip install -r requirements.txt
 
 ## Convert .fig to .sketch
 
-1. Run `python fig2sketch.py example/shapes_party.fig `
-2. Open the resulting `output/output.sketch` in Sketch
+1. Run `python <path to .fig file> <path to store the .sketch file>`
+2. Open the resulting .sketch file in Sketch
+
+### Options
+
+- Pass `--salt 12345678` to ensure a consistent conversion order
+- Pass `--dump-fig-json example/figma.json` (which whichever path/name you like) to dump the generated JSON from the fig file
+
+Example:
+
+`python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/figma.json`
 
 
 ## Documentation about .fig format
