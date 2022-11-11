@@ -197,7 +197,7 @@ jobs:
           mkdir -p dist/fig2sketch-universal
           unzip fig2sketch-macos-x86_64.zip -d x86_64/
           unzip fig2sketch-macos-arm64.zip -d arm64/
-          hexdump -ve '1/1 "%.2X"' x86_64/fig2sketch-macos/fig2sketch | sed "s/4D45490\([BC]\)0B0A0B0E/4D45490\10B0A0B0F/g" | xxd -r -p > x86_64/fig2sketch-macos/fig2sketch.patched
+          hexdump -ve '1/1 "%.2X"' x86_64/fig2sketch-macos/fig2sketch | sed "s/4D45490\([0C]\)0B0A0B0E/4D45490\10B0A0B0F/g" | xxd -r -p > x86_64/fig2sketch-macos/fig2sketch.patched
           lipo -create x86_64/fig2sketch-macos/fig2sketch.patched arm64/fig2sketch-macos/fig2sketch -output dist/fig2sketch-universal/fig2sketch
       - name: Zip directory
         uses: vimtor/action-zip@v1
