@@ -106,6 +106,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install maturin
+          pip install certifi
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           pyinstaller fig2sketch.py -y --onefile --target-arch x86_64
@@ -151,6 +152,7 @@ jobs:
           pip install pyinstaller
           pip install maturin
           pip install -r requirements.txt
+          pip install certifi
           scripts/install_patched_orjson.sh
           pyinstaller fig2sketch.py -y --onefile --target-arch arm64
       - name: Create folder and adjust permissions

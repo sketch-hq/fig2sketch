@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 from zipfile import ZipFile
+import ssl
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Converts a .fig document to .sketch')
@@ -23,7 +24,7 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=level)
 
-    # Import after setting the log level
+    # Import these after setting the log level
     import figformat.fig2json as fig2json
     import utils
     from converter import convert
@@ -36,6 +37,16 @@ if __name__ == '__main__':
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+    # Load SSL certificates in OSs where Python does not use system defaults
+    if not ssl.create_default_context().get_ca_certs():
+        import certifi
+        import os
+        os.environ['SSL_CERT_FILE'] = certifi.where()
+        logging.debug("Loaded TLS certificates from certifi")
+    else:
+        logging.debug("Using system TLS certificates")
+
+    # Import
     with ZipFile(args.sketch_file, 'w') as output:
         fig_json, id_map = fig2json.convert_fig(args.fig_file, output)
 
