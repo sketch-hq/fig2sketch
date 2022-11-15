@@ -8,10 +8,10 @@ class Vector(list):
         super().__init__([x, y])
 
     def __add__(self, other):
-        return Vector(self[0]+other[0], self[1]+other[1])
+        return Vector(self[0] + other[0], self[1] + other[1])
 
     def __sub__(self, other):
-        return Vector(self[0]-other[0], self[1]-other[1])
+        return Vector(self[0] - other[0], self[1] - other[1])
 
 
 class Matrix(list):
@@ -20,21 +20,27 @@ class Matrix(list):
 
     def dot(self, v):
         return Vector(
-            self[0][2] + self[0][0]*v[0] + self[0][1]*v[1],
-            self[1][2] + self[1][0]*v[0] + self[1][1]*v[1],
+            self[0][2] + self[0][0] * v[0] + self[0][1] * v[1],
+            self[1][2] + self[1][0] * v[0] + self[1][1] * v[1],
         )
 
     def dot2(self, v):
         return Vector(
-            self[0][0]*v[0] + self[0][1]*v[1],
-            self[1][0]*v[0] + self[1][1]*v[1],
+            self[0][0] * v[0] + self[0][1] * v[1],
+            self[1][0] * v[0] + self[1][1] * v[1],
         )
 
     def inv(self):
         return Matrix([
-            [self[1][1]/(self[0][0]*self[1][1]-self[0][1]*self[1][0]), self[0][1]/(self[0][1]*self[1][0]-self[0][0]*self[1][1]), (self[0][2]*self[1][1]-self[0][1]*self[1][2])/(self[0][1]*self[1][0]-self[0][0]*self[1][1])],
-            [self[1][0]/(self[0][1]*self[1][0]-self[0][0]*self[1][1]), self[0][0]/(self[0][0]*self[1][1]-self[0][1]*self[1][0]), (self[0][2]*self[1][0]-self[0][0]*self[1][2])/(self[0][0]*self[1][1]-self[0][1]*self[1][0])],
-            [0,0,1]
+            [self[1][1] / (self[0][0] * self[1][1] - self[0][1] * self[1][0]),
+             self[0][1] / (self[0][1] * self[1][0] - self[0][0] * self[1][1]),
+             (self[0][2] * self[1][1] - self[0][1] * self[1][2]) / (
+                         self[0][1] * self[1][0] - self[0][0] * self[1][1])],
+            [self[1][0] / (self[0][1] * self[1][0] - self[0][0] * self[1][1]),
+             self[0][0] / (self[0][0] * self[1][1] - self[0][1] * self[1][0]),
+             (self[0][2] * self[1][0] - self[0][0] * self[1][2]) / (
+                         self[0][0] * self[1][1] - self[0][1] * self[1][0])],
+            [0, 0, 1]
         ])
 
 
@@ -134,7 +140,7 @@ def group_bbox(children):
     ]
 
 
-# TODO: Extract this and share code with positioning
+# TODO: Extract this and share code with positioning (after tests are created)
 def bbox_from_frame(child):
     frame = child.frame
     theta = math.radians(child.rotation)

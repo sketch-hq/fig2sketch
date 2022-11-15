@@ -25,7 +25,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=level)
 
     # Import these after setting the log level
-    import figformat.fig2json as fig2json
+    import figformat.fig2tree as fig2tree
     import utils
     from converter import convert
 
@@ -41,14 +41,14 @@ if __name__ == '__main__':
     if not ssl.create_default_context().get_ca_certs():
         import certifi
         import os
+
         os.environ['SSL_CERT_FILE'] = certifi.where()
         logging.debug("Loaded TLS certificates from certifi")
     else:
         logging.debug("Using system TLS certificates")
 
-    # Import
     with ZipFile(args.sketch_file, 'w') as output:
-        fig_json, id_map = fig2json.convert_fig(args.fig_file, output)
+        fig_json, id_map = fig2tree.convert_fig(args.fig_file, output)
 
         if args.dump_fig_json:
             json.dump(fig_json, args.dump_fig_json, indent=2, ensure_ascii=False,

@@ -5,7 +5,6 @@ from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
 from collections import defaultdict
-import logging
 
 STROKE_CAP_TO_MARKER_TYPE = {
     'NONE': 0,
@@ -35,16 +34,9 @@ def convert(fig_vector):
             s.frame.x = 0
             s.frame.y = 0
 
-        obj = Group(
-            **base.base_styled(fig_vector),
-            layers=regions,
-            # # TODO: This feels incorrect
-            # windingRule=WindingRule.EVEN_ODD
-        )
-        # TODO: Full reset styles?
+        obj = Group(**base.base_styled(fig_vector), layers=regions)
         obj.style.fills = []
 
-        # obj.style.windingRule = obj.windingRule
         return obj
     else:
         return regions[0]
@@ -66,8 +58,6 @@ def convert_region(fig_vector, region, region_index=0):
             windingRule=WINDING_RULE[region['windingRule']],
         )
         obj.do_objectID = utils.gen_object_id(fig_vector['guid'], f"region{region_index}".encode())
-
-        # obj.style.windingRule=WINDING_RULE[region['windingRule']],
 
         # obj.style.windingRule = obj.windingRule
         return obj
