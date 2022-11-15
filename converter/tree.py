@@ -1,6 +1,5 @@
-from converter import artboard, group, oval, page, rectangle, shape_path, polygon, star, \
+from converter import artboard, group, page, rectangle, shape, shape_path, \
     shape_group, text, slice, instance, symbol
-from dataclasses import is_dataclass
 import logging
 from sketchformat.layer_common import AbstractLayer
 from sketchformat.layer_group import AbstractLayerGroup
@@ -13,10 +12,10 @@ CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
     'GROUP': group.convert,
     'ROUNDED_RECTANGLE': rectangle.convert,
     'RECTANGLE': rectangle.convert,
-    'ELLIPSE': oval.convert,
+    'ELLIPSE': shape.convert_oval,
     'VECTOR': shape_path.convert,
-    'STAR': star.convert,
-    'REGULAR_POLYGON': polygon.convert,
+    'STAR': shape.convert_star,
+    'REGULAR_POLYGON': shape.convert_polygon,
     'TEXT': text.convert,
     'BOOLEAN_OPERATION': shape_group.convert,
     'LINE': shape_path.convert_line,
