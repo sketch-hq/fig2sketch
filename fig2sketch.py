@@ -6,7 +6,7 @@ import ssl
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Converts a .fig document to .sketch')
-    parser.add_argument('fig_file', type=argparse.FileType('rb'))
+    parser.add_argument('fig_file')
     parser.add_argument('sketch_file')
     parser.add_argument('--salt', type=str, help='salt used to generate ids, defaults to random')
     parser.add_argument('--force-convert-images', action='store_true',
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=level)
 
     # Import these after setting the log level
-    import figformat.fig2json as fig2json
+    from figformat import fig2tree
     import utils
     from converter import convert
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     # Import
     with ZipFile(args.sketch_file, 'w') as output:
-        fig_json, id_map = fig2json.convert_fig(args.fig_file, output)
+        fig_json, id_map = fig2tree.convert_fig(args.fig_file, output)
 
         if args.dump_fig_json:
             json.dump(fig_json, args.dump_fig_json, indent=2, ensure_ascii=False,
