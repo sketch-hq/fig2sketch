@@ -1,5 +1,3 @@
-#![feature(iterator_try_collect)]
-
 mod kiwi;
 
 use std::{fs::File, error::Error, io::{Read, Seek, SeekFrom}, collections::HashMap};
