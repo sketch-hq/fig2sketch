@@ -24,6 +24,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install maturin
+          pip install certifi
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
@@ -68,6 +69,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install maturin
+          pip install certifi
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
