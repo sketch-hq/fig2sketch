@@ -1,5 +1,5 @@
 import utils
-from . import base, positioning
+from . import base, positioning, rectangle
 from sketchformat.layer_common import Rect, ClippingMaskMode
 from sketchformat.layer_group import Group
 from sketchformat.layer_shape import Rectangle
@@ -17,6 +17,7 @@ def post_process_frame(fig_group, sketch_group):
     if fig_group['resizeToFit']:
         return sketch_group
 
+    utils.log_conversion_warning('GRP001', fig_group)
     convert_frame_style(fig_group, sketch_group)
     convert_frame_to_group(fig_group, sketch_group)
 
@@ -61,7 +62,7 @@ def convert_frame_style(fig_group, sketch_group):
     has_blur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
 
     if has_fills or has_borders or has_bgblur:
-        bgrect = make_background_rect(fig_group['guid'], sketch_group.frame, 'Frame Background')
+        bgrect = rectangle.make_background_rect(fig_group['guid'], sketch_group.frame, 'Frame Background')
         bgrect.style.fills = style.fills
         bgrect.style.borders = style.borders
         if has_bgblur:
@@ -69,7 +70,7 @@ def convert_frame_style(fig_group, sketch_group):
 
         sketch_group.layers.insert(0, bgrect)
     elif has_blur:
-        blurrect = make_background_rect(fig_group['guid'], sketch_group.frame, 'Frame Blur')
+        blurrect = rectangle.make_background_rect(fig_group['guid'], sketch_group.frame, 'Frame Blur')
         bgrect.style.blur = style.blur
 
         sketch_group.layers.insert(0, bgrect)
@@ -79,24 +80,8 @@ def convert_frame_style(fig_group, sketch_group):
     style.blur.isEnabled = False
 
 
-def make_background_rect(guid, frame, name):
-    return Rectangle(
-        do_objectID=utils.gen_object_id(guid, name.encode()),
-        name=name,
-        frame=Rect(
-            height=frame.height,
-            width=frame.width,
-            x=0,
-            y=0
-        ),
-        style=Style(do_objectID=utils.gen_object_id(guid, f'{name}_style'.encode())),
-        resizingConstraint=10,
-        rotation=0,
-    )
-
-
 def make_clipping_rect(guid, frame):
-    obj = make_background_rect(guid, frame, "Clip")
+    obj = rectangle.make_background_rect(guid, frame, "Clip")
     obj.hasClippingMask = True
     obj.clippingMaskMode = ClippingMaskMode.OUTLINE
     return obj

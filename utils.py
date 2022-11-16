@@ -52,9 +52,11 @@ def log_conversion_warning(warning_code: str, fig_node: dict) -> None:
 
         "ART001": f"has at least one corner radius which is not supported by sketch artboards. The corner radius will be ignored",
         "ART002": f"is being converted to an artboard. However, artboard rotations are not supported. Rotation will be ignored",
-        "ART003": f"has an artboard with a style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
+        "ART003": f"has an style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
 
-        "BSE001": f"has a layout grid enabled. This functionality is not yet implemented"
+        "BSE001": f"has a layout grid enabled. This functionality is not yet implemented",
+
+        "GRP001": f"is a nested frame, which is not supported in sketch. The frame will be converted to a group"
     }
 
     if fig_node['guid'] not in issued_warnings:
