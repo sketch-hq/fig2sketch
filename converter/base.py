@@ -122,7 +122,12 @@ def process_styles(fig_node: dict) -> Style:
         if not inherit_node_id or inherit_node_id[0] == 4294967295:
             continue
 
-        inherit_node, sketch_component = context.component(inherit_node_id)
+        try:
+            inherit_node, sketch_component = context.component(inherit_node_id)
+        except KeyError:
+            utils.log_conversion_warning("CMP001", fig_node)
+            continue
+
         if inherit_style == 'inheritFillStyleIDForStroke':
             fig_node['strokePaints'] = inherit_node['fillPaints']
         elif inherit_style is not None:

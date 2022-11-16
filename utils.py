@@ -56,7 +56,9 @@ def log_conversion_warning(warning_code: str, fig_node: dict) -> None:
 
         "BSE001": f"has a layout grid enabled. This functionality is not yet implemented",
 
-        "GRP001": f"is a nested frame, which is not supported in sketch. The frame will be converted to a group"
+        "GRP001": f"is a nested frame, which is not supported in sketch. The frame will be converted to a group",
+
+        "CMP001": f"uses a shared style which could not be found in the document. It will not be applied",
     }
 
     if fig_node['guid'] not in issued_warnings:
