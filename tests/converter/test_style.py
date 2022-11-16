@@ -1,8 +1,9 @@
 from converter.style import *
 from sketchformat.style import *
 
-FIG_COLOR = {"r": 1,"g": 0,"b": 0.5,"a": 0.9}
+FIG_COLOR = {"r": 1, "g": 0, "b": 0.5, "a": 0.9}
 SKETCH_COLOR = Color(red=1, green=0, blue=0.5, alpha=0.9)
+
 
 class TestConvertColor:
     def test_color(self):
@@ -15,7 +16,7 @@ class TestConvertColor:
 
 
 class TestConvertFill:
-    fig_color = {"r": 1,"g": 0,"b": 0.5,"a": 0.9}
+    fig_color = {"r": 1, "g": 0, "b": 0.5, "a": 0.9}
     sketch_color = Color(red=1, green=0, blue=0.5, alpha=0.9)
 
     def test_solid(self):

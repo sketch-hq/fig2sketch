@@ -13,8 +13,8 @@ LAYOUT_ANCHOR = {
     'MIN': LayoutAnchor.MIN,
     'CENTER': LayoutAnchor.MIDDLE,
     'MAX': LayoutAnchor.MAX,
-    'BASELINE': LayoutAnchor.MIDDLE,  # TODO: Sketch doesn't support this
-    'SPACE_EVENLY': LayoutAnchor.MIDDLE  # TODO: Sketch doesn't support this
+    'BASELINE': LayoutAnchor.MIDDLE,
+    'SPACE_EVENLY': LayoutAnchor.MIDDLE
 }
 
 

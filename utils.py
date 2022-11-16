@@ -41,7 +41,7 @@ def log_conversion_warning(warning_code: str, fig_node: dict) -> None:
         "TXT002": f"has multiple text fill colors. Only the first one will be converted",
         "TXT003": f"has a non-solid text color (gradient or image) which is not supported by Sketch",
         "TXT004": f"contains a 'TITLE' transformation. Sketch does not support this text transformation, so no transformation is applied",
-        "TXT005": f"contains bullet points. They will be removed",
+        "TXT005": f"contains a LIST style with list markers. This style will be ignored",
 
         "SHP001": f"contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
 
@@ -52,8 +52,11 @@ def log_conversion_warning(warning_code: str, fig_node: dict) -> None:
 
         "ART001": f"has at least one corner radius which is not supported by sketch artboards. The corner radius will be ignored",
         "ART002": f"is being converted to an artboard. However, artboard rotations are not supported. Rotation will be ignored",
+        "ART003": f"has an style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
 
-        "BSE001": f"has a layout grid enabled. This functionality is not yet implemented"
+        "BSE001": f"has a layout grid enabled. This functionality is not yet implemented",
+
+        "GRP001": f"is a nested frame, which is not supported in sketch. The frame will be converted to a group"
     }
 
     if fig_node['guid'] not in issued_warnings:

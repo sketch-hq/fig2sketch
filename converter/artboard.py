@@ -10,7 +10,7 @@ def convert(fig_frame: dict) -> Artboard:
         **prototype.prototyping_information(fig_frame)
     )
 
-    # Remove style from artboards. TODO: Is this needed?
+    # TODO: Use group.convert_frame_style or similar, after post_process_frame
     obj.style.fills = []
     obj.style.borders = []
     obj.style.borderOptions = BorderOptions()
@@ -46,6 +46,7 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
             sketch_artboard.hasBackgroundColor = True
         case _:
             # Anything else, add a background rect
+            utils.log_conversion_warning("ART003", fig_frame)
             sketch_artboard.layers.insert(0, rectangle.build_rectangle_for_frame(fig_frame))
 
     return sketch_artboard

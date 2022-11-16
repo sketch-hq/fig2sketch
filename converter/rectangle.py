@@ -1,6 +1,8 @@
 import utils
 from . import base
+from sketchformat.layer_common import Rect
 from sketchformat.layer_shape import Rectangle
+from sketchformat.style import Style
 
 
 def convert(fig_rect: dict) -> Rectangle:
@@ -20,11 +22,32 @@ def convert(fig_rect: dict) -> Rectangle:
 
 
 def build_rectangle_for_frame(fig_frame: dict) -> Rectangle:
-    background_rect = convert(fig_frame)
-    background_rect.frame.x = 0
-    background_rect.frame.y = 0
-    background_rect.rotation = 0
-    background_rect.name = 'Frame background'
-    background_rect.do_objectID = utils.gen_object_id(fig_frame['guid'], b'background')
-    background_rect.resizingConstraint = 10  # Fixed to borders
-    return background_rect
+    rectangle = convert(fig_frame)
+    return make_background_rect(fig_frame['guid'], rectangle, 'Frame Background')
+
+
+def make_background_rect(guid, frame, name) -> Rectangle:
+    if type(frame) == Rectangle:
+        rectangle = frame
+        rectangle.name = name
+    else:
+        rectangle = Rectangle(
+            do_objectID=utils.gen_object_id(guid, name.encode()),
+            name=name,
+            frame=Rect(
+                height=frame.height,
+                width=frame.width,
+                x=0,
+                y=0
+            ),
+            style=Style(do_objectID=utils.gen_object_id(guid, f'{name}_style'.encode())),
+            resizingConstraint=10,
+            rotation=0,
+        )
+
+    rectangle.frame.x = 0
+    rectangle.frame.y = 0
+    rectangle.resizingConstraint = 10
+    rectangle.rotation = 0
+
+    return rectangle

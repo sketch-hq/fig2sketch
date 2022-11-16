@@ -5,7 +5,7 @@ import shutil
 from typing import Tuple, Sequence, Dict, IO
 import utils
 from zipfile import ZipFile
-from . import decodefig, decodevectornetwork
+from . import decodefig, vector_network
 from PIL import Image, UnidentifiedImageError
 
 
@@ -60,8 +60,8 @@ def transform_node(fig, node, fig_zip, output):
         blob_id = node['vectorData']['vectorNetworkBlob']
         scale = node['vectorData']['normalizedSize']
         style_table_override = utils.get_style_table_override(node['vectorData'])
-        vector_network = decodevectornetwork.decode(fig, blob_id, scale, style_table_override)
-        node['vectorNetwork'] = vector_network
+        network = vector_network.decode(fig, blob_id, scale, style_table_override)
+        node['vectorNetwork'] = network
 
     # Images
     for paint in node.get('fillPaints', []):

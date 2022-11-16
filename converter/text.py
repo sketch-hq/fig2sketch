@@ -280,7 +280,7 @@ def line_height(fig_text):
                     # Auto (natural baselines)
                     return {}
                 else:
-                    # Similar to RAW, different natural baseline behaviour. Same TODO apply
+                    # Similar to RAW, different natural baseline behaviour. Same comment applies.
                     line_height = round(
                         fig_text['fontSize'] * fig_text['lineHeight']['value'] / 100)
                     return {
@@ -289,12 +289,12 @@ def line_height(fig_text):
                     }
             case 'RAW':
                 # Relative to font size of each line.
-                # TODO: Sketch does not support this if text sizes change over lines.
+                # Sketch does not support this if text sizes change over lines.
                 # We just set constant baseline as appropriate for the first line.
                 # We can do better using fig.textData.baselines information (applying lineHeight
                 # overrides to our attributedString)
 
-                # TODO: If < 1, .fig and Sketch calculate the first line position differently
+                # If < 1, .fig and Sketch calculate the first line position differently
                 # Sketch seems to set it to min(lineHeight, lineAscent). We can check
                 # baselines[0][position]
                 # Maybe we should change the frame position in Sketch to account for this?

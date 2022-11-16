@@ -41,12 +41,12 @@ if __name__ == '__main__':
     if not ssl.create_default_context().get_ca_certs():
         import certifi
         import os
+
         os.environ['SSL_CERT_FILE'] = certifi.where()
         logging.debug("Loaded TLS certificates from certifi")
     else:
         logging.debug("Using system TLS certificates")
 
-    # Import
     with ZipFile(args.sketch_file, 'w') as output:
         fig_json, id_map = fig2tree.convert_fig(args.fig_file, output)
 
