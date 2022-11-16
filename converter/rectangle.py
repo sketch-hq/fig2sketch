@@ -1,6 +1,6 @@
 from converter import utils
 from . import base
-from sketchformat.layer_common import Rect
+from sketchformat.layer_common import Rect, ClippingMaskMode
 from sketchformat.layer_shape import Rectangle
 from sketchformat.style import Style
 
@@ -19,6 +19,13 @@ def convert(fig_rect: dict) -> Rectangle:
             fig_rect.get('rectangleBottomLeftCornerRadius', 0) if independent else corner_radius
         ),
     )
+
+
+def make_clipping_rect(guid, frame):
+    obj = make_background_rect(guid, frame, "Clip")
+    obj.hasClippingMask = True
+    obj.clippingMaskMode = ClippingMaskMode.OUTLINE
+    return obj
 
 
 def build_rectangle_for_frame(fig_frame: dict) -> Rectangle:

@@ -95,6 +95,7 @@ class _PrototypingInformation(TypedDict, total=False):
 def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
     # Some information about the prototype is in the canvas/page
     fig_canvas = context.fig_node(fig_frame['parent']['guid'])
+    
     if 'prototypeDevice' not in fig_canvas:
         return {
             'isFlowHome': False,
