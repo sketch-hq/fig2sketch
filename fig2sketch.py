@@ -6,7 +6,7 @@ import ssl
 import sys
 
 
-def parse_args(args=sys.argv):
+def parse_args(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Converts a .fig document to .sketch')
     parser.add_argument('fig_file')
     parser.add_argument('sketch_file')
