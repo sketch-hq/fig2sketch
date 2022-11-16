@@ -3,8 +3,10 @@ import json
 import logging
 from zipfile import ZipFile
 import ssl
+import sys
 
-if __name__ == '__main__':
+
+def parse_args(args=sys.argv):
     parser = argparse.ArgumentParser(description='Converts a .fig document to .sketch')
     parser.add_argument('fig_file')
     parser.add_argument('sketch_file')
@@ -22,8 +24,10 @@ if __name__ == '__main__':
     group.add_argument('--dump-fig-json', type=argparse.FileType('w'),
                         help='output a fig representation in json for debugging purposes')
 
-    args = parser.parse_args()
+    return parser.parse_args(args)
 
+
+def run(args):
     # Set log level
     level = logging.WARNING
     if args.verbosity:
@@ -66,3 +70,7 @@ if __name__ == '__main__':
                       default=lambda x: x.tolist())
 
         convert.convert_json_to_sketch(fig_json, id_map, output)
+
+
+if __name__ == '__main__':
+    run(parse_args())
