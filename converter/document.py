@@ -1,4 +1,4 @@
-import utils
+from converter import utils
 import zipfile
 from . import font
 from .context import context

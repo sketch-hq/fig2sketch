@@ -1,4 +1,4 @@
-import utils
+from converter import utils
 from . import style
 from sketchformat.document import Swatch
 from typing import Optional

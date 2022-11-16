@@ -1,4 +1,4 @@
-import utils
+from converter import utils
 from . import instance, group, base, prototype
 from .context import context
 from sketchformat.layer_group import *

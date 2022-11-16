@@ -1,6 +1,6 @@
 import logging
 import math
-import utils
+from converter import utils
 from sketchformat.layer_common import *
 from sketchformat.layer_shape import *
 from sketchformat.style import *

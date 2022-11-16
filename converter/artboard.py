@@ -1,4 +1,4 @@
-import utils
+from converter import utils
 from . import prototype, rectangle, style, base
 from sketchformat.layer_group import Artboard
 from sketchformat.style import BorderOptions, Fill, FillType

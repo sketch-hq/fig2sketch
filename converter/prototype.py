@@ -1,4 +1,4 @@
-import utils
+from converter import utils
 from .context import context
 from sketchformat.prototype import *
 from typing import TypedDict, Tuple, Optional

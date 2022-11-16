@@ -1,6 +1,6 @@
 import appdirs
 import os
-import utils
+from converter import utils
 import urllib.request
 import urllib.parse
 from fontTools.ttLib import TTFont

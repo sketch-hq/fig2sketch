@@ -3,7 +3,7 @@ import io
 import logging
 import shutil
 from typing import Tuple, Sequence, Dict, IO
-import utils
+from converter import utils
 from zipfile import ZipFile
 from . import decodefig, vector_network
 from PIL import Image, UnidentifiedImageError

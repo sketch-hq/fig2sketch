@@ -1,4 +1,4 @@
-import utils
+from converter import utils
 from . import base
 from sketchformat.layer_common import Rect
 from sketchformat.layer_shape import Rectangle

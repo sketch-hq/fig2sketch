@@ -1,10 +1,11 @@
 import copy
-import utils
+from converter import utils
 from . import base, group
 from .context import context
+from .config import config
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 
 def convert(fig_instance):
@@ -14,22 +15,26 @@ def convert(fig_instance):
         return group.convert(fig_instance)
 
     all_overrides = get_all_overrides(fig_instance)
-    sketch_overrides = convert_overrides(all_overrides)
+    sketch_overrides, unsupported = convert_overrides(all_overrides)
+    if unsupported:
+        if config.can_detach:
+            utils.log_conversion_warning('SYM003', fig_instance, props=unsupported)
 
-    if sketch_overrides is None:
-        # Modify input tree in place, with the detached symbol subtree
-        detach_symbol(fig_instance, all_overrides)
-        return group.convert(fig_instance)
-    else:
-        obj = SymbolInstance(
-            **base.base_styled(fig_instance),
-            symbolID=utils.gen_object_id(fig_instance['symbolData']['symbolID']),
-            overrideValues=sketch_overrides,
-        )
-        # Replace style
-        obj.style = Style(do_objectID=utils.gen_object_id(fig_instance['guid'], b'style'))
+            # Modify input tree in place, with the detached symbol subtree
+            detach_symbol(fig_instance, all_overrides)
+            return group.convert(fig_instance)
+        else:
+            utils.log_conversion_warning('SYM002', fig_instance, props=unsupported)
 
-        return obj
+    obj = SymbolInstance(
+        **base.base_styled(fig_instance),
+        symbolID=utils.gen_object_id(fig_instance['symbolData']['symbolID']),
+        overrideValues=sketch_overrides,
+    )
+    # Replace style
+    obj.style = Style(do_objectID=utils.gen_object_id(fig_instance['guid'], b'style'))
+
+    return obj
 
 
 def post_process(fig_instance, sketch_instance):
@@ -55,15 +60,13 @@ def master_instance(fig_symbol):
 
 def convert_overrides(all_overrides):
     sketch_overrides = []
+    unsupported_overrides = []
     for override in all_overrides:
-        sk = convert_override(override)
-        if sk is None:
-            # Something cannot be converted, trigger dettach code
-            return None
-        else:
-            sketch_overrides += sk
+        sk, us = convert_override(override)
+        sketch_overrides += sk
+        unsupported_overrides += us
 
-    return sketch_overrides
+    return sketch_overrides, unsupported_overrides
 
 
 def get_all_overrides(fig_instance):
@@ -94,8 +97,9 @@ def get_all_overrides(fig_instance):
     return all_overrides
 
 
-def convert_override(override: dict) -> Optional[List[OverrideValue]]:
+def convert_override(override: dict) -> Tuple[List[OverrideValue],List[str]]:
     sketch_overrides = []
+    unsupported_overrides = []
 
     # Convert uuids in the path from top symbol to child instance
     sketch_path = [utils.gen_object_id(guid) for guid in override['guidPath']['guids']]
@@ -107,9 +111,8 @@ def convert_override(override: dict) -> Optional[List[OverrideValue]]:
         if prop == 'textData':
             # Text override.
             if 'styleOverrideTable' in value:
-                # Sketch does not support multiple styles in text overrides -> detach
-                print(f"Unsupported override: text with mixed styles. Will detach")
-                return None
+                unsupported_overrides.append('textData.styleOverrideTable')
+                continue
 
             sketch_overrides.append(OverrideValue(
                 overrideName=f'{sketch_path_str}_stringValue',
@@ -126,10 +129,9 @@ def convert_override(override: dict) -> Optional[List[OverrideValue]]:
             pass
         else:
             # Unknown override
-            print(f"Unsupported override: {prop}. Will detach")
-            return None
+            unsupported_overrides.append(prop)
 
-    return sketch_overrides
+    return sketch_overrides, unsupported_overrides
 
 
 def find_symbol_master(root_symbol, guid_path, overrides):

@@ -1,6 +1,6 @@
 import copy
 import itertools
-import utils
+from converter import utils
 from . import base, style
 from .context import context
 from sketchformat.text import *

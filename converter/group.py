@@ -1,4 +1,4 @@
-import utils
+from converter import utils
 from . import base, positioning, rectangle
 from sketchformat.layer_common import Rect, ClippingMaskMode
 from sketchformat.layer_group import Group

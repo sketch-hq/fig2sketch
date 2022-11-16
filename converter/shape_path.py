@@ -1,5 +1,5 @@
 from . import base, positioning
-import utils
+from converter import utils
 import itertools
 from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode

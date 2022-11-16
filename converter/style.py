@@ -1,5 +1,5 @@
 import math
-import utils
+from converter import utils
 from sketchformat.style import *
 from typing import List, TypedDict
 from .positioning import Vector, Matrix
