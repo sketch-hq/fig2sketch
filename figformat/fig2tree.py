@@ -9,8 +9,8 @@ from . import decodefig, vector_network
 from PIL import Image, UnidentifiedImageError
 
 
-def convert_fig(reader: IO[bytes], output: ZipFile) -> Tuple[dict, Dict[Sequence[int], dict]]:
-    fig, fig_zip = decodefig.decode(reader)
+def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], dict]]:
+    fig, fig_zip = decodefig.decode(path)
 
     if fig_zip is not None:
         shutil.copyfileobj(
@@ -67,26 +67,34 @@ def transform_node(fig, node, fig_zip, output):
     for paint in node.get('fillPaints', []):
         if 'image' in paint:
             fname = bytes(paint['image']['hash']).hex()
-            paint['image']['filename'] = convert_image(fname, fig_zip, output)
+            blob_id = paint['image'].get('dataBlob')
+            blob = bytes(fig['blobs'][blob_id]['bytes']) if blob_id else None
+            paint['image']['filename'] = convert_image(fname, blob, fig_zip, output)
 
     if 'symbolData' in node:
         for override in node['symbolData'].get('symbolOverrides', []):
             for paint in override.get('fillPaints', []):
                 if 'image' in paint:
                     fname = bytes(paint['image']['hash']).hex()
-                    paint['image']['filename'] = convert_image(fname, fig_zip, output)
+                    blob_id = paint['image'].get('dataBlob')
+                    blob = bytes(fig['blobs'][blob_id]['bytes']) if blob_id else None
+                    paint['image']['filename'] = convert_image(fname, blob, fig_zip, output)
 
     return node
 
 
-@functools.cache
-def convert_image(fname, fig_zip, output):
+converted_images = {}
+def convert_image(fname, blob, fig_zip, output):
+    img = converted_images.get(fname)
+    if img:
+        return img
+
     logging.info(f'Converting image {fname}')
     try:
         if fig_zip is not None:
             fd = fig_zip.open(f'images/{fname}')
         else:
-            fd = io.BytesIO(bytes(fig['blobs'][paint['image']['dataBlob']]['bytes']))
+            fd = io.BytesIO(blob)
 
         image = Image.open(fd)
 
@@ -104,6 +112,7 @@ def convert_image(fname, fig_zip, output):
 
         fhash = utils.generate_file_ref(out.getbuffer())
         output.open(f'images/{fhash}{extension}', 'w').write(out.getbuffer())
+        converted_images[fname] = f'{fhash}{extension}'
         return f'{fhash}{extension}'
     except UnidentifiedImageError as e:
         logging.critical(f"Could not convert image {fname}. It appears to be corrupted.")
