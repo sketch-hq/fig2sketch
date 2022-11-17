@@ -84,6 +84,7 @@ def run(args):
         logging.debug("Using system TLS certificates")
 
     logging.debug(config)
+    logging.debug(f"Version {VERSION}")
 
     with ZipFile(args.sketch_file, "w") as output:
         fig_json, id_map = fig2tree.convert_fig(args.fig_file, output)
