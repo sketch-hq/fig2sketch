@@ -65,7 +65,7 @@ Data found in the .fig that don't have any reasonable match in Sketch will be ig
 
 ### Frames vs Artboards
 
-"Frames" in .fig documents are a way to group layers contained in them. Sketch has a similar concept which is "Artboards". However, while Frames can be nested and they supposedly behave in the same way at every nesting or main level, Artboards in Sketch only exist at the main level inside the canvas. Artboards cannot be nested. 
+"Frames" in .fig documents are a way to group layers contained in them. Sketch has a similar concept called "Artboards". However, while Frames can be nested and they supposedly behave in the same way at every nesting or main level, Artboards in Sketch only exist at the main level inside the canvas. Artboards cannot be nested. 
 
 Additionally, Frames and Artboards support different types of styling.
 
