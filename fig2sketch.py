@@ -5,6 +5,11 @@ from zipfile import ZipFile
 import ssl
 import sys
 
+try:
+    from version import VERSION
+except:
+    VERSION='unknown version'
+
 
 def parse_args(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Converts a .fig document to .sketch")
@@ -39,6 +44,8 @@ def parse_args(args=sys.argv[1:]):
         type=argparse.FileType("w"),
         help="output a fig representation in json for debugging purposes",
     )
+
+    parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}')
 
     return parser.parse_args(args)
 

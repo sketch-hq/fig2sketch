@@ -28,6 +28,7 @@ jobs:
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
+          echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile
       - name: Rename binary
         run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
@@ -66,6 +67,7 @@ jobs:
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
+          echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile
       - name: Rename binary
         run: mv dist/fig2sketch.exe dist/fig2sketch-${{ github.ref_name }}.exe
@@ -104,6 +106,7 @@ jobs:
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
+          echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile --target-arch x86_64
       - name: Rename binary
         run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
@@ -143,6 +146,7 @@ jobs:
           pip install certifi
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
+          echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile --target-arch arm64
       - name: Rename binary
         run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
