@@ -1,18 +1,21 @@
 # .fig to Sketch converter
 
-## Install
+fig2sketch is a command line tool that converts .fig files into .sketch design files, that can be opened with (Sketch)[https://www.sketch.com/] applications.
 
-Use Python 3
-```
-python -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
-```
+## How does it work
 
-## Convert .fig to .sketch
+fig2sketch reads the design data from the .fig file and converts it to data that can be opened by Sketch apps. The conversion is as most accurate possible. However, the kind of data supported by both .fig and .sketch files is not exactly the same. This means that some data needs to be prepared in slightly different ways so it is represented with similar fidely in Sketch apps.
 
-1. Run `python <path to .fig file> <path to store the .sketch file>`
+### Using the source code
+
+1. Run `python fig2sketch.py <path to .fig file> <path to store the .sketch file>`
 2. Open the resulting .sketch file in Sketch
+
+### Using a release binary
+
+1. Run `fig2sketch <path to .fig file> <path to store the .sketch file>`
+2. Open the resulting .sketch file in Sketch
+
 
 ### Options
 
@@ -24,9 +27,45 @@ Example:
 `python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/figma.json`
 
 
-## Documentation about .fig format
-https://www.notion.so/sketch-hq/Figma-converter-d66dcb6c51f14baebf9b508141c095c2
+## Install
+
+Use Python 3
+```
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Running the tests
+
+`pytest`
 
 
-## Identified issues
-https://www.notion.so/sketch-hq/Figma2Sketch-converter-b72c65353fb4477fbacfbf9fd2a87606
+## Current support
+
+fig2ksetch supports most frequently used data from the .fig file. Effectively, common .fig documents will be converted to .sketch and represented almost identically to the original intended representation of the .fig file.
+
+Data found in the .fig that don't have any reasonable match in Sketch will be ignored (and a warning will be issued) during the conversion. 
+
+
+### Frames vs Artboards
+
+"Frames" in .fig documents are a way to group layers contained in them. Sketch has a similar concept which is "Artboards". However, while Frames can be nested and they supposedly behave in the same way at every nesting or main level, Artboards in Sketch only exist at the main level inside the canvas. Artboards cannot be nested. 
+
+Additionally, Frames and Artboards support different types of styling.
+
+Because of this, fig2sketch mostly applies 2 rules to Frames transformation:
+* If the Frame is nested inside another Frame, it will be converted to a Group and a background layer will be added containing the styles that the Frame had originally
+* If the Frame is at the top level, but contains styles that don't match Sketch Artboards' styles, the Frame will be converted to an Artboard and a background layer will be added containing the styles that the Frame had originally
+
+Since this kind of transformation will happen with most .fig files, a warning will not be emitted in the command output.
+
+## About .sketch files
+
+.sketch files are build based on an (open format)[https://github.com/sketch-hq/sketch-document]. Feel free to take a look if you want to know more about the format, and especially if you plan to contribute to the project.
+
+## Contributing
+We would love you to contribute to `@sketch-hq/fig2sketch`, pull requests are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+
+## License
+The scripts and documentation in this project are released under the [MIT License](LICENSE)

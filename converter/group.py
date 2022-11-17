@@ -14,7 +14,6 @@ def post_process_frame(fig_group, sketch_group):
     if fig_group['resizeToFit']:
         return sketch_group
 
-    utils.log_conversion_warning('GRP001', fig_group)
     convert_frame_style(fig_group, sketch_group)
     convert_frame_to_group(fig_group, sketch_group)
 
