@@ -37,3 +37,6 @@ class Point:
             self.x + other.x,
             self.y + other.y
         )
+
+    def __repr__(self):
+        return f'Point({self.x}, {self.y})'
