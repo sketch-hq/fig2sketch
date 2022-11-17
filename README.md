@@ -4,7 +4,7 @@ fig2sketch is a command line tool that converts .fig files into .sketch design f
 
 ## How does it work
 
-fig2sketch reads the design data from the .fig file and converts it to data that can be opened by Sketch apps. The conversion is as most accurate possible. However, the kind of data supported by both .fig and .sketch files is not exactly the same. This means that some data needs to be prepared in slightly different ways so it is represented with similar fidely in Sketch apps.
+fig2sketch reads the design data from the .fig file and converts it to data that can be opened by Sketch apps. The conversion is as most accurate as possible. However, the kind of data supported by both .fig and .sketch files is not exactly the same. This means that some data needs to be prepared in slightly different ways so it is represented as close as possible in Sketch apps.
 
 ### Using the source code
 
