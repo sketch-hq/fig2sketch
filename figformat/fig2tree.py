@@ -83,7 +83,7 @@ def transform_node(fig, node, fig_zip, output):
     return node
 
 
-converted_images = {}
+converted_images: Dict[str, str] = {}
 def convert_image(fname, blob, fig_zip, output):
     img = converted_images.get(fname)
     if img:

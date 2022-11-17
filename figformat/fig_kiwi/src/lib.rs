@@ -2,7 +2,7 @@ mod kiwi;
 
 use std::{fs::File, error::Error, io::{Read, Seek, SeekFrom}, collections::HashMap};
 use crate::kiwi::KiwiReader;
-use pyo3::{prelude::*, types::{PyDict, PyList, PyTuple, PyFunction, PyString}};
+use pyo3::{prelude::*, types::{PyDict, PyList, PyFunction, PyString}};
 
 struct Field {
     name: String,
@@ -41,9 +41,6 @@ fn decode_type<R: std::io::Read>(py: Python, kiwi: &mut KiwiReader<R>, types: &V
                 // Enum
                 t.fields.get(&kiwi.uint()).unwrap().name.clone().into_py(py)
             } else if t.kind == 1 {
-                if t.name == "GUID" {
-                    return PyTuple::new(py, vec!(kiwi.uint(), kiwi.uint())).into();
-                }
                 // Struct
                 let fields = PyDict::new(py);
 
