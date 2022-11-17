@@ -1,21 +1,24 @@
 from . import base, positioning
 from converter import utils
 import itertools
+from sketchformat.layer_common import AbstractLayer
 from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
+from sketchformat.style import MarkerType
 from collections import defaultdict
 import copy
+from typing import Union, List, TypedDict, Tuple, Dict
 
 STROKE_CAP_TO_MARKER_TYPE = {
-    'NONE': 0,
-    'ARROW_LINES': 1,
-    'ARROW_EQUILATERAL': 2,
-    'TRIANGLE_FILLED': 3,
-    'CIRCLE_FILLED': 5,
-    'DIAMOND_FILLED': 7,
-    'ROUND': 0,
-    'SQUARE': 0
+    'NONE': MarkerType.NONE,
+    'ARROW_LINES': MarkerType.OPEN_ARROW,
+    'ARROW_EQUILATERAL': MarkerType.FILLED_ARROW,
+    'TRIANGLE_FILLED': MarkerType.LINE,
+    'CIRCLE_FILLED': MarkerType.FILLED_CIRCLE,
+    'DIAMOND_FILLED': MarkerType.FILLED_SQUARE,
+    'ROUND': MarkerType.NONE,
+    'SQUARE': MarkerType.NONE
 }
 
 WINDING_RULE = {
@@ -24,9 +27,19 @@ WINDING_RULE = {
 }
 
 
-def convert(fig_vector):
-    regions = get_all_segments(fig_vector['vectorNetwork'])
-    regions = [convert_region(fig_vector, region, i) for i, region in enumerate(regions)]
+class _Points(TypedDict):
+    points: List[CurvePoint]
+    isClosed: bool
+
+
+class _Markers(TypedDict, total=False):
+    startMarkerType: MarkerType
+    endMarkerType: MarkerType
+
+
+def convert(fig_vector: dict) -> Union[Group, ShapeGroup, ShapePath]:
+    fig_regions = get_all_segments(fig_vector['vectorNetwork'])
+    regions = [convert_region(fig_vector, region, i) for i, region in enumerate(fig_regions)]
 
     if len(regions) > 1:
         # Ignore positioning for children. TODO: We should probably be building these shapePaths by
@@ -35,7 +48,7 @@ def convert(fig_vector):
             s.frame.x = 0
             s.frame.y = 0
 
-        obj = Group(**base.base_styled(fig_vector), layers=regions)
+        obj = Group(**base.base_styled(fig_vector), layers=regions) # type: ignore[arg-type]
         obj.style.fills = []
 
         return obj
@@ -43,7 +56,7 @@ def convert(fig_vector):
         return regions[0]
 
 
-def convert_region(fig_vector, region, region_index=0):
+def convert_region(fig_vector: dict, region: dict, region_index: int=0) -> Union[ShapeGroup, ShapePath]:
     loops = [convert_shape_path(fig_vector, region['style'], loop, region_index, i) for i, loop in
              enumerate(region['loops'])]
 
@@ -55,7 +68,7 @@ def convert_region(fig_vector, region, region_index=0):
 
         obj = ShapeGroup(
             **base.base_styled({**fig_vector, **region['style']}),
-            layers=loops,
+            layers=loops, # type: ignore[arg-type]
             windingRule=WINDING_RULE[region['windingRule']],
         )
         obj.do_objectID = utils.gen_object_id(fig_vector['guid'], f"region{region_index}".encode())
@@ -66,7 +79,7 @@ def convert_region(fig_vector, region, region_index=0):
         return loops[0]
 
 
-def convert_shape_path(fig_vector, style, segments, region=0, loop=0):
+def convert_shape_path(fig_vector: dict, style: dict, segments: List[dict], region:int=0, loop:int=0) -> ShapePath:
     points, styles = convert_points(fig_vector, segments)
 
     obj = ShapePath(
@@ -98,19 +111,19 @@ def convert_line(fig_line):
     )
 
 
-def convert_points(fig_vector, ordered_segments):
+def convert_points(fig_vector: dict, ordered_segments: List[dict]) -> Tuple[_Points,_Markers]:
     vertices = fig_vector['vectorNetwork']['vertices']
 
     is_closed = ordered_segments[0]['start'] == ordered_segments[-1]['end']
 
-    points_style = {}
+    points_style: _Markers = {}
 
     if not is_closed:
         first_point = vertices[ordered_segments[0]['start']]
         last_point = vertices[ordered_segments[-1]['end']]
         points_style = points_marker_types(fig_vector, first_point, last_point)
 
-    points = {}
+    points: Dict[int, CurvePoint] = {}
     for segment in ordered_segments:
         point1, point2 = process_segment(fig_vector, vertices, segment, points)
         points[segment['start']] = point1
@@ -119,10 +132,10 @@ def convert_points(fig_vector, ordered_segments):
     return {'points': list(points.values()), 'isClosed': is_closed}, points_style
 
 
-def get_all_segments(vector_network):
+def get_all_segments(vector_network: dict) -> List[dict]:
     unused_segments = set(range(len(vector_network['segments'])))
 
-    def use_segment(i):
+    def use_segment(i: int) -> int:
         unused_segments.discard(i)
         return i
 
@@ -144,12 +157,12 @@ def get_all_segments(vector_network):
     return regions
 
 
-def swap_segment(segment):
+def swap_segment(segment: dict) -> None:
     segment['start'], segment['end'] = segment['end'], segment['start']
     segment['tangentStart'], segment['tangentEnd'] = segment['tangentEnd'], segment['tangentStart']
 
 
-def reorder_segments(segments):
+def reorder_segments(segments: List[dict]) -> List[List[dict]]:
     """
     Order segments so that they are continuous
 
@@ -166,6 +179,13 @@ def reorder_segments(segments):
     count = 0
     runs = []
     while count < total_segments:
+        if count == total_segments - 1:
+            # Special case when one segment left (e.g: lines)
+            # Just return it in the same order as in .fig
+            segment = [s[0] for s in segments_with_point.values() if s]
+            runs.append(segment)
+            break
+
         ordered_run, run_count = reorder_single_segment(segments_with_point)
         count += run_count
         runs.append(ordered_run)
@@ -173,7 +193,7 @@ def reorder_segments(segments):
     return runs
 
 
-def reorder_single_segment(segments_with_point):
+def reorder_single_segment(segments_with_point: Dict[int, List[dict]]) -> Tuple[List[dict],int]:
     # In case the path is open, we try to find an end (a point with a single segment)
     # If we don't, the path should be closed and can choose an arbitrary one by default
     start_segment = [s[0] for s in segments_with_point.values() if s][0]
@@ -216,7 +236,7 @@ def reorder_single_segment(segments_with_point):
     return ordered, count
 
 
-def reorder_segment_points(segments):
+def reorder_segment_points(segments: List[dict]) -> List[dict]:
     """
     Make sure segment[0].end == segment[1].start, etc.
 
@@ -242,7 +262,7 @@ def reorder_segment_points(segments):
     return segments
 
 
-def process_segment(fig_vector, vertices, segment, points):
+def process_segment(fig_vector: dict, vertices: List[dict], segment: dict, points: Dict[int, CurvePoint]) -> Tuple[CurvePoint, CurvePoint]:
     point1 = get_or_create_point(fig_vector, points, segment['start'], vertices)
     point2 = get_or_create_point(fig_vector, points, segment['end'], vertices)
 
@@ -271,7 +291,7 @@ CURVE_MODES = {
 }
 
 
-def get_or_create_point(fig_vector, points, index, vertices):
+def get_or_create_point(fig_vector: dict, points: Dict[int, CurvePoint], index: int, vertices: List[dict]) -> CurvePoint:
     if index in points:
         point = points[index]
     else:
@@ -285,7 +305,7 @@ def get_or_create_point(fig_vector, points, index, vertices):
     return point
 
 
-def points_marker_types(fig_vector, start_point, end_point):
+def points_marker_types(fig_vector: dict, start_point: dict, end_point: dict) -> _Markers:
     start_marker_type = STROKE_CAP_TO_MARKER_TYPE[fig_vector['strokeCap']]
     end_marker_type = STROKE_CAP_TO_MARKER_TYPE[fig_vector['strokeCap']]
 
