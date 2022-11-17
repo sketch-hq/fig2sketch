@@ -36,11 +36,23 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+### Performance
+
+There are some performance improvements for data read from the .fig file and also for the serialization of the output data into the .sketch. If you want to enjoy those performance improvements do this:
+
+```
+sh scripts/install_patched_orjson.sh
+sh scripts/install_fig_kiwi.sh
+```
+
+For the second one you will need to have [Rust](https://www.rust-lang.org/) and [Cargo](https://doc.rust-lang.org/cargo/) installed in your machine.
+
 ## Running the tests
 
 In order to run the tests, just execute this in the project root:
-
-`pytest`
+```
+pytest
+```
 
 
 ## Current support
