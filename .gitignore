@@ -1,7 +1,4 @@
 __pycache__/
-data/
-example/
-output*
 .venv
 .python-version
 .DS_Store

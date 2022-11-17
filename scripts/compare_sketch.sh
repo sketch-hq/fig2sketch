@@ -7,7 +7,7 @@ rm -rf /tmp/f2s_original /tmp/f2s_changed
 mkdir /tmp/f2s_original /tmp/f2s_changed
 
 # Unzip original file
-unzip -q $1 -d /tmp/f2s_original
+unzip -q "$1" -d /tmp/f2s_original
 
 # Unzip changed file
 unzip -q $2 -d /tmp/f2s_changed

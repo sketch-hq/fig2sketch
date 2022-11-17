@@ -1,6 +1,9 @@
 import codecs
 import ctypes
 from collections import OrderedDict
+import zlib
+import struct
+import io
 
 
 class KiwiReader:
@@ -138,3 +141,23 @@ class KiwiDecoder:
                     return self._decode_message(kw, type)
                 case other:
                     raise 'Unknown'
+
+
+def decode(reader, type_converters):
+    SUPPORTED_VERSIONS = [15, 20]
+
+    header = reader.read(12)
+    fig_version = struct.unpack('<I', header[8:12])[0]
+    if fig_version not in SUPPORTED_VERSIONS:
+        raise Exception(
+            f"Unsupported .fig version. File = {fig_version} / Supported = {SUPPORTED_VERSIONS}")
+
+    segment_header = reader.read(4)
+    size = struct.unpack('<I', segment_header)[0]
+    data = io.BytesIO(zlib.decompress(reader.read(size), wbits=-15))
+    schema = KiwiSchema(data)
+
+    segment_header = reader.read(4)
+    size = struct.unpack('<I', segment_header)[0]
+    data = io.BytesIO(zlib.decompress(reader.read(size), wbits=-15))
+    return KiwiDecoder(schema, type_converters).decode(data, 'Message')

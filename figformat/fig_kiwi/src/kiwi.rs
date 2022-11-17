@@ -39,8 +39,8 @@ impl<R: Read> KiwiReader<R> {
     }
 
     pub fn int(&mut self) -> i32 {
-        let value= self.uint() as i32;
-        if (value & 1) != 0 { !(value >> 1) } else { value >> 1 }
+        let value = self.uint();
+        (if (value & 1) != 0 { !(value >> 1) } else { value >> 1 }) as i32
     }
 
     pub fn float(&mut self) -> f32 {

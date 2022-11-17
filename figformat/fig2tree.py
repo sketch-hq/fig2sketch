@@ -12,7 +12,7 @@ from PIL import Image, UnidentifiedImageError
 def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], dict]]:
     fig, fig_zip = decodefig.decode(path)
 
-    if fig_zip is not None:
+    if fig_zip and output:
         shutil.copyfileobj(
             fig_zip.open(f'thumbnail.png', 'r'),
             output.open(f'previews/preview.png', 'w')
@@ -83,7 +83,7 @@ def transform_node(fig, node, fig_zip, output):
     return node
 
 
-converted_images = {}
+converted_images: Dict[str, str] = {}
 def convert_image(fname, blob, fig_zip, output):
     img = converted_images.get(fname)
     if img:
