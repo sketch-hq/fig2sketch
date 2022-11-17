@@ -99,7 +99,7 @@ def text_style(fig_text):
     else:
         font_name = context.record_font(fig_text['fontName'])
 
-    fills = fig_text.get('fillPaints', [{}])
+    fills = fig_text.get('fillPaints', [])
     if not fills:
         # Set a transparent fill if no fill is set
         fills = [{
@@ -201,6 +201,7 @@ def override_characters_style(fig_text):
         # we have to set the emoji font if this is an emoji
         style_override = copy.deepcopy(override_table[style_id])
         override_fills = override_table[current_glyph['styleID']].get('fillPaints', [{}])
+
         is_emoji = override_fills and override_fills[0].get('type') == 'EMOJI'
 
         if is_emoji:
@@ -306,7 +307,8 @@ def line_height(fig_text):
             case _:
                 raise Exception(f'Unknown line height unit')
     else:
-        return 0
+        # Default to auto
+        return {}
 
 
 def text_transformation(fig_text):
