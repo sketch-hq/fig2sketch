@@ -5,6 +5,7 @@ from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
 from collections import defaultdict
+import copy
 
 STROKE_CAP_TO_MARKER_TYPE = {
     'NONE': 0,
@@ -224,6 +225,10 @@ def reorder_segment_points(segments):
       i.e. the end vertex of one segment does not need to match the start vertex of the next
       segment in the loop, but can instead match the end vertex of that segment.
     """
+
+    # Segments may be reused by other regions in other orders, so let's grab a copy
+    segments = copy.deepcopy(segments)
+
     if len(segments) < 2:
         return segments
 
