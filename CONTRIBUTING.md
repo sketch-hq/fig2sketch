@@ -7,7 +7,7 @@ Contributions to this project are released to the public under the [MIT license]
 Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
 ### Did you find a bug?
-Do not open up a GitHub issue if the bug is a security vulnerability that affects Sketch or any application that can open .sketch or .fig files. If you find a security vulnerability that affects Sketch applications, please contact Sketch through [PLACEHOLDER]. If the security vulnerability affects other applications, please, report it through their appropriate secure channels.
+Do not open up a GitHub issue if the bug is a security vulnerability that affects Sketch or any application that can open .sketch or .fig files. If you find a security vulnerability that affects Sketch applications, please contact Sketch following [Sketch's Responsible Disclosure Policy](https://www.sketch.com/security/disclosure/). If the security vulnerability affects other applications, please, report it through their appropriate secure channels.
 
 Ensure the bug was not already reported by searching on GitHub under Issues.
 

@@ -47,6 +47,7 @@ sh scripts/install_fig_kiwi.sh
 
 For the second one you will need to have [Rust](https://www.rust-lang.org/) and [Cargo](https://doc.rust-lang.org/cargo/) installed in your machine.
 
+
 ## Running the tests
 
 In order to run the tests, just execute this in the project root:
@@ -79,7 +80,7 @@ Since this kind of transformation will happen with most .fig files, a warning wi
 .sketch files are build based on an (open format)[https://github.com/sketch-hq/sketch-document]. Feel free to take a look if you want to know more about the format, and especially if you plan to contribute to the project.
 
 ## Contributing
-We would love you to contribute to fig2sketch, pull requests are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+We would love you to contribute to fig2sketch, pull requests are welcome! Please see the [CONTRIBUTING guidelines](CONTRIBUTING.md) for more information.
 
 ## License
 The scripts and documentation in this project are released under the [MIT license](LICENSE)
