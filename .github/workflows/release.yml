@@ -37,12 +37,13 @@ jobs:
         with:
           type: 'zip'
           filename: 'fig2sketch-linux.zip'
-          path: 'dist/*'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-linux.zip
+          path: dist/fig2sketch-linux.zip
 
   build-windows:
     runs-on: windows-latest
@@ -76,12 +77,13 @@ jobs:
         with:
           type: 'zip'
           filename: 'fig2sketch-windows.zip'
-          path: 'dist/*'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-windows.zip
+          path: dist/fig2sketch-windows.zip
 
   build-macos-x86_64:
     runs-on: macos-latest
@@ -115,12 +117,13 @@ jobs:
         with:
           type: 'zip'
           filename: 'fig2sketch-macos-x86_64.zip'
-          path: 'dist/*'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-macos-x86_64.zip
+          path: dist/fig2sketch-macos-x86_64.zip
 
   build-macos-arm64:
     runs-on: self-hosted
@@ -155,16 +158,17 @@ jobs:
         with:
           type: 'zip'
           filename: 'fig2sketch-macos-arm64.zip'
-          path: 'dist/*'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-macos-arm64.zip
+          path: dist/fig2sketch-macos-arm64.zip
 
   build-macos-universal:
     needs: [ build-macos-x86_64, build-macos-arm64 ]
-    runs-on: self-hosted
+    runs-on: macos-latest
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v3
@@ -183,24 +187,25 @@ jobs:
         run: |
           mkdir x86_64
           mkdir arm64
-          mkdir -p dist/fig2sketch-universal
+          mkdir -p dist
           unzip fig2sketch-macos-x86_64.zip -d x86_64/
           unzip fig2sketch-macos-arm64.zip -d arm64/
-          hexdump -ve '1/1 "%.2X"' x86_64/fig2sketch-macos/fig2sketch | sed "s/4D45490\([0C]\)0B0A0B0E/4D45490\10B0A0B0F/g" | xxd -r -p > x86_64/fig2sketch-macos/fig2sketch.patched
-          codesign --remove x86_64/fig2sketch-macos/fig2sketch.patched
-          codesign -s - x86_64/fig2sketch-macos/fig2sketch.patched
-          lipo -create x86_64/fig2sketch-macos/fig2sketch.patched arm64/fig2sketch-macos/fig2sketch -output dist/fig2sketch-universal/fig2sketch-${{ github.ref_name }}
+          hexdump -ve '1/1 "%.2X"' x86_64/fig2sketch-${{ github.ref_name }} | sed "s/4D45490\([0C]\)0B0A0B0E/4D45490\10B0A0B0F/g" | xxd -r -p > x86_64/fig2sketch.patched
+          codesign --remove x86_64/fig2sketch.patched
+          codesign -s - x86_64/fig2sketch.patched
+          lipo -create x86_64/fig2sketch.patched arm64/fig2sketch-${{ github.ref_name }} -output dist/fig2sketch-${{ github.ref_name }}
       - name: zip release
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: 'fig2sketch-macos-universal.zip'
-          path: 'dist/fig2sketch-universal/*'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: fig2sketch-macos-universal.zip
+          path: dist/fig2sketch-macos-universal.zip
 
 
   create-release:
