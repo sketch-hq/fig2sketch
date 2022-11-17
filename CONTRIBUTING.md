@@ -22,11 +22,11 @@ If you would like to *implement* a new feature, please consider the size of the 
 
   **Note**: Adding a new topic to the documentation, or significantly re-writing a topic, counts as a major feature.
 
-* **Small Features** can be crafted and directly [submitted as a Pull Request](#Submitting a pull request).
+* **Small Features** can be crafted and directly [submitted as a Pull Request](#submitting-a-pull-request).
 
 ## Submitting a pull request
 
-1. [Fork][fork] and clone the repository
+1. Fork and clone the repository
 2. Configure and install the dependencies
 3. Make sure the tests pass on your machine
 4. Create a new branch: `git checkout -b my-branch-name`

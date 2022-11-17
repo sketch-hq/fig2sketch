@@ -1,6 +1,6 @@
 # .fig to Sketch converter
 
-fig2sketch is a command line tool that converts .fig files into .sketch design files, that can be opened with (Sketch)[https://www.sketch.com/] applications.
+fig2sketch is a command line tool that converts .fig files into .sketch design files, that can be opened with [Sketch](https://www.sketch.com/) applications.
 
 ## How does it work
 
@@ -38,6 +38,8 @@ pip install -r requirements.txt
 
 ## Running the tests
 
+In order to run the tests, just execute this in the project root:
+
 `pytest`
 
 
@@ -65,7 +67,7 @@ Since this kind of transformation will happen with most .fig files, a warning wi
 .sketch files are build based on an (open format)[https://github.com/sketch-hq/sketch-document]. Feel free to take a look if you want to know more about the format, and especially if you plan to contribute to the project.
 
 ## Contributing
-We would love you to contribute to `@sketch-hq/fig2sketch`, pull requests are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+We would love you to contribute to fig2sketch, pull requests are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 
 ## License
-The scripts and documentation in this project are released under the [MIT License](LICENSE)
+The scripts and documentation in this project are released under the [MIT license](LICENSE)
