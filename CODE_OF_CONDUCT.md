@@ -4,7 +4,7 @@ Our passion for design goes beyond pixels to reach our community. At Sketch we c
 
 We know you love the Sketch community as much as we do, so we ask everyone involved in this project to take note of — and comply with — the following, no matter their role: 
 
-Any action that goes against a harassment-free experience for everyone is not acceptable in project maintained by Sketch. Violation of these terms, either through code contribution, code reviews, issues comments, etc.., will be addressed by Sketch and the project maintainers to guarantee that these violations are corrected or terminated. Sketch also reserves the right to follow up with any legal procedure, should there be a need for this.
+Any action that goes against a harassment-free experience for anyone is unacceptable in any project maintained by Sketch. Violation of these terms, either through code contribution, code reviews, issues comments, etc.., will be addressed by Sketch and the project maintainers to guarantee that these violations are corrected or terminated. Sketch also reserves the right to follow up with any legal procedure, should there be a need for this.
 
 Examples of behavior that contributes to creating a positive environment include:
 
