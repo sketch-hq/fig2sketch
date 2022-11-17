@@ -82,7 +82,7 @@ class BlurType(IntEnum):
 
 @dataclass(kw_only=True)
 class Color:
-    _class: str = field(default='color')
+    _class: str = field(default="color")
     red: float
     green: float
     blue: float
@@ -90,92 +90,90 @@ class Color:
     swatchID: Optional[str] = None
 
     @staticmethod
-    def Black() -> 'Color':
+    def Black() -> "Color":
         return Color(red=0, green=0, blue=0, alpha=1)
 
     @staticmethod
-    def White() -> 'Color':
+    def White() -> "Color":
         return Color(red=1, green=1, blue=1, alpha=1)
 
     @staticmethod
-    def Translucent() -> 'Color':
+    def Translucent() -> "Color":
         return Color(red=0, green=0, blue=0, alpha=0.5)
 
     @staticmethod
-    def DefaultFill() -> 'Color':
+    def DefaultFill() -> "Color":
         return Color(red=0.847, green=0.847, blue=0.847, alpha=1)
 
     @staticmethod
-    def DefaultBorder() -> 'Color':
+    def DefaultBorder() -> "Color":
         return Color(red=0.592, green=0.592, blue=0.592, alpha=1)
 
 
 @dataclass(kw_only=True)
 class GradientStop:
-    _class: str = field(default='gradientStop')
+    _class: str = field(default="gradientStop")
     color: Color
     position: float
 
 
 @dataclass(kw_only=True)
 class Gradient:
-    _class: str = field(default='gradient')
+    _class: str = field(default="gradient")
     gradientType: GradientType = GradientType.LINEAR
     elipseLength: float = 0
     from_: InitVar[Point] = Point(0.5, 0)
     to: Point = field(default_factory=lambda: Point(0.5, 1))
     stops: List[GradientStop] = field(
-        default_factory=lambda: [GradientStop(color=Color.White(), position=0),
-                                 GradientStop(color=Color.Black(), position=1)])
+        default_factory=lambda: [
+            GradientStop(color=Color.White(), position=0),
+            GradientStop(color=Color.Black(), position=1),
+        ]
+    )
 
     def __post_init__(self, from_):
-        setattr(self, 'from', from_)
+        setattr(self, "from", from_)
 
     @staticmethod
-    def Linear(from_: Point, to: Point, stops: List[GradientStop]) -> 'Gradient':
+    def Linear(from_: Point, to: Point, stops: List[GradientStop]) -> "Gradient":
         return Gradient(
-            gradientType=GradientType.LINEAR,
-            from_=from_,
-            to=to,
-            stops=stops
+            gradientType=GradientType.LINEAR, from_=from_, to=to, stops=stops
         )
 
     @staticmethod
-    def Radial(from_: Point, to: Point, elipseLength: float,
-               stops: List[GradientStop]) -> 'Gradient':
+    def Radial(
+        from_: Point, to: Point, elipseLength: float, stops: List[GradientStop]
+    ) -> "Gradient":
         return Gradient(
             gradientType=GradientType.RADIAL,
             from_=from_,
             to=to,
             elipseLength=elipseLength,
-            stops=stops
+            stops=stops,
         )
 
     @staticmethod
-    def Angular(stops: List[GradientStop]) -> 'Gradient':
-        return Gradient(
-            gradientType=GradientType.ANGULAR,
-            stops=stops
-        )
+    def Angular(stops: List[GradientStop]) -> "Gradient":
+        return Gradient(gradientType=GradientType.ANGULAR, stops=stops)
 
 
 @dataclass(kw_only=True)
 class ContextSettings:
-    _class: str = field(default='graphicsContextSettings')
+    _class: str = field(default="graphicsContextSettings")
     blendMode: BlendMode = BlendMode.NORMAL
     opacity: float = 1
 
 
 @dataclass(kw_only=True)
 class Image:
-    _class: str = field(default='MSJSONFileReference')
-    _ref_class: str = field(default='MSImageData')
+    _class: str = field(default="MSJSONFileReference")
+    _ref_class: str = field(default="MSImageData")
     _ref: str
 
 
 @dataclass(kw_only=True)
 class Fill:
-    _class: str = field(default='fill')
+    _class: str = field(default="fill")
     fillType: FillType
     isEnabled: bool = True
     color: Color = field(default_factory=Color.DefaultFill)
@@ -188,36 +186,32 @@ class Fill:
     image: Optional[Image] = None
 
     @staticmethod
-    def Color(color: Color, isEnabled: bool = True) -> 'Fill':
-        return Fill(
-            color=color,
-            fillType=FillType.COLOR,
-            isEnabled=isEnabled
-        )
+    def Color(color: Color, isEnabled: bool = True) -> "Fill":
+        return Fill(color=color, fillType=FillType.COLOR, isEnabled=isEnabled)
 
     @staticmethod
-    def Gradient(gradient: Gradient, isEnabled: bool) -> 'Fill':
-        return Fill(
-            gradient=gradient,
-            fillType=FillType.GRADIENT,
-            isEnabled=isEnabled
-        )
+    def Gradient(gradient: Gradient, isEnabled: bool) -> "Fill":
+        return Fill(gradient=gradient, fillType=FillType.GRADIENT, isEnabled=isEnabled)
 
     @staticmethod
-    def Image(path: str, patternFillType: PatternFillType, patternTileScale: float,
-              isEnabled: bool) -> 'Fill':
+    def Image(
+        path: str,
+        patternFillType: PatternFillType,
+        patternTileScale: float,
+        isEnabled: bool,
+    ) -> "Fill":
         return Fill(
             image=Image(_ref=path),
             fillType=FillType.PATTERN,
             patternFillType=patternFillType,
             patternTileScale=patternTileScale,
-            isEnabled=isEnabled
+            isEnabled=isEnabled,
         )
 
 
 @dataclass(kw_only=True)
 class Border:
-    _class: str = field(default='border')
+    _class: str = field(default="border")
     fillType: FillType
     position: BorderPosition
     thickness: int
@@ -227,21 +221,20 @@ class Border:
     gradient: Gradient = field(default_factory=Gradient)
 
     @staticmethod
-    def from_fill(fill: Fill, position: BorderPosition, thickness: int) -> 'Border':
+    def from_fill(fill: Fill, position: BorderPosition, thickness: int) -> "Border":
         return Border(
             fillType=fill.fillType,
             color=fill.color,
             gradient=fill.gradient,
             contextSettings=fill.contextSettings,
-
             position=position,
-            thickness=thickness
+            thickness=thickness,
         )
 
 
 @dataclass(kw_only=True)
 class ColorControls:
-    _class: str = field(default='colorControls')
+    _class: str = field(default="colorControls")
     isEnabled: bool = False
     brightness: float = 0
     contrast: float = 1
@@ -251,7 +244,7 @@ class ColorControls:
 
 @dataclass(kw_only=True)
 class BorderOptions:
-    _class: str = field(default='borderOptions')
+    _class: str = field(default="borderOptions")
     isEnabled: bool = True
     lineCapStyle: LineCapStyle = LineCapStyle.BUTT
     lineJoinStyle: LineJoinStyle = LineJoinStyle.MITER
@@ -260,7 +253,7 @@ class BorderOptions:
 
 @dataclass(kw_only=True)
 class Blur:
-    _class: str = field(default='blur')
+    _class: str = field(default="blur")
     isEnabled: bool = True
     center: Point = field(default_factory=lambda: Point(0.5, 0.5))
     motionAngle: float = 0
@@ -269,13 +262,13 @@ class Blur:
     type: BlurType = BlurType.GAUSSIAN
 
     @staticmethod
-    def Disabled() -> 'Blur':
+    def Disabled() -> "Blur":
         return Blur(isEnabled=False)
 
 
 @dataclass(kw_only=True)
 class Shadow:
-    _class: str = field(default='shadow')
+    _class: str = field(default="shadow")
     blurRadius: float
     offsetX: float
     offsetY: float
@@ -287,7 +280,7 @@ class Shadow:
 
 @dataclass(kw_only=True)
 class InnerShadow(Shadow):
-    _class: str = field(default='innerShadow')
+    _class: str = field(default="innerShadow")
 
 
 @dataclass(kw_only=True)
@@ -297,7 +290,7 @@ class TextStyle:
 
 @dataclass(kw_only=True)
 class Style:
-    _class: str = field(default='style')
+    _class: str = field(default="style")
     do_objectID: str
     borderOptions: BorderOptions = field(default_factory=BorderOptions)
     borders: List[Border] = field(default_factory=list)
@@ -312,10 +305,14 @@ class Style:
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
     innerShadows: List[InnerShadow] = field(default_factory=list)
-    startDecorationType: Optional[MarkerType] = None  # Legacy, should match startMarkerType
+    startDecorationType: Optional[
+        MarkerType
+    ] = None  # Legacy, should match startMarkerType
     endDecorationType: Optional[MarkerType] = None  # Legacy, should match endMarkerType
 
-    def set_markers(self, startMarkerType: MarkerType, endMarkerType: MarkerType) -> None:
+    def set_markers(
+        self, startMarkerType: MarkerType, endMarkerType: MarkerType
+    ) -> None:
         self.startMarkerType = startMarkerType
         self.endMarkerType = endMarkerType
 

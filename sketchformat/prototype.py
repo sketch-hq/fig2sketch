@@ -24,34 +24,34 @@ class AnimationType(IntEnum):
 
 @dataclass(kw_only=True)
 class FlowOverlaySettings:
-    _class: str = field(default='MSImmutableFlowOverlaySettings')
+    _class: str = field(default="MSImmutableFlowOverlaySettings")
     overlayAnchor: Point
     sourceAnchor: Point
     offset: Point = field(default_factory=lambda: Point(0, 0))
     overlayType: int = 0
 
     @staticmethod
-    def Positioned(position: str) -> 'FlowOverlaySettings':
+    def Positioned(position: str) -> "FlowOverlaySettings":
         anchor = Point(0.5, 0.5)
 
         match position:
-            case 'TOP_LEFT':
+            case "TOP_LEFT":
                 anchor = Point(0, 0)
-            case 'TOP_CENTER':
+            case "TOP_CENTER":
                 anchor = Point(0.5, 0)
-            case 'TOP_RIGHT':
+            case "TOP_RIGHT":
                 anchor = Point(1, 0)
-            case 'BOTTOM_LEFT':
+            case "BOTTOM_LEFT":
                 anchor = Point(0, 1)
-            case 'BOTTOM_CENTER':
+            case "BOTTOM_CENTER":
                 anchor = Point(0.5, 1)
-            case 'BOTTOM_RIGHT':
+            case "BOTTOM_RIGHT":
                 anchor = Point(1, 1)
 
         return FlowOverlaySettings(overlayAnchor=anchor, sourceAnchor=anchor)
 
     @staticmethod
-    def RegularArtboard() -> 'FlowOverlaySettings':
+    def RegularArtboard() -> "FlowOverlaySettings":
         anchor = Point(0.5, 0.5)
 
         return FlowOverlaySettings(overlayAnchor=anchor, sourceAnchor=anchor)
@@ -59,7 +59,7 @@ class FlowOverlaySettings:
 
 @dataclass(kw_only=True)
 class FlowConnection:
-    _class: str = field(default='MSImmutableFlowConnection')
+    _class: str = field(default="MSImmutableFlowConnection")
     destinationArtboardID: str
     overlaySettings: Optional[FlowOverlaySettings]
     animationType: AnimationType = AnimationType.NONE
@@ -69,7 +69,7 @@ class FlowConnection:
 
 @dataclass(kw_only=True)
 class PrototypeViewport:
-    _class: str = field(default='MSImmutablePrototypeViewport')
+    _class: str = field(default="MSImmutablePrototypeViewport")
     name: str
     size: Point
     # libraryID: str = 'EB972BCC-0467-4E50-998E-0AC5A39517F0'

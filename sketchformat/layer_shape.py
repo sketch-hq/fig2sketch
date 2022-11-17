@@ -29,7 +29,7 @@ class CurveMode(IntEnum):
 
 @dataclass(kw_only=True)
 class CurvePoint:
-    _class: str = field(default='curvePoint')
+    _class: str = field(default="curvePoint")
     curveFrom: Point
     curveTo: Point
     point: Point
@@ -40,24 +40,24 @@ class CurvePoint:
     curveMode: CurveMode = CurveMode.UNDEFINED
 
     @staticmethod
-    def Straight(point: Point, radius: float = 0.0) -> 'CurvePoint':
+    def Straight(point: Point, radius: float = 0.0) -> "CurvePoint":
         return CurvePoint(
             curveFrom=point,
             curveTo=point,
             point=point,
             cornerRadius=radius,
-            curveMode=CurveMode.STRAIGHT
+            curveMode=CurveMode.STRAIGHT,
         )
 
     @staticmethod
-    def Curved(point: Point, curveFrom: Point, curveTo: Point) -> 'CurvePoint':
+    def Curved(point: Point, curveFrom: Point, curveTo: Point) -> "CurvePoint":
         return CurvePoint(
             curveFrom=curveFrom,
             curveTo=curveTo,
             point=point,
             hasCurveFrom=True,
             hasCurveTo=True,
-            curveMode=CurveMode.MIRRORED
+            curveMode=CurveMode.MIRRORED,
         )
 
 
@@ -71,7 +71,7 @@ class AbstractShapeLayer(AbstractStyledLayer):
 
 @dataclass(kw_only=True)
 class ShapePath(AbstractShapeLayer):
-    _class: str = field(default='shapePath')
+    _class: str = field(default="shapePath")
     edited: bool = True
 
 
@@ -84,7 +84,7 @@ class Rectangle(AbstractShapeLayer):
         bottomLeft: float
 
     corners: InitVar[Corners] = Corners(0, 0, 0, 0)
-    _class: str = field(default='rectangle')
+    _class: str = field(default="rectangle")
     fixedRadius: float = 0.0
     hasConvertedToNewRoundCorners: bool = True
     needsConvertionToNewRoundCorners: bool = False
@@ -129,14 +129,14 @@ def oval_make_points() -> List[CurvePoint]:
 
 @dataclass(kw_only=True)
 class Oval(AbstractShapeLayer):
-    _class: str = field(default='oval')
+    _class: str = field(default="oval")
     points: List[CurvePoint] = field(default_factory=oval_make_points)
     isClosed: bool = True
 
 
 @dataclass(kw_only=True)
 class Star(AbstractShapeLayer):
-    _class: str = field(default='star')
+    _class: str = field(default="star")
     radius: float
     numberOfPoints: float
     isClosed: bool = True
@@ -160,7 +160,7 @@ class Star(AbstractShapeLayer):
 
 @dataclass(kw_only=True)
 class Polygon(AbstractShapeLayer):
-    _class: str = field(default='polygon')
+    _class: str = field(default="polygon")
     numberOfPoints: float
     points: List[CurvePoint] = field(default_factory=list)
     isClosed: bool = True

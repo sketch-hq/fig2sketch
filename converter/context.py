@@ -5,24 +5,27 @@ from typing import Sequence, Tuple, Optional, Dict, IO, List
 
 
 def find_symbols(node: dict) -> List[Sequence[int]]:
-    if node['type'] == 'SYMBOL':
-        return [node['guid']]
+    if node["type"] == "SYMBOL":
+        return [node["guid"]]
 
     found = []
-    for child in node.get('children', []):
+    for child in node.get("children", []):
         found += find_symbols(child)
 
     return found
 
 
 class Context:
-    def init(self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict]) -> None:
+    def init(
+        self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict]
+    ) -> None:
         self._sketch_components: Dict[Sequence[int], Swatch] = {}
         self.symbols_page = None
         self._node_by_id = id_map
         self._used_fonts: Dict[Tuple[str, str], Tuple[IO[bytes], str]] = {}
-        self._component_symbols = {s: False for s in
-                                   find_symbols(components_page)} if components_page else {}
+        self._component_symbols = (
+            {s: False for s in find_symbols(components_page)} if components_page else {}
+        )
 
         # Where to position symbols of the specified width
         # width -> (x, y)
@@ -54,7 +57,7 @@ class Context:
         return self._node_by_id[fid]
 
     def record_font(self, fig_font_name):
-        font_descriptor = (fig_font_name['family'], fig_font_name['style'])
+        font_descriptor = (fig_font_name["family"], fig_font_name["style"])
         font_info = self._used_fonts.get(font_descriptor)
         if font_info:
             return font_info[1]
@@ -64,8 +67,8 @@ class Context:
         except:
             logging.warning(f"Could not download font {font_descriptor}")
             font_file = None
-            if fig_font_name['postscript']:
-                font_name = fig_font_name['postscript']
+            if fig_font_name["postscript"]:
+                font_name = fig_font_name["postscript"]
             else:
                 font_name = f"{fig_font_name['family']}-{fig_font_name['subfamily']}"
 
@@ -80,7 +83,8 @@ class Context:
         if not self._component_symbols.get(sid, True):
             # The symbol is in the component page and has not been converted yet, do it now
             from . import tree
-            tree.convert_node(symbol, '')
+
+            tree.convert_node(symbol, "")
             self._component_symbols[sid] = True
 
         return symbol
@@ -100,7 +104,9 @@ class Context:
             position[1] += frame.height + 100
         else:
             # Create a new column at the end
-            [last_width, [x, _]] = max(self._symbol_position.items(), key=lambda item: item[1][0])
+            [last_width, [x, _]] = max(
+                self._symbol_position.items(), key=lambda item: item[1][0]
+            )
             new_x = x + last_width + 100
             frame.x = new_x
             frame.y = 0

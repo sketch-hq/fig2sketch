@@ -18,14 +18,14 @@ class LayoutAnchor(IntEnum):
 
 @dataclass(kw_only=True)
 class RulerData:
-    _class: str = field(default='rulerData')
+    _class: str = field(default="rulerData")
     base: int = 0
     guides: List[int] = field(default_factory=list)
 
 
 @dataclass(kw_only=True)
 class SimpleGrid:
-    _class: str = field(default='simpleGrid')
+    _class: str = field(default="simpleGrid")
     gridSize: int = 8
     thickGridTimes: int = 1
     isEnabled: bool = False
@@ -33,7 +33,7 @@ class SimpleGrid:
 
 @dataclass(kw_only=True)
 class LayoutGrid:
-    _class: str = field(default='layoutGrid')
+    _class: str = field(default="layoutGrid")
     columnWidth: int = 0
     gutterHeight: int = 0
     gutterWidth: int = 0
@@ -49,12 +49,12 @@ class LayoutGrid:
 
 @dataclass(kw_only=True)
 class FreeFormGroupLayout:
-    _class: str = field(default='MSImmutableFreeformGroupLayout')
+    _class: str = field(default="MSImmutableFreeformGroupLayout")
 
 
 @dataclass(kw_only=True)
 class InferredGroupLayout:
-    _class: str = field(default='MSImmutableInferredGroupLayout')
+    _class: str = field(default="MSImmutableInferredGroupLayout")
     axis: LayoutAxis
     layoutAnchor: LayoutAnchor
     maxSize: int = 0
@@ -65,13 +65,14 @@ class InferredGroupLayout:
 class AbstractLayerGroup(AbstractStyledLayer):
     hasClickThrough: bool = False
     groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout] = field(
-        default_factory=FreeFormGroupLayout)
+        default_factory=FreeFormGroupLayout
+    )
     layers: List[AbstractLayer] = field(default_factory=list)
 
 
 @dataclass(kw_only=True)
 class Page(AbstractLayerGroup):
-    _class: str = field(default='page')
+    _class: str = field(default="page")
     horizontalRulerData: RulerData = field(default_factory=RulerData)
     verticalRulerData: RulerData = field(default_factory=RulerData)
     grid: SimpleGrid = field(default_factory=SimpleGrid)
@@ -80,18 +81,20 @@ class Page(AbstractLayerGroup):
 
 @dataclass(kw_only=True)
 class ShapeGroup(AbstractLayerGroup):
-    _class: str = field(default='shapeGroup')
-    windingRule: WindingRule = WindingRule.NON_ZERO  # Legacy, should match style.windingRule
+    _class: str = field(default="shapeGroup")
+    windingRule: WindingRule = (
+        WindingRule.NON_ZERO
+    )  # Legacy, should match style.windingRule
 
 
 @dataclass(kw_only=True)
 class Group(AbstractLayerGroup):
-    _class: str = field(default='group')
+    _class: str = field(default="group")
 
 
 @dataclass(kw_only=True)
 class Artboard(AbstractLayerGroup):
-    _class: str = field(default='artboard')
+    _class: str = field(default="artboard")
     horizontalRulerData: RulerData = field(default_factory=RulerData)
     verticalRulerData: RulerData = field(default_factory=RulerData)
     grid: Optional[SimpleGrid] = None
@@ -101,7 +104,9 @@ class Artboard(AbstractLayerGroup):
     includeBackgroundColorInExport: bool = False
     resizesContent: bool = True
     isFlowHome: bool = False
-    overlayBackgroundInteraction: OverlayBackgroundInteraction = OverlayBackgroundInteraction.NONE
+    overlayBackgroundInteraction: OverlayBackgroundInteraction = (
+        OverlayBackgroundInteraction.NONE
+    )
     presentationStyle: PresentationStyle = PresentationStyle.SCREEN
     overlaySettings: Optional[FlowOverlaySettings] = None
     prototypeViewport: Optional[PrototypeViewport] = None
@@ -112,14 +117,14 @@ class Artboard(AbstractLayerGroup):
 
 @dataclass(kw_only=True)
 class OverrideProperty:
-    _class: str = field(default='overrideProperty')
+    _class: str = field(default="overrideProperty")
     overrideName: str
     canOverride: bool
 
 
 @dataclass(kw_only=True)
 class SymbolMaster(Artboard):
-    _class: str = field(default='symbolMaster')
+    _class: str = field(default="symbolMaster")
     allowsOverrides: bool = True
     includeBackgroundColorInInstance: bool = False
     symbolID: str
@@ -128,14 +133,14 @@ class SymbolMaster(Artboard):
 
 @dataclass(kw_only=True)
 class OverrideValue:
-    _class: str = field(default='overrideValue')
+    _class: str = field(default="overrideValue")
     overrideName: str
     value: Any
 
 
 @dataclass(kw_only=True)
 class SymbolInstance(AbstractStyledLayer):
-    _class: str = field(default='symbolInstance')
+    _class: str = field(default="symbolInstance")
     preservesSpaceWhenHidden: bool = False
     scale: float = 1
     symbolID: str
