@@ -52,7 +52,7 @@ class ResizeType(IntEnum):
 
 @dataclass(kw_only=True)
 class ExportFormat:
-    _class: str = field(default='exportFormat')
+    _class: str = field(default="exportFormat")
     fileFormat: str
     name: str
     visibleScaleType: VisibleScaleType
@@ -63,7 +63,7 @@ class ExportFormat:
 
 @dataclass(kw_only=True)
 class ExportOptions:
-    _class: str = field(default='exportOptions')
+    _class: str = field(default="exportOptions")
     exportFormats: List[ExportFormat] = field(default_factory=list)
     includedLayerIds: List[str] = field(default_factory=list)
     layerOptions: ExportLayerOptions = ExportLayerOptions.ALL
@@ -72,7 +72,7 @@ class ExportOptions:
 
 @dataclass(kw_only=True)
 class Rect:
-    _class: str = field(default='rect')
+    _class: str = field(default="rect")
     height: float
     width: float
     x: float
@@ -112,6 +112,6 @@ class AbstractStyledLayer(AbstractLayer):
 
 @dataclass(kw_only=True)
 class Slice(AbstractLayer):
-    _class: str = field(default='slice')
+    _class: str = field(default="slice")
     hasBackgroundColor: bool = False
     backgroundColor: Color = field(default_factory=Color.White)

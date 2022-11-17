@@ -12,7 +12,7 @@ def serialize(obj: object, file: IO[bytes]) -> None:
 # Check if orjson is patched
 @dataclass
 class Test:
-    _class: str = field(default='rectangle')
+    _class: str = field(default="rectangle")
     optional: Optional[str] = None
 
 

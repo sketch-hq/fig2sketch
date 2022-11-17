@@ -4,17 +4,17 @@ from .context import context
 from sketchformat.layer_group import *
 
 LAYOUT_AXIS = {
-    'NONE': None,
-    'HORIZONTAL': LayoutAxis.HORIZONTAL,
-    'VERTICAL': LayoutAxis.VERTICAL
+    "NONE": None,
+    "HORIZONTAL": LayoutAxis.HORIZONTAL,
+    "VERTICAL": LayoutAxis.VERTICAL,
 }
 
 LAYOUT_ANCHOR = {
-    'MIN': LayoutAnchor.MIN,
-    'CENTER': LayoutAnchor.MIDDLE,
-    'MAX': LayoutAnchor.MAX,
-    'BASELINE': LayoutAnchor.MIDDLE,
-    'SPACE_EVENLY': LayoutAnchor.MIDDLE
+    "MIN": LayoutAnchor.MIN,
+    "CENTER": LayoutAnchor.MIDDLE,
+    "MAX": LayoutAnchor.MAX,
+    "BASELINE": LayoutAnchor.MIDDLE,
+    "SPACE_EVENLY": LayoutAnchor.MIDDLE,
 }
 
 
@@ -23,16 +23,16 @@ def convert(fig_symbol):
     master = SymbolMaster(
         **base.base_styled(fig_symbol),
         **prototype.prototyping_information(fig_symbol),
-        symbolID=utils.gen_object_id(fig_symbol['guid'])
+        symbolID=utils.gen_object_id(fig_symbol["guid"])
     )
 
     # Keep the base ID as the symbol reference, create a new one for the container
-    master.do_objectID = utils.gen_object_id(fig_symbol['guid'], b'symbol_master')
+    master.do_objectID = utils.gen_object_id(fig_symbol["guid"], b"symbol_master")
 
     # Also add group layout if auto-layout is enabled
-    axis = LAYOUT_AXIS[fig_symbol.get('stackMode', 'NONE')]
+    axis = LAYOUT_AXIS[fig_symbol.get("stackMode", "NONE")]
     if axis is not None:
-        anchor = LAYOUT_ANCHOR[fig_symbol.get('stackPrimaryAlignItems', 'MIN')]
+        anchor = LAYOUT_ANCHOR[fig_symbol.get("stackPrimaryAlignItems", "MIN")]
 
         master.groupLayout = InferredGroupLayout(
             axis=axis,

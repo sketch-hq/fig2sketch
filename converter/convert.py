@@ -6,9 +6,10 @@ from sketchformat.serialize import serialize
 from typing import Dict, Sequence, List, Tuple, Optional
 
 
-def convert_json_to_sketch(fig: dict, id_map: Dict[Sequence[int], dict],
-                           output: zipfile.ZipFile) -> None:
-    fig_pages, components_page = separate_pages(fig['document']['children'])
+def convert_json_to_sketch(
+    fig: dict, id_map: Dict[Sequence[int], dict], output: zipfile.ZipFile
+) -> None:
+    fig_pages, components_page = separate_pages(fig["document"]["children"])
 
     # We should either bring the fonts to the same indexed_components to pass
     # them as parameter or move the indexed components to the component file
@@ -30,7 +31,7 @@ def separate_pages(fig_pages: List[dict]) -> Tuple[List[dict], Optional[dict]]:
     pages = []
 
     for fig_page in fig_pages:
-        if 'internalOnly' in fig_page and fig_page['internalOnly']:
+        if "internalOnly" in fig_page and fig_page["internalOnly"]:
             components_page = fig_page
         else:
             pages.append(fig_page)
@@ -42,20 +43,21 @@ def convert_pages(fig_pages: List[dict], output: zipfile.ZipFile) -> List[Page]:
     pages = []
 
     for fig_page in fig_pages:
-        page = tree.convert_node(fig_page, 'DOCUMENT')
-        serialize(page, output.open(f"pages/{page.do_objectID}.json", 'w'))
+        page = tree.convert_node(fig_page, "DOCUMENT")
+        serialize(page, output.open(f"pages/{page.do_objectID}.json", "w"))
         pages.append(page)
 
     if context.symbols_page:
         page = context.symbols_page
-        serialize(page, output.open(f"pages/{page.do_objectID}.json", 'w'))
+        serialize(page, output.open(f"pages/{page.do_objectID}.json", "w"))
         pages.append(page)
 
     return pages  # type: ignore
 
 
-def write_sketch_file(sketch_document: dict, sketch_user: dict, sketch_meta: dict,
-                      output: zipfile.ZipFile) -> None:
-    serialize(sketch_document, output.open('document.json', 'w'))
-    serialize(sketch_user, output.open('user.json', 'w'))
-    serialize(sketch_meta, output.open('meta.json', 'w'))
+def write_sketch_file(
+    sketch_document: dict, sketch_user: dict, sketch_meta: dict, output: zipfile.ZipFile
+) -> None:
+    serialize(sketch_document, output.open("document.json", "w"))
+    serialize(sketch_user, output.open("user.json", "w"))
+    serialize(sketch_meta, output.open("meta.json", "w"))

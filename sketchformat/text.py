@@ -47,7 +47,7 @@ class Bounds:
 
 @dataclass(kw_only=True)
 class ParagraphStyle:
-    _class: str = field(default='paragraphStyle')
+    _class: str = field(default="paragraphStyle")
     alignment: TextAlignment
     minimumLineHeight: Optional[float] = None
     maximumLineHeight: Optional[float] = None
@@ -55,16 +55,13 @@ class ParagraphStyle:
 
 @dataclass(kw_only=True)
 class FontDescriptor:
-    _class: str = field(default='fontDescriptor')
+    _class: str = field(default="fontDescriptor")
     name: InitVar[str]
     size: InitVar[float]
     attributes: Dict = field(default_factory=dict)
 
     def __post_init__(self, name, size):
-        self.attributes = {
-            'name': name,
-            'size': size
-        }
+        self.attributes = {"name": name, "size": size}
 
 
 @dataclass(kw_only=True)
@@ -81,7 +78,7 @@ class EncodedAttributes:
 
 @dataclass(kw_only=True)
 class StringAttribute:
-    _class: str = field(default='stringAttribute')
+    _class: str = field(default="stringAttribute")
     location: int
     length: int
     attributes: EncodedAttributes
@@ -89,14 +86,14 @@ class StringAttribute:
 
 @dataclass(kw_only=True)
 class AttributedString:
-    _class: str = field(default='attributedString')
+    _class: str = field(default="attributedString")
     string: str
     attributes: List[StringAttribute]
 
 
 @dataclass(kw_only=True)
 class Text(AbstractStyledLayer):
-    _class: str = field(default='text')
+    _class: str = field(default="text")
     attributedString: AttributedString
     glyphBounds: Bounds
     textBehaviour: TextBehaviour
@@ -107,6 +104,6 @@ class Text(AbstractStyledLayer):
 
 @dataclass(kw_only=True)
 class TextStyle:
-    _class: str = field(default='textStyle')
+    _class: str = field(default="textStyle")
     encodedAttributes: EncodedAttributes
     verticalAlignment: TextVerticalAlignment
