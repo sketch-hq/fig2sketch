@@ -78,7 +78,7 @@ def convert_region(
             fig_vector["guid"], f"region{region_index}".encode()
         )
 
-        # obj.style.windingRule = obj.windingRule
+        obj.style.windingRule = obj.windingRule
         return obj
     else:
         return loops[0]
