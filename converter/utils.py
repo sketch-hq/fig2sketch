@@ -50,6 +50,7 @@ WARNING_MESSAGES = {
     "ART003": "has an style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
     "BSE001": "has a layout grid enabled. This functionality is not yet implemented",
     "CMP001": "uses a shared style which could not be found in the document. It will not be applied",
+    "POS001": "contains NaN in the positioning matrix and cannot be converted. It will be skipped",
 }
 
 

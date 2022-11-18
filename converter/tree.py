@@ -16,6 +16,8 @@ from sketchformat.layer_common import AbstractLayer
 from sketchformat.layer_group import AbstractLayerGroup
 from typing import Dict, Callable, Any
 import traceback
+from .errors import Fig2SketchWarning
+from . import utils
 
 CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
     "CANVAS": page.convert,
@@ -56,6 +58,8 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
     for child in fig_node.get("children", []):
         try:
             children.append(convert_node(child, fig_node["type"]))
+        except Fig2SketchWarning as w:
+            utils.log_conversion_warning(w.code, fig_node)
         except Exception as e:
             logging.error(
                 f'An unexpected error occurred when converting {child["type"]}: {child["name"]}. It will be skipped\n'

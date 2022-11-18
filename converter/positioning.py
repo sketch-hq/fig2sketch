@@ -1,6 +1,7 @@
 import math
 from sketchformat.layer_common import Rect
 from typing import TypedDict, Tuple, List
+from .errors import Fig2SketchWarning
 
 
 class Vector(list):
@@ -60,6 +61,9 @@ class _Positioning(TypedDict):
 def convert(fig_item: dict) -> _Positioning:
     flip, rotation = guess_flip(fig_item)
     coordinates = transform_frame(fig_item)
+
+    if any([math.isnan(x) for x in [*coordinates, rotation]]):
+        raise Fig2SketchWarning("POS001")
 
     return {
         "frame": Rect(
