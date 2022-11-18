@@ -45,7 +45,10 @@ sh scripts/install_patched_orjson.sh
 sh scripts/install_fig_kiwi.sh
 ```
 
-For the second one you will need to have [Rust](https://www.rust-lang.org/) and [Cargo](https://doc.rust-lang.org/cargo/) installed in your machine.
+You will need to have [Rust](https://www.rust-lang.org/) and [Cargo](https://doc.rust-lang.org/cargo/) installed in your machine. After installing Rust and Cargo you need to install [maturin](https://www.maturin.rs/) as well:
+```
+pip install maturin
+```
 
 
 ## Running the tests
