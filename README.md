@@ -30,6 +30,7 @@ Some important options:
 - Pass `--force-convert-images` if the original document containst a corrupted image and you want to force it instead of having an error
 - Pass `--salt 12345678` to ensure a consistent conversion order
 - Pass `--dump-fig-json example/figma.json` (which whichever path/name you like) to dump the generated JSON from the fig file
+- Pass `-v` or `-vv` to show more information about he conversion process
 
 Example:
 
