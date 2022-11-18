@@ -5,14 +5,14 @@ from typing import List
 
 @dataclass(kw_only=True)
 class JsonFileReference:
-    _class: str = field(default='MSJSONFileReference')
+    _class: str = field(default="MSJSONFileReference")
     _ref_class: str
     _ref: str
 
 
 @dataclass(kw_only=True)
 class FontReference:
-    _class: str = field(default='fontReference')
+    _class: str = field(default="fontReference")
     do_objectID: str
     fontData: JsonFileReference
     fontFamilyName: str
@@ -23,7 +23,7 @@ class FontReference:
 
 @dataclass(kw_only=True)
 class Swatch:
-    _class: str = field(default='swatch')
+    _class: str = field(default="swatch")
     do_objectID: str
     name: str
     value: Color

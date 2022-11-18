@@ -5,24 +5,47 @@ from zipfile import ZipFile
 import ssl
 import sys
 
+try:
+    from version import VERSION
+except:
+    VERSION='unknown version'
+
 
 def parse_args(args=sys.argv[1:]):
-    parser = argparse.ArgumentParser(description='Converts a .fig document to .sketch')
-    parser.add_argument('fig_file')
-    parser.add_argument('sketch_file')
+    parser = argparse.ArgumentParser(description="Converts a .fig document to .sketch")
+    parser.add_argument("fig_file")
+    parser.add_argument("sketch_file")
 
-    group = parser.add_argument_group('conversion options')
-    group.add_argument('--instance-override', choices=['detach', 'ignore'], default='detach',
-                        help='what to do when converting unsupported instance override (default = detach)')
-    group.add_argument('--force-convert-images', action='store_true',
-                        help='try to convert corrupted images')
+    group = parser.add_argument_group("conversion options")
+    group.add_argument(
+        "--instance-override",
+        choices=["detach", "ignore"],
+        default="detach",
+        help="what to do when converting unsupported instance override (default = detach)",
+    )
+    group.add_argument(
+        "--force-convert-images",
+        action="store_true",
+        help="try to convert corrupted images",
+    )
 
-    group = parser.add_argument_group('debug options')
-    group.add_argument('-v', action='count', dest='verbosity',
-                        help='return more details, can be repeated')
-    group.add_argument('--salt', type=str, help='salt used to generate ids, defaults to random')
-    group.add_argument('--dump-fig-json', type=argparse.FileType('w'),
-                        help='output a fig representation in json for debugging purposes')
+    group = parser.add_argument_group("debug options")
+    group.add_argument(
+        "-v",
+        action="count",
+        dest="verbosity",
+        help="return more details, can be repeated",
+    )
+    group.add_argument(
+        "--salt", type=str, help="salt used to generate ids, defaults to random"
+    )
+    group.add_argument(
+        "--dump-fig-json",
+        type=argparse.FileType("w"),
+        help="output a fig representation in json for debugging purposes",
+    )
+
+    parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}')
 
     return parser.parse_args(args)
 
@@ -41,36 +64,42 @@ def run(args):
     from converter.config import config
 
     if args.salt:
-        config.salt = args.salt.encode('utf8')
+        config.salt = args.salt.encode("utf8")
 
     if args.force_convert_images:
         from PIL import ImageFile
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-    config.can_detach = (args.instance_override == 'detach')
+    config.can_detach = args.instance_override == "detach"
 
     # Load SSL certificates in OSs where Python does not use system defaults
     if not ssl.create_default_context().get_ca_certs():
         import certifi
         import os
 
-        os.environ['SSL_CERT_FILE'] = certifi.where()
+        os.environ["SSL_CERT_FILE"] = certifi.where()
         logging.debug("Loaded TLS certificates from certifi")
     else:
         logging.debug("Using system TLS certificates")
 
     logging.debug(config)
+    logging.debug(f"Version {VERSION}")
 
-    with ZipFile(args.sketch_file, 'w') as output:
+    with ZipFile(args.sketch_file, "w") as output:
         fig_json, id_map = fig2tree.convert_fig(args.fig_file, output)
 
         if args.dump_fig_json:
-            json.dump(fig_json, args.dump_fig_json, indent=2, ensure_ascii=False,
-                      default=lambda x: x.tolist())
+            json.dump(
+                fig_json,
+                args.dump_fig_json,
+                indent=2,
+                ensure_ascii=False,
+                default=lambda x: x.tolist(),
+            )
 
         convert.convert_json_to_sketch(fig_json, id_map, output)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(parse_args())

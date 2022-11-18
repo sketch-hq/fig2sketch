@@ -31,17 +31,23 @@ class Matrix(list):
         )
 
     def inv(self):
-        return Matrix([
-            [self[1][1] / (self[0][0] * self[1][1] - self[0][1] * self[1][0]),
-             self[0][1] / (self[0][1] * self[1][0] - self[0][0] * self[1][1]),
-             (self[0][2] * self[1][1] - self[0][1] * self[1][2]) / (
-                         self[0][1] * self[1][0] - self[0][0] * self[1][1])],
-            [self[1][0] / (self[0][1] * self[1][0] - self[0][0] * self[1][1]),
-             self[0][0] / (self[0][0] * self[1][1] - self[0][1] * self[1][0]),
-             (self[0][2] * self[1][0] - self[0][0] * self[1][2]) / (
-                         self[0][0] * self[1][1] - self[0][1] * self[1][0])],
-            [0, 0, 1]
-        ])
+        return Matrix(
+            [
+                [
+                    self[1][1] / (self[0][0] * self[1][1] - self[0][1] * self[1][0]),
+                    self[0][1] / (self[0][1] * self[1][0] - self[0][0] * self[1][1]),
+                    (self[0][2] * self[1][1] - self[0][1] * self[1][2])
+                    / (self[0][1] * self[1][0] - self[0][0] * self[1][1]),
+                ],
+                [
+                    self[1][0] / (self[0][1] * self[1][0] - self[0][0] * self[1][1]),
+                    self[0][0] / (self[0][0] * self[1][1] - self[0][1] * self[1][0]),
+                    (self[0][2] * self[1][0] - self[0][0] * self[1][2])
+                    / (self[0][0] * self[1][1] - self[0][1] * self[1][0]),
+                ],
+                [0, 0, 1],
+            ]
+        )
 
 
 class _Positioning(TypedDict):
@@ -56,25 +62,25 @@ def convert(fig_item: dict) -> _Positioning:
     coordinates = transform_frame(fig_item)
 
     return {
-        'frame': Rect(
-            constrainProportions=fig_item.get('proportionsConstrained', False),
-            height=fig_item['size']['y'],
-            width=fig_item['size']['x'],
+        "frame": Rect(
+            constrainProportions=fig_item.get("proportionsConstrained", False),
+            height=fig_item["size"]["y"],
+            width=fig_item["size"]["x"],
             x=coordinates[0],
-            y=coordinates[1]
+            y=coordinates[1],
         ),
-        'rotation': rotation or 0,
-        'isFlippedHorizontal': flip[0],
-        'isFlippedVertical': flip[1],
+        "rotation": rotation or 0,
+        "isFlippedHorizontal": flip[0],
+        "isFlippedVertical": flip[1],
     }
 
 
 def transform_frame(item: dict) -> Vector:
     # Calculate relative position
-    relative_position = Vector(item['transform'][0][2], item['transform'][1][2])
+    relative_position = Vector(item["transform"][0][2], item["transform"][1][2])
 
     # Vector from rotation center to origin (0,0)
-    vco = Vector(item['size']['x'] / 2, item['size']['y'] / 2)
+    vco = Vector(item["size"]["x"] / 2, item["size"]["y"] / 2)
 
     # Apply rotation to vector
     vco_rotated = apply_transform(item, vco)
@@ -88,13 +94,13 @@ def transform_frame(item: dict) -> Vector:
 
 def apply_transform(item: dict, vector: Vector) -> Vector:
     # Rotation/flip matrix
-    matrix = item['transform']
+    matrix = item["transform"]
 
     return matrix.dot2(vector)
 
 
 def guess_flip(fig_item: dict) -> Tuple[List[bool], float]:
-    tr = fig_item['transform']
+    tr = fig_item["transform"]
 
     # Use a diagonal with big numbers to check for sign flips, to avoid floating point weirdness
     flip = [False, False]
@@ -103,10 +109,9 @@ def guess_flip(fig_item: dict) -> Tuple[List[bool], float]:
     else:
         flip[1] = bool(math.copysign(1, tr[0][1]) == math.copysign(1, tr[1][0]))
 
-    angle = math.degrees(math.atan2(
-        -fig_item['transform'][1][0],
-        fig_item['transform'][0][0]
-    ))
+    angle = math.degrees(
+        math.atan2(-fig_item["transform"][1][0], fig_item["transform"][0][0])
+    )
     if flip[1]:
         angle *= -1
 
@@ -127,10 +132,7 @@ def group_bbox(children):
     if not children:
         return [0, 0, 0, 0]
 
-    child_bboxes = [
-        bbox_from_frame(child)
-        for child in children
-    ]
+    child_bboxes = [bbox_from_frame(child) for child in children]
 
     return [
         min([b[0] for b in child_bboxes]),

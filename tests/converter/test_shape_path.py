@@ -8,29 +8,34 @@ from .base import FIG_BASE
 
 FIG_VECTOR = {
     **FIG_BASE,
-    'type': 'VECTOR',
-    'strokeCap': 'ROUND',
-    'cornerRadius': 0,
+    "type": "VECTOR",
+    "strokeCap": "ROUND",
+    "cornerRadius": 0,
 }
+
 
 class TestArrows:
     def test_arrow_override(self):
         fig = {
             **FIG_VECTOR,
-            'vectorData': {
-                'styleOverrideTable': [{
-                    'styleID': 1,
-                    'strokeCap': 'ARROW_LINES'
-                }]
+            "vectorData": {
+                "styleOverrideTable": [{"styleID": 1, "strokeCap": "ARROW_LINES"}]
             },
-            'vectorNetwork': {
-                'regions': [],
-                'segments': [{'start': 0, 'end': 1, 'tangentStart': {'x': 0, 'y': 0}, 'tangentEnd': {'x': 0, 'y': 0}}],
-                'vertices': [
-                    {'x': 0, 'y': 0},
-                    {'x': 1, 'y': 0, 'style': { 'strokeCap': 'ARROW_LINES' }},
-                ]
-            }
+            "vectorNetwork": {
+                "regions": [],
+                "segments": [
+                    {
+                        "start": 0,
+                        "end": 1,
+                        "tangentStart": {"x": 0, "y": 0},
+                        "tangentEnd": {"x": 0, "y": 0},
+                    }
+                ],
+                "vertices": [
+                    {"x": 0, "y": 0},
+                    {"x": 1, "y": 0, "style": {"strokeCap": "ARROW_LINES"}},
+                ],
+            },
         }
 
         sp = shape_path.convert(fig)
@@ -40,13 +45,13 @@ class TestArrows:
 
 
 def test_complex_vector():
-    figtree, id_map = fig2tree.convert_fig('tests/data/vector.fig', None    )
+    figtree, id_map = fig2tree.convert_fig("tests/data/vector.fig", None)
     context.init(None, id_map)
-    figpage = figtree['document']['children'][0]
-    page = tree.convert_node(figpage, 'DOCUMENT')
+    figpage = figtree["document"]["children"][0]
+    page = tree.convert_node(figpage, "DOCUMENT")
     vector = page.layers[0].layers[0]
 
-    assert len(vector.layers) == 7 # 6 color layers + segments
+    assert len(vector.layers) == 7  # 6 color layers + segments
     paths = [l for l in vector.layers if isinstance(l, ShapePath)]
     groups = [l for l in vector.layers if isinstance(l, ShapeGroup)]
     assert len(paths) == 6

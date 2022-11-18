@@ -11,7 +11,7 @@ def convert(fig_group):
 
 def post_process_frame(fig_group, sketch_group):
     # Do nothing for fig groups, they translate directly to Sketch
-    if fig_group['resizeToFit']:
+    if fig_group["resizeToFit"]:
         return sketch_group
 
     convert_frame_style(fig_group, sketch_group)
@@ -21,12 +21,13 @@ def post_process_frame(fig_group, sketch_group):
 
 
 def convert_frame_to_group(fig_group, sketch_group):
-    needs_clip_mask = not fig_group.get('frameMaskDisabled', False)
+    needs_clip_mask = not fig_group.get("frameMaskDisabled", False)
     if needs_clip_mask:
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
         # since the clipmask defines Sketch bounds (which match visible children)
-        sketch_group.layers.insert(0, rectangle.make_clipping_rect(fig_group['guid'],
-                                                                   sketch_group.frame))
+        sketch_group.layers.insert(
+            0, rectangle.make_clipping_rect(fig_group["guid"], sketch_group.frame)
+        )
     else:
         # When converting from a frame to a group, the bounding box should be adjusted
         # The frame box in a fig doc can be smalled than the children bounds, but not so in Sketch
@@ -58,8 +59,9 @@ def convert_frame_style(fig_group, sketch_group):
     has_blur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
 
     if has_fills or has_borders or has_bgblur:
-        bgrect = rectangle.make_background_rect(fig_group['guid'], sketch_group.frame,
-                                                'Frame Background')
+        bgrect = rectangle.make_background_rect(
+            fig_group["guid"], sketch_group.frame, "Frame Background"
+        )
         bgrect.style.fills = style.fills
         bgrect.style.borders = style.borders
         if has_bgblur:
@@ -67,8 +69,9 @@ def convert_frame_style(fig_group, sketch_group):
 
         sketch_group.layers.insert(0, bgrect)
     elif has_blur:
-        blurrect = rectangle.make_background_rect(fig_group['guid'], sketch_group.frame,
-                                                  'Frame Blur')
+        blurrect = rectangle.make_background_rect(
+            fig_group["guid"], sketch_group.frame, "Frame Blur"
+        )
         bgrect.style.blur = style.blur
 
         sketch_group.layers.insert(0, bgrect)

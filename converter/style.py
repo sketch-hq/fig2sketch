@@ -5,73 +5,77 @@ from typing import List, TypedDict
 from .positioning import Vector, Matrix
 
 BORDER_POSITION = {
-    'CENTER': BorderPosition.CENTER,
-    'INSIDE': BorderPosition.INSIDE,
-    'OUTSIDE': BorderPosition.OUTSIDE
+    "CENTER": BorderPosition.CENTER,
+    "INSIDE": BorderPosition.INSIDE,
+    "OUTSIDE": BorderPosition.OUTSIDE,
 }
 
 LINE_CAP_STYLE = {
-    'NONE': LineCapStyle.BUTT,
-    'ROUND': LineCapStyle.ROUND,
-    'SQUARE': LineCapStyle.SQUARE,
-    'LINE_ARROW': LineCapStyle.SQUARE,
-    'ARROW_LINES': LineCapStyle.SQUARE,
-    'TRIANGLE_ARROW': LineCapStyle.SQUARE,
-    'TRIANGLE_FILLED': LineCapStyle.SQUARE
+    "NONE": LineCapStyle.BUTT,
+    "ROUND": LineCapStyle.ROUND,
+    "SQUARE": LineCapStyle.SQUARE,
+    "LINE_ARROW": LineCapStyle.SQUARE,
+    "ARROW_LINES": LineCapStyle.SQUARE,
+    "TRIANGLE_ARROW": LineCapStyle.SQUARE,
+    "TRIANGLE_FILLED": LineCapStyle.SQUARE,
 }
 
 LINE_JOIN_STYLE = {
-    'MITER': LineJoinStyle.MITER,
-    'ROUND': LineJoinStyle.ROUND,
-    'BEVEL': LineJoinStyle.BEVEL
+    "MITER": LineJoinStyle.MITER,
+    "ROUND": LineJoinStyle.ROUND,
+    "BEVEL": LineJoinStyle.BEVEL,
 }
 
 PATTERN_FILL_TYPE = {
-    'STRETCH': PatternFillType.STRETCH,
-    'FIT': PatternFillType.FIT,
-    'FILL': PatternFillType.FILL,
-    'TILE': PatternFillType.TILE
+    "STRETCH": PatternFillType.STRETCH,
+    "FIT": PatternFillType.FIT,
+    "FILL": PatternFillType.FILL,
+    "TILE": PatternFillType.TILE,
 }
 
 BLEND_MODE = {
-    'PASS_THROUGH': BlendMode.NORMAL,
-    'NORMAL': BlendMode.NORMAL,
-    'DARKEN': BlendMode.DARKEN,
-    'MULTIPLY': BlendMode.MULTIPLY,
+    "PASS_THROUGH": BlendMode.NORMAL,
+    "NORMAL": BlendMode.NORMAL,
+    "DARKEN": BlendMode.DARKEN,
+    "MULTIPLY": BlendMode.MULTIPLY,
     # 'LINEAR_BURN': , Unused?
-    'COLOR_BURN': BlendMode.COLOR_BURN,
-    'LIGHTEN': BlendMode.LIGHTEN,
-    'SCREEN': BlendMode.SCREEN,
+    "COLOR_BURN": BlendMode.COLOR_BURN,
+    "LIGHTEN": BlendMode.LIGHTEN,
+    "SCREEN": BlendMode.SCREEN,
     # 'LINEAR_DODGE': , Unused?
-    'COLOR_DODGE': BlendMode.COLOR_DODGE,
-    'OVERLAY': BlendMode.OVERLAY,
-    'SOFT_LIGHT': BlendMode.SOFT_LIGHT,
-    'HARD_LIGHT': BlendMode.HARD_LIGHT,
-    'DIFFERENCE': BlendMode.DIFFERENCE,
-    'EXCLUSION': BlendMode.EXCLUSION,
-    'HUE': BlendMode.HUE,
-    'SATURATION': BlendMode.SATURATION,
-    'COLOR': BlendMode.COLOR,
-    'LUMINOSITY': BlendMode.LUMINOSITY,
+    "COLOR_DODGE": BlendMode.COLOR_DODGE,
+    "OVERLAY": BlendMode.OVERLAY,
+    "SOFT_LIGHT": BlendMode.SOFT_LIGHT,
+    "HARD_LIGHT": BlendMode.HARD_LIGHT,
+    "DIFFERENCE": BlendMode.DIFFERENCE,
+    "EXCLUSION": BlendMode.EXCLUSION,
+    "HUE": BlendMode.HUE,
+    "SATURATION": BlendMode.SATURATION,
+    "COLOR": BlendMode.COLOR,
+    "LUMINOSITY": BlendMode.LUMINOSITY,
 }
 
 
 def convert(fig_node: dict) -> Style:
     sketch_style = Style(
-        do_objectID=utils.gen_object_id(fig_node['guid'], b'style'),
+        do_objectID=utils.gen_object_id(fig_node["guid"], b"style"),
         borderOptions=BorderOptions(
-            lineCapStyle=LINE_CAP_STYLE[fig_node['strokeCap']] if 'strokeCap' in fig_node else
-            BorderOptions.__dict__['lineCapStyle'],
-            lineJoinStyle=LINE_JOIN_STYLE[fig_node['strokeJoin']] if 'strokeJoin' in fig_node else
-            BorderOptions.__dict__['lineCapStyle'],
-            dashPattern=fig_node.get('dashPattern', [])
+            lineCapStyle=LINE_CAP_STYLE[fig_node["strokeCap"]]
+            if "strokeCap" in fig_node
+            else BorderOptions.__dict__["lineCapStyle"],
+            lineJoinStyle=LINE_JOIN_STYLE[fig_node["strokeJoin"]]
+            if "strokeJoin" in fig_node
+            else BorderOptions.__dict__["lineCapStyle"],
+            dashPattern=fig_node.get("dashPattern", []),
         ),
-        borders=[convert_border(fig_node, b) for b in
-                 fig_node['strokePaints']] if 'strokePaints' in fig_node else [],
-        fills=[convert_fill(fig_node, f) for f in
-               fig_node['fillPaints']] if 'fillPaints' in fig_node else [],
+        borders=[convert_border(fig_node, b) for b in fig_node["strokePaints"]]
+        if "strokePaints" in fig_node
+        else [],
+        fills=[convert_fill(fig_node, f) for f in fig_node["fillPaints"]]
+        if "fillPaints" in fig_node
+        else [],
         **convert_effects(fig_node),
-        contextSettings=context_settings(fig_node)
+        contextSettings=context_settings(fig_node),
     )
     return sketch_style
 
@@ -79,56 +83,59 @@ def convert(fig_node: dict) -> Style:
 def convert_border(fig_node: dict, fig_border: dict) -> Border:
     return Border.from_fill(
         convert_fill(fig_node, fig_border),
-        position=BORDER_POSITION[fig_node['strokeAlign']],
-        thickness=fig_node['strokeWeight'],
+        position=BORDER_POSITION[fig_node["strokeAlign"]],
+        thickness=fig_node["strokeWeight"],
     )
 
 
 def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
     match fig_fill:
-        case {'type': 'EMOJI'}:
+        case {"type": "EMOJI"}:
             raise Exception("Unsupported fill: EMOJI")
-        case {'type': 'SOLID'}:
-            return Fill.Color(convert_color(fig_fill['color'], fig_fill['opacity']),
-                              isEnabled=fig_fill['visible'])
-        case {'type': 'IMAGE'}:
+        case {"type": "SOLID"}:
+            return Fill.Color(
+                convert_color(fig_fill["color"], fig_fill["opacity"]),
+                isEnabled=fig_fill["visible"],
+            )
+        case {"type": "IMAGE"}:
             return Fill.Image(
                 f'images/{fig_fill["image"]["filename"]}',
-                patternFillType=PATTERN_FILL_TYPE[fig_fill['imageScaleMode']],
-                patternTileScale=fig_fill.get('scale', 1),
-                isEnabled=fig_fill['visible']
+                patternFillType=PATTERN_FILL_TYPE[fig_fill["imageScaleMode"]],
+                patternTileScale=fig_fill.get("scale", 1),
+                isEnabled=fig_fill["visible"],
             )
         case _:
-            return Fill.Gradient(convert_gradient(fig_node, fig_fill),
-                                 isEnabled=fig_fill['visible'])
+            return Fill.Gradient(
+                convert_gradient(fig_node, fig_fill), isEnabled=fig_fill["visible"]
+            )
 
 
 def convert_color(color: dict, opacity: Optional[float] = None) -> Color:
     return Color(
-        red=color['r'],
-        green=color['g'],
-        blue=color['b'],
-        alpha=color['a'] if opacity is None else opacity,
+        red=color["r"],
+        green=color["g"],
+        blue=color["b"],
+        alpha=color["a"] if opacity is None else opacity,
     )
 
 
 def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
     # Convert positions depending on the gradient type
-    mat = fig_fill['transform']
+    mat = fig_fill["transform"]
 
     invmat = mat.inv()
 
     rotation_offset = 0.0
-    if fig_fill['type'] == 'GRADIENT_LINEAR':
+    if fig_fill["type"] == "GRADIENT_LINEAR":
         # Linear gradients always go from (0, .5) to (1, .5)
         # We just apply the transform to get the coordinates (in a 1x1 square)
         return Gradient.Linear(
             from_=Point.from_array(invmat.dot([0, 0.5, 1])),
             to=Point.from_array(invmat.dot([1, 0.5, 1])),
-            stops=convert_stops(fig_fill['stops'])
+            stops=convert_stops(fig_fill["stops"]),
         )
-    elif fig_fill['type'] in ['GRADIENT_RADIAL', 'GRADIENT_DIAMOND']:
-        if fig_fill['type'] == 'GRADIENT_DIAMOND':
+    elif fig_fill["type"] in ["GRADIENT_RADIAL", "GRADIENT_DIAMOND"]:
+        if fig_fill["type"] == "GRADIENT_DIAMOND":
             utils.log_conversion_warning("STY002", fig_node)
 
         # Angular gradients have the center at (.5, .5), the vertex at (1, .5)
@@ -140,31 +147,35 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
         # Sketch defines the ratio between axis in the item reference point (not the 1x1 square)
         # So we scale the 1x1 square coordinates to fit the ratio of the item frame before
         # calculating the ellipse's ratio
-        x_scale = fig_node['size']['x'] / fig_node['size']['y']
-        ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
-            point_from, point_to, x_scale)
+        x_scale = fig_node["size"]["x"] / fig_node["size"]["y"]
+        ellipse_ratio = scaled_distance(
+            point_from, point_ellipse, x_scale
+        ) / scaled_distance(point_from, point_to, x_scale)
 
         return Gradient.Radial(
             from_=Point.from_array(point_from),
             to=Point.from_array(point_to),
             elipseLength=ellipse_ratio,
-            stops=convert_stops(fig_fill['stops'])
+            stops=convert_stops(fig_fill["stops"]),
         )
     else:
         # Angular gradients don't allow positioning, but we can at least rotate them
-        rotation_offset = math.atan2(-fig_fill['transform'][1][0],
-                                     fig_fill['transform'][0][0]) / 2 / math.pi
-
-        return Gradient.Angular(
-            stops=convert_stops(fig_fill['stops'], rotation_offset)
+        rotation_offset = (
+            math.atan2(-fig_fill["transform"][1][0], fig_fill["transform"][0][0])
+            / 2
+            / math.pi
         )
 
+        return Gradient.Angular(stops=convert_stops(fig_fill["stops"], rotation_offset))
 
-def convert_stops(fig_stops: List[dict], rotation_offset: float = 0.0) -> List[GradientStop]:
+
+def convert_stops(
+    fig_stops: List[dict], rotation_offset: float = 0.0
+) -> List[GradientStop]:
     stops = [
         GradientStop(
-            color=convert_color(stop['color']),
-            position=rotated_stop(stop['position'], rotation_offset),
+            color=convert_color(stop["color"]),
+            position=rotated_stop(stop["position"], rotation_offset),
         )
         for stop in fig_stops
     ]
@@ -179,7 +190,7 @@ def convert_stops(fig_stops: List[dict], rotation_offset: float = 0.0) -> List[G
 
 def scaled_distance(a: Vector, b: Vector, x_scale: float) -> float:
     v = a - b
-    return ((v[0] * x_scale)**2 + v[1]**2)**0.5
+    return ((v[0] * x_scale) ** 2 + v[1] ** 2) ** 0.5
 
 
 def rotated_stop(position: float, offset: float) -> float:
@@ -200,49 +211,49 @@ class _Effects(TypedDict):
 
 
 def convert_effects(fig_node: dict) -> _Effects:
-    sketch: _Effects = {
-        'blur': Blur.Disabled(),
-        'shadows': [],
-        'innerShadows': []
-    }
+    sketch: _Effects = {"blur": Blur.Disabled(), "shadows": [], "innerShadows": []}
 
-    for e in fig_node.get('effects', []):
-        if e['type'] == 'INNER_SHADOW':
-            sketch['innerShadows'].append(InnerShadow(
-                blurRadius=e['radius'],
-                offsetX=e['offset']['x'],
-                offsetY=e['offset']['y'],
-                spread=e['spread'],
-                color=convert_color(e['color'])
-            ))
-
-        elif e['type'] == 'DROP_SHADOW':
-            sketch['shadows'].append(Shadow(
-                blurRadius=e['radius'],
-                offsetX=e['offset']['x'],
-                offsetY=e['offset']['y'],
-                spread=e['spread'],
-                color=convert_color(e['color'])
-            ))
-
-        elif e['type'] == 'FOREGROUND_BLUR':
-            if sketch['blur'].isEnabled:
-                utils.log_conversion_warning("STY001", fig_node)
-                continue
-
-            sketch['blur'] = Blur(
-                radius=e['radius'] / 2,  # Looks best dividing by 2, no idea why,
-                type=BlurType.GAUSSIAN
+    for e in fig_node.get("effects", []):
+        if e["type"] == "INNER_SHADOW":
+            sketch["innerShadows"].append(
+                InnerShadow(
+                    blurRadius=e["radius"],
+                    offsetX=e["offset"]["x"],
+                    offsetY=e["offset"]["y"],
+                    spread=e["spread"],
+                    color=convert_color(e["color"]),
+                )
             )
 
-        elif e['type'] == 'BACKGROUND_BLUR':
-            if sketch['blur'].isEnabled:
+        elif e["type"] == "DROP_SHADOW":
+            sketch["shadows"].append(
+                Shadow(
+                    blurRadius=e["radius"],
+                    offsetX=e["offset"]["x"],
+                    offsetY=e["offset"]["y"],
+                    spread=e["spread"],
+                    color=convert_color(e["color"]),
+                )
+            )
+
+        elif e["type"] == "FOREGROUND_BLUR":
+            if sketch["blur"].isEnabled:
                 utils.log_conversion_warning("STY001", fig_node)
                 continue
 
-            sketch['blur'] = Blur(
-                radius=e['radius'] / 2,  # Looks best dividing by 2, no idea why,
-                type=BlurType.BACKGROUND
+            sketch["blur"] = Blur(
+                radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
+                type=BlurType.GAUSSIAN,
+            )
+
+        elif e["type"] == "BACKGROUND_BLUR":
+            if sketch["blur"].isEnabled:
+                utils.log_conversion_warning("STY001", fig_node)
+                continue
+
+            sketch["blur"] = Blur(
+                radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
+                type=BlurType.BACKGROUND,
             )
 
         else:
@@ -252,10 +263,10 @@ def convert_effects(fig_node: dict) -> _Effects:
 
 
 def context_settings(fig_node: dict) -> ContextSettings:
-    blend_mode = BLEND_MODE[fig_node['blendMode']]
-    opacity = fig_node['opacity']
+    blend_mode = BLEND_MODE[fig_node["blendMode"]]
+    opacity = fig_node["opacity"]
 
-    if fig_node['blendMode'] == 'NORMAL' and opacity == 1:
+    if fig_node["blendMode"] == "NORMAL" and opacity == 1:
         # Sketch interprets normal at 100% opacity as pass-through
         opacity = 0.99
 

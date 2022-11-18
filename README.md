@@ -32,6 +32,7 @@ Some important options:
 - Pass `--dump-fig-json example/figma.json` (which whichever path/name you like) to dump the generated JSON from the fig file
 - Pass `-v` or `-vv` to show more information about he conversion process
 
+
 Example:
 
 `python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/figma.json`
@@ -97,3 +98,4 @@ We would love you to contribute to fig2sketch, pull requests are welcome! Please
 
 ## License
 The scripts and documentation in this project are released under the [MIT license](LICENSE)
+

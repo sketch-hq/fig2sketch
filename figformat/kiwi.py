@@ -42,10 +42,10 @@ class KiwiReader:
         return ~(v >> 1) if v & 1 else v >> 1
 
     def string(self):
-        string = ''
-        decoder = codecs.lookup('utf8').incrementaldecoder()
-        while not (string and string[-1] == '\x00'):
-            ch = ''
+        string = ""
+        decoder = codecs.lookup("utf8").incrementaldecoder()
+        while not (string and string[-1] == "\x00"):
+            ch = ""
             while not ch:
                 ch = decoder.decode(self._reader.read(1))
             string += ch
@@ -66,26 +66,22 @@ class KiwiSchema:
             for _ in range(kw.uint()):
                 field = KiwiSchema._decode_field(kw)
 
-                fields[field['value']] = field
+                fields[field["value"]] = field
 
-            self.types.append({
-                'name': name,
-                'kind': kind,
-                'fields': fields
-            })
+            self.types.append({"name": name, "kind": kind, "fields": fields})
 
     def _decode_field(kw):
         return {
-            'name': kw.string(),
-            'type': kw.int(),
-            'array': kw.bool(),
-            'value': kw.uint()
+            "name": kw.string(),
+            "type": kw.int(),
+            "array": kw.bool(),
+            "value": kw.uint(),
         }
 
 
 class KiwiDecoder:
-    TYPES = ['bool', 'byte', 'int', 'uint', 'float', 'string'];
-    KINDS = ['ENUM', 'STRUCT', 'MESSAGE'];
+    TYPES = ["bool", "byte", "int", "uint", "float", "string"]
+    KINDS = ["ENUM", "STRUCT", "MESSAGE"]
 
     def __init__(self, schema, type_converters):
         self.schema = schema
@@ -93,31 +89,33 @@ class KiwiDecoder:
 
     def decode(self, reader, root):
         kw = KiwiReader(reader)
-        root_type = [t for t in self.schema.types if t['name'] == root][0]
+        root_type = [t for t in self.schema.types if t["name"] == root][0]
         return self._decode_message(kw, root_type)
 
     def _decode_message(self, kw, type):
         obj = {}
         while (fid := kw.uint()) != 0:
-            field = type['fields'][fid]
-            ftype = field['type']
+            field = type["fields"][fid]
+            ftype = field["type"]
 
-            obj[field['name']] = self._decode_type(kw, ftype, field['array'])
+            obj[field["name"]] = self._decode_type(kw, ftype, field["array"])
 
         return obj
 
     def _decode_struct(self, kw, type):
-        return {f['name']: self._decode_type(kw, f['type'], f['array']) for f in
-                type['fields'].values()}
+        return {
+            f["name"]: self._decode_type(kw, f["type"], f["array"])
+            for f in type["fields"].values()
+        }
 
     def _decode_enum(self, kw, type):
         value = kw.uint()
-        return type['fields'][value]['name']
+        return type["fields"][value]["name"]
 
     def _decode_type(self, kw, type_id, array):
         obj = self._decode_type_inner(kw, type_id, array)
 
-        type_converter = self.type_converters.get(self.schema.types[type_id]['name'])
+        type_converter = self.type_converters.get(self.schema.types[type_id]["name"])
         if not array and type_converter:
             obj = type_converter(obj)
 
@@ -132,7 +130,7 @@ class KiwiDecoder:
             return kw.__getattribute__(primitive)()
         else:
             type = self.schema.types[type_id]
-            match type['kind']:
+            match type["kind"]:
                 case 0:
                     return self._decode_enum(kw, type)
                 case 1:
@@ -140,24 +138,25 @@ class KiwiDecoder:
                 case 2:
                     return self._decode_message(kw, type)
                 case other:
-                    raise 'Unknown'
+                    raise "Unknown"
 
 
 def decode(reader, type_converters):
     SUPPORTED_VERSIONS = [15, 20]
 
     header = reader.read(12)
-    fig_version = struct.unpack('<I', header[8:12])[0]
+    fig_version = struct.unpack("<I", header[8:12])[0]
     if fig_version not in SUPPORTED_VERSIONS:
         raise Exception(
-            f"Unsupported .fig version. File = {fig_version} / Supported = {SUPPORTED_VERSIONS}")
+            f"Unsupported .fig version. File = {fig_version} / Supported = {SUPPORTED_VERSIONS}"
+        )
 
     segment_header = reader.read(4)
-    size = struct.unpack('<I', segment_header)[0]
+    size = struct.unpack("<I", segment_header)[0]
     data = io.BytesIO(zlib.decompress(reader.read(size), wbits=-15))
     schema = KiwiSchema(data)
 
     segment_header = reader.read(4)
-    size = struct.unpack('<I', segment_header)[0]
+    size = struct.unpack("<I", segment_header)[0]
     data = io.BytesIO(zlib.decompress(reader.read(size), wbits=-15))
-    return KiwiDecoder(schema, type_converters).decode(data, 'Message')
+    return KiwiDecoder(schema, type_converters).decode(data, "Message")

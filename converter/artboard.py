@@ -6,8 +6,7 @@ from sketchformat.style import BorderOptions, Fill, FillType
 
 def convert(fig_frame: dict) -> Artboard:
     obj = Artboard(
-        **base.base_styled(fig_frame),
-        **prototype.prototyping_information(fig_frame)
+        **base.base_styled(fig_frame), **prototype.prototyping_information(fig_frame)
     )
 
     # TODO: Use group.convert_frame_style or similar, after post_process_frame
@@ -28,10 +27,12 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     # adding always a background rectangle is an overhead for the document itself
     artboard_style = style.convert(fig_frame)
 
-    for corner in ['rectangleTopLeftCornerRadius',
-                   'rectangleTopLeftCornerRadius',
-                   'rectangleTopLeftCornerRadius',
-                   'rectangleTopLeftCornerRadius']:
+    for corner in [
+        "rectangleTopLeftCornerRadius",
+        "rectangleTopLeftCornerRadius",
+        "rectangleTopLeftCornerRadius",
+        "rectangleTopLeftCornerRadius",
+    ]:
         if fig_frame.get(corner, 0) != 0:
             utils.log_conversion_warning("ART001", fig_frame)
             break
@@ -47,13 +48,14 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
         case _:
             # Anything else, add a background rect
             utils.log_conversion_warning("ART003", fig_frame)
-            sketch_artboard.layers.insert(0, rectangle.build_rectangle_for_frame(fig_frame))
+            sketch_artboard.layers.insert(
+                0, rectangle.build_rectangle_for_frame(fig_frame)
+            )
 
     # Figma automatically clips overlays but not Sketch, so we need to add a mask
     if sketch_artboard.overlaySettings is not None:
         sketch_artboard.layers.insert(
-            0,
-            rectangle.make_clipping_rect(fig_frame['guid'], sketch_artboard.frame)
+            0, rectangle.make_clipping_rect(fig_frame["guid"], sketch_artboard.frame)
         )
 
     return sketch_artboard

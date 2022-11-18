@@ -2,7 +2,7 @@ name: release
 
 on:
   push:
-    branches: [ main ]
+    tags: v[0-9]+.[0-9]+.?[0-9]*
 
 jobs:
   build-linux:
@@ -28,27 +28,22 @@ jobs:
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
+          echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile
-      - name: Create folder and adjust permissions
-        run: |
-          mkdir dist/fig2sketch-linux
-          mv dist/fig2sketch dist/fig2sketch-linux/
-          chmod +x dist/fig2sketch-linux/fig2sketch
-      - name: Zip directory
-        uses: vimtor/action-zip@v1
+      - name: Rename binary
+        run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
+      - name: zip release
+        uses: thedoctor0/zip-release@main
         with:
-          files: dist/
-          dest: fig2sketch-linux.zip
-      - name: Pack files
-        run: |
-          tar zcvf fig2sketch-linux.tar.gz dist/
+          type: 'zip'
+          filename: 'fig2sketch-linux.zip'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: |
-            fig2sketch-linux.zip
-            fig2sketch-linux.tar.gz
+          path: dist/fig2sketch-linux.zip
 
   build-windows:
     runs-on: windows-latest
@@ -73,23 +68,22 @@ jobs:
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
+          echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile
-      - name: Create folder and adjust permissions
-        run: |
-          mkdir dist/fig2sketch-windows
-          mv dist/fig2sketch.exe dist/fig2sketch-windows/
-          chmod +x dist/fig2sketch-windows/fig2sketch.exe
-      - name: Zip directory
-        uses: vimtor/action-zip@v1
+      - name: Rename binary
+        run: mv dist/fig2sketch.exe dist/fig2sketch-${{ github.ref_name }}.exe
+      - name: zip release
+        uses: thedoctor0/zip-release@main
         with:
-          files: dist/
-          dest: fig2sketch-windows.zip
+          type: 'zip'
+          filename: 'fig2sketch-windows.zip'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: |
-            fig2sketch-windows.zip
+          path: dist/fig2sketch-windows.zip
 
   build-macos-x86_64:
     runs-on: macos-latest
@@ -114,27 +108,22 @@ jobs:
           pip install -r requirements.txt
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
+          echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile --target-arch x86_64
-      - name: Create folder and adjust permissions
-        run: |
-          mkdir dist/fig2sketch-macos
-          mv dist/fig2sketch dist/fig2sketch-macos/
-          chmod +x dist/fig2sketch-macos/fig2sketch
-      - name: Zip directory
-        uses: vimtor/action-zip@v1
+      - name: Rename binary
+        run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
+      - name: zip release
+        uses: thedoctor0/zip-release@main
         with:
-          files: dist/
-          dest: fig2sketch-macos-x86_64.zip
-      - name: Pack files
-        run: |
-          tar zcvf fig2sketch-macos-x86_64.tar.gz dist/
+          type: 'zip'
+          filename: 'fig2sketch-macos-x86_64.zip'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: |
-            fig2sketch-macos-x86_64.zip
-            fig2sketch-macos-x86_64.tar.gz
+          path: dist/fig2sketch-macos-x86_64.zip
 
   build-macos-arm64:
     runs-on: self-hosted
@@ -160,27 +149,22 @@ jobs:
           pip install certifi
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
+          echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile --target-arch arm64
-      - name: Create folder and adjust permissions
-        run: |
-          mkdir dist/fig2sketch-macos
-          mv dist/fig2sketch dist/fig2sketch-macos/
-          chmod +x dist/fig2sketch-macos/fig2sketch
-      - name: Zip directory
-        uses: vimtor/action-zip@v1
+      - name: Rename binary
+        run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
+      - name: zip release
+        uses: thedoctor0/zip-release@main
         with:
-          files: dist/
-          dest: fig2sketch-macos-arm64.zip
-      - name: Pack files
-        run: |
-          tar zcvf fig2sketch-macos-arm64.tar.gz dist/
+          type: 'zip'
+          filename: 'fig2sketch-macos-arm64.zip'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: |
-            fig2sketch-macos-arm64.zip
-            fig2sketch-macos-arm64.tar.gz
+          path: dist/fig2sketch-macos-arm64.zip
 
   build-macos-universal:
     needs: [ build-macos-x86_64, build-macos-arm64 ]
@@ -203,28 +187,25 @@ jobs:
         run: |
           mkdir x86_64
           mkdir arm64
-          mkdir -p dist/fig2sketch-universal
+          mkdir -p dist
           unzip fig2sketch-macos-x86_64.zip -d x86_64/
           unzip fig2sketch-macos-arm64.zip -d arm64/
-          hexdump -ve '1/1 "%.2X"' x86_64/fig2sketch-macos/fig2sketch | sed "s/4D45490\([0C]\)0B0A0B0E/4D45490\10B0A0B0F/g" | xxd -r -p > x86_64/fig2sketch-macos/fig2sketch.patched
-          codesign --remove x86_64/fig2sketch-macos/fig2sketch.patched
-          codesign -s - x86_64/fig2sketch-macos/fig2sketch.patched
-          lipo -create x86_64/fig2sketch-macos/fig2sketch.patched arm64/fig2sketch-macos/fig2sketch -output dist/fig2sketch-universal/fig2sketch
-      - name: Zip directory
-        uses: vimtor/action-zip@v1
+          hexdump -ve '1/1 "%.2X"' x86_64/fig2sketch-${{ github.ref_name }} | sed "s/4D45490\([0C]\)0B0A0B0E/4D45490\10B0A0B0F/g" | xxd -r -p > x86_64/fig2sketch.patched
+          codesign --remove x86_64/fig2sketch.patched
+          codesign -s - x86_64/fig2sketch.patched
+          lipo -create x86_64/fig2sketch.patched arm64/fig2sketch-${{ github.ref_name }} -output dist/fig2sketch-${{ github.ref_name }}
+      - name: zip release
+        uses: thedoctor0/zip-release@main
         with:
-          files: dist/
-          dest: fig2sketch-macos-universal.zip
-      - name: Pack files
-        run: |
-          tar zcvf fig2sketch-macos-universal.tar.gz dist/
+          type: 'zip'
+          filename: 'fig2sketch-macos-universal.zip'
+          directory: 'dist'
+          path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: |
-            fig2sketch-macos-universal.zip
-            fig2sketch-macos-universal.tar.gz
+          path: dist/fig2sketch-macos-universal.zip
 
 
   create-release:
@@ -233,20 +214,11 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Create release
-        id: create_release
-        uses: rymndhng/release-on-push-action@v0.27.0
-        with:
-          bump_version_scheme: patch
-          tag_prefix: v
-          use_github_release_notes: true
-      - name: Download artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
           name: builds
-      - name: Upload release assets
-        uses: AButler/upload-release-assets@v2.0
+      - uses: ncipollo/release-action@v1
         with:
-          files: '*zip;*tar.gz'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: ${{ steps.create_release.outputs.tag_name }}
+          artifacts: "fig2sketch-*.zip"
+          generateReleaseNotes: true
