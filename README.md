@@ -91,7 +91,7 @@ Since this kind of transformation will happen with most .fig files, a warning wi
 
 ## About .sketch files
 
-.sketch files are build based on an (open format)[https://github.com/sketch-hq/sketch-document]. Feel free to take a look if you want to know more about the format, and especially if you plan to contribute to the project.
+.sketch files are build based on an [open format](https://github.com/sketch-hq/sketch-document). Feel free to take a look if you want to know more about the format, and especially if you plan to contribute to the project.
 
 ## Contributing
 We would love you to contribute to fig2sketch, pull requests are welcome! Please see the [CONTRIBUTING guidelines](CONTRIBUTING.md) for more information.
