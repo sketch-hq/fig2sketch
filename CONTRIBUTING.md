@@ -30,7 +30,7 @@ If you would like to *implement* a new feature, please consider the size of the 
 2. Configure and install the dependencies
 3. Make sure the tests pass on your machine
 4. Create a new branch: `git checkout -b my-branch-name`
-5. Make your change, add tests, and make sure the tests still pass
+5. Make your change, add tests, and make sure the tests still pass. And remember! **All commit messages must start with an emoji**, no matter which one as long as it complies with our [Contributor Code of Conduct](CODE_OF_CONDUCT.md)
 6. Push to your fork and submit a pull request
 7. Pat your self on the back and wait for your pull request to be reviewed and merged.
 
