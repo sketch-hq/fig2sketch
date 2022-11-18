@@ -44,12 +44,11 @@ WARNING_MESSAGES = {
     "STY002": "contains a DIAMOND gradient, which is not supported. It is converted to a RADIAL gradient",
     "SYM001": "references an invalid symbol. It will be converted to an empty placeholder group",
     "SYM002": "overrides unsupported properties: {props}. The override will be ignored",
-    "SYM003": "overrides aunsupported properties: {props}. The instance will be detached",
+    "SYM003": "overrides unsupported properties: {props}. The instance will be detached",
     "ART001": "has at least one corner radius which is not supported by sketch artboards. The corner radius will be ignored",
     "ART002": "is being converted to an artboard. However, artboard rotations are not supported. Rotation will be ignored",
     "ART003": "has an style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
     "BSE001": "has a layout grid enabled. This functionality is not yet implemented",
-    "GRP001": "is a nested frame, which is not supported in sketch. The frame will be converted to a group",
     "CMP001": "uses a shared style which could not be found in the document. It will not be applied",
 }
 
