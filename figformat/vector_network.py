@@ -61,7 +61,7 @@ def decode(fig, blob_id, scale, style_override_table):
         regions.append(
             {
                 "loops": loops,
-                "style": style_override_table[style_id],
+                "style": style_override_table.get(style_id, {"styleID": style_id}),
                 "windingRule": "NONZERO" if winding_rule == 0 else "ODD",
             }
         )
@@ -76,7 +76,7 @@ def decode_vertex(x, y, scale, style_override_table=None, style_id=None):
     }
 
     if style_id:
-        vertex["style"] = style_override_table[style_id]
+        vertex["style"] = style_override_table.get(style_id, {"styleID": style_id})
 
     return vertex
 
