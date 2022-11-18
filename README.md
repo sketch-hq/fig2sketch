@@ -19,6 +19,15 @@ fig2sketch reads the design data from the .fig file and converts it to data that
 
 ### Options
 
+To check all available options run:
+```
+python fig2sketch --help
+```
+
+Some important options:
+
+- Choose an override option with `--instance-override` so you can decide whether to detach an instance or to just ignore it in case the instance is not supported as sketch instance
+- Pass `--force-convert-images` if the original document containst a corrupted image and you want to force it instead of having an error
 - Pass `--salt 12345678` to ensure a consistent conversion order
 - Pass `--dump-fig-json example/figma.json` (which whichever path/name you like) to dump the generated JSON from the fig file
 
