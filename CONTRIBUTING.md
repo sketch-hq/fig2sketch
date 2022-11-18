@@ -11,7 +11,7 @@ If the bug is a security vulnerability that affects Sketch or any application th
 
 Ensure the bug was not already reported by searching on GitHub under Issues.
 
-If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a title and clear description, as much relevant information as possible, and a error trace or similar. If a written description is not enough to describe the problem, feel free to attach screenshots or videos explaining the problem.
+If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a title and clear description, as much relevant information as possible, and an error trace or similar. If a written description is not enough to describe the problem, feel free to attach screenshots or videos explaining the problem.
 
 ## Missing a Feature?
 You can *request* a new feature by submitting an issue to our GitHub Repository.
