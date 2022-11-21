@@ -8,7 +8,7 @@ import sys
 try:
     from version import VERSION
 except:
-    VERSION='unknown version'
+    VERSION = "unknown version"
 
 
 def parse_args(args=sys.argv[1:]):
@@ -45,7 +45,7 @@ def parse_args(args=sys.argv[1:]):
         help="output a fig representation in json for debugging purposes",
     )
 
-    parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}')
+    parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
 
     return parser.parse_args(args)
 
