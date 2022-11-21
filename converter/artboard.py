@@ -40,7 +40,7 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
         )
 
     match sketch_artboard.style.fills:
-        case [Fill(fillType=FillType.COLOR, color=color)]:
+        case [Fill(fillType=FillType.COLOR, color=color, isEnabled=True)]:
             # Single color, apply to artboard
             sketch_artboard.backgroundColor = color
             sketch_artboard.hasBackgroundColor = True

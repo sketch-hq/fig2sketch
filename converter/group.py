@@ -1,8 +1,12 @@
 from converter import utils
 from . import base, positioning, rectangle
-from sketchformat.layer_group import Group, AbstractStyledLayer, AbstractLayerGroup
+from sketchformat.layer_group import (
+    Group,
+    Rect,
+    AbstractStyledLayer,
+    AbstractLayerGroup,
+)
 from sketchformat.style import *
-import copy
 
 
 def convert(fig_group):
@@ -35,16 +39,20 @@ def convert_frame_to_group(fig_group: dict, sketch_group: AbstractLayerGroup) ->
         # To do so, we resize the frame to match the children bbox and also move the children
         # so that the top-left corner sits at 0,0
         children_bbox = positioning.group_bbox(sketch_group.layers)
-        vector = [children_bbox[0], children_bbox[2]]
+        vector = positioning.Vector(children_bbox[0], children_bbox[2])
 
+        # Translate children
         for child in sketch_group.layers:
             child.frame.x -= vector[0]
             child.frame.y -= vector[1]
 
-        sketch_group.frame.x += vector[0]
-        sketch_group.frame.y += vector[1]
-        sketch_group.frame.width = children_bbox[1] - children_bbox[0]
-        sketch_group.frame.height = children_bbox[3] - children_bbox[2]
+        # Translate group
+        tr_vector = positioning.apply_transform(fig_group, vector)
+        w = children_bbox[1] - children_bbox[0]
+        h = children_bbox[3] - children_bbox[2]
+        new_xy = positioning.transform_frame(fig_group, {"x": w, "y": h}) + tr_vector
+
+        sketch_group.frame = Rect(x=new_xy[0], y=new_xy[1], width=w, height=h)
 
 
 def convert_frame_style(
