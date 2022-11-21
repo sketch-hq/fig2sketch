@@ -8,6 +8,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: psf/black@stable
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: jpetrucciani/mypy-check@master
+        with:
+          path: fig2sketch.py
   test:
     runs-on : ubuntu-latest
     steps:
