@@ -79,12 +79,14 @@ def convert(fig_item: dict) -> _Positioning:
     }
 
 
-def transform_frame(item: dict) -> Vector:
+def transform_frame(item: dict, size=None) -> Vector:
+    if not size:
+        size = item["size"]
     # Calculate relative position
     relative_position = Vector(item["transform"][0][2], item["transform"][1][2])
 
     # Vector from rotation center to origin (0,0)
-    vco = Vector(item["size"]["x"] / 2, item["size"]["y"] / 2)
+    vco = Vector(size["x"] / 2, size["y"] / 2)
 
     # Apply rotation to vector
     vco_rotated = apply_transform(item, vco)
