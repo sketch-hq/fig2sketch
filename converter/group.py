@@ -47,35 +47,5 @@ def convert_frame_to_group(fig_group, sketch_group):
 
 
 def convert_frame_style(fig_group, sketch_group):
-    # Convert frame styles
-    # - Fill/stroke/bgblur -> Rectangle on bottom with that style
-    # - Layer blur -> Rectangle with bgblur on top
-    # - Shadows -> Keep in the group
-    # TODO: This is one case where we could have both background blur and layer blur
-    style = sketch_group.style
-    has_fills = any([f.isEnabled for f in style.fills])
-    has_borders = any([b.isEnabled for b in style.borders])
-    has_bgblur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
-    has_blur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
-
-    if has_fills or has_borders or has_bgblur:
-        bgrect = rectangle.make_background_rect(
-            fig_group["guid"], sketch_group.frame, "Frame Background"
-        )
-        bgrect.style.fills = style.fills
-        bgrect.style.borders = style.borders
-        if has_bgblur:
-            bgrect.style.blur = style.blur
-
-        sketch_group.layers.insert(0, bgrect)
-    elif has_blur:
-        blurrect = rectangle.make_background_rect(
-            fig_group["guid"], sketch_group.frame, "Frame Blur"
-        )
-        bgrect.style.blur = style.blur
-
-        sketch_group.layers.insert(0, bgrect)
-
-    style.fills = []
-    style.borders = []
-    style.blur.isEnabled = False
+    bgrect = rectangle.convert(fig_group)
+    sketch_group.layers.insert(0, rectangle.make_background_rect(fig_group["guid"], bgrect, "Frame Background"))
