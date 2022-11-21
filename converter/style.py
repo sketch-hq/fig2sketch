@@ -98,6 +98,8 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                 isEnabled=fig_fill["visible"],
             )
         case {"type": "IMAGE"}:
+            if "paintFilter" in fig_fill:
+                utils.log_conversion_warning("STY003", fig_node)
             return Fill.Image(
                 f'images/{fig_fill["image"]["filename"]}',
                 patternFillType=PATTERN_FILL_TYPE[fig_fill["imageScaleMode"]],
