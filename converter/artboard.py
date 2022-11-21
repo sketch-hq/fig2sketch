@@ -1,5 +1,5 @@
 from converter import utils
-from . import prototype, rectangle, style, base
+from . import prototype, rectangle, style, base, group
 from sketchformat.layer_group import Artboard
 from sketchformat.style import BorderOptions, Fill, FillType
 
@@ -8,11 +8,6 @@ def convert(fig_frame: dict) -> Artboard:
     obj = Artboard(
         **base.base_styled(fig_frame), **prototype.prototyping_information(fig_frame)
     )
-
-    # TODO: Use group.convert_frame_style or similar, after post_process_frame
-    obj.style.fills = []
-    obj.style.borders = []
-    obj.style.borderOptions = BorderOptions()
 
     return obj
 
@@ -25,8 +20,6 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     # we set the background color in sketch property
     # We could just always create the rectangle to simplify the logic, but I guess
     # adding always a background rectangle is an overhead for the document itself
-    artboard_style = style.convert(fig_frame)
-
     for corner in [
         "rectangleTopLeftCornerRadius",
         "rectangleTopLeftCornerRadius",
@@ -46,14 +39,16 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
             0, rectangle.make_clipping_rect(fig_frame, sketch_artboard.frame)
         )
 
-    match artboard_style.fills:
+    match sketch_artboard.style.fills:
         case [Fill(fillType=FillType.COLOR, color=color)]:
             # Single color, apply to artboard
             sketch_artboard.backgroundColor = color
             sketch_artboard.hasBackgroundColor = True
-        case _:
-            # Anything else, add a background rect
-            utils.log_conversion_warning("ART003", fig_frame)
-            group.convert_frame_style(fig_frame, sketch_artboard)
+            sketch_artboard.style.fills = []
+
+    if sketch_artboard.style.fills or sketch_artboard.style.borders:
+        # Anything else, add a background rect
+        utils.log_conversion_warning("ART003", fig_frame)
+        group.convert_frame_style(fig_frame, sketch_artboard)
 
     return sketch_artboard
