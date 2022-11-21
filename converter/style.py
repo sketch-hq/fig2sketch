@@ -89,6 +89,9 @@ def convert_border(fig_node: dict, fig_border: dict) -> Border:
 
 
 def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
+    if fig_fill.get("blendMode", "NORMAL") != "NORMAL":
+        utils.log_conversion_warning("STY003", fig_node)
+
     match fig_fill:
         case {"type": "EMOJI"}:
             raise Exception("Unsupported fill: EMOJI")
@@ -98,6 +101,11 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                 isEnabled=fig_fill["visible"],
             )
         case {"type": "IMAGE"}:
+            if "transform" in fig_fill and fig_fill["transform"] != Matrix(
+                [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+            ):
+                utils.log_conversion_warning("STY004", fig_node)
+
             return Fill.Image(
                 f'images/{fig_fill["image"]["filename"]}',
                 patternFillType=PATTERN_FILL_TYPE[fig_fill["imageScaleMode"]],

@@ -42,6 +42,8 @@ WARNING_MESSAGES = {
     "SHP001": "contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
     "STY001": "contains a layer blur and a background blur. Only one will be converted",
     "STY002": "contains a DIAMOND gradient, which is not supported. It is converted to a RADIAL gradient",
+    "STY003": "contains a fill with a non-standard blend mode, which is not supported at the fill level (us the layer blend mode instead). It will be ignored",
+    "STY004": "has a cropped image background, which is not supported yet. It will be set to stretch",
     "SYM001": "references an invalid symbol. It will be converted to an empty placeholder group",
     "SYM002": "overrides unsupported properties: {props}. The override will be ignored",
     "SYM003": "overrides unsupported properties: {props}. The instance will be detached",
