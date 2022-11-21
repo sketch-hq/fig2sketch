@@ -1,6 +1,8 @@
 from converter import utils
 from . import base, positioning, rectangle
 from sketchformat.layer_group import Group
+from sketchformat.style import *
+import copy
 
 
 def convert(fig_group):
@@ -56,7 +58,7 @@ def convert_frame_style(fig_group, sketch_group):
     has_fills = any([f.isEnabled for f in style.fills])
     has_borders = any([b.isEnabled for b in style.borders])
     has_bgblur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
-    has_blur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
+    has_blur = style.blur.isEnabled and style.blur.type == BlurType.GAUSSIAN
 
     if has_fills or has_borders or has_bgblur:
         bgrect = rectangle.make_background_rect(
@@ -65,16 +67,16 @@ def convert_frame_style(fig_group, sketch_group):
         bgrect.style.fills = style.fills
         bgrect.style.borders = style.borders
         if has_bgblur:
-            bgrect.style.blur = style.blur
+            bgrect.style.blur = copy.copy(style.blur)
 
         sketch_group.layers.insert(0, bgrect)
     elif has_blur:
         blurrect = rectangle.make_background_rect(
             fig_group["guid"], sketch_group.frame, "Frame Blur"
         )
-        bgrect.style.blur = style.blur
+        blurrect.style.blur = copy.copy(style.blur)
 
-        sketch_group.layers.insert(0, bgrect)
+        sketch_group.layers.append(blurrect)
 
     style.fills = []
     style.borders = []
