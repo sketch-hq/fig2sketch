@@ -1,11 +1,11 @@
 import math
-from sketchformat.layer_common import Rect
-from typing import TypedDict, Tuple, List
+from sketchformat.layer_common import Rect, AbstractLayer
+from typing import TypedDict, Tuple, List, Sequence
 from .errors import Fig2SketchWarning
 
 
 class Vector(list):
-    def __init__(self, x, y):
+    def __init__(self, x: float, y: float):
         super().__init__([x, y])
 
     def __add__(self, other):
@@ -16,16 +16,16 @@ class Vector(list):
 
 
 class Matrix(list):
-    def __init__(self, m):
+    def __init__(self, m: Sequence[Sequence[float]]):
         super().__init__(m)
 
-    def dot(self, v):
+    def dot(self, v: Vector) -> Vector:
         return Vector(
             self[0][2] + self[0][0] * v[0] + self[0][1] * v[1],
             self[1][2] + self[1][0] * v[0] + self[1][1] * v[1],
         )
 
-    def dot2(self, v):
+    def dot2(self, v: Vector) -> Vector:
         return Vector(
             self[0][0] * v[0] + self[0][1] * v[1],
             self[1][0] * v[0] + self[1][1] * v[1],
@@ -79,7 +79,7 @@ def convert(fig_item: dict) -> _Positioning:
     }
 
 
-def transform_frame(item: dict, size=None) -> Vector:
+def transform_frame(item: dict, size: dict = {}) -> Vector:
     if not size:
         size = item["size"]
     # Calculate relative position
@@ -134,22 +134,22 @@ def guess_flip(fig_item: dict) -> Tuple[List[bool], float]:
     return flip, angle
 
 
-def group_bbox(children):
+def group_bbox(children: Sequence[AbstractLayer]) -> Tuple[float, float, float, float]:
     if not children:
-        return [0, 0, 0, 0]
+        return (0, 0, 0, 0)
 
     child_bboxes = [bbox_from_frame(child) for child in children]
 
-    return [
+    return (
         min([b[0] for b in child_bboxes]),
         max([b[1] for b in child_bboxes]),
         min([b[2] for b in child_bboxes]),
         max([b[3] for b in child_bboxes]),
-    ]
+    )
 
 
 # TODO: Extract this and share code with positioning (after tests are created)
-def bbox_from_frame(child):
+def bbox_from_frame(child: AbstractLayer) -> Tuple[float, float, float, float]:
     frame = child.frame
     theta = math.radians(child.rotation)
     c, s = math.cos(theta), math.sin(theta)
@@ -169,9 +169,9 @@ def bbox_from_frame(child):
         matrix.dot2(Vector(-w2, h2)) - Vector(-w2, h2) + Vector(x1, y2),
     ]
 
-    return [
+    return (
         min(p[0] for p in points),
         max(p[0] for p in points),
         min(p[1] for p in points),
         max(p[1] for p in points),
-    ]
+    )

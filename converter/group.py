@@ -1,8 +1,12 @@
 from converter import utils
 from . import base, positioning, rectangle
-from sketchformat.layer_group import Group, Rect
+from sketchformat.layer_group import (
+    Group,
+    Rect,
+    AbstractStyledLayer,
+    AbstractLayerGroup,
+)
 from sketchformat.style import *
-import copy
 
 
 def convert(fig_group):
@@ -21,7 +25,7 @@ def post_process_frame(fig_group, sketch_group):
     return sketch_group
 
 
-def convert_frame_to_group(fig_group, sketch_group):
+def convert_frame_to_group(fig_group: dict, sketch_group: AbstractLayerGroup) -> None:
     needs_clip_mask = not fig_group.get("frameMaskDisabled", False)
     if needs_clip_mask:
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
@@ -35,7 +39,7 @@ def convert_frame_to_group(fig_group, sketch_group):
         # To do so, we resize the frame to match the children bbox and also move the children
         # so that the top-left corner sits at 0,0
         children_bbox = positioning.group_bbox(sketch_group.layers)
-        vector = [children_bbox[0], children_bbox[2]]
+        vector = positioning.Vector(children_bbox[0], children_bbox[2])
 
         # Translate children
         for child in sketch_group.layers:
@@ -51,7 +55,9 @@ def convert_frame_to_group(fig_group, sketch_group):
         sketch_group.frame = Rect(x=new_xy[0], y=new_xy[1], width=w, height=h)
 
 
-def convert_frame_style(fig_group, sketch_group):
+def convert_frame_style(
+    fig_group: dict, sketch_group: AbstractLayerGroup
+) -> AbstractLayerGroup:
     # Convert frame styles
     # - Fill/stroke/bgblur -> Rectangle on bottom with that style
     # - Layer blur -> Rectangle with bgblur on top
@@ -104,9 +110,10 @@ def convert_frame_style(fig_group, sketch_group):
     return sketch_group
 
 
-def apply_inner_shadow(layer, shadow):
+def apply_inner_shadow(layer: AbstractStyledLayer, shadow: InnerShadow) -> None:
     if isinstance(layer, Group):
         for child in layer.layers:
-            apply_inner_shadow(child, shadow)
+            if isinstance(child, AbstractStyledLayer):
+                apply_inner_shadow(child, shadow)
     else:
         layer.style.innerShadows.append(shadow)

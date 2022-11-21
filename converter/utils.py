@@ -58,7 +58,7 @@ WARNING_MESSAGES = {
 }
 
 
-def log_conversion_warning(warning_code: str, fig_node: dict, **kw) -> None:
+def log_conversion_warning(warning_code: str, fig_node: dict, **kw: dict) -> None:
     if fig_node["guid"] not in issued_warnings:
         issued_warnings[fig_node["guid"]] = [warning_code]
     elif warning_code not in issued_warnings[fig_node["guid"]]:

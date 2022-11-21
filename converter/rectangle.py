@@ -15,7 +15,7 @@ def convert(fig_rect: dict) -> Rectangle:
     )
 
 
-def convert_corners(fig_rect: dict) -> Rectangle.Corners:
+def convert_corners(fig_rect: dict) -> Tuple[float, Rectangle.Corners]:
     radius = fig_rect.get("cornerRadius", 0)
     fixed = not fig_rect.get("rectangleCornerRadiiIndependent", True)
     return radius, Rectangle.Corners(
