@@ -199,7 +199,7 @@ def find_refs(node, ref_id):
         if ref["defID"] == ref_id and not ref["isDeleted"]
     ]
 
-    for ch in node["children"]:
+    for ch in node.get("children", []):
         refs += find_refs(ch, ref_id)
 
     return refs
@@ -261,5 +261,5 @@ def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
         fig_node["symbolData"]["symbolOverrides"] += child_overrides
         fig_node["derivedSymbolData"] += child_derived_data
     else:
-        for c in fig_node["children"]:
+        for c in fig_node.get("children", []):
             apply_overrides(c, instance_id, overrides, derived_symbol_data)

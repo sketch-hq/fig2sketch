@@ -1,5 +1,8 @@
 from converter.positioning import Matrix
 from sketchformat.style import *
+import pytest
+from converter import utils
+from unittest.mock import create_autospec
 
 
 FIG_BASE = {
@@ -26,3 +29,10 @@ SKETCH_COLOR = [
     Color(red=0, green=1, blue=0.5, alpha=0.7),
     Color(red=0, green=0, blue=1, alpha=1),
 ]
+
+
+@pytest.fixture
+def warnings(monkeypatch):
+    mock = create_autospec(utils.log_conversion_warning)
+    monkeypatch.setattr(utils, "log_conversion_warning", mock)
+    return mock
