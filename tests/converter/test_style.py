@@ -1,17 +1,7 @@
 from converter.style import *
 from sketchformat.style import *
 import dataclasses
-
-FIG_COLOR = [
-    {"r": 1, "g": 0, "b": 0.5, "a": 0.9},
-    {"r": 0, "g": 1, "b": 0.5, "a": 0.7},
-    {"r": 0, "g": 0, "b": 1, "a": 1},
-]
-SKETCH_COLOR = [
-    Color(red=1, green=0, blue=0.5, alpha=0.9),
-    Color(red=0, green=1, blue=0.5, alpha=0.7),
-    Color(red=0, green=0, blue=1, alpha=1),
-]
+from .base import *
 
 
 class TestConvertColor:
