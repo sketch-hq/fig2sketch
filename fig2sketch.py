@@ -4,6 +4,7 @@ import logging
 from zipfile import ZipFile
 import ssl
 import sys
+from typing import List
 
 try:
     from version import VERSION
@@ -11,7 +12,7 @@ except:
     VERSION = "unknown version"
 
 
-def parse_args(args=sys.argv[1:]):
+def parse_args(args: List[str] = sys.argv[1:]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Converts a .fig document to .sketch")
     parser.add_argument("fig_file")
     parser.add_argument("sketch_file")
@@ -50,7 +51,7 @@ def parse_args(args=sys.argv[1:]):
     return parser.parse_args(args)
 
 
-def run(args):
+def run(args: argparse.Namespace) -> None:
     # Set log level
     level = logging.WARNING
     if args.verbosity:
