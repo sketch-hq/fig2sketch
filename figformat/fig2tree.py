@@ -10,7 +10,7 @@ from PIL import Image, UnidentifiedImageError
 
 
 def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], dict]]:
-    fig, fig_zip = decodefig.decode(path)
+    fig, fig_zip = decodefig.decode(path)  # type: ignore [no-untyped-call]
 
     if fig_zip and output:
         shutil.copyfileobj(
@@ -23,7 +23,7 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
     root = None
 
     for node in fig["nodeChanges"]:
-        node = transform_node(fig, node, fig_zip, output)
+        node = transform_node(fig, node, fig_zip, output)  # type: ignore [no-untyped-call]
         node_id = node["guid"]
         id_map[node_id] = node
 
