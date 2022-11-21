@@ -26,6 +26,24 @@ class TestArtboardBackgroud:
 
         assert ab.hasBackgroundColor == False
 
+    def test_disabled_background(self):
+        ab = tree.convert_node(
+            {
+                **FIG_ARTBOARD,
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[0],
+                        "opacity": 0.9,
+                        "visible": False,
+                    }
+                ],
+            },
+            "CANVAS",
+        )
+
+        assert ab.hasBackgroundColor == False
+
     def test_simple_background(self):
         ab = tree.convert_node(
             {
@@ -42,7 +60,6 @@ class TestArtboardBackgroud:
             "CANVAS",
         )
 
-        print(ab)
         assert ab.hasBackgroundColor == True
         assert ab.backgroundColor == SKETCH_COLOR[0]
 
