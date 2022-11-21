@@ -102,6 +102,10 @@ class Color:
         return Color(red=0, green=0, blue=0, alpha=0.5)
 
     @staticmethod
+    def Transparent() -> "Color":
+        return Color(red=0, green=0, blue=0, alpha=1)
+
+    @staticmethod
     def DefaultFill() -> "Color":
         return Color(red=0.847, green=0.847, blue=0.847, alpha=1)
 

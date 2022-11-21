@@ -83,7 +83,7 @@ class TestFrameStyles:
 
         blur = g.layers[2]
         assert blur.style.blur.isEnabled == True
-        assert blur.style.blur.type == BlurType.GAUSSIAN
+        assert blur.style.blur.type == BlurType.BACKGROUND
         assert blur.style.blur.radius == 2
 
     def test_bg_blur(self):
@@ -134,4 +134,74 @@ class TestFrameStyles:
 
         assert g.style.shadows == [
             Shadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
+        ]
+
+    def test_inner_shadows_children(self):
+        g = tree.convert_node(
+            {
+                **FIG_GROUP,
+                "effects": [
+                    {
+                        "type": "INNER_SHADOW",
+                        "radius": 4,
+                        "spread": 0,
+                        "offset": {"x": 1, "y": 3},
+                        "color": FIG_COLOR[1],
+                    }
+                ],
+            },
+            "",
+        )
+
+        assert len(g.layers) == 2  # clip mask, child
+        assert g.style.fills == []
+        assert g.style.borders == []
+        assert g.style.blur.isEnabled == False
+
+        child = g.layers[1]
+        assert child.style.innerShadows == [
+            InnerShadow(
+                blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1]
+            )
+        ]
+
+    def test_inner_shadows_background(self):
+        g = tree.convert_node(
+            {
+                **FIG_GROUP,
+                "effects": [
+                    {
+                        "type": "INNER_SHADOW",
+                        "radius": 4,
+                        "spread": 0,
+                        "offset": {"x": 1, "y": 3},
+                        "color": FIG_COLOR[1],
+                    }
+                ],
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[0],
+                        "opacity": 0.9,
+                        "visible": True,
+                    }
+                ],
+            },
+            "",
+        )
+
+        assert len(g.layers) == 3  # clip mask, background, child
+        assert g.style.fills == []
+        assert g.style.borders == []
+        assert g.style.blur.isEnabled == False
+
+        bg = g.layers[1]
+        assert len(bg.style.fills) == 1
+        assert bg.style.fills[0].fillType == FillType.COLOR
+        assert bg.style.fills[0].color == SKETCH_COLOR[0]
+
+        assert bg.style.innerShadows == [
+            InnerShadow(
+                blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1]
+            )
         ]

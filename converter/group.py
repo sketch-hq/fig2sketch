@@ -12,12 +12,11 @@ def convert(fig_group):
 
 
 def post_process_frame(fig_group, sketch_group):
-    # Do nothing for fig groups, they translate directly to Sketch
-    if fig_group["resizeToFit"]:
-        return sketch_group
-
     convert_frame_style(fig_group, sketch_group)
-    convert_frame_to_group(fig_group, sketch_group)
+
+    # Do nothing for fig groups, they translate directly to Sketch
+    if not fig_group["resizeToFit"]:
+        convert_frame_to_group(fig_group, sketch_group)
 
     return sketch_group
 
@@ -28,7 +27,7 @@ def convert_frame_to_group(fig_group, sketch_group):
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
         # since the clipmask defines Sketch bounds (which match visible children)
         sketch_group.layers.insert(
-            0, rectangle.make_clipping_rect(fig_group["guid"], sketch_group.frame)
+            0, rectangle.make_clipping_rect(fig_group, sketch_group.frame)
         )
     else:
         # When converting from a frame to a group, the bounding box should be adjusted
@@ -55,29 +54,55 @@ def convert_frame_style(fig_group, sketch_group):
     # - Shadows -> Keep in the group
     # TODO: This is one case where we could have both background blur and layer blur
     style = sketch_group.style
+
+    # Fill and borders go on a rectangle on the bottom
     has_fills = any([f.isEnabled for f in style.fills])
     has_borders = any([b.isEnabled for b in style.borders])
+    has_inner_shadows = any([b.isEnabled for b in style.innerShadows])
     has_bgblur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
     has_blur = style.blur.isEnabled and style.blur.type == BlurType.GAUSSIAN
 
     if has_fills or has_borders or has_bgblur:
         bgrect = rectangle.make_background_rect(
-            fig_group["guid"], sketch_group.frame, "Frame Background"
+            fig_group, sketch_group.frame, "Frame Background"
         )
         bgrect.style.fills = style.fills
         bgrect.style.borders = style.borders
-        if has_bgblur:
-            bgrect.style.blur = copy.copy(style.blur)
+        bgrect.style.blur = Blur(type=BlurType.BACKGROUND, radius=style.blur.radius)
+        bgrect.style.innerShadows = style.innerShadows
 
         sketch_group.layers.insert(0, bgrect)
-    elif has_blur:
-        blurrect = rectangle.make_background_rect(
-            fig_group["guid"], sketch_group.frame, "Frame Blur"
+
+        style.fills = []
+        style.borders = []
+        style.blur.isEnabled = False
+        style.innerShadows = []
+
+    # Blur goes in a rectangle with bgblur at the top
+    if has_blur:
+        blur = rectangle.make_background_rect(
+            fig_group, sketch_group.frame, f"{sketch_group.name} blur"
         )
-        blurrect.style.blur = copy.copy(style.blur)
+        blur.style.blur = Blur(type=BlurType.BACKGROUND, radius=style.blur.radius)
 
-        sketch_group.layers.append(blurrect)
+        # Foreground blur, add as a layer at the top of the group
+        sketch_group.layers.append(blur)
+        style.blur.isEnabled = False
 
-    style.fills = []
-    style.borders = []
-    style.blur.isEnabled = False
+    # Inner shadows apply to each child (if they were not put in the background rect earlier)
+    # Normal shadows are untouched
+    for shadow in style.innerShadows:
+        utils.log_conversion_warning("GRP001", fig_group)
+        apply_inner_shadow(sketch_group, shadow)
+
+    style.innerShadows = []
+
+    return sketch_group
+
+
+def apply_inner_shadow(layer, shadow):
+    if isinstance(layer, Group):
+        for child in layer.layers:
+            apply_inner_shadow(child, shadow)
+    else:
+        layer.style.innerShadows.append(shadow)
