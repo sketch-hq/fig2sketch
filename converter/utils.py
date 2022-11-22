@@ -58,7 +58,7 @@ WARNING_MESSAGES = {
     "PRT002": "has multiple actions per layer, which is not supported. Only the first one will be converted",
     "PRT003": "has an action with an unsupported navigation type: {props}. This action will be ignored",
     "PRT004": "has an action with an unsupported connection type: {props}. This action will be ignored",
-    "PRT005": "has a prototype with a scroll overflow which is not supported. This setting will be ignored."
+    "PRT005": "has a prototype with a scroll overflow which is not supported. This setting will be ignored.",
 }
 
 

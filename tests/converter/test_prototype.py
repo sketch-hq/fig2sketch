@@ -9,7 +9,7 @@ FIG_ARTBOARD_NO_PROTOTYPE = {
     "guid": (0, 2),
     "resizeToFit": False,
     "children": [],
-    "parent": {"guid": (0, 1)}
+    "parent": {"guid": (0, 1)},
 }
 
 FIG_CANVAS_NO_PROTOTYPE = {
@@ -17,7 +17,7 @@ FIG_CANVAS_NO_PROTOTYPE = {
     "type": "CANVAS",
     "guid": (0, 1),
     "resizeToFit": False,
-    "children": [FIG_ARTBOARD_NO_PROTOTYPE]
+    "children": [FIG_ARTBOARD_NO_PROTOTYPE],
 }
 
 FIG_ARTBOARD = {
@@ -25,7 +25,7 @@ FIG_ARTBOARD = {
     "type": "FRAME",
     "guid": (0, 4),
     "children": [],
-    "parent": {"guid": (0, 3)}
+    "parent": {"guid": (0, 3)},
 }
 
 FIG_OVERLAY = {
@@ -35,7 +35,7 @@ FIG_OVERLAY = {
     "overlayPositionType": "BOTTOM_CENTER",
     "overlayBackgroundInteraction": "CLOSE_ON_CLICK_OUTSIDE",
     "children": [],
-    "parent": {"guid": (0, 3)}
+    "parent": {"guid": (0, 3)},
 }
 
 FIG_CANVAS = {
@@ -46,20 +46,25 @@ FIG_CANVAS = {
     "children": [FIG_ARTBOARD, FIG_OVERLAY],
     "prototypeDevice": {
         "type": "PRESET",
-        "size": {
-            "x": 393.0,
-            "y": 852.0
-        },
+        "size": {"x": 393.0, "y": 852.0},
         "presetIdentifier": "APPLE_IPHONE_14_PRO_SPACEBLACK",
-        "rotation": "NONE"
+        "rotation": "NONE",
     },
 }
 
 
 @pytest.fixture
 def canvas(monkeypatch):
-    context.init(None, {(0, 1): FIG_CANVAS_NO_PROTOTYPE, (0, 2): FIG_ARTBOARD_NO_PROTOTYPE,
-                        (0, 3): FIG_CANVAS, (0, 4): FIG_ARTBOARD, (0, 5): FIG_OVERLAY})
+    context.init(
+        None,
+        {
+            (0, 1): FIG_CANVAS_NO_PROTOTYPE,
+            (0, 2): FIG_ARTBOARD_NO_PROTOTYPE,
+            (0, 3): FIG_CANVAS,
+            (0, 4): FIG_ARTBOARD,
+            (0, 5): FIG_OVERLAY,
+        },
+    )
 
 
 @pytest.fixture
@@ -109,43 +114,27 @@ class TestConvertFlow:
     def test_discarding_of_problematic_interactions(self, warnings):
         fig_flow = {
             "prototypeInteractions": [
-                {
-                    "isDeleted": True,
-                    "event": {}
-                },
+                {"isDeleted": True, "event": {}},
                 {
                     "isDeleted": False,
                     "event": {
                         "interactionType": "DRAG",
-                    }},
+                    },
+                },
                 {
                     "isDeleted": False,
-                    "event": {
-                        "interactionType": "ON_CLICK"
-                    },
+                    "event": {"interactionType": "ON_CLICK"},
                     "actions": [
                         {},
-                        {
-                            "navigationType": "BACK",
-                            "connectionType": "BACK"
-                        },
-                        {
-                            "navigationType": "SCROLL",
-                            "connectionType": "FAKE_TYPE"
-                        },
-                        {
-                            "navigationType": "NAVIGATE",
-                            "connectionType": "BACK"
-                        }
-                    ]
-                }
+                        {"navigationType": "BACK", "connectionType": "BACK"},
+                        {"navigationType": "SCROLL", "connectionType": "FAKE_TYPE"},
+                        {"navigationType": "NAVIGATE", "connectionType": "BACK"},
+                    ],
+                },
             ]
         }
 
-        fig_artboard = {
-            **FIG_BASE,
-            **fig_flow
-        }
+        fig_artboard = {**FIG_BASE, **fig_flow}
 
         flow = convert_flow(fig_artboard)
 
@@ -163,27 +152,16 @@ class TestConvertFlow:
             "prototypeInteractions": [
                 {
                     "isDeleted": False,
-                    "event": {
-                        "interactionType": "ON_CLICK"
-                    },
+                    "event": {"interactionType": "ON_CLICK"},
                     "actions": [
-                        {
-                            "navigationType": "NAVIGATE",
-                            "connectionType": "BACK"
-                        },
-                        {
-                            "navigationType": "SCROLL",
-                            "connectionType": "NONE"
-                        }
-                    ]
+                        {"navigationType": "NAVIGATE", "connectionType": "BACK"},
+                        {"navigationType": "SCROLL", "connectionType": "NONE"},
+                    ],
                 }
             ]
         }
 
-        fig_artboard = {
-            **FIG_BASE,
-            **multiple_actions_flow
-        }
+        fig_artboard = {**FIG_BASE, **multiple_actions_flow}
 
         flow = convert_flow(fig_artboard)
 
@@ -196,25 +174,20 @@ class TestConvertFlow:
             "prototypeInteractions": [
                 {
                     "isDeleted": False,
-                    "event": {
-                        "interactionType": "ON_CLICK"
-                    },
+                    "event": {"interactionType": "ON_CLICK"},
                     "actions": [
                         {
                             "navigationType": "OVERLAY",
                             "connectionType": "INTERNAL_NODE",
                             "transitionNodeID": (0, 5),
-                            "transitionType": "SLIDE_FROM_LEFT"
+                            "transitionType": "SLIDE_FROM_LEFT",
                         }
-                    ]
+                    ],
                 }
             ]
         }
 
-        fig_artboard = {
-            **FIG_BASE,
-            **overlay_flow
-        }
+        fig_artboard = {**FIG_BASE, **overlay_flow}
 
         flow = convert_flow(fig_artboard)
 

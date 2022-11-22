@@ -79,9 +79,7 @@ def convert_flow(fig_node: dict) -> _Flow:
                     animationType=ANIMATION_TYPE[
                         action.get("transitionType", "INSTANT_TRANSITION")
                     ],
-                    maintainScrollPosition=action.get(
-                        "transitionPreserveScroll", False
-                    ),
+                    maintainScrollPosition=action.get("transitionPreserveScroll", False),
                     overlaySettings=overlay_settings,
                 )
 
@@ -136,7 +134,7 @@ def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
 
 
 def get_destination_settings_if_any(
-        action: dict,
+    action: dict,
 ) -> Tuple[Optional[str], Optional[FlowOverlaySettings]]:
     overlay_settings = None
 
