@@ -151,20 +151,21 @@ def get_all_segments(vector_network: dict) -> List[dict]:
     ]
 
     if unused_segments:
-        rest: Dict[str, Any] = {
-            "style": {},
-            "windingRule": "NONZERO",
-            "loops": reorder_segments([vector_network["segments"][i] for i in unused_segments]),
-        }
+        loops: List[List[dict]] = reorder_segments(
+            [vector_network["segments"][i] for i in unused_segments]
+        )
 
         closed = False
-        if len(rest["loops"]) == 1:
-            loop = rest["loops"][0]
+        if len(loops) == 1:
+            loop = loops[0]
             if loop[0]["start"] == loop[-1]["end"]:
                 closed = True
 
-        if not closed:
-            rest["style"]["fillPaints"] = []
+        rest = {
+            "style": {} if closed else {"fillPaints": []},
+            "windingRule": "NONZERO",
+            "loops": loops,
+        }
 
         regions.append(rest)
 
