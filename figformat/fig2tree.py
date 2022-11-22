@@ -93,7 +93,7 @@ def convert_image(fname, blob, fig_zip, output):
     if img:
         return img
 
-    logging.info(f"Converting image {fname}")
+    logging.debug(f"Converting image {fname}")
     try:
         if fig_zip is not None:
             fd = fig_zip.open(f"images/{fname}")
