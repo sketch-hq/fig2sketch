@@ -6,7 +6,7 @@ from sketchformat.serialize import serialize
 from typing import Dict, Sequence, List, Tuple, Optional
 
 
-def convert_json_to_sketch(
+def convert_fig_tree_to_sketch(
     fig: dict, id_map: Dict[Sequence[int], dict], output: zipfile.ZipFile
 ) -> None:
     fig_pages, components_page = separate_pages(fig["document"]["children"])
