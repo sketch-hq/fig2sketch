@@ -160,9 +160,7 @@ class TestFrameStyles:
 
         child = g.layers[1]
         assert child.style.innerShadows == [
-            InnerShadow(
-                blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1]
-            )
+            InnerShadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
         ]
 
     def test_inner_shadows_background(self):
@@ -201,7 +199,5 @@ class TestFrameStyles:
         assert bg.style.fills[0].color == SKETCH_COLOR[0]
 
         assert bg.style.innerShadows == [
-            InnerShadow(
-                blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1]
-            )
+            InnerShadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
         ]

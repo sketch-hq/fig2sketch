@@ -37,9 +37,7 @@ def parse_args(args: List[str] = sys.argv[1:]) -> argparse.Namespace:
         dest="verbosity",
         help="return more details, can be repeated",
     )
-    group.add_argument(
-        "--salt", type=str, help="salt used to generate ids, defaults to random"
-    )
+    group.add_argument("--salt", type=str, help="salt used to generate ids, defaults to random")
     group.add_argument(
         "--dump-fig-json",
         type=argparse.FileType("w"),

@@ -2,8 +2,8 @@ import hashlib
 import logging
 import struct
 import uuid
-from typing import Sequence, Dict
 from .config import config
+from typing import Sequence, Dict
 
 issued_warnings: Dict[tuple[int, int], list[str]] = {}
 
@@ -54,10 +54,15 @@ WARNING_MESSAGES = {
     "GRP001": "has inner shadows which are not supported at group level in Sketch. It will be copied to the layers inside the frame",
     "CMP001": "uses a shared style which could not be found in the document. It will not be applied",
     "POS001": "contains NaN in the positioning matrix and cannot be converted. It will be skipped",
+    "PRT001": "uses an unsupported interaction type: {props}. Prototype interaction ignored",
+    "PRT002": "has multiple actions per layer, which is not supported. Only the first one will be converted",
+    "PRT003": "has an action with an unsupported navigation type: {props}. This action will be ignored",
+    "PRT004": "has an action with an unsupported connection type: {props}. This action will be ignored",
+    "PRT005": "has a prototype with a scroll overflow which is not supported. This setting will be ignored.",
 }
 
 
-def log_conversion_warning(warning_code: str, fig_node: dict, **kw: dict) -> None:
+def log_conversion_warning(warning_code: str, fig_node: dict, **kw: list) -> None:
     if fig_node["guid"] not in issued_warnings:
         issued_warnings[fig_node["guid"]] = [warning_code]
     elif warning_code not in issued_warnings[fig_node["guid"]]:
