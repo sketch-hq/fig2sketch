@@ -1,14 +1,13 @@
 from . import base, positioning
 from converter import utils
 import itertools
-from sketchformat.layer_common import AbstractLayer
 from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
 from sketchformat.style import MarkerType
 from collections import defaultdict
 import copy
-from typing import Union, List, TypedDict, Tuple, Dict
+from typing import Union, List, TypedDict, Tuple, Dict, Any
 
 STROKE_CAP_TO_MARKER_TYPE = {
     "NONE": MarkerType.NONE,
@@ -152,7 +151,7 @@ def get_all_segments(vector_network: dict) -> List[dict]:
     ]
 
     if unused_segments:
-        rest = {
+        rest: Dict[str, Any] = {
             "style": {},
             "windingRule": "NONZERO",
             "loops": reorder_segments([vector_network["segments"][i] for i in unused_segments]),

@@ -137,6 +137,7 @@ def get_destination_settings_if_any(
     action: dict,
 ) -> Tuple[Optional[str], Optional[FlowOverlaySettings]]:
     overlay_settings = None
+    destination: Optional[str]
 
     match action["connectionType"], action.get("transitionNodeID", None):
         case "BACK", _:
