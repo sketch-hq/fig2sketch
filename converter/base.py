@@ -93,12 +93,6 @@ def base_styled(fig_node: dict) -> _BaseStyled:
         # TODO: If we have stroke, we should remove it and enlarge ourselves to occupy that space
         # which is quite tricky in things like shapePaths. This should be pretty rare in practice
 
-    # Layout grids are only supported in Frames and Components. It may make sense to has
-    # its own code, but for the moment we can add the warning here even if we know it will
-    # not apply to any other type of layer
-    if "layoutGrids" in fig_node:
-        utils.log_conversion_warning("BSE001", fig_node)
-
     return obj
 
 

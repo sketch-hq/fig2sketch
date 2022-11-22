@@ -52,7 +52,6 @@ WARNING_MESSAGES = {
     "ART002": "is being converted to an artboard. However, artboard rotations are not supported. Rotation will be ignored",
     "ART003": "has an style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
     "GRP001": "has inner shadows which are not supported at group level in Sketch. It will be copied to the layers inside the frame",
-    "BSE001": "has a layout grid enabled. This functionality is not yet implemented",
     "CMP001": "uses a shared style which could not be found in the document. It will not be applied",
     "POS001": "contains NaN in the positioning matrix and cannot be converted. It will be skipped",
 }
