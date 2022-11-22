@@ -27,6 +27,9 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
         node_id = node["guid"]
         id_map[node_id] = node
 
+        if "overrideKey" in node:
+            id_map[node["overrideKey"]] = node
+
         if not root:
             root = node_id
 
