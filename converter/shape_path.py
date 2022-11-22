@@ -338,7 +338,7 @@ def get_or_create_point(
             fig_point.get("style", {}).get("handleMirroring", "STRAIGHT")
         ]
         point.cornerRadius = fig_point.get("style", {}).get(
-            "cornerRadius", fig_vector["cornerRadius"]
+            "cornerRadius", fig_vector.get("cornerRadius", 0)
         )
 
     return point
