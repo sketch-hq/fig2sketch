@@ -52,7 +52,7 @@ def parse_args(args: List[str] = sys.argv[1:]) -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace) -> None:
-    # Set log level
+    # Set default log level
     level = logging.WARNING
     if args.verbosity:
         level = logging.INFO if args.verbosity == 1 else logging.DEBUG
