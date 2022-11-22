@@ -5,9 +5,7 @@ from sketchformat.style import Fill, FillType
 
 
 def convert(fig_frame: dict) -> Artboard:
-    obj = Artboard(
-        **base.base_styled(fig_frame), **prototype.prototyping_information(fig_frame)
-    )
+    obj = Artboard(**base.base_styled(fig_frame), **prototype.prototyping_information(fig_frame))
 
     return obj
 

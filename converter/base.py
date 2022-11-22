@@ -55,9 +55,7 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         fig_node["size"] = {"x": 1, "y": 1}
 
     return {
-        "do_objectID": utils.gen_object_id(
-            fig_node.get("overrideKey", fig_node["guid"])
-        ),
+        "do_objectID": utils.gen_object_id(fig_node.get("overrideKey", fig_node["guid"])),
         "name": fig_node["name"],
         "booleanOperation": -1,
         "exportOptions": export_options(fig_node.get("exportSettings", [])),
