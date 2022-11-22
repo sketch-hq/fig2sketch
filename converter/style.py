@@ -158,7 +158,14 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
         # Sketch defines the ratio between axis in the item reference point (not the 1x1 square)
         # So we scale the 1x1 square coordinates to fit the ratio of the item frame before
         # calculating the ellipse's ratio
-        x_scale = fig_node["size"]["x"] / fig_node["size"]["y"]
+        stroke = fig_node.get("strokeWeight", 0)
+        try:
+            x_scale = (fig_node["size"]["x"] + 2 * stroke) / (
+                fig_node["size"]["y"] + 2 * stroke
+            )
+        except:
+            x_scale = 1
+
         ellipse_ratio = scaled_distance(
             point_from, point_ellipse, x_scale
         ) / scaled_distance(point_from, point_to, x_scale)

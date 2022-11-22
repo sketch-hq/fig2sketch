@@ -233,6 +233,7 @@ class Border:
             contextSettings=fill.contextSettings,
             position=position,
             thickness=thickness,
+            isEnabled=fill.isEnabled,
         )
 
 

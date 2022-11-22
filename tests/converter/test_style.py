@@ -23,6 +23,13 @@ class TestConvertFill:
         assert fill.color == SKETCH_COLOR[0]
         assert fill.fillType == FillType.COLOR
 
+    def test_disabled(self):
+        fill = convert_fill(
+            {},
+            {"type": "SOLID", "color": FIG_COLOR[0], "visible": False, "opacity": 0.9},
+        )
+        assert fill.isEnabled == False
+
     def test_image(self):
         fill = convert_fill(
             {},
@@ -130,6 +137,42 @@ class TestConvertBorder:
         assert border.color == SKETCH_COLOR[0]
         assert border.thickness == 5
         assert border.position == BorderPosition.CENTER
+
+    def test_disabled_border(self):
+        border = convert_border(
+            {
+                "strokeAlign": "CENTER",
+                "strokeWeight": 5,
+            },
+            {"type": "SOLID", "color": FIG_COLOR[0], "visible": False, "opacity": 0.9},
+        )
+        assert border.isEnabled == False
+
+    def test_border_gradient(self):
+        border = convert_border(
+            {
+                "size": {"x": 50, "y": 0},
+                "strokeAlign": "CENTER",
+                "strokeWeight": 1,
+            },
+            {
+                "type": "GRADIENT_RADIAL",
+                "transform": Matrix([[1, 0, 0.5], [0, 1, 2]]),
+                "stops": [
+                    {"color": FIG_COLOR[0], "position": 0},
+                    {"color": FIG_COLOR[1], "position": 1},
+                ],
+                "visible": True,
+            },
+        )
+        assert border.fillType == FillType.GRADIENT
+        assert border.isEnabled
+        assert border.gradient.gradientType == GradientType.RADIAL
+        assert border.gradient.to == Point(0.5, -1.5)
+        assert getattr(border.gradient, "from") == Point(0, -1.5)
+
+        # (width+2*stroke) / (height+2*stroke)
+        assert border.gradient.elipseLength == 2 / 52
 
 
 class TestConvertContextSettings:
