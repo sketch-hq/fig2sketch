@@ -16,9 +16,7 @@ def find_symbols(node: dict) -> List[Sequence[int]]:
 
 
 class Context:
-    def init(
-        self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict]
-    ) -> None:
+    def init(self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict]) -> None:
         self._sketch_components: Dict[Sequence[int], Swatch] = {}
         self.symbols_page = None
         self._node_by_id = id_map
@@ -106,9 +104,7 @@ class Context:
             position[1] += frame.height + 100
         else:
             # Create a new column at the end
-            [last_width, [x, _]] = max(
-                self._symbol_position.items(), key=lambda item: item[1][0]
-            )
+            [last_width, [x, _]] = max(self._symbol_position.items(), key=lambda item: item[1][0])
             new_x = x + last_width + 100
             frame.x = new_x
             frame.y = 0

@@ -30,9 +30,7 @@ def convert_frame_to_group(fig_group: dict, sketch_group: AbstractLayerGroup) ->
     if needs_clip_mask:
         # Add a clipping rectangle matching the frame size. No need to recalculate bounds
         # since the clipmask defines Sketch bounds (which match visible children)
-        sketch_group.layers.insert(
-            0, rectangle.make_clipping_rect(fig_group, sketch_group.frame)
-        )
+        sketch_group.layers.insert(0, rectangle.make_clipping_rect(fig_group, sketch_group.frame))
     else:
         # When converting from a frame to a group, the bounding box should be adjusted
         # The frame box in a fig doc can be smalled than the children bounds, but not so in Sketch
@@ -55,9 +53,7 @@ def convert_frame_to_group(fig_group: dict, sketch_group: AbstractLayerGroup) ->
         sketch_group.frame = Rect(x=new_xy[0], y=new_xy[1], width=w, height=h)
 
 
-def convert_frame_style(
-    fig_group: dict, sketch_group: AbstractLayerGroup
-) -> AbstractLayerGroup:
+def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> AbstractLayerGroup:
     # Convert frame styles
     # - Fill/stroke/bgblur -> Rectangle on bottom with that style
     # - Layer blur -> Rectangle with bgblur on top
@@ -73,9 +69,7 @@ def convert_frame_style(
     has_blur = style.blur.isEnabled and style.blur.type == BlurType.GAUSSIAN
 
     if has_fills or has_borders or has_bgblur:
-        bgrect = rectangle.make_background_rect(
-            fig_group, sketch_group.frame, "Frame Background"
-        )
+        bgrect = rectangle.make_background_rect(fig_group, sketch_group.frame, "Frame Background")
         bgrect.style.fills = style.fills
         bgrect.style.borders = style.borders
         bgrect.style.blur = Blur(type=BlurType.BACKGROUND, radius=style.blur.radius)

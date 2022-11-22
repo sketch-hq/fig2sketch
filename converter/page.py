@@ -45,9 +45,7 @@ def add_page_background(fig_canvas, sketch_page):
                 do_objectID=utils.gen_object_id(fig_canvas["guid"], b"background"),
                 name="Page background",
                 style=Style(
-                    do_objectID=utils.gen_object_id(
-                        fig_canvas["guid"], b"background_style"
-                    ),
+                    do_objectID=utils.gen_object_id(fig_canvas["guid"], b"background_style"),
                     fills=[Fill.Color(background_color)],
                 ),
                 resizingConstraint=0,

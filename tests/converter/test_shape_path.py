@@ -19,9 +19,7 @@ class TestGeometry:
     def test_winding_rule_odd(self):
         fig = {
             **FIG_VECTOR,
-            "vectorData": {
-                "styleOverrideTable": [{"styleID": 1, "strokeCap": "ARROW_LINES"}]
-            },
+            "vectorData": {"styleOverrideTable": [{"styleID": 1, "strokeCap": "ARROW_LINES"}]},
             "vectorNetwork": {
                 "regions": [
                     {
@@ -113,9 +111,7 @@ class TestArrows:
     def test_arrow_override(self):
         fig = {
             **FIG_VECTOR,
-            "vectorData": {
-                "styleOverrideTable": [{"styleID": 1, "strokeCap": "ARROW_LINES"}]
-            },
+            "vectorData": {"styleOverrideTable": [{"styleID": 1, "strokeCap": "ARROW_LINES"}]},
             "vectorNetwork": {
                 "regions": [],
                 "segments": [

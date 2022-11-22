@@ -160,15 +160,13 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
         # calculating the ellipse's ratio
         stroke = fig_node.get("strokeWeight", 0)
         try:
-            x_scale = (fig_node["size"]["x"] + 2 * stroke) / (
-                fig_node["size"]["y"] + 2 * stroke
-            )
+            x_scale = (fig_node["size"]["x"] + 2 * stroke) / (fig_node["size"]["y"] + 2 * stroke)
         except:
             x_scale = 1
 
-        ellipse_ratio = scaled_distance(
-            point_from, point_ellipse, x_scale
-        ) / scaled_distance(point_from, point_to, x_scale)
+        ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
+            point_from, point_to, x_scale
+        )
 
         return Gradient.Radial(
             from_=Point.from_array(point_from),
@@ -179,17 +177,13 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
     else:
         # Angular gradients don't allow positioning, but we can at least rotate them
         rotation_offset = (
-            math.atan2(-fig_fill["transform"][1][0], fig_fill["transform"][0][0])
-            / 2
-            / math.pi
+            math.atan2(-fig_fill["transform"][1][0], fig_fill["transform"][0][0]) / 2 / math.pi
         )
 
         return Gradient.Angular(stops=convert_stops(fig_fill["stops"], rotation_offset))
 
 
-def convert_stops(
-    fig_stops: List[dict], rotation_offset: float = 0.0
-) -> List[GradientStop]:
+def convert_stops(fig_stops: List[dict], rotation_offset: float = 0.0) -> List[GradientStop]:
     stops = [
         GradientStop(
             color=convert_color(stop["color"]),

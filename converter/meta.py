@@ -11,8 +11,7 @@ def convert(pages: List[Page]) -> dict:
                 "artboards": {
                     artboard.do_objectID: {"name": artboard.name}
                     for artboard in page.layers
-                    if isinstance(artboard, Artboard)
-                    or isinstance(artboard, SymbolMaster)
+                    if isinstance(artboard, Artboard) or isinstance(artboard, SymbolMaster)
                 },
             }
             for page in pages

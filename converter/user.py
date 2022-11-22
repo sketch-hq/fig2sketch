@@ -11,8 +11,5 @@ def convert(pages: List[Page]) -> dict:
             "expandedTextStylePathsInPopover": [],
             "libraryListCollapsed": 0,
         },
-        **{
-            page.do_objectID: {"scrollOrigin": "{1000, 500}", "zoomValue": 0.5}
-            for page in pages
-        },
+        **{page.do_objectID: {"scrollOrigin": "{1000, 500}", "zoomValue": 0.5} for page in pages},
     }

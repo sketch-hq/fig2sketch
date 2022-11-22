@@ -136,9 +136,7 @@ def text_style(fig_text):
     )
 
     if fig_text.get("paragraphSpacing", 0) != 0:
-        obj.encodedAttributes.paragraphStyle.paragraphSpacing = fig_text[
-            "paragraphSpacing"
-        ]
+        obj.encodedAttributes.paragraphStyle.paragraphSpacing = fig_text["paragraphSpacing"]
 
     return obj
 
@@ -194,9 +192,7 @@ def override_characters_style(fig_text):
         # Compute the override for this character. Aside from style override,
         # we have to set the emoji font if this is an emoji
         style_override = copy.deepcopy(override_table[style_id])
-        override_fills = override_table[current_glyph["styleID"]].get(
-            "fillPaints", [{}]
-        )
+        override_fills = override_table[current_glyph["styleID"]].get("fillPaints", [{}])
 
         is_emoji = override_fills and override_fills[0].get("type") == "EMOJI"
 
@@ -303,9 +299,7 @@ def line_height(fig_text):
                 # Sketch seems to set it to min(lineHeight, lineAscent). We can check
                 # baselines[0][position]
                 # Maybe we should change the frame position in Sketch to account for this?
-                line_height = round(
-                    fig_text["fontSize"] * fig_text["lineHeight"]["value"]
-                )
+                line_height = round(fig_text["fontSize"] * fig_text["lineHeight"]["value"])
                 return {
                     "maximumLineHeight": line_height,
                     "minimumLineHeight": line_height,
@@ -321,8 +315,6 @@ def text_transformation(fig_text):
     if "textCase" in fig_text:
         if fig_text["textCase"] == "TITLE":
             utils.log_conversion_warning("TXT004", fig_text)
-        return {
-            "MSAttributedStringTextTransformAttribute": TextCase[fig_text["textCase"]]
-        }
+        return {"MSAttributedStringTextTransformAttribute": TextCase[fig_text["textCase"]]}
     else:
         return {}
