@@ -94,9 +94,7 @@ def get_all_overrides(fig_instance):
         for prop, value in override.items():
             if prop == "componentPropAssignments":
                 nested_master = find_symbol_master(fig_master, guid_path, all_overrides)
-                all_overrides += convert_properties_to_overrides(
-                    nested_master, value, guid_path
-                )
+                all_overrides += convert_properties_to_overrides(nested_master, value, guid_path)
             else:
                 new_override[prop] = value
 
@@ -183,13 +181,9 @@ def convert_properties_to_overrides(fig_master, properties, guid_path=[]):
             elif ref_prop["componentPropNodeField"] == "VISIBLE":
                 override = {"visible": prop["value"]["boolValue"]}
             else:  # INHERIT_FILL_STYLE_ID
-                raise Exception(
-                    f"Unexpected property {ref_prop['componentPropNodeField']}"
-                )
+                raise Exception(f"Unexpected property {ref_prop['componentPropNodeField']}")
 
-            overrides.append(
-                {**override, "guidPath": {"guids": guid_path + [ref_guid]}}
-            )
+            overrides.append({**override, "guidPath": {"guids": guid_path + [ref_guid]}})
 
     return overrides
 
@@ -215,9 +209,7 @@ def detach_symbol(fig_instance, all_overrides):
 
     # Apply overrides to children
     for c in detached_children:
-        apply_overrides(
-            c, fig_instance["guid"], all_overrides, fig_instance["derivedSymbolData"]
-        )
+        apply_overrides(c, fig_instance["guid"], all_overrides, fig_instance["derivedSymbolData"])
 
     fig_instance["children"] = detached_children
 

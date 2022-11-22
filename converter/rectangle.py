@@ -39,9 +39,7 @@ def make_background_rect(fig: dict, frame: Rect, name: str) -> Rectangle:
         do_objectID=utils.gen_object_id(fig["guid"], name.encode()),
         name=name,
         frame=Rect(height=frame.height, width=frame.width, x=0, y=0),
-        style=Style(
-            do_objectID=utils.gen_object_id(fig["guid"], f"{name}_style".encode())
-        ),
+        style=Style(do_objectID=utils.gen_object_id(fig["guid"], f"{name}_style".encode())),
         resizingConstraint=10,
         rotation=0,
         fixedRadius=radius,

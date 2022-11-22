@@ -40,16 +40,12 @@ def test_meta(sketch_doc):
                     "name": "Page 1",
                     "artboards": {
                         "60CDCBD8-345A-4796-804B-C6A97C9C0587": {"name": "Groups"},
-                        "B4AC371F-D026-411F-985B-F92A86A928F6": {
-                            "name": "Symbols and images"
-                        },
+                        "B4AC371F-D026-411F-985B-F92A86A928F6": {"name": "Symbols and images"},
                     },
                 },
                 "A4E5259A-9CE6-49D9-B4A1-A8062C205347": {
                     "name": "Symbols",
-                    "artboards": {
-                        "FA7E522B-5FF7-4393-AD4D-44C2A82CF837": {"name": "Component 1"}
-                    },
+                    "artboards": {"FA7E522B-5FF7-4393-AD4D-44C2A82CF837": {"name": "Component 1"}},
                 },
             },
             "version": 144,
@@ -122,9 +118,7 @@ def test_file_hashes(sketch_doc, img):
 
 
 def test_page(sketch_doc):
-    with sketch_doc.open(
-        "pages/8F292FCA-49C0-4E31-957E-93FB2D1A7231.json"
-    ) as page_json:
+    with sketch_doc.open("pages/8F292FCA-49C0-4E31-957E-93FB2D1A7231.json") as page_json:
         page = json.load(page_json)
         assert page["name"] == "Page 1"
         assert len(page["layers"]) == 2
@@ -202,9 +196,7 @@ def test_page(sketch_doc):
 
 
 def test_symbols_page(sketch_doc):
-    with sketch_doc.open(
-        "pages/A4E5259A-9CE6-49D9-B4A1-A8062C205347.json"
-    ) as page_json:
+    with sketch_doc.open("pages/A4E5259A-9CE6-49D9-B4A1-A8062C205347.json") as page_json:
         page = json.load(page_json)
         assert page["name"] == "Symbols"
         assert len(page["layers"]) == 1

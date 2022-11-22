@@ -81,9 +81,7 @@ def transform_node(fig, node, fig_zip, output):
                     fname = bytes(paint["image"]["hash"]).hex()
                     blob_id = paint["image"].get("dataBlob")
                     blob = bytes(fig["blobs"][blob_id]["bytes"]) if blob_id else None
-                    paint["image"]["filename"] = convert_image(
-                        fname, blob, fig_zip, output
-                    )
+                    paint["image"]["filename"] = convert_image(fname, blob, fig_zip, output)
 
     return node
 
@@ -122,9 +120,7 @@ def convert_image(fname, blob, fig_zip, output):
         converted_images[fname] = f"{fhash}{extension}"
         return f"{fhash}{extension}"
     except UnidentifiedImageError as e:
-        logging.critical(
-            f"Could not convert image {fname}. It appears to be corrupted."
-        )
+        logging.critical(f"Could not convert image {fname}. It appears to be corrupted.")
         logging.critical(
             f"Try passing `--force-convert-images` to ignore this error and try to convert the image anyway."
         )
