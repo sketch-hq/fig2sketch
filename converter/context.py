@@ -80,6 +80,8 @@ class Context:
 
     def find_symbol(self, sid: Sequence[int]) -> dict:
         symbol = self.fig_node(sid)
+        sid = symbol["guid"]
+
         if not self._component_symbols.get(sid, True):
             # The symbol is in the component page and has not been converted yet, do it now
             from . import tree

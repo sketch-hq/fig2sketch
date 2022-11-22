@@ -20,6 +20,7 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
 
     # Load all nodes into a map
     id_map = {}
+    override_map = {}
     root = None
 
     for node in fig["nodeChanges"]:
@@ -28,7 +29,7 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
         id_map[node_id] = node
 
         if "overrideKey" in node:
-            id_map[node["overrideKey"]] = node
+            override_map[node["overrideKey"]] = node
 
         if not root:
             root = node_id
@@ -44,6 +45,8 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
     # Sort children
     for node in id_map.values():
         node["children"].sort(key=lambda n: n["parent"]["position"])
+
+    id_map.update(override_map)
 
     return tree, id_map
 

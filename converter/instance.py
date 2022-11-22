@@ -26,9 +26,12 @@ def convert(fig_instance):
         else:
             utils.log_conversion_warning("SYM002", fig_instance, props=unsupported)
 
+    # Use always the GUID of the master for the symbolID
+    # The instance symbolID can refer to the overrideKey instead
+    fig_master = context.find_symbol(fig_instance["symbolData"]["symbolID"])
     obj = SymbolInstance(
         **base.base_styled(fig_instance),
-        symbolID=utils.gen_object_id(fig_instance["symbolData"]["symbolID"]),
+        symbolID=utils.gen_object_id(fig_master["guid"]),
         overrideValues=sketch_overrides,
     )
     # Replace style

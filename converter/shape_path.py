@@ -164,7 +164,7 @@ def get_all_segments(vector_network: dict) -> List[dict]:
     if unused_segments:
         regions += [
             {
-                "style": {"fillPaints": []},
+                "style": {},
                 "windingRule": "NONZERO",
                 "loops": reorder_segments(
                     [vector_network["segments"][i] for i in unused_segments]
