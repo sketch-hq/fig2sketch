@@ -147,6 +147,7 @@ jobs:
           pip install maturin
           pip install -r requirements.txt
           pip install certifi
+          rm -rf /tmp/orjson
           scripts/install_patched_orjson.sh
           scripts/install_fig_kiwi.sh
           echo "VERSION='${{ github.ref_name }}'" > version.py
