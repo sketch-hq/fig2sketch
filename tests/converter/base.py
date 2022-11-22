@@ -4,7 +4,6 @@ import pytest
 from converter import utils
 from unittest.mock import create_autospec
 
-
 FIG_BASE = {
     "size": {"x": 100, "y": 100},
     "guid": (123, 456),
