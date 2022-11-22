@@ -115,9 +115,7 @@ def guess_flip(fig_item: dict) -> Tuple[List[bool], float]:
     else:
         flip[1] = bool(math.copysign(1, tr[0][1]) == math.copysign(1, tr[1][0]))
 
-    angle = math.degrees(
-        math.atan2(-fig_item["transform"][1][0], fig_item["transform"][0][0])
-    )
+    angle = math.degrees(math.atan2(-fig_item["transform"][1][0], fig_item["transform"][0][0]))
     if flip[1]:
         angle *= -1
 

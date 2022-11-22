@@ -20,6 +20,7 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
 
     # Load all nodes into a map
     id_map = {}
+    override_map = {}
     root = None
 
     for node in fig["nodeChanges"]:
@@ -28,7 +29,7 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
         id_map[node_id] = node
 
         if "overrideKey" in node:
-            id_map[node["overrideKey"]] = node
+            override_map[node["overrideKey"]] = node
 
         if not root:
             root = node_id
@@ -44,6 +45,8 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
     # Sort children
     for node in id_map.values():
         node["children"].sort(key=lambda n: n["parent"]["position"])
+
+    id_map.update(override_map)
 
     return tree, id_map
 
@@ -78,9 +81,7 @@ def transform_node(fig, node, fig_zip, output):
                     fname = bytes(paint["image"]["hash"]).hex()
                     blob_id = paint["image"].get("dataBlob")
                     blob = bytes(fig["blobs"][blob_id]["bytes"]) if blob_id else None
-                    paint["image"]["filename"] = convert_image(
-                        fname, blob, fig_zip, output
-                    )
+                    paint["image"]["filename"] = convert_image(fname, blob, fig_zip, output)
 
     return node
 
@@ -119,9 +120,7 @@ def convert_image(fname, blob, fig_zip, output):
         converted_images[fname] = f"{fhash}{extension}"
         return f"{fhash}{extension}"
     except UnidentifiedImageError as e:
-        logging.critical(
-            f"Could not convert image {fname}. It appears to be corrupted."
-        )
+        logging.critical(f"Could not convert image {fname}. It appears to be corrupted.")
         logging.critical(
             f"Try passing `--force-convert-images` to ignore this error and try to convert the image anyway."
         )

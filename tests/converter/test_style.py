@@ -89,9 +89,7 @@ class TestConvertFill:
         assert fill.isEnabled
         assert fill.gradient.gradientType == GradientType.RADIAL
         assert fill.gradient.to == Point(0.7071135624381276, 0.1414227124876255)
-        assert getattr(fill.gradient, "from") == Point(
-            0.3535567812190638, 0.4949794937066893
-        )
+        assert getattr(fill.gradient, "from") == Point(0.3535567812190638, 0.4949794937066893)
         assert fill.gradient.elipseLength == 1
         assert fill.gradient.stops == [
             GradientStop(color=SKETCH_COLOR[0], position=0),

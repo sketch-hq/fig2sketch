@@ -3,7 +3,6 @@ from .base import *
 from converter.text import *
 from converter.context import context
 
-
 TEXT_BASE = {
     **FIG_BASE,
     "type": "TEXT",
@@ -23,9 +22,7 @@ def mock_fonts(monkeypatch):
 @pytest.mark.usefixtures("mock_fonts")
 class TestOverrideStyles:
     def test_plain_text(self):
-        text = override_characters_style(
-            {**TEXT_BASE, "textData": {"characters": "plain"}}
-        )
+        text = override_characters_style({**TEXT_BASE, "textData": {"characters": "plain"}})
         assert len(text) == 1
         assert text[0].location == 0
         assert text[0].length == 5
@@ -85,9 +82,7 @@ class TestOverrideStyles:
                 "textData": {
                     "characters": chars,
                     "glyphs": glyphs,
-                    "styleOverrideTable": [
-                        {"styleID": 2, "fillPaints": [{"type": "EMOJI"}]}
-                    ],
+                    "styleOverrideTable": [{"styleID": 2, "fillPaints": [{"type": "EMOJI"}]}],
                 },
             }
         )
@@ -126,9 +121,7 @@ class TestOverrideStyles:
                 "textData": {
                     "characters": chars,
                     "glyphs": glyphs,
-                    "styleOverrideTable": [
-                        {"styleID": 2, "fillPaints": [{"type": "EMOJI"}]}
-                    ],
+                    "styleOverrideTable": [{"styleID": 2, "fillPaints": [{"type": "EMOJI"}]}],
                 },
             }
         )
