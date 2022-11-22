@@ -1,5 +1,4 @@
 import logging
-import math
 from converter import utils
 from sketchformat.layer_common import *
 from sketchformat.layer_shape import *
@@ -87,7 +86,7 @@ def base_styled(fig_node: dict) -> _BaseStyled:
     }
 
     if obj["hasClippingMask"] and obj["clippingMaskMode"] == 0:
-        # Outline mask behave differently in fig files and Sketch in regards to fill/stroke colors
+        # Outline mask behave differently in fig files and Sketch in regard to fill/stroke colors
         # Remove fill
         obj["style"].fills = []
         # TODO: If we have stroke, we should remove it and enlarge ourselves to occupy that space
@@ -112,7 +111,8 @@ def base_shape(fig_node: dict) -> _BaseShape:
 
 def process_styles(fig_node: dict) -> Style:
     # First we apply any overrides that we may have (from inherit* properties)
-    # If any of them can be linked as a shared style, we keep track of them to add the IDs at the end
+    # If any of them can be linked as a shared style, we keep track of them to add the IDs at
+    # the end
     components = {}
     for inherit_style, copy_keys in SUPPORTED_INHERIT_STYLES.items():
         inherit_node_id = fig_node.get(inherit_style)

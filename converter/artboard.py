@@ -1,7 +1,7 @@
+from . import base, group, prototype, rectangle
 from converter import utils
-from . import prototype, rectangle, style, base, group
 from sketchformat.layer_group import Artboard
-from sketchformat.style import BorderOptions, Fill, FillType
+from sketchformat.style import Fill, FillType
 
 
 def convert(fig_frame: dict) -> Artboard:
@@ -33,7 +33,7 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     if sketch_artboard.rotation != 0:
         utils.log_conversion_warning("ART002", fig_frame)
 
-    # Figma automatically clips overlays but not Sketch, so we need to add a mask
+    # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
     if sketch_artboard.overlaySettings is not None:
         sketch_artboard.layers.insert(
             0, rectangle.make_clipping_rect(fig_frame, sketch_artboard.frame)

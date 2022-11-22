@@ -67,7 +67,13 @@ sh scripts/install_fig_kiwi.sh
 
 ## Running the tests
 
-To run the tests, execute the following in the project root:
+Before running the tests for the first time, you'll need to install the dev requirements (within the virtual environment):
+
+```
+pip install -r requirements-dev.txt
+```
+
+Then, you can run the tests just executing this in the project root:
 
 ```
 pytest
