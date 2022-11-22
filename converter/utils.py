@@ -69,6 +69,6 @@ def log_conversion_warning(warning_code: str, fig_node: dict, **kw: list) -> Non
         issued_warnings[fig_node["guid"]].append(warning_code)
     else:
         return
-    logging.warning(
+    logging.info(
         f"[{warning_code}] {fig_node['type']} '{fig_node['name']}' {WARNING_MESSAGES[warning_code].format(**kw)}"
     )
