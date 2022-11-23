@@ -3,6 +3,7 @@ from converter import utils
 from sketchformat.style import *
 from typing import List, TypedDict
 from .positioning import Vector, Matrix
+import dataclasses
 
 BORDER_POSITION = {
     "CENTER": BorderPosition.CENTER,
@@ -202,6 +203,13 @@ def convert_stops(
         # When we have a rotated angular gradient, stops at 0 and 1 both convert
         # to the exact same position and that confuses Sketch. Force a small difference
         stops[-1].position -= 0.00001
+    else:
+        # Always add a stop at 0 and 1 if needed
+        if stops[0].position != 0:
+            stops.insert(0, dataclasses.replace(stops[0], position=0))
+
+        if stops[-1].position != 1:
+            stops.append(dataclasses.replace(stops[-1], position=1))
 
     return stops
 
