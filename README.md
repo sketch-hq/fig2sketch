@@ -30,12 +30,12 @@ se the instance is not supported as sketch instance
 - Pass `--force-convert-images` if the original document containst a corrupted image and you want to force it instead of having a
 n error
 - Pass `--salt 12345678` to ensure a consistent conversion order
-- Pass `--dump-fig-json example/figma.json` (whichever path/name you like) to dump the generated JSON from the .fig file
+- Pass `--dump-fig-json example/fig_file.json` (whichever path/name you like) to dump the generated JSON from the .fig file
 - Pass `-v` or `-vv` to show more information about he conversion process
 
 Example:
 
-`python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/figma.json`
+`python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/fig_file.json`
 
 ## Install
 
