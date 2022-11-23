@@ -34,8 +34,9 @@ n error
 - Pass `-v` or `-vv` to show more information about he conversion process
 
 Example:
-
-`python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/fig_file.json`
+```
+python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/fig_file.json
+````
 
 ## Install
 
