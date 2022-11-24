@@ -3,6 +3,7 @@ from converter import utils
 from sketchformat.style import *
 from typing import List, TypedDict
 from .positioning import Vector, Matrix
+import dataclasses
 
 BORDER_POSITION = {
     "CENTER": BorderPosition.CENTER,
@@ -158,10 +159,15 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
         # Sketch defines the ratio between axis in the item reference point (not the 1x1 square)
         # So we scale the 1x1 square coordinates to fit the ratio of the item frame before
         # calculating the ellipse's ratio
-        x_scale = fig_node["size"]["x"] / fig_node["size"]["y"]
-        ellipse_ratio = scaled_distance(
-            point_from, point_ellipse, x_scale
-        ) / scaled_distance(point_from, point_to, x_scale)
+        stroke = fig_node.get("strokeWeight", 0)
+        try:
+            x_scale = (fig_node["size"]["x"] + 2 * stroke) / (fig_node["size"]["y"] + 2 * stroke)
+        except:
+            x_scale = 1
+
+        ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
+            point_from, point_to, x_scale
+        )
 
         return Gradient.Radial(
             from_=Point.from_array(point_from),
@@ -172,17 +178,13 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
     else:
         # Angular gradients don't allow positioning, but we can at least rotate them
         rotation_offset = (
-            math.atan2(-fig_fill["transform"][1][0], fig_fill["transform"][0][0])
-            / 2
-            / math.pi
+            math.atan2(-fig_fill["transform"][1][0], fig_fill["transform"][0][0]) / 2 / math.pi
         )
 
         return Gradient.Angular(stops=convert_stops(fig_fill["stops"], rotation_offset))
 
 
-def convert_stops(
-    fig_stops: List[dict], rotation_offset: float = 0.0
-) -> List[GradientStop]:
+def convert_stops(fig_stops: List[dict], rotation_offset: float = 0.0) -> List[GradientStop]:
     stops = [
         GradientStop(
             color=convert_color(stop["color"]),
@@ -195,6 +197,13 @@ def convert_stops(
         # When we have a rotated angular gradient, stops at 0 and 1 both convert
         # to the exact same position and that confuses Sketch. Force a small difference
         stops[-1].position -= 0.00001
+    else:
+        # Always add a stop at 0 and 1 if needed
+        if stops[0].position != 0:
+            stops.insert(0, dataclasses.replace(stops[0], position=0))
+
+        if stops[-1].position != 1:
+            stops.append(dataclasses.replace(stops[-1], position=1))
 
     return stops
 

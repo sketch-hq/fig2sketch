@@ -23,6 +23,13 @@ class TestConvertFill:
         assert fill.color == SKETCH_COLOR[0]
         assert fill.fillType == FillType.COLOR
 
+    def test_disabled(self):
+        fill = convert_fill(
+            {},
+            {"type": "SOLID", "color": FIG_COLOR[0], "visible": False, "opacity": 0.9},
+        )
+        assert fill.isEnabled == False
+
     def test_image(self):
         fill = convert_fill(
             {},
@@ -82,9 +89,7 @@ class TestConvertFill:
         assert fill.isEnabled
         assert fill.gradient.gradientType == GradientType.RADIAL
         assert fill.gradient.to == Point(0.7071135624381276, 0.1414227124876255)
-        assert getattr(fill.gradient, "from") == Point(
-            0.3535567812190638, 0.4949794937066893
-        )
+        assert getattr(fill.gradient, "from") == Point(0.3535567812190638, 0.4949794937066893)
         assert fill.gradient.elipseLength == 1
         assert fill.gradient.stops == [
             GradientStop(color=SKETCH_COLOR[0], position=0),
@@ -115,6 +120,32 @@ class TestConvertFill:
             GradientStop(color=SKETCH_COLOR[2], position=0.87499),
         ]
 
+    def test_offset_gradient(self):
+        """A gradient with the first stop position != 0 or last stop != 1.
+
+        In .fig this is interpreted as stretching that color up to the start, while in
+        Sketch this causes the size of the gradient to change. We fix it by adding a fake
+        stop at 0. Same for the last position
+        """
+        fill = convert_fill(
+            {"size": {"x": 10, "y": 5}},
+            {
+                "type": "GRADIENT_RADIAL",
+                "transform": Matrix([[0.7071, -0.7071, 0.6], [0.7071, 0.7071, -0.1]]),
+                "stops": [
+                    {"color": FIG_COLOR[1], "position": 0.4},
+                    {"color": FIG_COLOR[2], "position": 0.8},
+                ],
+                "visible": True,
+            },
+        )
+        assert fill.gradient.stops == [
+            GradientStop(color=SKETCH_COLOR[1], position=0),
+            GradientStop(color=SKETCH_COLOR[1], position=0.4),
+            GradientStop(color=SKETCH_COLOR[2], position=0.8),
+            GradientStop(color=SKETCH_COLOR[2], position=1),
+        ]
+
 
 class TestConvertBorder:
     def test_convert_border(self):
@@ -130,6 +161,42 @@ class TestConvertBorder:
         assert border.color == SKETCH_COLOR[0]
         assert border.thickness == 5
         assert border.position == BorderPosition.CENTER
+
+    def test_disabled_border(self):
+        border = convert_border(
+            {
+                "strokeAlign": "CENTER",
+                "strokeWeight": 5,
+            },
+            {"type": "SOLID", "color": FIG_COLOR[0], "visible": False, "opacity": 0.9},
+        )
+        assert border.isEnabled == False
+
+    def test_border_gradient(self):
+        border = convert_border(
+            {
+                "size": {"x": 50, "y": 0},
+                "strokeAlign": "CENTER",
+                "strokeWeight": 1,
+            },
+            {
+                "type": "GRADIENT_RADIAL",
+                "transform": Matrix([[1, 0, 0.5], [0, 1, 2]]),
+                "stops": [
+                    {"color": FIG_COLOR[0], "position": 0},
+                    {"color": FIG_COLOR[1], "position": 1},
+                ],
+                "visible": True,
+            },
+        )
+        assert border.fillType == FillType.GRADIENT
+        assert border.isEnabled
+        assert border.gradient.gradientType == GradientType.RADIAL
+        assert border.gradient.to == Point(0.5, -1.5)
+        assert getattr(border.gradient, "from") == Point(0, -1.5)
+
+        # (width+2*stroke) / (height+2*stroke)
+        assert border.gradient.elipseLength == 2 / 52
 
 
 class TestConvertContextSettings:

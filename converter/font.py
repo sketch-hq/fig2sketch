@@ -74,6 +74,5 @@ def extract_names(font_file):
 
 def font_matches(fig, font_names):
     return fig["postscript"] == font_names["postscript"] or (
-        fig["family"] == font_names["family"]
-        and fig["style"] == font_names["subfamily"]
+        fig["family"] == font_names["family"] and fig["style"] == font_names["subfamily"]
     )

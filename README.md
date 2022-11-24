@@ -30,12 +30,13 @@ se the instance is not supported as sketch instance
 - Pass `--force-convert-images` if the original document containst a corrupted image and you want to force it instead of having a
 n error
 - Pass `--salt 12345678` to ensure a consistent conversion order
-- Pass `--dump-fig-json example/figma.json` (whichever path/name you like) to dump the generated JSON from the .fig file
+- Pass `--dump-fig-json example/fig_file.json` (whichever path/name you like) to dump the generated JSON from the .fig file
 - Pass `-v` or `-vv` to show more information about he conversion process
 
 Example:
-
-`python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/figma.json`
+```
+python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/fig_file.json
+````
 
 ## Install
 
@@ -67,7 +68,13 @@ sh scripts/install_fig_kiwi.sh
 
 ## Running the tests
 
-To run the tests, execute the following in the project root:
+Before running the tests for the first time, you'll need to install the dev requirements (within the virtual environment):
+
+```
+pip install -r requirements-dev.txt
+```
+
+Then, you can run the tests just executing this in the project root:
 
 ```
 pytest
@@ -109,3 +116,6 @@ One clear difference, for example is about texts with fixed size. In sketch, if 
 ## Want to contribute?
 
 We would love for you to contribute to fig2sketch project! Pull requests are welcome. Take a look at the [contributing guidelines](CONTRIBUTING.md) for more details.
+
+## License
+The code and documentation in this project are released under the [MIT license](LICENSE)

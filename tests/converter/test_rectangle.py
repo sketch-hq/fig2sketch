@@ -10,9 +10,7 @@ def test_straight_corners():
 
 
 def test_round_corners():
-    rect = convert(
-        {**FIG_BASE, "cornerRadius": 5, "rectangleCornerRadiiIndependent": False}
-    )
+    rect = convert({**FIG_BASE, "cornerRadius": 5, "rectangleCornerRadiiIndependent": False})
     for p in rect.points:
         assert p.cornerRadius == 5
 

@@ -140,9 +140,7 @@ class Gradient:
 
     @staticmethod
     def Linear(from_: Point, to: Point, stops: List[GradientStop]) -> "Gradient":
-        return Gradient(
-            gradientType=GradientType.LINEAR, from_=from_, to=to, stops=stops
-        )
+        return Gradient(gradientType=GradientType.LINEAR, from_=from_, to=to, stops=stops)
 
     @staticmethod
     def Radial(
@@ -233,6 +231,7 @@ class Border:
             contextSettings=fill.contextSettings,
             position=position,
             thickness=thickness,
+            isEnabled=fill.isEnabled,
         )
 
 
@@ -309,14 +308,10 @@ class Style:
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
     innerShadows: List[InnerShadow] = field(default_factory=list)
-    startDecorationType: Optional[
-        MarkerType
-    ] = None  # Legacy, should match startMarkerType
+    startDecorationType: Optional[MarkerType] = None  # Legacy, should match startMarkerType
     endDecorationType: Optional[MarkerType] = None  # Legacy, should match endMarkerType
 
-    def set_markers(
-        self, startMarkerType: MarkerType, endMarkerType: MarkerType
-    ) -> None:
+    def set_markers(self, startMarkerType: MarkerType, endMarkerType: MarkerType) -> None:
         self.startMarkerType = startMarkerType
         self.endMarkerType = endMarkerType
 

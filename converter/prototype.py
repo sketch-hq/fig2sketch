@@ -1,5 +1,6 @@
-from converter import utils
 from .context import context
+from .errors import Fig2SketchWarning
+from converter import utils
 from sketchformat.prototype import *
 from typing import TypedDict, Tuple, Optional
 
@@ -42,35 +43,35 @@ class _Flow(TypedDict, total=False):
 
 # TODO: Is this called from every node type (groups?)
 def convert_flow(fig_node: dict) -> _Flow:
-    # TODO: What happens with multiple actions?
     flow = None
     for interaction in fig_node.get("prototypeInteractions", []):
         if interaction["isDeleted"]:
             continue
 
-        if interaction["event"].get("interactionType") != "ON_CLICK":
-            print("Unsupported interaction type")
+        interaction_type = interaction["event"].get("interactionType")
+        if interaction_type != "ON_CLICK":
+            utils.log_conversion_warning("PRT001", fig_node, props=[interaction_type])
             continue
 
         for action in interaction["actions"]:
+            if flow is not None:
+                utils.log_conversion_warning("PRT002", fig_node)
+                continue
+
             # There can be  empty interactions in the model, we just ignore them
             if action == {}:
                 continue
 
             # TODO: Back is SCROLL for some reason??? or just irrelevant?
             if action["navigationType"] not in ["NAVIGATE", "SCROLL", "OVERLAY"]:
-                print("Unsupported action type")
+                utils.log_conversion_warning("PRT003", fig_node, props=[action["navigationType"]])
                 continue
 
-            if flow is not None:
-                print("Unsupported multiple actions per layer")
+            try:
+                destination, overlay_settings = get_destination_settings_if_any(action)
+            except Fig2SketchWarning as w:
+                utils.log_conversion_warning(w.code, fig_node, props=[action["connectionType"]])
                 continue
-
-            if action["connectionType"] not in ["BACK", "INTERNAL_NODE", "NONE"]:
-                print(f"Unsupported connection type {action['connectionType']}")
-                continue
-
-            destination, overlay_settings = get_destination_settings_if_any(action)
 
             if destination is not None:
                 flow = FlowConnection(
@@ -78,9 +79,7 @@ def convert_flow(fig_node: dict) -> _Flow:
                     animationType=ANIMATION_TYPE[
                         action.get("transitionType", "INSTANT_TRANSITION")
                     ],
-                    maintainScrollPosition=action.get(
-                        "transitionPreserveScroll", False
-                    ),
+                    maintainScrollPosition=action.get("transitionPreserveScroll", False),
                     overlaySettings=overlay_settings,
                 )
 
@@ -108,7 +107,7 @@ def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
 
     # TODO: Overflow scrolling means making the artboard bigger (fit the child bounds)
     if fig_frame.get("scrollDirection", "NONE") != "NONE":
-        print("Scroll overflow direction not supported")
+        utils.log_conversion_warning("PRT005", fig_frame)
 
     if "overlayBackgroundInteraction" in fig_frame:
         return {
@@ -123,8 +122,7 @@ def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
         }
     else:
         return {
-            "isFlowHome": fig_frame.get("prototypeStartingPoint", {}).get("name", "")
-            != "",
+            "isFlowHome": fig_frame.get("prototypeStartingPoint", {}).get("name", "") != "",
             "prototypeViewport": PrototypeViewport(
                 name=fig_canvas["prototypeDevice"]["presetIdentifier"],
                 size=Point.from_dict(fig_canvas["prototypeDevice"]["size"]),
@@ -139,7 +137,7 @@ def get_destination_settings_if_any(
     action: dict,
 ) -> Tuple[Optional[str], Optional[FlowOverlaySettings]]:
     overlay_settings = None
-    destination = None
+    destination: Optional[str]
 
     match action["connectionType"], action.get("transitionNodeID", None):
         case "BACK", _:
@@ -158,6 +156,6 @@ def get_destination_settings_if_any(
         case "NONE", _:
             destination = None
         case _:
-            print(f"Unsupported connection type {action['connectionType']}")
+            raise Fig2SketchWarning("PRT004")
 
     return destination, overlay_settings

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import json
 import logging
@@ -37,9 +39,7 @@ def parse_args(args: List[str] = sys.argv[1:]) -> argparse.Namespace:
         dest="verbosity",
         help="return more details, can be repeated",
     )
-    group.add_argument(
-        "--salt", type=str, help="salt used to generate ids, defaults to random"
-    )
+    group.add_argument("--salt", type=str, help="salt used to generate ids, defaults to random")
     group.add_argument(
         "--dump-fig-json",
         type=argparse.FileType("w"),
@@ -52,7 +52,7 @@ def parse_args(args: List[str] = sys.argv[1:]) -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace) -> None:
-    # Set log level
+    # Set default log level
     level = logging.WARNING
     if args.verbosity:
         level = logging.INFO if args.verbosity == 1 else logging.DEBUG
@@ -88,18 +88,18 @@ def run(args: argparse.Namespace) -> None:
     logging.debug(f"Version {VERSION}")
 
     with ZipFile(args.sketch_file, "w") as output:
-        fig_json, id_map = fig2tree.convert_fig(args.fig_file, output)
+        fig_tree, id_map = fig2tree.convert_fig(args.fig_file, output)
 
         if args.dump_fig_json:
             json.dump(
-                fig_json,
+                fig_tree,
                 args.dump_fig_json,
                 indent=2,
                 ensure_ascii=False,
                 default=lambda x: x.tolist(),
             )
 
-        convert.convert_json_to_sketch(fig_json, id_map, output)
+        convert.convert_fig_tree_to_sketch(fig_tree, id_map, output)
 
 
 if __name__ == "__main__":

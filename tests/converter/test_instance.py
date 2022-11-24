@@ -14,9 +14,7 @@ FIG_TEXT = {
     "fontSize": 12,
     "textAlignVertical": "CENTER",
     "textAlignHorizontal": "CENTER",
-    "fillPaints": [
-        {"type": "SOLID", "color": FIG_COLOR[0], "opacity": 0.9, "visible": True}
-    ],
+    "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[0], "opacity": 0.9, "visible": True}],
     "textData": {"characters": "original"},
     "guid": (0, 1),
     "componentPropRefs": [
@@ -89,9 +87,7 @@ class TestOverrides:
         assert isinstance(i, SymbolInstance)
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues == [
-            OverrideValue(
-                overrideName=f"{symbol_text_id}_stringValue", value="modified"
-            )
+            OverrideValue(overrideName=f"{symbol_text_id}_stringValue", value="modified")
         ]
 
     def test_text_prop_assignment(self):
@@ -108,9 +104,7 @@ class TestOverrides:
         assert isinstance(i, SymbolInstance)
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues == [
-            OverrideValue(
-                overrideName=f"{symbol_text_id}_stringValue", value="modified"
-            )
+            OverrideValue(overrideName=f"{symbol_text_id}_stringValue", value="modified")
         ]
 
     def test_color_override_detach(self, warnings):
