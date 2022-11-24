@@ -12,6 +12,10 @@ For any other bug, first, make sure the bug isn’t already reported by searchin
 
 If you’re unable to find an open issue addressing the problem, open a new one. Be sure to include a title and clear description, as much relevant information as possible, and an error trace or something similar. If a written description is not enough to describe the problem, feel free to attach screenshots or videos explaining the problem.
 
+## Do you have doubts?
+
+If you have doubts or there's anything you want to talk about that does not make sense to add it as a new issue, you can do it writing in the [discussions area](https://github.com/sketch-hq/fig2sketch/discussions).
+
 ## Missing a feature?
 
 You can *request* a new feature by submitting an issue to our GitHub Repository. If you would like to *implement* a new feature, please consider the size of the change in order to determine the right steps to proceed:
