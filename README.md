@@ -99,14 +99,10 @@ Because of these differences, fig2sketch usually applies two rules when transfor
 
 This kind of transformation will happen with most .fig files, so it won’t show any warnings in the command output.
 
-### Layout grids
-
-Layout grids are not yet supported by this converter. Since it is common to have layout grids enabled, the converter won't show any warning when it finds grids in the .fig file.
-
 ### Text rendering
 
-Text rendering engines between platforms have multiple differences, and it's hard to always guarantee that texts look exactly the same between apps. You may find very sometimes very minor (almost unnoticeable differences). 
-Additionally, there are some other obvious differences between how Sketch and other tools opening .fig files display the data. 
+Text rendering engines between platforms have multiple differences, and it's hard to always guarantee that texts look exactly the same between apps. You may find very sometimes very minor (almost unnoticeable differences).
+Additionally, there are some other obvious differences between how Sketch and other tools opening .fig files display the data.
 One clear difference, for example is about texts with fixed size. In sketch, if a text overflows the size of the layer, the overflowing text won't be visible. You may find that other apps that work with .fig do show the overflowing text when it takes more space than the fixed size of the box.
 
 ## About .sketch documents
