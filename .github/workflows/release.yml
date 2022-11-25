@@ -66,8 +66,8 @@ jobs:
           pip install maturin
           pip install certifi
           pip install -r requirements.txt
-          scripts/install_patched_orjson.sh
-          scripts/install_fig_kiwi.sh
+          bash scripts/install_patched_orjson.sh
+          bash scripts/install_fig_kiwi.sh
           echo "VERSION='${{ github.ref_name }}'" > version.py
           pyinstaller fig2sketch.py -y --onefile
       - name: Rename binary
