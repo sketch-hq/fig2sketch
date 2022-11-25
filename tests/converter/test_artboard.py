@@ -1,7 +1,7 @@
 from .base import *
 from converter import prototype, tree, artboard
 from converter.positioning import Matrix
-from sketchformat.layer_common import ClippingMaskMode
+from sketchformat.layer_common import ClippingMaskMode, Rect
 from sketchformat.style import *
 import pytest
 from unittest.mock import ANY
@@ -182,3 +182,99 @@ class TestGrid:
         assert grid.isEnabled == True
         assert grid.gridSize == 15
         assert grid.thickGridTimes == 3
+
+
+class TestLayout:
+    def _layout(
+        self, axis="X", align="STRETCH", count=4, offset=0, spacing=20, gutter=10
+    ):
+        return {
+            "type": align,
+            "axis": axis,
+            "visible": True,
+            "numSections": count,
+            "offset": offset,
+            "sectionSize": spacing,
+            "gutterSize": gutter,
+            "color": {"r": 0, "g": 0, "b": 0, "a": 0},
+            "pattern": "STRIPES",
+        }
+
+    def test_4_columns(self):
+        layout = artboard.convert_layout(
+            {**FIG_ARTBOARD, "layoutGrids": [self._layout()]},
+            Rect(x=0, y=0, width=110, height=0),
+        )
+
+        assert layout.isEnabled
+        assert layout.drawVertical
+        assert layout.totalWidth == 110
+        assert layout.gutterWidth == 10
+        assert layout.columnWidth == 20
+        assert layout.numberOfColumns == 4
+
+    def test_centered_columns(self):
+        layout = artboard.convert_layout(
+            {**FIG_ARTBOARD, "layoutGrids": [self._layout(align="CENTER")]},
+            Rect(x=0, y=0, width=200, height=0),
+        )
+
+        assert layout.isEnabled
+        assert layout.drawVertical
+        assert layout.totalWidth == 110
+        assert layout.gutterWidth == 10
+        assert layout.columnWidth == 20
+        assert layout.numberOfColumns == 4
+        assert layout.horizontalOffset == 45
+
+    def test_multiple_column_layouts(self, warnings):
+        layout = artboard.convert_layout(
+            {
+                **FIG_ARTBOARD,
+                "layoutGrids": [
+                    self._layout(align="MIN", count=2147483647),
+                    self._layout(),
+                ],
+            },
+            Rect(x=0, y=0, width=200, height=0),
+        )
+
+        assert layout.isEnabled
+        assert layout.drawVertical
+        assert layout.totalWidth == 290
+        assert layout.gutterWidth == 10
+        assert layout.columnWidth == 20
+        assert layout.numberOfColumns == 10
+        assert layout.horizontalOffset == 0
+
+        warnings.assert_any_call("GRD004", ANY)
+
+    def test_row_layout(self):
+        layout = artboard.convert_layout(
+            {
+                **FIG_ARTBOARD,
+                "layoutGrids": [self._layout(axis="Y")],
+            },
+            Rect(x=0, y=0, width=200, height=110),
+        )
+
+        assert layout.isEnabled
+        assert layout.drawHorizontal
+        assert layout.totalWidth == 200
+        assert layout.gutterHeight == 10
+        assert layout.rowHeightMultiplication == 2
+
+    def test_float_row_layout(self, warnings):
+        layout = artboard.convert_layout(
+            {
+                **FIG_ARTBOARD,
+                "layoutGrids": [self._layout(axis="Y", align="CENTER", spacing=27)],
+            },
+            Rect(x=0, y=0, width=200, height=110),
+        )
+
+        assert layout is None
+
+        warnings.assert_any_call("GRD007", ANY)
+        warnings.assert_any_call("GRD005", ANY)
+        warnings.assert_any_call("GRD006", ANY)
