@@ -1,11 +1,16 @@
 from . import base, group, prototype, rectangle
 from converter import utils
-from sketchformat.layer_group import Artboard
+from sketchformat.layer_group import Artboard, SimpleGrid
 from sketchformat.style import Fill, FillType
+from typing import Optional, List
 
 
 def convert(fig_frame: dict) -> Artboard:
-    obj = Artboard(**base.base_styled(fig_frame), **prototype.prototyping_information(fig_frame))
+    obj = Artboard(
+        **base.base_styled(fig_frame),
+        **prototype.prototyping_information(fig_frame),
+        grid=convert_grid(fig_frame)
+    )
 
     return obj
 
@@ -50,3 +55,30 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
         group.convert_frame_style(fig_frame, sketch_artboard)
 
     return sketch_artboard
+
+
+def convert_grid(fig_frame: dict) -> Optional[SimpleGrid]:
+    grids = sorted(
+        [g for g in fig_frame.get("layoutGrids", []) if g["pattern"] == "GRID"],
+        key=lambda x: x["sectionSize"],
+    )
+    if not grids:
+        return None
+
+    primary = grids[0]["sectionSize"]
+    secondary = None
+    for g in grids[1:]:
+        size = g["sectionSize"]
+        if size % primary == 0:
+            if secondary:
+                utils.log_conversion_warning("GRD003", fig_frame)
+            else:
+                secondary = size
+        else:
+            utils.log_conversion_warning("GRD002", fig_frame)
+
+    return SimpleGrid(
+        gridSize=primary,
+        thickGridTimes=secondary / primary if secondary else 0,
+        isEnabled=True,
+    )
