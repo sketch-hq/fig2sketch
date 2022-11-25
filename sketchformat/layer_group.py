@@ -83,9 +83,7 @@ class Page(AbstractLayerGroup):
 @dataclass(kw_only=True)
 class ShapeGroup(AbstractLayerGroup):
     _class: str = field(default="shapeGroup")
-    windingRule: WindingRule = (
-        WindingRule.NON_ZERO
-    )  # Legacy, should match style.windingRule
+    windingRule: WindingRule = WindingRule.NON_ZERO  # Legacy, should match style.windingRule
 
 
 @dataclass(kw_only=True)
@@ -105,9 +103,7 @@ class Artboard(AbstractLayerGroup):
     includeBackgroundColorInExport: bool = False
     resizesContent: bool = True
     isFlowHome: bool = False
-    overlayBackgroundInteraction: OverlayBackgroundInteraction = (
-        OverlayBackgroundInteraction.NONE
-    )
+    overlayBackgroundInteraction: OverlayBackgroundInteraction = OverlayBackgroundInteraction.NONE
     presentationStyle: PresentationStyle = PresentationStyle.SCREEN
     overlaySettings: Optional[FlowOverlaySettings] = None
     prototypeViewport: Optional[PrototypeViewport] = None

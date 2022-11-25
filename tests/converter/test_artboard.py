@@ -70,9 +70,7 @@ class TestArtboardBackgroud:
                 "fillPaints": [
                     {
                         "type": "GRADIENT_LINEAR",
-                        "transform": Matrix(
-                            [[0.7071, -0.7071, 0.6], [0.7071, 0.7071, -0.1]]
-                        ),
+                        "transform": Matrix([[0.7071, -0.7071, 0.6], [0.7071, 0.7071, -0.1]]),
                         "stops": [
                             {"color": FIG_COLOR[0], "position": 0},
                             {"color": FIG_COLOR[1], "position": 0.4},
@@ -185,9 +183,7 @@ class TestGrid:
 
 
 class TestLayout:
-    def _layout(
-        self, axis="X", align="STRETCH", count=4, offset=0, spacing=20, gutter=10
-    ):
+    def _layout(self, axis="X", align="STRETCH", count=4, offset=0, spacing=20, gutter=10):
         return {
             "type": align,
             "axis": axis,
