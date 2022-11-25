@@ -62,6 +62,11 @@ WARNING_MESSAGES = {
     "GRD001": "has a layout grid which is only supported in Sketch artboards. It will be ignored",
     "GRD002": "has multiple grids but their sizes that are not multiples of each other. The larger one will not be converted",
     "GRD003": "has more than three or more grids and Sketch only supports two. Only the two finer grids will be converted",
+    "GRD004": "has more than one layouts in the same axis. Only the first one will be converted",
+    "GRD005": "has a row layout with a set height which is not supported by Sketch. It will be converted to a layout grid taking the whole height of the artboard",
+    "GRD006": "has a row layout with an offset that is not supported. The offset will be ignored",
+    "GRD007": "has a row layout with non-integer ratio between gutter and row size. The row layout will not be converted",
+    "GRD008": "has a row and column layout. The rows will only be as wide as the columns (instead of taking the entire width of the artboard)",
 }
 
 
