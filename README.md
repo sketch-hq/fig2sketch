@@ -25,10 +25,8 @@ python fig2sketch --help
 
 Some important options:
 
-- Choose an override option with `--instance-override` so you can decide whether to detach an instance or to just ignore it in ca
-se the instance is not supported as sketch instance
-- Pass `--force-convert-images` if the original document containst a corrupted image and you want to force it instead of having a
-n error
+- Choose an override option with `--instance-override` so you can decide whether to detach an instance or to just ignore it in case the instance is not supported as sketch instance
+- Pass `--force-convert-images` if the original document contains a corrupted image and you want to force it instead of having an error
 - Pass `--salt 12345678` to ensure a consistent conversion order
 - Pass `--dump-fig-json example/fig_file.json` (whichever path/name you like) to dump the generated JSON from the .fig file
 - Pass `-v` or `-vv` to show more information about he conversion process
@@ -58,7 +56,7 @@ Make sure, first, that you have [Rust](https://www.rust-lang.org/) and [Cargo](h
 pip install maturin
 ```
 
-Now, you can proceed to install the performance improcements:
+Now, you can proceed to install the performance improvements:
 
 ```
 sh scripts/install_patched_orjson.sh
