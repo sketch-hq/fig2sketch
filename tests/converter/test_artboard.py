@@ -1,5 +1,5 @@
 from .base import *
-from converter import prototype, tree
+from converter import prototype, tree, artboard
 from converter.positioning import Matrix
 from sketchformat.layer_common import ClippingMaskMode
 from sketchformat.style import *
@@ -70,7 +70,9 @@ class TestArtboardBackgroud:
                 "fillPaints": [
                     {
                         "type": "GRADIENT_LINEAR",
-                        "transform": Matrix([[0.7071, -0.7071, 0.6], [0.7071, 0.7071, -0.1]]),
+                        "transform": Matrix(
+                            [[0.7071, -0.7071, 0.6], [0.7071, 0.7071, -0.1]]
+                        ),
                         "stops": [
                             {"color": FIG_COLOR[0], "position": 0},
                             {"color": FIG_COLOR[1], "position": 0.4},
@@ -90,3 +92,93 @@ class TestArtboardBackgroud:
         assert bg.style.fills[0].fillType == FillType.GRADIENT
 
         warnings.assert_any_call("ART003", ANY)
+
+
+class TestGrid:
+    def _grid(self, spacing, color):
+        return {
+            "type": "STRETCH",
+            "axis": "X",
+            "visible": True,
+            "numSections": 5,
+            "offset": 0.0,
+            "sectionSize": spacing,
+            "gutterSize": 20.0,
+            "color": color,
+            "pattern": "GRID",
+        }
+
+    def test_single_grid(self):
+        grid = artboard.convert_grid(
+            {**FIG_ARTBOARD, "layoutGrids": [self._grid(20, FIG_COLOR[0])]}
+        )
+
+        assert grid.isEnabled == True
+        assert grid.gridSize == 20
+        assert grid.thickGridTimes == 0
+
+    def test_dual_multiple_grid(self):
+        grid = artboard.convert_grid(
+            {
+                **FIG_ARTBOARD,
+                "layoutGrids": [
+                    self._grid(20, FIG_COLOR[0]),
+                    self._grid(60, FIG_COLOR[0]),
+                ],
+            }
+        )
+
+        assert grid.isEnabled == True
+        assert grid.gridSize == 20
+        assert grid.thickGridTimes == 3
+
+    def test_dual_nonmultiple_grid(self, warnings):
+        grid = artboard.convert_grid(
+            {
+                **FIG_ARTBOARD,
+                "layoutGrids": [
+                    self._grid(15, FIG_COLOR[0]),
+                    self._grid(50, FIG_COLOR[0]),
+                ],
+            }
+        )
+
+        assert grid.isEnabled == True
+        assert grid.gridSize == 15
+        assert grid.thickGridTimes == 0
+
+        warnings.assert_any_call("GRD002", ANY)
+
+    def test_triple_grid(self, warnings):
+        grid = artboard.convert_grid(
+            {
+                **FIG_ARTBOARD,
+                "layoutGrids": [
+                    self._grid(15, FIG_COLOR[0]),
+                    self._grid(30, FIG_COLOR[0]),
+                    self._grid(45, FIG_COLOR[0]),
+                ],
+            }
+        )
+
+        assert grid.isEnabled == True
+        assert grid.gridSize == 15
+        assert grid.thickGridTimes == 2
+
+        warnings.assert_any_call("GRD003", ANY)
+
+    def test_triple_multiple_grid(self):
+        grid = artboard.convert_grid(
+            {
+                **FIG_ARTBOARD,
+                "layoutGrids": [
+                    self._grid(15, FIG_COLOR[0]),
+                    self._grid(25, FIG_COLOR[0]),
+                    self._grid(45, FIG_COLOR[0]),
+                ],
+            }
+        )
+
+        assert grid.isEnabled == True
+        assert grid.gridSize == 15
+        assert grid.thickGridTimes == 3
