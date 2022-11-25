@@ -1,6 +1,6 @@
 # .fig to Sketch converter
 
-fig2sketch is a command line tool that converts .fig files into .sketch design documents, which can then be opened with [Sketch](https://www.sketch.com/) applications.
+fig2sketch is a command line tool that converts .fig files into Sketch design documents (.sketch), which can then be opened with [Sketch](https://www.sketch.com/) applications.
 
 ## How it works
 
