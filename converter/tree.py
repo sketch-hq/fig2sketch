@@ -54,6 +54,9 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
 
     sketch_item = CONVERTERS[type_](fig_node)
 
+    if fig_node.get("layoutGrids", []) and type_ != "ARTBOARD":
+        utils.log_conversion_warning("GRD001", fig_node)
+
     children = []
     for child in fig_node.get("children", []):
         try:

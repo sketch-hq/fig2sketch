@@ -45,6 +45,7 @@ class LayoutGrid:
     drawHorizontal: bool = False
     drawHorizontalLines: bool = False
     drawVertical: bool = False
+    isEnabled: bool = True
 
 
 @dataclass(kw_only=True)
