@@ -115,12 +115,14 @@ class TestConvertFlow:
         fig_flow = {
             "prototypeInteractions": [
                 {"isDeleted": True, "event": {}},
-                {"isDeleted": False, "actions": []},
                 {
                     "isDeleted": False,
-                    "event": {
-                        "interactionType": "DRAG",
-                    },
+                    "actions": [{"navigationType": "NAVIGATE", "connectionType": "BACK"}],
+                },
+                {
+                    "isDeleted": False,
+                    "event": {"interactionType": "DRAG"},
+                    "actions": [{"navigationType": "NAVIGATE", "connectionType": "BACK"}],
                 },
                 {
                     "isDeleted": False,
