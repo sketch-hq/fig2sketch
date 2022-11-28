@@ -129,8 +129,6 @@ def process_styles(fig_node: dict) -> Style:
             for key in copy_keys:
                 if key in inherit_node:
                     fig_node[key] = inherit_node[key]
-                else:
-                    fig_node.pop(key, None)
         else:
             logging.warning(f"Unsupported {inherit_style}, it will not be copied")
 
