@@ -2,6 +2,8 @@ from .base import *
 from converter import group, tree
 from sketchformat.layer_common import ClippingMaskMode
 from sketchformat.style import *
+import copy
+from unittest.mock import ANY
 
 FIG_GROUP = {
     **FIG_BASE,
@@ -201,3 +203,29 @@ class TestFrameStyles:
         assert bg.style.innerShadows == [
             InnerShadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
         ]
+
+
+class TestResizingConstraints:
+    def test_equal_resizing_constraints(self, warnings):
+        fig = copy.deepcopy(FIG_GROUP)
+        fig["resizeToFit"] = True
+        fig["children"].append({**FIG_BASE, "type": "ROUNDED_RECTANGLE"})
+        g = tree.convert_node(fig, "")
+
+        assert g.resizingConstraint == g.layers[0].resizingConstraint
+        assert g.resizingConstraint == g.layers[1].resizingConstraint
+
+        warnings.assert_not_called()
+
+    def test_mixed_resizing_constraints(self, warnings):
+        fig = copy.deepcopy(FIG_GROUP)
+        fig["resizeToFit"] = True
+        fig["children"].append(
+            {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "horizontalConstraint": "MIN"}
+        )
+        g = tree.convert_node(fig, "")
+
+        assert g.resizingConstraint == g.layers[0].resizingConstraint
+        assert g.resizingConstraint != g.layers[1].resizingConstraint
+
+        warnings.assert_any_call("GRP002", ANY)
