@@ -38,6 +38,16 @@ FIG_OVERLAY = {
     "parent": {"guid": (0, 3)},
 }
 
+FIG_MANUAL_OVERLAY = {
+    **FIG_BASE,
+    "type": "FRAME",
+    "guid": (0, 6),
+    "overlayPositionType": "MANUAL",
+    "overlayBackgroundInteraction": "CLOSE_ON_CLICK_OUTSIDE",
+    "children": [],
+    "parent": {"guid": (0, 3)},
+}
+
 FIG_CANVAS = {
     **FIG_BASE,
     "type": "CANVAS",
@@ -70,6 +80,11 @@ def canvas(monkeypatch):
 @pytest.fixture
 def overlay(monkeypatch):
     context.init(None, {(0, 5): FIG_OVERLAY})
+
+
+@pytest.fixture
+def manual_overlay(monkeypatch):
+    context.init(None, {(0, 6): FIG_MANUAL_OVERLAY})
 
 
 @pytest.mark.usefixtures("canvas")
@@ -201,3 +216,34 @@ class TestConvertFlow:
         assert flow["flow"].overlaySettings.overlayAnchor == Point(0.5, 1)
         assert flow["flow"].overlaySettings.sourceAnchor == Point(0.5, 1)
         assert flow["flow"].overlaySettings.offset == Point(0, 0)
+
+    def test_overly_with_manual_position(self, manual_overlay):
+        overlay_flow = {
+            "prototypeInteractions": [
+                {
+                    "isDeleted": False,
+                    "event": {"interactionType": "ON_CLICK"},
+                    "actions": [
+                        {
+                            "navigationType": "OVERLAY",
+                            "connectionType": "INTERNAL_NODE",
+                            "transitionNodeID": (0, 6),
+                            "transitionType": "SLIDE_FROM_TOP",
+                            "overlayRelativePosition": {"x": 19.6, "y": 85.0},
+                        }
+                    ],
+                }
+            ]
+        }
+
+        fig_artboard = {**FIG_BASE, **overlay_flow}
+
+        flow = convert_flow(fig_artboard)
+
+        assert flow["flow"].destinationArtboardID == utils.gen_object_id((0, 6))
+        assert flow["flow"].animationType == AnimationType.SLIDE_FROM_TOP
+        assert flow["flow"].maintainScrollPosition is False
+        assert flow["flow"].overlaySettings.overlayType == 0
+        assert flow["flow"].overlaySettings.overlayAnchor == Point(0, 0)
+        assert flow["flow"].overlaySettings.sourceAnchor == Point(0, 0)
+        assert flow["flow"].overlaySettings.offset == Point(19.6, 85.0)

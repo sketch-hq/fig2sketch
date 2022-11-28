@@ -156,7 +156,8 @@ def get_destination_settings_if_any(
 
                 if "overlayBackgroundInteraction" in transition_node:
                     overlay_settings = FlowOverlaySettings.Positioned(
-                        transition_node.get("overlayPositionType", "CENTER")
+                        transition_node.get("overlayPositionType", "CENTER"),
+                        action.get("overlayRelativePosition"),
                     )
 
         case "NONE", _:

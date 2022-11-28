@@ -1,7 +1,7 @@
 from .common import Point
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Optional
+from typing import Optional, Dict
 
 
 class OverlayBackgroundInteraction(IntEnum):
@@ -31,8 +31,9 @@ class FlowOverlaySettings:
     overlayType: int = 0
 
     @staticmethod
-    def Positioned(position: str) -> "FlowOverlaySettings":
+    def Positioned(position: str, manual_offset: Dict = None) -> "FlowOverlaySettings":
         anchor = Point(0.5, 0.5)
+        offset = Point.from_dict(manual_offset) if manual_offset is not None else Point(0, 0)
 
         match position:
             case "TOP_LEFT":
@@ -47,8 +48,10 @@ class FlowOverlaySettings:
                 anchor = Point(0.5, 1)
             case "BOTTOM_RIGHT":
                 anchor = Point(1, 1)
+            case "MANUAL":
+                anchor = Point(0, 0)
 
-        return FlowOverlaySettings(overlayAnchor=anchor, sourceAnchor=anchor)
+        return FlowOverlaySettings(overlayAnchor=anchor, sourceAnchor=anchor, offset=offset)
 
     @staticmethod
     def RegularArtboard() -> "FlowOverlaySettings":
