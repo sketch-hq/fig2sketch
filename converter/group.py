@@ -15,14 +15,36 @@ def convert(fig_group):
     )
 
 
-def post_process_frame(fig_group, sketch_group):
+def post_process_frame(fig_group: dict, sketch_group: Group) -> Group:
     convert_frame_style(fig_group, sketch_group)
 
-    # Do nothing for fig groups, they translate directly to Sketch
-    if not fig_group["resizeToFit"]:
+    if fig_group["resizeToFit"]:
+        adjust_group_resizing_constraint(fig_group, sketch_group)
+    else:
+        # For frames converted to groups, add clipmask, resize children, etc
         convert_frame_to_group(fig_group, sketch_group)
 
     return sketch_group
+
+
+def adjust_group_resizing_constraint(fig_group: dict, sketch_group: Group) -> None:
+    """Adjust the resizing constraint of the group to better match the .fig doc.
+
+    Groups in .fig don't really have a resizing constraint. Instead, the children of the group resize
+    relative to the parent of the group.
+
+    If all childs have the same constraint, we can have the same behaviour in Sketch, by setting the group
+    constraints to be equal to the sublayers.
+    However, if there is a mix, we cannot replicate the behaviour, so we just choose some constraint and throw
+    a warning"""
+    if not sketch_group.layers:
+        return
+
+    constraint = sketch_group.layers[0].resizingConstraint
+    if any([l.resizingConstraint != constraint for l in sketch_group.layers[1:]]):
+        utils.log_conversion_warning("GRP002", fig_group)
+
+    sketch_group.resizingConstraint = constraint
 
 
 def convert_frame_to_group(fig_group: dict, sketch_group: AbstractLayerGroup) -> None:
