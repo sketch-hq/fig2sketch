@@ -148,13 +148,16 @@ def get_destination_settings_if_any(
         case "INTERNAL_NODE", None:
             destination = None
         case "INTERNAL_NODE", transition_node_id:
-            destination = utils.gen_object_id(transition_node_id)
-            transition_node = context.fig_node(transition_node_id)
+            if transition_node_id[0] == 4294967295:
+                destination = None
+            else:
+                destination = utils.gen_object_id(transition_node_id)
+                transition_node = context.fig_node(transition_node_id)
 
-            if "overlayBackgroundInteraction" in transition_node:
-                overlay_settings = FlowOverlaySettings.Positioned(
-                    transition_node.get("overlayPositionType", "CENTER")
-                )
+                if "overlayBackgroundInteraction" in transition_node:
+                    overlay_settings = FlowOverlaySettings.Positioned(
+                        transition_node.get("overlayPositionType", "CENTER")
+                    )
 
         case "NONE", _:
             destination = None
