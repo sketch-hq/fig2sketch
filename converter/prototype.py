@@ -48,6 +48,9 @@ def convert_flow(fig_node: dict) -> _Flow:
         if interaction["isDeleted"]:
             continue
 
+        if "event" not in interaction or interaction["event"] == {}:
+            continue
+
         interaction_type = interaction["event"].get("interactionType")
         if interaction_type != "ON_CLICK":
             utils.log_conversion_warning("PRT001", fig_node, props=[interaction_type])

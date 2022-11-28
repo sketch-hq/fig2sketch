@@ -117,9 +117,12 @@ class TestConvertFlow:
                 {"isDeleted": True, "event": {}},
                 {
                     "isDeleted": False,
-                    "event": {
-                        "interactionType": "DRAG",
-                    },
+                    "actions": [{"navigationType": "NAVIGATE", "connectionType": "BACK"}],
+                },
+                {
+                    "isDeleted": False,
+                    "event": {"interactionType": "DRAG"},
+                    "actions": [{"navigationType": "NAVIGATE", "connectionType": "BACK"}],
                 },
                 {
                     "isDeleted": False,
