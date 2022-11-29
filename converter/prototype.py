@@ -65,7 +65,6 @@ def convert_flow(fig_node: dict) -> _Flow:
             if action == {}:
                 continue
 
-            # TODO: Back is SCROLL for some reason??? or just irrelevant?
             if action["navigationType"] not in ["NAVIGATE", "SCROLL", "OVERLAY"]:
                 utils.log_conversion_warning("PRT003", fig_node, props=[action["navigationType"]])
                 continue
@@ -142,7 +141,7 @@ def get_destination_settings_if_any(
     overlay_settings = None
     destination: Optional[str]
 
-    match action["connectionType"], action.get("transitionNodeID", None):
+    match action["connectionType"], action.get("transitionNodeID"):
         case "BACK", _:
             destination = "back"
         case "INTERNAL_NODE", None:
@@ -155,9 +154,11 @@ def get_destination_settings_if_any(
                 transition_node = context.fig_node(transition_node_id)
 
                 if "overlayBackgroundInteraction" in transition_node:
+                    offset = action.get("overlayRelativePosition", {"x": 0, "y": 0})
+
                     overlay_settings = FlowOverlaySettings.Positioned(
                         transition_node.get("overlayPositionType", "CENTER"),
-                        action.get("overlayRelativePosition"),
+                        Point.from_dict(offset),
                     )
 
         case "NONE", _:

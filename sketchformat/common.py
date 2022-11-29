@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Sequence, TypedDict
+from typing import Sequence, TypedDict, Tuple
 
 
 class WindingRule(IntEnum):
@@ -7,12 +7,11 @@ class WindingRule(IntEnum):
     EVEN_ODD = 1
 
 
-class DictXY(TypedDict, total=False):
-    x: float
-    y: float
-
-
 class Point:
+    class _DictXY(TypedDict, total=False):
+        x: float
+        y: float
+
     def __init__(self, x: float, y: float) -> None:
         self.x = x
         self.y = y
@@ -21,11 +20,15 @@ class Point:
         return f"{{{self.x}, {self.y}}}"
 
     @staticmethod
+    def from_tuple(tuple_xy: Tuple[float]) -> "Point":
+        return Point(x=tuple_xy[0], y=tuple_xy[1])
+
+    @staticmethod
     def from_array(array: Sequence[float]) -> "Point":
         return Point(x=array[0], y=array[1])
 
     @staticmethod
-    def from_dict(dict_xy: DictXY) -> "Point":
+    def from_dict(dict_xy: _DictXY) -> "Point":
         return Point(dict_xy["x"], dict_xy["y"])
 
     def __eq__(self, other: object) -> bool:

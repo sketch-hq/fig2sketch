@@ -1,7 +1,7 @@
-from .common import Point, DictXY
+from .common import Point
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Optional
+from typing import Optional, Tuple
 
 
 class OverlayBackgroundInteraction(IntEnum):
@@ -31,9 +31,8 @@ class FlowOverlaySettings:
     overlayType: int = 0
 
     @staticmethod
-    def Positioned(position: str, manual_offset: Optional[DictXY] = None) -> "FlowOverlaySettings":
+    def Positioned(position: str, offset: Point = Point(0, 0)) -> "FlowOverlaySettings":
         anchor = Point(0.5, 0.5)
-        offset = Point(0, 0) if manual_offset is None else Point.from_dict(manual_offset)
 
         match position:
             case "TOP_LEFT":
