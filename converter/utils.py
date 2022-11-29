@@ -3,7 +3,7 @@ import logging
 import struct
 import uuid
 from .config import config
-from typing import Sequence, Dict
+from typing import Sequence, Dict, Optional
 
 issued_warnings: Dict[tuple[int, int], list[str]] = {}
 
@@ -31,6 +31,13 @@ def get_style_table_override(fig_item):
         override_table.update({s["styleID"]: s for s in fig_item["styleOverrideTable"]})
 
     return override_table
+
+
+UINT_MAX = 4294967295
+
+
+def is_invalid_ref(uuid: Optional[Sequence[int]]) -> bool:
+    return uuid is None or uuid[0] == UINT_MAX or uuid[1] == UINT_MAX
 
 
 WARNING_MESSAGES = {

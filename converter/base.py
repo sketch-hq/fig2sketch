@@ -1,11 +1,10 @@
 import logging
-from converter import utils
 from sketchformat.layer_common import *
 from sketchformat.layer_shape import *
 from sketchformat.style import *
 from typing import TypedDict
 
-from . import positioning, style, prototype
+from . import positioning, style, prototype, utils
 from .context import context
 
 SUPPORTED_INHERIT_STYLES = {
@@ -114,7 +113,7 @@ def process_styles(fig_node: dict) -> Style:
     components = {}
     for inherit_style, copy_keys in SUPPORTED_INHERIT_STYLES.items():
         inherit_node_id = fig_node.get(inherit_style)
-        if not inherit_node_id or inherit_node_id[0] == 4294967295:
+        if inherit_node_id is None or utils.is_invalid_ref(inherit_node_id):
             continue
 
         try:
