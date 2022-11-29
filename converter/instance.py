@@ -100,7 +100,23 @@ def get_all_overrides(fig_instance):
 
         all_overrides.append(new_override)
 
-    return all_overrides
+    # Do a pass to eliminate duplicate overrides, we use an ordered dict to keep them sorted
+    unique_overrides = []
+    for ov in all_overrides:
+        guid = ov["guidPath"]["guids"]
+        existing = [i for i in unique_overrides if i["guidPath"]["guids"] == guid]
+        if existing:
+            # Add properties to the previous override. Priority goes to the first item
+            # because we want to priorize prop assignments which we always convert first
+            for k, v in ov.items():
+                if k == "guidPath":
+                    continue
+                if k not in existing[0]:
+                    existing[0][k] = v
+        else:
+            unique_overrides.append(ov)
+
+    return unique_overrides
 
 
 def convert_override(override: dict) -> Tuple[List[OverrideValue], List[str]]:
@@ -191,7 +207,7 @@ def convert_properties_to_overrides(fig_master, properties, guid_path=[]):
 def find_refs(node, ref_id):
     """Find all usages of a property in a symbol, recursively"""
     refs = [
-        (ref, node["guid"])
+        (ref, node.get("overrideKey", node["guid"]))
         for ref in node.get("componentPropRefs", [])
         if ref["defID"] == ref_id and not ref["isDeleted"]
     ]

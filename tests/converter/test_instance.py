@@ -158,3 +158,26 @@ class TestOverrides:
         assert i.overrideValues == []
 
         warnings.assert_any_call("SYM002", ANY, props=["fillPaints"])
+
+    def test_prop_and_symbol_override(self):
+        """When a property and an override are specified for the same thing, we want
+        to keep the value of the property (it always takes priority over overrides)"""
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(0, 1)]}, "textData": {"characters": "override"}}
+        ]
+        fig["componentPropAssignments"] = [
+            {"defID": (1, 0), "value": {"textValue": {"characters": "property"}}}
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_text_id = symbol.layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_text_id}_stringValue", value="property")
+        ]
