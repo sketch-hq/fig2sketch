@@ -43,6 +43,9 @@ def convert(fig_symbol):
 
 
 def move_to_symbols_page(fig_symbol, sketch_symbol):
+    if utils.has_rounded_corners(fig_symbol):
+        group.create_clip_mask_if_needed(fig_symbol, sketch_symbol)
+
     # Apply frame transforms
     group.convert_frame_style(fig_symbol, sketch_symbol)
 

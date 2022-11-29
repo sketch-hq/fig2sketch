@@ -48,12 +48,9 @@ def adjust_group_resizing_constraint(fig_group: dict, sketch_group: Group) -> No
 
 
 def convert_frame_to_group(fig_group: dict, sketch_group: AbstractLayerGroup) -> None:
-    needs_clip_mask = not fig_group.get("frameMaskDisabled", False)
-    if needs_clip_mask:
-        # Add a clipping rectangle matching the frame size. No need to recalculate bounds
-        # since the clipmask defines Sketch bounds (which match visible children)
-        sketch_group.layers.insert(0, rectangle.make_clipping_rect(fig_group, sketch_group.frame))
-    else:
+    has_clip_mask = create_clip_mask_if_needed(fig_group, sketch_group)
+
+    if not has_clip_mask:
         # When converting from a frame to a group, the bounding box should be adjusted
         # The frame box in a fig doc can be smalled than the children bounds, but not so in Sketch
         # To do so, we resize the frame to match the children bbox and also move the children
@@ -73,6 +70,16 @@ def convert_frame_to_group(fig_group: dict, sketch_group: AbstractLayerGroup) ->
         new_xy = positioning.transform_frame(fig_group, {"x": w, "y": h}) + tr_vector
 
         sketch_group.frame = Rect(x=new_xy[0], y=new_xy[1], width=w, height=h)
+
+
+def create_clip_mask_if_needed(fig_group: dict, sketch_group: AbstractLayerGroup) -> bool:
+    needs_clip_mask = not fig_group.get("frameMaskDisabled", False)
+    if needs_clip_mask:
+        # Add a clipping rectangle matching the frame size. No need to recalculate bounds
+        # since the clipmask defines Sketch bounds (which match visible children)
+        sketch_group.layers.insert(0, rectangle.make_clipping_rect(fig_group, sketch_group.frame))
+
+    return needs_clip_mask
 
 
 def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> AbstractLayerGroup:
