@@ -27,15 +27,9 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     # we set the background color in sketch property
     # We could just always create the rectangle to simplify the logic, but I guess
     # adding always a background rectangle is an overhead for the document itself
-    for corner in [
-        "rectangleTopLeftCornerRadius",
-        "rectangleTopLeftCornerRadius",
-        "rectangleTopLeftCornerRadius",
-        "rectangleTopLeftCornerRadius",
-    ]:
-        if fig_frame.get(corner, 0) != 0:
-            utils.log_conversion_warning("ART001", fig_frame)
-            break
+    if utils.has_rounded_corners(fig_frame):
+        utils.log_conversion_warning("ART001", fig_frame)
+        group.create_clip_mask_if_needed(fig_frame, sketch_artboard)
 
     if sketch_artboard.rotation != 0:
         utils.log_conversion_warning("ART002", fig_frame)

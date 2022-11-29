@@ -2,6 +2,7 @@ from .base import *
 from converter import prototype, tree, artboard
 from converter.positioning import Matrix
 from sketchformat.layer_common import ClippingMaskMode, Rect
+from sketchformat.layer_shape import Rectangle
 from sketchformat.style import *
 import pytest
 from unittest.mock import ANY
@@ -90,6 +91,16 @@ class TestArtboardBackgroud:
         assert bg.style.fills[0].fillType == FillType.GRADIENT
 
         warnings.assert_any_call("ART003", ANY)
+
+    def test_rounded_corners(self):
+        ab = tree.convert_node(
+            {**FIG_ARTBOARD, "rectangleTopLeftCornerRadius": 5},
+            "CANVAS",
+        )
+
+        assert isinstance(ab.layers[0], Rectangle)
+        assert ab.layers[0].hasClippingMask
+        assert ab.layers[0].points[0].cornerRadius == 5
 
 
 class TestGrid:

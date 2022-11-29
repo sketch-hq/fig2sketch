@@ -40,6 +40,20 @@ def is_invalid_ref(uuid: Optional[Sequence[int]]) -> bool:
     return uuid is None or uuid[0] == UINT_MAX or uuid[1] == UINT_MAX
 
 
+def has_rounded_corners(fig: dict) -> bool:
+    return any(
+        [
+            fig.get(c, 0) != 0
+            for c in [
+                "rectangleTopLeftCornerRadius",
+                "rectangleTopLeftCornerRadius",
+                "rectangleTopLeftCornerRadius",
+                "rectangleTopLeftCornerRadius",
+            ]
+        ]
+    )
+
+
 WARNING_MESSAGES = {
     "TXT001": "is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
     "TXT002": "has multiple text fill colors. Only the first one will be converted",
