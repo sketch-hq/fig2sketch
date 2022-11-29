@@ -94,7 +94,8 @@ def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> Ab
         bgrect = rectangle.make_background_rect(fig_group, sketch_group.frame, "Frame Background")
         bgrect.style.fills = style.fills
         bgrect.style.borders = style.borders
-        bgrect.style.blur = Blur(type=BlurType.BACKGROUND, radius=style.blur.radius)
+        if has_bgblur:
+            bgrect.style.blur = Blur(type=BlurType.BACKGROUND, radius=style.blur.radius)
         bgrect.style.innerShadows = style.innerShadows
 
         sketch_group.layers.insert(0, bgrect)
