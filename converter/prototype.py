@@ -141,7 +141,7 @@ def get_destination_settings_if_any(
     overlay_settings = None
     destination: Optional[str]
 
-    match action["connectionType"], action.get("transitionNodeID"):
+    match action["connectionType"], action.get("transitionNodeID", None):
         case "BACK", _:
             destination = "back"
         case "INTERNAL_NODE", None:

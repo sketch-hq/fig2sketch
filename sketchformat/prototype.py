@@ -1,7 +1,7 @@
 from .common import Point
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Optional, Tuple
+from typing import Optional
 
 
 class OverlayBackgroundInteraction(IntEnum):

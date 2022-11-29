@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Sequence, TypedDict, Tuple
+from typing import Sequence, TypedDict
 
 
 class WindingRule(IntEnum):
@@ -18,10 +18,6 @@ class Point:
 
     def to_json(self) -> str:
         return f"{{{self.x}, {self.y}}}"
-
-    @staticmethod
-    def from_tuple(tuple_xy: Tuple[float]) -> "Point":
-        return Point(x=tuple_xy[0], y=tuple_xy[1])
 
     @staticmethod
     def from_array(array: Sequence[float]) -> "Point":
