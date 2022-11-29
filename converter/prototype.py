@@ -148,7 +148,7 @@ def get_destination_settings_if_any(
         case "INTERNAL_NODE", None:
             destination = None
         case "INTERNAL_NODE", transition_node_id:
-            if transition_node_id[0] == 4294967295:
+            if utils.is_invalid_ref(transition_node_id):
                 destination = None
             else:
                 destination = utils.gen_object_id(transition_node_id)

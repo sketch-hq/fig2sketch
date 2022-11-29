@@ -9,7 +9,7 @@ from typing import Optional, List, Tuple
 
 
 def convert(fig_instance):
-    if fig_instance["symbolData"]["symbolID"][0] == 4294967295:
+    if utils.is_invalid_ref(fig_instance["symbolData"]["symbolID"]):
         # Broken instance, return a placeholder in its place
         utils.log_conversion_warning("SYM001", fig_instance)
         return group.convert(fig_instance)
