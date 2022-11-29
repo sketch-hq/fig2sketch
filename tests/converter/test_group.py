@@ -64,6 +64,8 @@ class TestFrameStyles:
         assert bg.style.fills[0].fillType == FillType.COLOR
         assert bg.style.fills[0].color == SKETCH_COLOR[0]
 
+        assert not bg.style.blur.isEnabled
+
     def test_fg_blur(self):
         g = tree.convert_node(
             {
