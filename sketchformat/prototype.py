@@ -31,7 +31,7 @@ class FlowOverlaySettings:
     overlayType: int = 0
 
     @staticmethod
-    def Positioned(position: str) -> "FlowOverlaySettings":
+    def Positioned(position: str, offset: Point = Point(0, 0)) -> "FlowOverlaySettings":
         anchor = Point(0.5, 0.5)
 
         match position:
@@ -47,8 +47,10 @@ class FlowOverlaySettings:
                 anchor = Point(0.5, 1)
             case "BOTTOM_RIGHT":
                 anchor = Point(1, 1)
+            case "MANUAL":
+                anchor = Point(0, 0)
 
-        return FlowOverlaySettings(overlayAnchor=anchor, sourceAnchor=anchor)
+        return FlowOverlaySettings(overlayAnchor=anchor, sourceAnchor=anchor, offset=offset)
 
     @staticmethod
     def RegularArtboard() -> "FlowOverlaySettings":
