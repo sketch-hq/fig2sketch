@@ -38,7 +38,7 @@ python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sket
 
 ## Install
 
-Before moving forward, you need Python 3 installed in your machine.
+Before moving forward, you need Python 3.10 or newer installed in your machine.
 
 ```
 python -m venv .venv

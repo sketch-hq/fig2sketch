@@ -10,8 +10,21 @@ TEXT_BASE = {
     "fontSize": 12,
     "textAlignVertical": "CENTER",
     "textAlignHorizontal": "CENTER",
-    "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[0]}],
+    "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[0], "opacity": 1, "visible": True}],
 }
+
+TEXT_PLAIN = {**TEXT_BASE, "textData": {"characters": "plain"}}
+
+
+def build_emoji_text(chars: str, glyphs: List):
+    return {
+        **TEXT_BASE,
+        "textData": {
+            "characters": chars,
+            "glyphs": glyphs,
+            "styleOverrideTable": [{"styleID": 2, "fillPaints": [{"type": "EMOJI"}]}],
+        },
+    }
 
 
 @pytest.fixture
@@ -22,7 +35,7 @@ def mock_fonts(monkeypatch):
 @pytest.mark.usefixtures("mock_fonts")
 class TestOverrideStyles:
     def test_plain_text(self):
-        text = override_characters_style({**TEXT_BASE, "textData": {"characters": "plain"}})
+        text = override_characters_style(TEXT_PLAIN)
         assert len(text) == 1
         assert text[0].location == 0
         assert text[0].length == 5
@@ -76,16 +89,8 @@ class TestOverrideStyles:
         glyphs = [{"firstCharacter": i, "styleID": 0} for i in range(len(chars))]
         glyphs[7]["styleID"] = 2
 
-        text = override_characters_style(
-            {
-                **TEXT_BASE,
-                "textData": {
-                    "characters": chars,
-                    "glyphs": glyphs,
-                    "styleOverrideTable": [{"styleID": 2, "fillPaints": [{"type": "EMOJI"}]}],
-                },
-            }
-        )
+        text = override_characters_style(build_emoji_text(chars, glyphs))
+
         assert len(text) == 3
         [c0, c1, c2] = text
         assert c0.location == 0
@@ -115,16 +120,8 @@ class TestOverrideStyles:
         glyphs.pop(6)
         glyphs.pop(6)
 
-        text = override_characters_style(
-            {
-                **TEXT_BASE,
-                "textData": {
-                    "characters": chars,
-                    "glyphs": glyphs,
-                    "styleOverrideTable": [{"styleID": 2, "fillPaints": [{"type": "EMOJI"}]}],
-                },
-            }
-        )
+        text = override_characters_style(build_emoji_text(chars, glyphs))
+
         assert len(text) == 3
         [c0, c1, c2] = text
         assert c0.location == 0
@@ -144,3 +141,37 @@ class TestOverrideStyles:
         assert c0.attributes.MSAttributedStringFontAttribute == FontDescriptor(
             name="Roboto-Normal", size=12
         )
+
+
+@pytest.mark.usefixtures("mock_fonts")
+class TestConvert:
+    def test_no_kerning(self):
+        text = convert(TEXT_PLAIN)
+
+        assert text.style.textStyle.encodedAttributes.kerning is None
+        assert text.frame.width == FIG_BASE["size"]["x"]
+
+    def test_zero_kerning(self):
+        TEXT_PLAIN["letterSpacing"] = {"units": "PIXELS", "value": 0}
+        text = convert(TEXT_PLAIN)
+
+        assert text.style.textStyle.encodedAttributes.kerning is None
+        assert text.frame.width == FIG_BASE["size"]["x"]
+
+    def test_kerning_fixed_width(self):
+        TEXT_PLAIN["letterSpacing"] = {"units": "PIXELS", "value": 10}
+        TEXT_PLAIN["textAutoResize"] = "HEIGHT"
+
+        text = convert(TEXT_PLAIN)
+
+        assert text.style.textStyle.encodedAttributes.kerning == 10
+        assert text.frame.width == FIG_BASE["size"]["x"]
+
+    def test_kerning_flexible_width(self):
+        TEXT_PLAIN["letterSpacing"] = {"units": "PERCENT", "value": 50}
+        TEXT_PLAIN["textAutoResize"] = "WIDTH_AND_HEIGHT"
+
+        text = convert(TEXT_PLAIN)
+
+        assert text.style.textStyle.encodedAttributes.kerning == 6
+        assert text.frame.width == FIG_BASE["size"]["x"] + 6

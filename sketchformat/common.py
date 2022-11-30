@@ -24,8 +24,8 @@ class Point:
         return Point(x=array[0], y=array[1])
 
     @staticmethod
-    def from_dict(dict: _DictXY) -> "Point":
-        return Point(dict["x"], dict["y"])
+    def from_dict(dict_xy: _DictXY) -> "Point":
+        return Point(dict_xy["x"], dict_xy["y"])
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Point):
