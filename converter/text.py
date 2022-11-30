@@ -262,6 +262,7 @@ def kerning(fig_text):
     if "letterSpacing" in fig_text:
         match fig_text["letterSpacing"]:
             case {"units": "PIXELS", "value": pixels}:
+                # We handle kerning 0 as Auto (None) to match Sketch behavior better
                 return pixels if pixels != 0 else None
             case {"units": "PERCENT", "value": percent}:
                 return fig_text["fontSize"] * percent / 100

@@ -2,7 +2,7 @@ from converter.rectangle import convert
 from .base import FIG_BASE
 
 
-class TestConvert:
+class TestCorners:
     def test_straight_corners(self):
         rect = convert({**FIG_BASE})
         for p in rect.points:
