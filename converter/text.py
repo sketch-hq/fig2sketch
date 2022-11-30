@@ -90,6 +90,11 @@ def convert(fig_text):
     if len(obj.attributedString.attributes) > 1:
         obj.style.fills = []
 
+    # Adjust frame's width to include kerning so the text doesn't get cut
+    converted_kerning = obj.style.textStyle.encodedAttributes.kerning
+    if obj.textBehaviour == TextBehaviour.FLEXIBLE_WIDTH and converted_kerning is not None:
+        obj.frame.width += converted_kerning
+
     return obj
 
 
@@ -257,13 +262,14 @@ def kerning(fig_text):
     if "letterSpacing" in fig_text:
         match fig_text["letterSpacing"]:
             case {"units": "PIXELS", "value": pixels}:
-                return pixels
+                # We handle kerning 0 as Auto (None) to match Sketch behavior better
+                return pixels if pixels != 0 else None
             case {"units": "PERCENT", "value": percent}:
                 return fig_text["fontSize"] * percent / 100
             case _:
                 raise Exception(f"Unknown letter spacing unit")
     else:
-        return 0
+        return None
 
 
 def line_height(fig_text):

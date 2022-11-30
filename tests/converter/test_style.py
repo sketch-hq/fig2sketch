@@ -1,5 +1,4 @@
 from converter.style import *
-from sketchformat.style import *
 import dataclasses
 from .base import *
 
