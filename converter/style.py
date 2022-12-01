@@ -1,9 +1,9 @@
+import dataclasses
 import math
+from .positioning import Vector, Matrix
 from converter import utils
 from sketchformat.style import *
 from typing import List, TypedDict
-from .positioning import Vector, Matrix
-import dataclasses
 
 BORDER_POSITION = {
     "CENTER": BorderPosition.CENTER,

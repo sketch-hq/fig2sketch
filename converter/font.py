@@ -1,8 +1,8 @@
 import appdirs
 import os
-from converter import utils
 import urllib.request
 import urllib.parse
+from converter import utils
 from fontTools.ttLib import TTFont
 from sketchformat.document import FontReference, JsonFileReference
 from typing import IO, Tuple

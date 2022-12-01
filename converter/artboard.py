@@ -1,9 +1,9 @@
+import math
 from . import base, group, prototype, rectangle
 from converter import utils
 from sketchformat.layer_group import Artboard, SimpleGrid, LayoutGrid, Rect
 from sketchformat.style import Fill, FillType
-from typing import Optional, List
-import math
+from typing import Optional
 from collections import namedtuple
 
 
@@ -93,7 +93,6 @@ def convert_layout(fig_frame: dict, frame: Rect) -> Optional[LayoutGrid]:
         utils.log_conversion_warning("GRD004", fig_frame)
 
     col_config = {}
-    width = frame.width
     if columns:
         sizes = calculate_layout(columns[0], frame.width)
 

@@ -1,5 +1,5 @@
-from converter import utils
 from . import base
+from converter import utils
 from sketchformat.layer_common import Rect, ClippingMaskMode
 from sketchformat.layer_shape import Rectangle
 from sketchformat.style import Style

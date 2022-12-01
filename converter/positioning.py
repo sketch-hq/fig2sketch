@@ -1,7 +1,7 @@
 import math
+from .errors import Fig2SketchWarning
 from sketchformat.layer_common import Rect, AbstractLayer
 from typing import TypedDict, Tuple, List, Sequence
-from .errors import Fig2SketchWarning
 
 
 class Vector(list):

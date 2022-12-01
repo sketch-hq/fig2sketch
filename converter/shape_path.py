@@ -1,13 +1,13 @@
 from . import base, positioning
-from converter import utils
+import copy
 import itertools
+from collections import defaultdict
+from converter import utils
 from sketchformat.layer_group import ShapeGroup, Group
 from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
 from sketchformat.style import MarkerType
-from collections import defaultdict
-import copy
-from typing import Union, List, TypedDict, Tuple, Dict, Any
+from typing import Union, List, TypedDict, Tuple, Dict
 
 STROKE_CAP_TO_MARKER_TYPE = {
     "NONE": MarkerType.NONE,

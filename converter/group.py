@@ -18,7 +18,7 @@ def convert(fig_group):
 def post_process_frame(fig_group: dict, sketch_group: Group) -> Group:
     convert_frame_style(fig_group, sketch_group)
 
-    if fig_group["resizeToFit"]:
+    if "resizeToFit" in fig_group and fig_group["resizeToFit"]:
         adjust_group_resizing_constraint(fig_group, sketch_group)
     else:
         # For frames converted to groups, add clipmask, resize children, etc
