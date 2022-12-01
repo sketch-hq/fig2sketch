@@ -2,11 +2,28 @@ name: release
 
 on:
   push:
-    tags: v[0-9]+.[0-9]+.?[0-9]*
+    tags:
+      - v[0-9]+.[0-9]+.?[0-9]*
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            arch: x86_64
+            runs: ubuntu-latest
+          - os: windows
+            arch: x86_64
+            runs: windows-latest
+          - os: macos
+            arch: x86_64
+            runs: macos-latest
+          - os: macos
+            arch: arm64
+            runs: self-hosted
+
+    runs-on: ${{ matrix.runs }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -14,126 +31,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-      - name: Install latest stable
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            override: true
-      - name: Build
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install maturin
-          pip install certifi
-          pip install -r requirements.txt
-          scripts/install_patched_orjson.sh
-          scripts/install_fig_kiwi.sh
-          echo "VERSION='${{ github.ref_name }}'" > version.py
-          pyinstaller fig2sketch.py -y --onefile
-      - name: Rename binary
-        run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
-      - name: zip release
-        uses: thedoctor0/zip-release@main
-        with:
-          type: 'zip'
-          filename: 'fig2sketch-linux.zip'
-          directory: 'dist'
-          path: '*'
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: builds
-          path: dist/fig2sketch-linux.zip
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.11
-      - name: Install latest stable
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            override: true
-      - name: Build
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install maturin
-          pip install certifi
-          pip install -r requirements.txt
-          bash scripts/install_patched_orjson.sh
-          bash scripts/install_fig_kiwi.sh
-          echo "VERSION='${{ github.ref_name }}'" > version.py
-          pyinstaller fig2sketch.py -y --onefile
-      - name: Rename binary
-        run: mv dist/fig2sketch.exe dist/fig2sketch-${{ github.ref_name }}.exe
-      - name: zip release
-        uses: thedoctor0/zip-release@main
-        with:
-          type: 'zip'
-          filename: 'fig2sketch-windows.zip'
-          directory: 'dist'
-          path: '*'
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: builds
-          path: dist/fig2sketch-windows.zip
-
-  build-macos-x86_64:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.11
-      - name: Install latest stable
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            override: true
-      - name: Build
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install maturin
-          pip install certifi
-          pip install -r requirements.txt
-          scripts/install_patched_orjson.sh
-          scripts/install_fig_kiwi.sh
-          echo "VERSION='${{ github.ref_name }}'" > version.py
-          pyinstaller fig2sketch.py -y --onefile --target-arch x86_64
-      - name: Rename binary
-        run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
-      - name: zip release
-        uses: thedoctor0/zip-release@main
-        with:
-          type: 'zip'
-          filename: 'fig2sketch-macos-x86_64.zip'
-          directory: 'dist'
-          path: '*'
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: builds
-          path: dist/fig2sketch-macos-x86_64.zip
-
-  build-macos-arm64:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.11.0
           architecture: x64 # Otherwise the runner will try to download Python arm64, which is not available. x64 has support for both archs (universal2).
       - name: Install latest stable
         uses: actions-rs/toolchain@v1
@@ -145,30 +42,30 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install maturin
-          pip install -r requirements.txt
           pip install certifi
+          pip install -r requirements.txt
           rm -rf /tmp/orjson
-          scripts/install_patched_orjson.sh
-          scripts/install_fig_kiwi.sh
+          bash scripts/install_patched_orjson.sh
+          bash scripts/install_fig_kiwi.sh
           echo "VERSION='${{ github.ref_name }}'" > version.py
-          pyinstaller fig2sketch.py -y --onefile --target-arch arm64
+          pyinstaller fig2sketch.py -y --onefile --target-arch ${{ matrix.arch }}
       - name: Rename binary
         run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
       - name: zip release
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: 'fig2sketch-macos-arm64.zip'
+          filename: 'fig2sketch-${{ matrix.os }}-${{ matrix.arch }}.zip'
           directory: 'dist'
           path: '*'
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
-          path: dist/fig2sketch-macos-arm64.zip
+          path: dist/fig2sketch-${{ matrix.os }}-${{ matrix.arch }}.zip
 
   build-macos-universal:
-    needs: [ build-macos-x86_64, build-macos-arm64 ]
+    needs: [ build ]
     runs-on: macos-latest
     steps:
       - name: Download artifact
@@ -210,7 +107,7 @@ jobs:
 
 
   create-release:
-    needs: [ build-linux, build-windows, build-macos-x86_64, build-macos-arm64, build-macos-universal ]
+    needs: [ build, build-macos-universal ]
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
