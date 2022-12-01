@@ -54,14 +54,23 @@ class ParagraphStyle:
 
 
 @dataclass(kw_only=True)
+class OTFeature:
+    CTFeatureSelectorIdentifier: int
+    CTFeatureTypeIdentifier: int
+
+
+@dataclass(kw_only=True)
 class FontDescriptor:
     _class: str = field(default="fontDescriptor")
     name: InitVar[str]
     size: InitVar[float]
+    featureSettings: InitVar[List[OTFeature]] = []
     attributes: Dict = field(default_factory=dict)
 
-    def __post_init__(self, name, size):
+    def __post_init__(self, name, size, featureSettings):
         self.attributes = {"name": name, "size": size}
+        if featureSettings:
+            self.attributes["featureSettings"] = featureSettings
 
 
 @dataclass(kw_only=True)

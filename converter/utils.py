@@ -60,6 +60,7 @@ WARNING_MESSAGES = {
     "TXT003": "has a non-solid text color (gradient or image) which is not supported by Sketch",
     "TXT004": "contains a 'TITLE' transformation. Sketch does not support this text transformation, so no transformation is applied",
     "TXT005": "contains a LIST style with list markers. This style will be ignored",
+    "TXT006": "uses OpenType features not supported by Sketch: {features}. They will be ignored",
     "SHP001": "contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
     "STY001": "contains a layer blur and a background blur. Only one will be converted",
     "STY002": "contains a DIAMOND gradient, which is not supported. It is converted to a RADIAL gradient",

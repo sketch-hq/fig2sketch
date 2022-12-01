@@ -175,3 +175,33 @@ class TestConvert:
 
         assert text.style.textStyle.encodedAttributes.kerning == 6
         assert text.frame.width == FIG_BASE["size"]["x"] + 6
+
+
+@pytest.mark.usefixtures("mock_fonts")
+class TestFeatures:
+    def test_no_features(self):
+        text = convert(TEXT_PLAIN)
+
+        attr = text.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes
+        assert "featureSettings" not in attr
+
+    def test_some_features(self, warnings):
+        text = convert(
+            {**TEXT_PLAIN, "toggledOnOTFeatures": ["SS03"], "toggledOffOTFeatures": ["CALT"]}
+        )
+
+        attr = text.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes
+        assert attr["featureSettings"] == [
+            OTFeature(CTFeatureSelectorIdentifier=6, CTFeatureTypeIdentifier=35),  # SS03 on
+            OTFeature(CTFeatureSelectorIdentifier=1, CTFeatureTypeIdentifier=36),  # CALT off
+        ]
+
+    def test_unsupported_features(self, warnings):
+        text = convert({**TEXT_PLAIN, "toggledOnOTFeatures": ["CV03", "SS03"]})
+
+        attr = text.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes
+        assert attr["featureSettings"] == [
+            OTFeature(CTFeatureSelectorIdentifier=6, CTFeatureTypeIdentifier=35)
+        ]
+
+        warnings.assert_any_call("TXT006", ANY, features=["CV03"])

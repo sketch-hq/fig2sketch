@@ -4,6 +4,8 @@ from converter import utils
 from . import base, style
 from .context import context
 from sketchformat.text import *
+from .font_features import FEATURE_MAPPINGS
+from unittest.mock import ANY
 
 AlignVertical = {
     "TOP": TextVerticalAlignment.TOP,
@@ -126,7 +128,7 @@ def text_style(fig_text):
         encodedAttributes=EncodedAttributes(
             **text_transformation(fig_text),
             MSAttributedStringFontAttribute=FontDescriptor(
-                name=font_name, size=fig_text["fontSize"]
+                name=font_name, size=fig_text["fontSize"], featureSettings=font_features(fig_text)
             ),
             MSAttributedStringColorAttribute=color,
             textStyleVerticalAlignmentKey=AlignVertical[fig_text["textAlignVertical"]],
@@ -324,3 +326,30 @@ def text_transformation(fig_text):
         return {"MSAttributedStringTextTransformAttribute": TextCase[fig_text["textCase"]]}
     else:
         return {}
+
+
+def font_features(fig_text: dict) -> List[OTFeature]:
+    sketch_features = []
+    unsupported_features = []
+    for f in fig_text.get("toggledOnOTFeatures", []):
+        try:
+            fid, on, off = FEATURE_MAPPINGS[f.lower()]
+            sketch_features.append(
+                OTFeature(CTFeatureSelectorIdentifier=on, CTFeatureTypeIdentifier=fid)
+            )
+        except KeyError:
+            unsupported_features.append(f)
+
+    for f in fig_text.get("toggledOffOTFeatures", []):
+        try:
+            fid, on, off = FEATURE_MAPPINGS[f.lower()]
+            sketch_features.append(
+                OTFeature(CTFeatureSelectorIdentifier=off, CTFeatureTypeIdentifier=fid)
+            )
+        except KeyError:
+            unsupported_features.append(f)
+
+    if unsupported_features:
+        utils.log_conversion_warning("TXT006", fig_text, features=unsupported_features)
+
+    return sketch_features
