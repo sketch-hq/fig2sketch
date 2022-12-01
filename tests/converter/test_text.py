@@ -152,26 +152,31 @@ class TestConvert:
         assert text.frame.width == FIG_BASE["size"]["x"]
 
     def test_zero_kerning(self):
-        TEXT_PLAIN["letterSpacing"] = {"units": "PIXELS", "value": 0}
-        text = convert(TEXT_PLAIN)
+        text = convert({**TEXT_PLAIN, "letterSpacing": {"units": "PIXELS", "value": 0}})
 
         assert text.style.textStyle.encodedAttributes.kerning is None
         assert text.frame.width == FIG_BASE["size"]["x"]
 
     def test_kerning_fixed_width(self):
-        TEXT_PLAIN["letterSpacing"] = {"units": "PIXELS", "value": 10}
-        TEXT_PLAIN["textAutoResize"] = "HEIGHT"
-
-        text = convert(TEXT_PLAIN)
+        text = convert(
+            {
+                **TEXT_PLAIN,
+                "letterSpacing": {"units": "PIXELS", "value": 10},
+                "textAutoResize": "HEIGHT",
+            }
+        )
 
         assert text.style.textStyle.encodedAttributes.kerning == 10
         assert text.frame.width == FIG_BASE["size"]["x"]
 
     def test_kerning_flexible_width(self):
-        TEXT_PLAIN["letterSpacing"] = {"units": "PERCENT", "value": 50}
-        TEXT_PLAIN["textAutoResize"] = "WIDTH_AND_HEIGHT"
-
-        text = convert(TEXT_PLAIN)
+        text = convert(
+            {
+                **TEXT_PLAIN,
+                "letterSpacing": {"units": "PERCENT", "value": 50},
+                "textAutoResize": "WIDTH_AND_HEIGHT",
+            }
+        )
 
         assert text.style.textStyle.encodedAttributes.kerning == 6
         assert text.frame.width == FIG_BASE["size"]["x"] + 6
