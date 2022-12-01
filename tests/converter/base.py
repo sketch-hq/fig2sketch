@@ -29,6 +29,21 @@ SKETCH_COLOR = [
     Color(red=0, green=0, blue=1, alpha=1),
 ]
 
+FIG_GRADIENT_FILL_PAINTS = {
+    "fillPaints": [
+        {
+            "type": "GRADIENT_LINEAR",
+            "transform": Matrix([[0.7071, -0.7071, 0.6], [0.7071, 0.7071, -0.1]]),
+            "stops": [
+                {"color": FIG_COLOR[0], "position": 0},
+                {"color": FIG_COLOR[1], "position": 0.4},
+                {"color": FIG_COLOR[2], "position": 1},
+            ],
+            "visible": True,
+        }
+    ],
+}
+
 
 @pytest.fixture
 def warnings(monkeypatch):

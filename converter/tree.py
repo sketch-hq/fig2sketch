@@ -83,8 +83,10 @@ def get_node_type(fig_node: dict, parent_type: str) -> str:
     # We do this because Sketch does not support nested artboards
     # If a Frame is detected inside another Frame, the internal one
     # is considered a group
-    if fig_node["type"] == "FRAME":
-        if parent_type == "CANVAS" and not fig_node["resizeToFit"]:
+    if fig_node["type"] == "FRAME" or fig_node["type"] == "SECTION":
+        if parent_type == "CANVAS" and (
+            "resizeToFit" not in fig_node or not fig_node["resizeToFit"]
+        ):
             return "ARTBOARD"
         else:
             return "GROUP"

@@ -1,6 +1,6 @@
-from converter import utils
 from . import instance, group, base, prototype
 from .context import context
+from converter import utils
 from sketchformat.layer_group import *
 
 LAYOUT_AXIS = {

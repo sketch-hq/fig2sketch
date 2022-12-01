@@ -1,10 +1,9 @@
+import pytest
 from .base import *
 from converter import prototype, tree, artboard
-from converter.positioning import Matrix
-from sketchformat.layer_common import ClippingMaskMode, Rect
+from sketchformat.layer_common import Rect
 from sketchformat.layer_shape import Rectangle
 from sketchformat.style import *
-import pytest
 from unittest.mock import ANY
 
 FIG_ARTBOARD = {
@@ -25,7 +24,7 @@ class TestArtboardBackgroud:
     def test_no_background(self):
         ab = tree.convert_node(FIG_ARTBOARD, "CANVAS")
 
-        assert ab.hasBackgroundColor == False
+        assert not ab.hasBackgroundColor
 
     def test_disabled_background(self):
         ab = tree.convert_node(
@@ -43,7 +42,7 @@ class TestArtboardBackgroud:
             "CANVAS",
         )
 
-        assert ab.hasBackgroundColor == False
+        assert not ab.hasBackgroundColor
 
     def test_simple_background(self):
         ab = tree.convert_node(
@@ -61,30 +60,16 @@ class TestArtboardBackgroud:
             "CANVAS",
         )
 
-        assert ab.hasBackgroundColor == True
+        assert ab.hasBackgroundColor
         assert ab.backgroundColor == SKETCH_COLOR[0]
 
     def test_gradient_background(self, warnings):
         ab = tree.convert_node(
-            {
-                **FIG_ARTBOARD,
-                "fillPaints": [
-                    {
-                        "type": "GRADIENT_LINEAR",
-                        "transform": Matrix([[0.7071, -0.7071, 0.6], [0.7071, 0.7071, -0.1]]),
-                        "stops": [
-                            {"color": FIG_COLOR[0], "position": 0},
-                            {"color": FIG_COLOR[1], "position": 0.4},
-                            {"color": FIG_COLOR[2], "position": 1},
-                        ],
-                        "visible": True,
-                    }
-                ],
-            },
+            {**FIG_ARTBOARD, **FIG_GRADIENT_FILL_PAINTS},
             "CANVAS",
         )
 
-        assert ab.hasBackgroundColor == False
+        assert not ab.hasBackgroundColor
         assert len(ab.layers) == 1
         bg = ab.layers[0]
         assert len(bg.style.fills) == 1
@@ -101,6 +86,27 @@ class TestArtboardBackgroud:
         assert isinstance(ab.layers[0], Rectangle)
         assert ab.layers[0].hasClippingMask
         assert ab.layers[0].points[0].cornerRadius == 5
+
+    def test_section_as_artboard(self):
+        fig_section = {
+            **FIG_BASE,
+            "type": "SECTION",
+            "fillPaints": [
+                {
+                    "type": "SOLID",
+                    "color": FIG_COLOR[0],
+                    "opacity": 0.9,
+                    "visible": True,
+                }
+            ],
+            "children": [{**FIG_BASE, "type": "ROUNDED_RECTANGLE"}],
+        }
+
+        ab = tree.convert_node(fig_section, "CANVAS")
+
+        assert ab._class == "artboard"
+        assert ab.hasBackgroundColor
+        assert ab.backgroundColor == SKETCH_COLOR[0]
 
 
 class TestGrid:
@@ -122,7 +128,7 @@ class TestGrid:
             {**FIG_ARTBOARD, "layoutGrids": [self._grid(20, FIG_COLOR[0])]}
         )
 
-        assert grid.isEnabled == True
+        assert grid.isEnabled
         assert grid.gridSize == 20
         assert grid.thickGridTimes == 0
 
@@ -137,7 +143,7 @@ class TestGrid:
             }
         )
 
-        assert grid.isEnabled == True
+        assert grid.isEnabled
         assert grid.gridSize == 20
         assert grid.thickGridTimes == 3
 
@@ -152,7 +158,7 @@ class TestGrid:
             }
         )
 
-        assert grid.isEnabled == True
+        assert grid.isEnabled
         assert grid.gridSize == 15
         assert grid.thickGridTimes == 0
 
@@ -170,7 +176,7 @@ class TestGrid:
             }
         )
 
-        assert grid.isEnabled == True
+        assert grid.isEnabled
         assert grid.gridSize == 15
         assert grid.thickGridTimes == 2
 
@@ -188,7 +194,7 @@ class TestGrid:
             }
         )
 
-        assert grid.isEnabled == True
+        assert grid.isEnabled
         assert grid.gridSize == 15
         assert grid.thickGridTimes == 3
 

@@ -1,8 +1,8 @@
 import copy
 import itertools
-from converter import utils
 from . import base, style
 from .context import context
+from converter import utils
 from sketchformat.text import *
 
 AlignVertical = {

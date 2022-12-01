@@ -1,5 +1,5 @@
-from converter import utils
 from . import style, positioning
+from converter import utils
 from sketchformat.layer_group import *
 from sketchformat.layer_shape import Rectangle
 from sketchformat.style import Fill

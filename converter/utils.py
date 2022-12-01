@@ -71,7 +71,7 @@ WARNING_MESSAGES = {
     "SYM003": "overrides unsupported properties: {props}. The instance will be detached",
     "ART001": "has at least one corner radius which is not supported by sketch artboards. The corner radius will be ignored",
     "ART002": "is being converted to an artboard. However, artboard rotations are not supported. Rotation will be ignored",
-    "ART003": "has an style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
+    "ART003": "has a style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
     "GRP001": "has inner shadows which are not supported at group level in Sketch. It will be copied to the layers inside the frame",
     "GRP002": "has children with different resizing constraints. This cannot be accurately represented in Sketch so the converted group will not scale correctly",
     "CMP001": "uses a shared style which could not be found in the document. It will not be applied",

@@ -1,11 +1,11 @@
 import copy
-from converter import utils
 from . import base, group
 from .context import context
 from .config import config
+from converter import utils
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
-from typing import Optional, List, Tuple
+from typing import List, Tuple
 
 
 def convert(fig_instance):
