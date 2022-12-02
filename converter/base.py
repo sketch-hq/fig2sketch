@@ -221,13 +221,15 @@ def resizing_constraint(fig_node: dict) -> int:
     return h + v
 
 
+CLIPPING_MODE = {
+    "ALPHA": ClippingMaskMode.ALPHA,
+    "OUTLINE": ClippingMaskMode.OUTLINE,
+}
+
+
 def masking(fig_node: dict) -> _Masking:
-    clipping_mode = {
-        "ALPHA": ClippingMaskMode.ALPHA,
-        "OUTLINE": ClippingMaskMode.OUTLINE,
-    }
     return {
         "shouldBreakMaskChain": False,
         "hasClippingMask": bool(fig_node.get("mask")),
-        "clippingMaskMode": clipping_mode[fig_node.get("maskType", "OUTLINE")],
+        "clippingMaskMode": CLIPPING_MODE[fig_node.get("maskType", "OUTLINE")],
     }
