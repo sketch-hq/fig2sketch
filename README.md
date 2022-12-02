@@ -8,7 +8,7 @@ fig2sketch reads design data from a .fig file and converts it into data that Ske
 
 ### Using the source code
 
-1. Run `python fig2sketch.py <path to .fig file> <path to store the .sketch file>`
+1. Run `python src/fig2sketch.py <path to .fig file> <path to store the .sketch file>`
 2. Open the resulting .sketch document in Sketch
 
 ### Using a release binary
@@ -16,11 +16,17 @@ fig2sketch reads design data from a .fig file and converts it into data that Ske
 1. Run `fig2sketch <path to .fig file> <path to store the .sketch file>`
 2. Open the resulting .sketch document in Sketch
 
+### Using a release from PyPi
+
+1. Install with `pip install fig2sketch[fast]`
+2. Run `fig2sketch <path to .fig file> <path to store the .sketch file>`
+3. Open the resulting .sketch document in Sketch
+
 ### Parameters
 
 To check all available options run:
 ```
-python fig2sketch --help
+python src/fig2sketch --help
 ```
 
 Some important options:
@@ -33,7 +39,7 @@ Some important options:
 
 Example:
 ```
-python fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/fig_file.json
+python src/fig2sketch.py --salt 12345678 example/shapes_party.fig output/output.sketch --dump-fig-json example/fig_file.json
 ````
 
 ## Install
@@ -43,7 +49,7 @@ Before moving forward, you need Python 3.10 or newer installed in your machine.
 ```
 python -m venv .venv
 . .venv/bin/activate
-pip install -r requirements.txt
+pip install .
 ```
 
 ### Performance
@@ -59,8 +65,8 @@ pip install maturin
 Now, you can proceed to install the performance improvements:
 
 ```
+pip install .[fast]
 sh scripts/install_patched_orjson.sh
-sh scripts/install_fig_kiwi.sh
 ```
 
 
@@ -69,7 +75,7 @@ sh scripts/install_fig_kiwi.sh
 Before running the tests for the first time, you'll need to install the dev requirements (within the virtual environment):
 
 ```
-pip install -r requirements-dev.txt
+pip install .[dev]
 ```
 
 Then, you can run the tests just executing this in the project root:

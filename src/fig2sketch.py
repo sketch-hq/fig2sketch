@@ -9,7 +9,9 @@ import sys
 from typing import List
 
 try:
-    from version import VERSION
+    from importlib.metadata import version
+
+    VERSION = version("fig2sketch")
 except:
     VERSION = "unknown version"
 
@@ -102,5 +104,9 @@ def run(args: argparse.Namespace) -> None:
         convert.convert_fig_tree_to_sketch(fig_tree, id_map, output)
 
 
-if __name__ == "__main__":
+def main() -> None:
     run(parse_args())
+
+
+if __name__ == "__main__":
+    main()

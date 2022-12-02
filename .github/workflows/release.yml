@@ -30,7 +30,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.11
+          python-version: '3.11'
           architecture: x64 # Otherwise the runner will try to download Python arm64, which is not available. x64 has support for both archs (universal2).
       - name: Install latest stable
         uses: actions-rs/toolchain@v1
@@ -41,14 +41,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
-          pip install maturin
           pip install certifi
-          pip install -r requirements.txt
+          pip install .[fast]
           rm -rf /tmp/orjson
           bash scripts/install_patched_orjson.sh
-          bash scripts/install_fig_kiwi.sh
-          echo "VERSION='${{ github.ref_name }}'" > version.py
-          pyinstaller fig2sketch.py -y --onefile --target-arch ${{ matrix.arch }}
+          pyinstaller src/fig2sketch.py -y --onefile --target-arch ${{ matrix.arch }}
       - name: Rename binary
         run: mv dist/fig2sketch dist/fig2sketch-${{ github.ref_name }}
       - name: zip release
@@ -120,3 +117,23 @@ jobs:
         with:
           artifacts: "fig2sketch-*.zip"
           generateReleaseNotes: true
+
+  publish-to-pypi:
+    name: Build and publish to PyPi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+      - name: Install build tools
+        run: pip install build
+      - name: Build source distribution
+        run: python -m build --sdist
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
