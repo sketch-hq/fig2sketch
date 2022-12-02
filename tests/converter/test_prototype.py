@@ -97,8 +97,7 @@ class TestPrototypeInformation:
         assert info["presentationStyle"] == PresentationStyle.SCREEN
 
     def test_scroll_direction_warning(self, warnings):
-        FIG_ARTBOARD["scrollDirection"] = "HORIZONTAL"
-        prototyping_information(FIG_ARTBOARD)
+        prototyping_information({**FIG_ARTBOARD, "scrollDirection": "HORIZONTAL"})
 
         warnings.assert_any_call("PRT005", ANY)
 
