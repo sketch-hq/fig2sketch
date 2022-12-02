@@ -6,3 +6,6 @@ __pycache__/
 version.py
 example/
 output/
+*.egg-info
+dist
+build

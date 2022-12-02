@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: jpetrucciani/mypy-check@master
         with:
-          path: fig2sketch.py
+          path: src/fig2sketch.py
   test:
     runs-on : ubuntu-latest
     steps:
@@ -26,7 +26,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-          cache: pip
       - name: Install latest stable
         uses: actions-rs/toolchain@v1
         with:
@@ -35,11 +34,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install maturin
+          pip install .[dev]
           pip install certifi
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
-          scripts/install_fig_kiwi.sh
       - name: Test
         run: |
           pytest
