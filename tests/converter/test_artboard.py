@@ -91,6 +91,7 @@ class TestArtboardBackgroud:
         fig_section = {
             **FIG_BASE,
             "type": "SECTION",
+            "resizeToFit": False,
             "fillPaints": [
                 {
                     "type": "SOLID",
