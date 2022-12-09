@@ -148,6 +148,10 @@ def test_complex_vector():
     assert len(paths) == 6
     assert len(groups) == 1
 
+    # All IDs are unique
+    assert len(set([x.do_objectID for x in vector.layers])) == 7
+    assert len(set([x.style.do_objectID for x in vector.layers])) == 7
+
     for sp in paths:
         assert sp.isClosed == True
         assert len(sp.style.fills) == 1
