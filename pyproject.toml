@@ -30,3 +30,6 @@ dev = [
 
 [tool.black]
 line-length = 99
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
