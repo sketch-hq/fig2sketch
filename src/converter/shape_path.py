@@ -72,6 +72,9 @@ def convert_region(
             windingRule=WINDING_RULE[region["windingRule"]],
         )
         obj.do_objectID = utils.gen_object_id(fig_vector["guid"], f"region{region_index}".encode())
+        obj.style.do_objectID = utils.gen_object_id(
+            fig_vector["guid"], f"style_region{region_index}".encode()
+        )
 
         obj.style.windingRule = obj.windingRule
         return obj
@@ -89,6 +92,9 @@ def convert_shape_path(
         **points,
     )
     obj.do_objectID = utils.gen_object_id(fig_vector["guid"], f"region{region}loop{loop}".encode())
+    obj.style.do_objectID = utils.gen_object_id(
+        fig_vector["guid"], f"style_region{region}loop{loop}".encode()
+    )
 
     if styles:
         obj.style.set_markers(styles["startMarkerType"], styles["endMarkerType"])
