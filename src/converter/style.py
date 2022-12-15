@@ -97,6 +97,8 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
         case {"type": "EMOJI"}:
             raise Exception("Unsupported fill: EMOJI")
         case {"type": "SOLID"}:
+            # Solid color backgrounds do not support specifying the opacity
+            # Instead, it must be set in the color itself
             return Fill.Color(
                 convert_color(fig_fill["color"], fig_fill["opacity"]),
                 isEnabled=fig_fill["visible"],
@@ -115,10 +117,13 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                 patternFillType=PATTERN_FILL_TYPE[fig_fill["imageScaleMode"]],
                 patternTileScale=fig_fill.get("scale", 1),
                 isEnabled=fig_fill["visible"],
+                opacity=fig_fill.get("opacity", 1),
             )
         case _:
             return Fill.Gradient(
-                convert_gradient(fig_node, fig_fill), isEnabled=fig_fill["visible"]
+                convert_gradient(fig_node, fig_fill),
+                isEnabled=fig_fill["visible"],
+                opacity=fig_fill.get("opacity", 1),
             )
 
 

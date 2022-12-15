@@ -192,8 +192,13 @@ class Fill:
         return Fill(color=color, fillType=FillType.COLOR, isEnabled=isEnabled)
 
     @staticmethod
-    def Gradient(gradient: Gradient, isEnabled: bool) -> "Fill":
-        return Fill(gradient=gradient, fillType=FillType.GRADIENT, isEnabled=isEnabled)
+    def Gradient(gradient: Gradient, isEnabled: bool, opacity: float = 1) -> "Fill":
+        return Fill(
+            gradient=gradient,
+            fillType=FillType.GRADIENT,
+            isEnabled=isEnabled,
+            contextSettings=ContextSettings(opacity=opacity),
+        )
 
     @staticmethod
     def Image(
@@ -201,6 +206,7 @@ class Fill:
         patternFillType: PatternFillType,
         patternTileScale: float,
         isEnabled: bool,
+        opacity: float = 1,
     ) -> "Fill":
         return Fill(
             image=Image(_ref=path),
@@ -208,6 +214,7 @@ class Fill:
             patternFillType=patternFillType,
             patternTileScale=patternTileScale,
             isEnabled=isEnabled,
+            contextSettings=ContextSettings(opacity=opacity),
         )
 
 
