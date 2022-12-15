@@ -44,6 +44,23 @@ class TestConvertFill:
         assert fill.image._ref == "images/abcdef"
         assert fill.patternFillType == PatternFillType.FIT
 
+    def test_transparent_image(self):
+        fill = convert_fill(
+            {},
+            {
+                "type": "IMAGE",
+                "image": {"filename": "abcdef"},
+                "visible": True,
+                "imageScaleMode": "FIT",
+                "opacity": 0.5,
+            },
+        )
+        assert fill.fillType == FillType.PATTERN
+        assert fill.isEnabled
+        assert fill.image._ref == "images/abcdef"
+        assert fill.patternFillType == PatternFillType.FIT
+        assert fill.contextSettings.opacity == 0.5
+
     def test_linear_gradient(self):
         fill = convert_fill(
             {},
