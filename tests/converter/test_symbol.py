@@ -1,6 +1,5 @@
 from .base import *
 from converter import tree, prototype
-from sketchformat.layer_common import ClippingMaskMode
 from sketchformat.layer_shape import Rectangle
 import pytest
 from converter.context import context

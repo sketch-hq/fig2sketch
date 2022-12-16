@@ -1,8 +1,7 @@
-import functools
 import io
 import logging
 import shutil
-from typing import Tuple, Sequence, Dict, IO
+from typing import Tuple, Sequence, Dict
 from converter import utils
 from zipfile import ZipFile
 from . import decodefig, vector_network

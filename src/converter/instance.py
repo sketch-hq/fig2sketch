@@ -107,7 +107,7 @@ def get_all_overrides(fig_instance):
         existing = [i for i in unique_overrides if i["guidPath"]["guids"] == guid]
         if existing:
             # Add properties to the previous override. Priority goes to the first item
-            # because we want to priorize prop assignments which we always convert first
+            # because we want to prioritize prop assignments which we always convert first
             for k, v in ov.items():
                 if k == "guidPath":
                     continue
@@ -124,7 +124,10 @@ def convert_override(override: dict) -> Tuple[List[OverrideValue], List[str]]:
     unsupported_overrides = []
 
     # Convert uuids in the path from top symbol to child instance
-    sketch_path = [utils.gen_object_id(guid) for guid in override["guidPath"]["guids"]]
+    sketch_path = [
+        utils.gen_object_id(context.fig_node(guid)["guid"])
+        for guid in override["guidPath"]["guids"]
+    ]
     sketch_path_str = "/".join(sketch_path)
 
     for prop, value in override.items():
