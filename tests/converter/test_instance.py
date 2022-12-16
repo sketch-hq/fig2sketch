@@ -1,10 +1,10 @@
 from .base import *
-import pytest
-from converter.context import context
-from converter.config import config
-from converter import tree
-from sketchformat.layer_group import Group, SymbolInstance, OverrideValue
 import copy
+import pytest
+from converter import tree
+from converter.config import config
+from converter.context import context
+from sketchformat.layer_group import Group, SymbolInstance, OverrideValue
 from unittest.mock import ANY
 
 FIG_TEXT = {
@@ -17,6 +17,7 @@ FIG_TEXT = {
     "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[0], "opacity": 0.9, "visible": True}],
     "textData": {"characters": "original"},
     "guid": (0, 1),
+    "overrideKey": (1, 9),
     "componentPropRefs": [
         {
             "defID": (1, 0),
@@ -48,7 +49,7 @@ FIG_INSTANCE = {
 
 @pytest.fixture
 def symbol(monkeypatch):
-    context.init(None, {(0, 3): FIG_SYMBOL, (0, 1): FIG_TEXT, (0, 2): FIG_RECT})
+    context.init(None, {(0, 3): FIG_SYMBOL, (0, 1): FIG_TEXT, (0, 2): FIG_RECT, (1, 9): FIG_TEXT})
     context._component_symbols = {(0, 3): False}
 
 
@@ -76,7 +77,7 @@ class TestOverrides:
     def test_text_override(self):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [
-            {"guidPath": {"guids": [(0, 1)]}, "textData": {"characters": "modified"}}
+            {"guidPath": {"guids": [(1, 9)]}, "textData": {"characters": "modified"}}
         ]
 
         i = tree.convert_node(fig, "")
@@ -111,7 +112,7 @@ class TestOverrides:
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [
             {
-                "guidPath": {"guids": [(0, 1)]},
+                "guidPath": {"guids": [(1, 9)]},
                 "fillPaints": [
                     {
                         "type": "SOLID",
@@ -165,7 +166,7 @@ class TestOverrides:
 
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [
-            {"guidPath": {"guids": [(0, 1)]}, "textData": {"characters": "override"}}
+            {"guidPath": {"guids": [(1, 9)]}, "textData": {"characters": "override"}}
         ]
         fig["componentPropAssignments"] = [
             {"defID": (1, 0), "value": {"textValue": {"characters": "property"}}}

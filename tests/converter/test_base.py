@@ -1,7 +1,6 @@
 import pytest
 from .base import *
 from converter import prototype, tree, base
-from converter.positioning import Matrix
 from sketchformat.style import *
 from unittest.mock import ANY
 from converter.context import context
@@ -17,6 +16,14 @@ FIG_ARTBOARD = {
 @pytest.fixture
 def no_prototyping(monkeypatch):
     monkeypatch.setattr(prototype, "prototyping_information", lambda _: {})
+
+
+@pytest.mark.usefixtures("no_prototyping")
+class TestIDs:
+    def test_avoid_duplicated_ids(self):
+        ab = tree.convert_node({**FIG_ARTBOARD, "overrideKey": (789, 112)}, "CANVAS")
+
+        assert ab.do_objectID == utils.gen_object_id(FIG_ARTBOARD["guid"])
 
 
 @pytest.mark.usefixtures("no_prototyping")

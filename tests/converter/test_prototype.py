@@ -151,9 +151,7 @@ class TestConvertFlow:
             ]
         }
 
-        fig_artboard = {**FIG_BASE, **fig_flow}
-
-        flow = convert_flow(fig_artboard)
+        flow = convert_flow({**FIG_BASE, **fig_flow})
 
         warnings.assert_any_call("PRT001", ANY, props=["DRAG"])
         warnings.assert_any_call("PRT003", ANY, props=["BACK"])
@@ -204,9 +202,7 @@ class TestConvertFlow:
             ]
         }
 
-        fig_artboard = {**FIG_BASE, **overlay_flow}
-
-        flow = convert_flow(fig_artboard)
+        flow = convert_flow({**FIG_BASE, **overlay_flow})
 
         assert flow["flow"].destinationArtboardID == utils.gen_object_id((0, 5))
         assert flow["flow"].animationType == AnimationType.SLIDE_FROM_LEFT
@@ -235,9 +231,7 @@ class TestConvertFlow:
             ]
         }
 
-        fig_artboard = {**FIG_BASE, **overlay_flow}
-
-        flow = convert_flow(fig_artboard)
+        flow = convert_flow({**FIG_BASE, **overlay_flow})
 
         assert flow["flow"].destinationArtboardID == utils.gen_object_id((0, 6))
         assert flow["flow"].animationType == AnimationType.SLIDE_FROM_TOP
