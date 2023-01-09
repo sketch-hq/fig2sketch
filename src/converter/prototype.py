@@ -65,7 +65,7 @@ def convert_flow(fig_node: dict) -> _Flow:
             if action == {}:
                 continue
 
-            if action["navigationType"] not in ["NAVIGATE", "SCROLL", "OVERLAY"]:
+            if action.get("navigationType", "NAVIGATE") not in ["NAVIGATE", "SCROLL", "OVERLAY"]:
                 utils.log_conversion_warning("PRT003", fig_node, props=[action["navigationType"]])
                 continue
 
