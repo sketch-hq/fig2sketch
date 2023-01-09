@@ -297,7 +297,9 @@ def process_segment(
         point1.hasCurveFrom = True
         point1.curveFrom = Point.from_dict(vertex1) + Point.from_dict(segment["tangentStart"])
         point1.curveMode = CURVE_MODES[
-            vertex1.get("style", {}).get("handleMirroring", fig_vector["handleMirroring"])
+            vertex1.get("style", {}).get(
+                "handleMirroring", fig_vector.get("handleMirroring", "NONE")
+            )
         ]
 
     if segment["tangentEnd"]["x"] != 0.0 or segment["tangentEnd"]["y"] != 0.0:
@@ -305,7 +307,9 @@ def process_segment(
         point2.hasCurveTo = True
         point2.curveTo = Point.from_dict(vertex2) + Point.from_dict(segment["tangentEnd"])
         point2.curveMode = CURVE_MODES[
-            vertex2.get("style", {}).get("handleMirroring", fig_vector["handleMirroring"])
+            vertex2.get("style", {}).get(
+                "handleMirroring", fig_vector.get("handleMirroring", "NONE")
+            )
         ]
 
     return point1, point2
@@ -327,9 +331,7 @@ def get_or_create_point(
     else:
         fig_point = vertices[index]
         point = CurvePoint.Straight(Point(fig_point["x"], fig_point["y"]))
-        point.curveMode = CURVE_MODES[
-            fig_point.get("style", {}).get("handleMirroring", "STRAIGHT")
-        ]
+        point.curveMode = CURVE_MODES[fig_point.get("style", {}).get("handleMirroring", "NONE")]
         point.cornerRadius = fig_point.get("style", {}).get(
             "cornerRadius", fig_vector.get("cornerRadius", 0)
         )
