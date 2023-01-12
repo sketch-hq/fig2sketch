@@ -15,7 +15,7 @@ def convert(fig_instance):
         return group.convert(fig_instance)
 
     all_overrides = get_all_overrides(fig_instance)
-    sketch_overrides, unsupported = convert_overrides(all_overrides)
+    sketch_overrides, unsupported = convert_overrides(all_overrides, fig_instance)
     if unsupported:
         if config.can_detach:
             utils.log_conversion_warning("SYM003", fig_instance, props=unsupported)
@@ -62,11 +62,11 @@ def master_instance(fig_symbol):
     return obj
 
 
-def convert_overrides(all_overrides):
+def convert_overrides(all_overrides, fig_instance):
     sketch_overrides = []
     unsupported_overrides = []
     for override in all_overrides:
-        sk, us = convert_override(override)
+        sk, us = convert_override(override, fig_instance)
         sketch_overrides += sk
         unsupported_overrides += us
 
@@ -119,16 +119,21 @@ def get_all_overrides(fig_instance):
     return unique_overrides
 
 
-def convert_override(override: dict) -> Tuple[List[OverrideValue], List[str]]:
+def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideValue], List[str]]:
     sketch_overrides = []
     unsupported_overrides = []
 
-    # Convert uuids in the path from top symbol to child instance
-    sketch_path = [
-        utils.gen_object_id(context.fig_node(guid)["guid"])
-        for guid in override["guidPath"]["guids"]
-    ]
-    sketch_path_str = "/".join(sketch_path)
+    try:
+        # Convert uuids in the path from top symbol to child instance
+        sketch_path = [
+            utils.gen_object_id(context.fig_node(guid)["guid"])
+            for guid in override["guidPath"]["guids"]
+        ]
+        sketch_path_str = "/".join(sketch_path)
+    except KeyError as e:
+        # Cannot find where to apply override
+        utils.log_conversion_warning("SYM004", fig_instance, node_ref=e.args[0])
+        return [], []
 
     for prop, value in override.items():
         if prop == "guidPath":
