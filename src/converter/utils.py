@@ -70,6 +70,7 @@ WARNING_MESSAGES = {
     "SYM001": "references an invalid symbol. It will be converted to an empty placeholder group",
     "SYM002": "overrides unsupported properties: {props}. The override will be ignored",
     "SYM003": "overrides unsupported properties: {props}. The instance will be detached",
+    "SYM004": "contains an override of an unknown node {node_ref}. The override will be ignored",
     "ART001": "has at least one corner radius which is not supported by sketch artboards. The corner radius will be ignored",
     "ART002": "is being converted to an artboard. However, artboard rotations are not supported. Rotation will be ignored",
     "ART003": "has a style that is not supported by sketch artboards. It will add a background rectangle to the artboard with the frame style",
