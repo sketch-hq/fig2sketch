@@ -178,6 +178,19 @@ class TestConvertBorder:
         assert border.thickness == 5
         assert border.position == BorderPosition.CENTER
 
+    def test_convert_border_without_align(self):
+        border = convert_border(
+            {
+                "strokeWeight": 5,
+            },
+            {"type": "SOLID", "color": FIG_COLOR[0], "visible": True, "opacity": 0.9},
+        )
+        assert border.fillType == FillType.COLOR
+        assert border.isEnabled
+        assert border.color == SKETCH_COLOR[0]
+        assert border.thickness == 5
+        assert border.position == BorderPosition.CENTER
+
     def test_disabled_border(self):
         border = convert_border(
             {
