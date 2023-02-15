@@ -1,7 +1,7 @@
 from converter.positioning import Matrix
 from sketchformat.style import *
 import pytest
-from converter import utils
+from converter import utils, prototype
 from unittest.mock import create_autospec
 
 FIG_BASE = {
@@ -50,3 +50,8 @@ def warnings(monkeypatch):
     mock = create_autospec(utils.log_conversion_warning)
     monkeypatch.setattr(utils, "log_conversion_warning", mock)
     return mock
+
+
+@pytest.fixture
+def no_prototyping(monkeypatch):
+    monkeypatch.setattr(prototype, "prototyping_information", lambda _: {})
