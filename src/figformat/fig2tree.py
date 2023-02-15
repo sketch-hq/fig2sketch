@@ -5,7 +5,7 @@ from typing import Tuple, Sequence, Dict
 from converter import utils
 from zipfile import ZipFile
 from . import decodefig, vector_network
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError, ImageFile
 
 
 def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], dict]]:
@@ -119,8 +119,18 @@ def convert_image(fname, blob, fig_zip, output):
         converted_images[fname] = f"{fhash}{extension}"
         return f"{fhash}{extension}"
     except UnidentifiedImageError as e:
-        logging.critical(f"Could not convert image {fname}. It appears to be corrupted.")
-        logging.critical(
-            f"Try passing `--force-convert-images` to ignore this error and try to convert the image anyway."
+        if ImageFile.LOAD_TRUNCATED_IMAGES:
+            logging.info(
+                f"[IMG002] Image {fname} appears to be corrupted in the .fig file, it will not be converted"
+            )
+        else:
+            logging.info(
+                f"[IMG001] Image {fname} appears to be corrupted in the .fig file, it will not be converted. Try passing --force-convert-images to try to convert it anyway"
+            )
+
+        return "f2s_corrupted"
+    except KeyError:
+        logging.info(
+            f"[IMG003] Image {fname} is missing from the .fig file, it will not be converted"
         )
-        exit(1)
+        return "f2s_missing"
