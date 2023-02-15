@@ -34,6 +34,7 @@ ANIMATION_TYPE = {
     "MAGIC_MOVE": AnimationType.NONE,
     "SMART_ANIMATE": AnimationType.NONE,
     "SCROLL_ANIMATE": AnimationType.NONE,
+    "DISSOLVE": AnimationType.NONE,
 }
 
 
