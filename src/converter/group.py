@@ -134,10 +134,9 @@ def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> Ab
     return sketch_group
 
 
-def apply_inner_shadow(layer: AbstractStyledLayer, shadow: InnerShadow) -> None:
-    if isinstance(layer, Group):
-        for child in layer.layers:
-            if isinstance(child, AbstractStyledLayer):
-                apply_inner_shadow(child, shadow)
-    else:
-        layer.style.innerShadows.append(shadow)
+def apply_inner_shadow(layer: AbstractLayerGroup, shadow: InnerShadow) -> None:
+    for child in layer.layers:
+        if isinstance(child, AbstractLayerGroup):
+            apply_inner_shadow(child, shadow)
+        elif isinstance(child, AbstractStyledLayer):
+            child.style.innerShadows.append(shadow)

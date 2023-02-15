@@ -1,5 +1,5 @@
 from .base import *
-from converter import tree, prototype
+from converter import tree
 from sketchformat.layer_shape import Rectangle
 import pytest
 from converter.context import context
@@ -16,11 +16,6 @@ def empty_context(monkeypatch):
     context.init(None, {})
 
 
-@pytest.fixture
-def no_prototyping(monkeypatch):
-    monkeypatch.setattr(prototype, "prototyping_information", lambda _: {})
-
-
 def test_rounded_corners(no_prototyping, empty_context):
     instance = tree.convert_node(
         {**FIG_SYMBOL, "rectangleTopLeftCornerRadius": 5},
@@ -34,3 +29,30 @@ def test_rounded_corners(no_prototyping, empty_context):
     assert isinstance(symbol.layers[0], Rectangle)
     assert symbol.layers[0].hasClippingMask
     assert symbol.layers[0].points[0].cornerRadius == 5
+
+
+def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
+    g = tree.convert_node(
+        {
+            **FIG_SYMBOL,
+            "effects": [
+                {
+                    "type": "INNER_SHADOW",
+                    "radius": 4,
+                    "spread": 0,
+                    "offset": {"x": 1, "y": 3},
+                    "color": FIG_COLOR[1],
+                }
+            ],
+            "children": [{**FIG_BASE, "type": "ROUNDED_RECTANGLE"}],
+        },
+        "",
+    )
+
+    symbol = context.symbols_page.layers[0]
+    assert symbol.style.innerShadows == []
+
+    [child] = symbol.layers
+    assert child.style.innerShadows == [
+        InnerShadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
+    ]
