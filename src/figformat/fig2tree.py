@@ -120,17 +120,11 @@ def convert_image(fname, blob, fig_zip, output):
         return f"{fhash}{extension}"
     except UnidentifiedImageError as e:
         if ImageFile.LOAD_TRUNCATED_IMAGES:
-            logging.info(
-                f"[IMG002] Image {fname} appears to be corrupted in the .fig file, it will not be converted"
-            )
+            utils.log_conversion_warning("IMG002", {"type": "Image", "guid": fname, "name": fname})
         else:
-            logging.info(
-                f"[IMG001] Image {fname} appears to be corrupted in the .fig file, it will not be converted. Try passing --force-convert-images to try to convert it anyway"
-            )
+            utils.log_conversion_warning("IMG001", {"type": "Image", "guid": fname, "name": fname})
 
         return "f2s_corrupted"
     except KeyError:
-        logging.info(
-            f"[IMG003] Image {fname} is missing from the .fig file, it will not be converted"
-        )
+        utils.log_conversion_warning("IMG003", {"type": "Image", "guid": fname, "name": fname})
         return "f2s_missing"
