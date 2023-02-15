@@ -92,6 +92,9 @@ WARNING_MESSAGES = {
     "GRD006": "has a row layout with an offset that is not supported. The offset will be ignored",
     "GRD007": "has a row layout with non-integer ratio between gutter and row size. The row layout will not be converted",
     "GRD008": "has a row and column layout. The rows will only be as wide as the columns (instead of taking the entire width of the artboard)",
+    "IMG001": "appears to be corrupted in the .fig file, it will not be converted. Try passing --force-convert-images to try to convert it anyway",
+    "IMG002": "appears to be corrupted in the .fig file, it will not be converted",
+    "IMG003": "is missing from the .fig file, it will not be converted",
 }
 
 
