@@ -62,7 +62,7 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
         try:
             children.append(convert_node(child, fig_node["type"]))
         except Fig2SketchWarning as w:
-            utils.log_conversion_warning(w.code, fig_node)
+            utils.log_conversion_warning(w.code, child)
         except Exception as e:
             logging.error(
                 f'An unexpected error occurred when converting {child["type"]}: {child["name"]} ({child["guid"]}). It will be skipped\n'
