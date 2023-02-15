@@ -84,7 +84,7 @@ def convert(fig_node: dict) -> Style:
 def convert_border(fig_node: dict, fig_border: dict) -> Border:
     return Border.from_fill(
         convert_fill(fig_node, fig_border),
-        position=BORDER_POSITION[fig_node["strokeAlign"]],
+        position=BORDER_POSITION[fig_node.get("strokeAlign", "CENTER")],
         thickness=fig_node["strokeWeight"],
     )
 

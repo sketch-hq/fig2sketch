@@ -65,7 +65,7 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
             utils.log_conversion_warning(w.code, fig_node)
         except Exception as e:
             logging.error(
-                f'An unexpected error occurred when converting {child["type"]}: {child["name"]}. It will be skipped\n'
+                f'An unexpected error occurred when converting {child["type"]}: {child["name"]} ({child["guid"]}). It will be skipped\n'
                 + "".join(traceback.format_exception(e))
             )
 
