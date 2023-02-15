@@ -185,7 +185,6 @@ def override_characters_style(fig_text):
     for pos, (style_id, character) in enumerate(
         zip(all_character_styles, fig_text["textData"]["characters"])
     ):
-
         # A glyph without a character is an added bullet point (for lists). Skip it
         while "firstCharacter" not in next_glyph:
             utils.log_conversion_warning("TXT005", fig_text)

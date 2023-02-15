@@ -23,7 +23,7 @@ def convert(fig_symbol):
     master = SymbolMaster(
         **base.base_styled(fig_symbol),
         **prototype.prototyping_information(fig_symbol),
-        symbolID=utils.gen_object_id(fig_symbol["guid"])
+        symbolID=utils.gen_object_id(fig_symbol["guid"]),
     )
 
     # Keep the base ID as the symbol reference, create a new one for the container
