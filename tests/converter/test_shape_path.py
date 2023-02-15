@@ -6,6 +6,8 @@ from sketchformat.layer_group import ShapeGroup
 from sketchformat.layer_common import BooleanOperation
 from sketchformat.style import FillType, MarkerType, WindingRule
 from .base import FIG_BASE
+from converter.errors import Fig2SketchWarning
+import pytest
 
 FIG_VECTOR = {
     **FIG_BASE,
@@ -160,3 +162,19 @@ def test_complex_vector():
     assert len(groups[0].style.fills) == 0
     for path in groups[0].layers:
         assert isinstance(sp, ShapePath) == True
+
+
+def test_empty_path():
+    fig = {
+        **FIG_VECTOR,
+        "vectorNetwork": {
+            "regions": [],
+            "segments": [],
+            "vertices": [],
+        },
+    }
+
+    with pytest.raises(Fig2SketchWarning) as e:
+        tree.convert_node(fig, "DOCUMENT")
+
+    assert e.value.code == "SHP002"

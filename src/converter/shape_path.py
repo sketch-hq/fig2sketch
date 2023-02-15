@@ -8,6 +8,7 @@ from sketchformat.layer_shape import ShapePath, CurvePoint, CurveMode
 from sketchformat.common import WindingRule, Point
 from sketchformat.style import MarkerType
 from typing import Union, List, TypedDict, Tuple, Dict
+from .errors import Fig2SketchWarning
 
 STROKE_CAP_TO_MARKER_TYPE = {
     "NONE": MarkerType.NONE,
@@ -34,6 +35,9 @@ class _Markers(TypedDict, total=False):
 
 
 def convert(fig_vector: dict) -> Union[Group, ShapeGroup, ShapePath]:
+    if len(fig_vector["vectorNetwork"]["vertices"]) == 0:
+        raise Fig2SketchWarning("SHP002")
+
     fig_regions = get_all_segments(fig_vector["vectorNetwork"])
     regions = [convert_region(fig_vector, region, i) for i, region in enumerate(fig_regions)]
 
