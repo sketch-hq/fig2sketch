@@ -197,7 +197,7 @@ def convert_properties_to_overrides(fig_master, properties, guid_path=[]):
     overrides = []
 
     for prop in properties:
-        for (ref_prop, ref_guid) in find_refs(fig_master, prop["defID"]):
+        for ref_prop, ref_guid in find_refs(fig_master, prop["defID"]):
             if ref_prop["componentPropNodeField"] == "OVERRIDDEN_SYMBOL_ID":
                 override = {"overriddenSymbolID": prop["value"]["guidValue"]}
             elif ref_prop["componentPropNodeField"] == "TEXT_DATA":

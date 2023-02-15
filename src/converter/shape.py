@@ -14,5 +14,5 @@ def convert_star(fig_star):
     return Star(
         **base.base_shape(fig_star),
         numberOfPoints=fig_star["count"],
-        radius=fig_star["starInnerScale"]
+        radius=fig_star["starInnerScale"],
     )
