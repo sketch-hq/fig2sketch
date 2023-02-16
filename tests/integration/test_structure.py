@@ -4,6 +4,8 @@ import fig2sketch
 from zipfile import ZipFile
 import json
 from converter import utils
+from unittest.mock import ANY
+import re
 
 
 @pytest.fixture(scope="module")
@@ -101,6 +103,12 @@ def test_document(sketch_doc):
                 "options": 3,
             }
         ]
+        assert doc["userInfo"] == {
+            "fig2sketch": {"can_detach": True, "salt": "31323334", "version": ANY}
+        }
+
+        # Version looks like a version number
+        assert re.match(r"\d+\.\d+\.\d+.*", doc["userInfo"]["fig2sketch"]["version"])
 
 
 @pytest.mark.parametrize(

@@ -1,9 +1,11 @@
 import zipfile
 from . import font
 from .context import context
+from .config import config
 from converter import utils
 from sketchformat.layer_group import Page
 from typing import List
+from dataclasses import asdict
 
 
 def convert(pages: List[Page], output_zip: zipfile.ZipFile) -> dict:
@@ -65,4 +67,5 @@ def convert(pages: List[Page], output_zip: zipfile.ZipFile) -> dict:
             }
             for page in pages
         ],
+        "userInfo": {"fig2sketch": {**asdict(config), "salt": config.salt.hex()}},
     }
