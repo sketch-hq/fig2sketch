@@ -66,6 +66,7 @@ def run(args: argparse.Namespace) -> None:
     from converter import convert
     from converter.config import config
 
+    config.version = VERSION
     if args.salt:
         config.salt = args.salt.encode("utf8")
 
