@@ -28,7 +28,10 @@ def convert_fig(path: str, output: ZipFile) -> Tuple[dict, Dict[Sequence[int], d
         id_map[node_id] = node
 
         if "overrideKey" in node:
-            override_map[node["overrideKey"]] = node
+            if node["overrideKey"][0] == utils.UINT_MAX:
+                del node["overrideKey"]
+            else:
+                override_map[node["overrideKey"]] = node
 
         if not root:
             root = node_id
