@@ -16,7 +16,7 @@ from sketchformat.layer_common import AbstractLayer
 from sketchformat.layer_group import AbstractLayerGroup
 from typing import Dict, Callable, Any
 import traceback
-from .errors import Fig2SketchWarning
+from .errors import *
 from . import utils
 
 CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
@@ -52,7 +52,12 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
     type_ = get_node_type(fig_node, parent_type)
     logging.debug(f"{type_}: {name}")
 
-    sketch_item = CONVERTERS[type_](fig_node)
+    try:
+        sketch_item = CONVERTERS[type_](fig_node)
+    except Fig2SketchNodeChanged:
+        # The fig_node was modified, retry converting with the new values
+        # This happens on instance detaching
+        return convert_node(fig_node, parent_type)
 
     if fig_node.get("layoutGrids", []) and type_ != "ARTBOARD":
         utils.log_conversion_warning("GRD001", fig_node)

@@ -6,6 +6,7 @@ from converter import utils
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
 from typing import List, Tuple
+from .errors import Fig2SketchNodeChanged
 
 
 def convert(fig_instance):
@@ -22,7 +23,9 @@ def convert(fig_instance):
 
             # Modify input tree in place, with the detached symbol subtree
             detach_symbol(fig_instance, all_overrides)
-            return group.convert(fig_instance)
+
+            # Raise an exception to trigger conversion of the detached node
+            raise Fig2SketchNodeChanged()
         else:
             utils.log_conversion_warning("SYM002", fig_instance, props=unsupported)
 
@@ -236,6 +239,7 @@ def detach_symbol(fig_instance, all_overrides):
         apply_overrides(c, fig_instance["guid"], all_overrides, fig_instance["derivedSymbolData"])
 
     fig_instance["children"] = detached_children
+    fig_instance["type"] = "FRAME"
 
 
 def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):

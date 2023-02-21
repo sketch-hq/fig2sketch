@@ -4,7 +4,7 @@ import pytest
 from converter import tree
 from converter.config import config
 from converter.context import context
-from sketchformat.layer_group import Group, SymbolInstance, OverrideValue
+from sketchformat.layer_group import Group, SymbolInstance, OverrideValue, Artboard
 from unittest.mock import ANY
 
 FIG_TEXT = {
@@ -182,3 +182,32 @@ class TestOverrides:
         assert i.overrideValues == [
             OverrideValue(overrideName=f"{symbol_text_id}_stringValue", value="property")
         ]
+
+
+@pytest.mark.usefixtures("symbol", "no_prototyping")
+class TestDetach:
+    def test_convert_to_group(self):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "fillPaints": [],
+            }
+        ]
+        fig["resizeToFit"] = False
+
+        i = tree.convert_node(fig, "")
+        assert isinstance(i, Group)
+
+    def test_convert_to_artboard(self):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "fillPaints": [],
+            }
+        ]
+        fig["resizeToFit"] = False
+
+        i = tree.convert_node(fig, "CANVAS")
+        assert isinstance(i, Artboard)
