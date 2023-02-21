@@ -39,6 +39,18 @@ def convert(fig_symbol):
             layoutAnchor=anchor,
         )
 
+    # Use better names for variants if possible
+    try:
+        parent = context.fig_node(fig_symbol["parent"]["guid"])
+        if parent and parent.get("isStateGroup", False):
+            master.name = symbol_variant_name(parent, fig_symbol)
+        elif "=" in fig_symbol["name"]:
+            import pdb
+
+            pdb.set_trace()
+    except Exception as e:
+        print(e)
+
     return master
 
 
@@ -55,3 +67,9 @@ def move_to_symbols_page(fig_symbol, sketch_symbol):
     # Since we put the Symbol in a different page in Sketch, leave an instance where the
     # master used to be
     return instance.master_instance(fig_symbol)
+
+
+def symbol_variant_name(parent, symbol):
+    property_values = [x.strip().split("=")[1] for x in symbol["name"].split(",")]
+    ordered_values = [parent["name"]] + property_values
+    return "/".join(ordered_values)
