@@ -1,5 +1,5 @@
 from .base import *
-from converter import tree
+from converter import tree, symbol
 from sketchformat.layer_shape import Rectangle
 import pytest
 from converter.context import context
@@ -56,3 +56,20 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
     assert child.style.innerShadows == [
         InnerShadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
     ]
+
+
+def test_variant_name():
+    variants = {
+        **FIG_BASE,
+        "type": "FRAME",
+        "name": "Starch",
+        "guid": (22, 22),
+        "isStateGroup": True,
+        "stateGroupPropertyValueOrders": [
+            {"property": "Property 1", "values": ["Potato", "Orange"]},
+            {"property": "Property 2", "values": ["Something", "Another"]},
+        ],
+        "children": [{**FIG_SYMBOL, "name": "Property 1=Potato, Property 2=Another"}],
+        "parent": {"guid": (22, 22)},
+    }
+    assert symbol.symbol_variant_name(variants, variants["children"][0]) == "Starch/Potato/Another"
