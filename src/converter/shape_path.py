@@ -138,6 +138,12 @@ def convert_points(fig_vector: dict, ordered_segments: List[dict]) -> Tuple[_Poi
         points[segment["start"]] = point1
         points[segment["end"]] = point2
 
+    # Reset curve status to straight if no curve handles are set
+    # This allows to support corner radius in these cases
+    for p in points.values():
+        if not p.hasCurveFrom and not p.hasCurveTo:
+            p.curveMode = CurveMode.STRAIGHT
+
     return {"points": list(points.values()), "isClosed": is_closed}, points_style
 
 
