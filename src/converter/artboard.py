@@ -120,6 +120,10 @@ def convert_layout(fig_frame: dict, frame: Rect) -> Optional[LayoutGrid]:
         if sizes.offset != 0:
             utils.log_conversion_warning("GRD006", fig_frame)
 
+        if gutter_size <= 0:
+            utils.log_conversion_warning("GRD007", fig_frame)
+            gutter_size = 1
+
         row_scale = sizes.item_size / gutter_size
         int_row_scale = round(row_scale)
         if abs(row_scale - int_row_scale) > 0.01:
