@@ -3,7 +3,7 @@
 import argparse
 import json
 import logging
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED, ZIP_STORED
 import ssl
 import sys
 from typing import List
@@ -32,6 +32,11 @@ def parse_args(args: List[str] = sys.argv[1:]) -> argparse.Namespace:
         "--force-convert-images",
         action="store_true",
         help="try to convert corrupted images",
+    )
+    group.add_argument(
+        "--compress",
+        action="store_true",
+        help="compress the output sketch file",
     )
 
     group = parser.add_argument_group("debug options")
@@ -90,7 +95,11 @@ def run(args: argparse.Namespace) -> None:
     logging.debug(config)
     logging.debug(f"Version {VERSION}")
 
-    with ZipFile(args.sketch_file, "w") as output:
+    compression = ZIP_STORED
+    if args.compress:
+        compression = ZIP_DEFLATED
+
+    with ZipFile(args.sketch_file, "w", compression=compression) as output:
         fig_tree, id_map = fig2tree.convert_fig(args.fig_file, output)
 
         if args.dump_fig_json:
