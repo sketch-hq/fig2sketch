@@ -142,7 +142,7 @@ class KiwiDecoder:
 
 
 def decode(reader, type_converters):
-    SUPPORTED_VERSIONS = [15, 20]
+    SUPPORTED_VERSIONS = [15, 20, 25]
 
     header = reader.read(12)
     fig_version = struct.unpack("<I", header[8:12])[0]
