@@ -95,6 +95,7 @@ WARNING_MESSAGES = {
     "IMG001": "appears to be corrupted in the .fig file, it will not be converted. Try passing --force-convert-images to try to convert it anyway",
     "IMG002": "appears to be corrupted in the .fig file, it will not be converted",
     "IMG003": "is missing from the .fig file, it will not be converted",
+    "IMG004": "appears to be corrupted in the .fig file ({error}), it will not be converted",
 }
 
 
