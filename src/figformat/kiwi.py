@@ -4,6 +4,7 @@ from collections import OrderedDict
 import zlib
 import struct
 import io
+import logging
 
 
 class KiwiReader:
@@ -142,13 +143,18 @@ class KiwiDecoder:
 
 
 def decode(reader, type_converters):
-    SUPPORTED_VERSIONS = [15, 20]
+    MIN_SUPPORTED_VERSIONS = 15
+    MAX_SUPPORTED_VERSION = 25
 
     header = reader.read(12)
     fig_version = struct.unpack("<I", header[8:12])[0]
-    if fig_version not in SUPPORTED_VERSIONS:
+    if fig_version < MIN_SUPPORTED_VERSIONS:
         raise Exception(
-            f"Unsupported .fig version. File = {fig_version} / Supported = {SUPPORTED_VERSIONS}"
+            f"[FIG002] The .fig file has version {fig_version} which is older than the minimum supported ({MIN_SUPPORTED_VERSIONS}). Cannot convert"
+        )
+    elif fig_version > MAX_SUPPORTED_VERSION:
+        logging.info(
+            f"[FIG001] The .fig file has version {fig_version} which is newer than the maximum supported ({MAX_SUPPORTED_VERSION}). Some new properties may not be correctly converted"
         )
 
     segment_header = reader.read(4)
