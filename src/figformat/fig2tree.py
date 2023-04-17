@@ -131,3 +131,9 @@ def convert_image(fname, blob, fig_zip, output):
     except KeyError:
         utils.log_conversion_warning("IMG003", {"type": "Image", "guid": fname, "name": fname})
         return "f2s_missing"
+    except Exception as e:
+        utils.log_conversion_warning(
+            "IMG004", {"type": "Image", "guid": fname, "name": fname}, error=str(e)
+        )
+
+        return "f2s_corrupted"
