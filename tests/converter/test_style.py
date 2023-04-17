@@ -288,6 +288,26 @@ class TestConvertEffects:
         assert shadow.spread == 2
         assert shadow.color == SKETCH_COLOR[1]
 
+    def test_shadow_spread_is_optional(self):
+        effects = convert_effects(
+            {
+                "effects": [
+                    {
+                        "type": "DROP_SHADOW",
+                        "radius": 5,
+                        "offset": {"x": 3, "y": 6},
+                        "color": FIG_COLOR[1],
+                    }
+                ]
+            }
+        )
+        [shadow] = effects["shadows"]
+        assert shadow.blurRadius == 5
+        assert shadow.offsetX == 3
+        assert shadow.offsetY == 6
+        assert shadow.spread == 0
+        assert shadow.color == SKETCH_COLOR[1]
+
     def test_blur(self):
         effects = convert_effects(
             {

@@ -245,7 +245,7 @@ def convert_effects(fig_node: dict) -> _Effects:
                     blurRadius=e["radius"],
                     offsetX=e["offset"]["x"],
                     offsetY=e["offset"]["y"],
-                    spread=e["spread"],
+                    spread=e.get("spread", 0),
                     color=convert_color(e["color"]),
                 )
             )
@@ -256,7 +256,7 @@ def convert_effects(fig_node: dict) -> _Effects:
                     blurRadius=e["radius"],
                     offsetX=e["offset"]["x"],
                     offsetY=e["offset"]["y"],
-                    spread=e["spread"],
+                    spread=e.get("spread", 0),
                     color=convert_color(e["color"]),
                 )
             )
