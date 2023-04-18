@@ -44,10 +44,7 @@ def convert(fig_symbol):
         parent = context.fig_node(fig_symbol["parent"]["guid"])
         if parent and parent.get("isStateGroup", False):
             master.name = symbol_variant_name(parent, fig_symbol)
-        elif "=" in fig_symbol["name"]:
-            import pdb
 
-            pdb.set_trace()
     except Exception as e:
         print(e)
 
