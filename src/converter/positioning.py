@@ -14,10 +14,17 @@ class Vector(list):
     def __sub__(self, other):
         return Vector(self[0] - other[0], self[1] - other[1])
 
+    def length(self) -> float:
+        return (self[0] ** 2 + self[1] ** 2) ** 0.5
+
 
 class Matrix(list):
     def __init__(self, m: Sequence[Sequence[float]]):
         super().__init__(m)
+
+    @staticmethod
+    def scale(x: float, y: float) -> "Matrix":
+        return Matrix([[x, 0, 0], [0, y, 0], [0, 0, 1]])
 
     def dot(self, v: Vector) -> Vector:
         return Vector(
@@ -47,6 +54,27 @@ class Matrix(list):
                     / (self[0][0] * self[1][1] - self[0][1] * self[1][0]),
                 ],
                 [0, 0, 1],
+            ]
+        )
+
+    def __mul__(self, m):
+        return Matrix(
+            [
+                [
+                    self[0][0] * m[0][0] + self[0][1] * m[1][0] + self[0][2] * m[2][0],
+                    self[0][0] * m[0][1] + self[0][1] * m[1][1] + self[0][2] * m[2][1],
+                    self[0][0] * m[0][2] + self[0][1] * m[1][2] + self[0][2] * m[2][2],
+                ],
+                [
+                    self[1][0] * m[0][0] + self[1][1] * m[1][0] + self[1][2] * m[2][0],
+                    self[1][0] * m[0][1] + self[1][1] * m[1][1] + self[1][2] * m[2][1],
+                    self[1][0] * m[0][2] + self[1][1] * m[1][2] + self[1][2] * m[2][2],
+                ],
+                [
+                    self[2][0] * m[0][0] + self[2][1] * m[1][0] + self[2][2] * m[2][0],
+                    self[2][0] * m[0][1] + self[2][1] * m[1][1] + self[2][2] * m[2][1],
+                    self[2][0] * m[0][2] + self[2][1] * m[1][2] + self[2][2] * m[2][2],
+                ],
             ]
         )
 
