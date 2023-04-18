@@ -1,9 +1,11 @@
+import copy
 import dataclasses
 import math
 from .positioning import Vector, Matrix
 from converter import utils
 from sketchformat.style import *
 from typing import List, TypedDict
+from .errors import Fig2SketchNodeChanged
 
 BORDER_POSITION = {
     "CENTER": BorderPosition.CENTER,
@@ -69,12 +71,8 @@ def convert(fig_node: dict) -> Style:
             else BorderOptions.__dict__["lineCapStyle"],
             dashPattern=fig_node.get("dashPattern", []),
         ),
-        borders=[convert_border(fig_node, b) for b in fig_node["strokePaints"]]
-        if "strokePaints" in fig_node
-        else [],
-        fills=[convert_fill(fig_node, f) for f in fig_node["fillPaints"]]
-        if "fillPaints" in fig_node
-        else [],
+        borders=[convert_border(fig_node, b) for b in fig_node.get("strokePaints", [])],
+        fills=[convert_fill(fig_node, f) for f in fig_node.get("fillPaints", [])],
         **convert_effects(fig_node),
         contextSettings=context_settings(fig_node),
     )
@@ -104,10 +102,9 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                 isEnabled=fig_fill["visible"],
             )
         case {"type": "IMAGE"}:
-            if "transform" in fig_fill and fig_fill["transform"] != Matrix(
-                [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-            ):
-                utils.log_conversion_warning("STY004", fig_node)
+            if is_cropped_image(fig_fill):
+                # Extract images to a separate layer and retrigger conversion
+                convert_crop_image_to_mask(fig_node)
 
             if "paintFilter" in fig_fill:
                 utils.log_conversion_warning("STY005", fig_node)
@@ -125,6 +122,92 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                 isEnabled=fig_fill["visible"],
                 opacity=fig_fill.get("opacity", 1),
             )
+
+
+def is_cropped_image(fig_fill: dict) -> bool:
+    return (
+        fig_fill.get("type") == "IMAGE"
+        and "transform" in fig_fill
+        and fig_fill["transform"] != Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    )
+
+
+def convert_crop_image_to_mask(fig_node: dict) -> None:
+    content = copy.deepcopy(fig_node)
+    cropped_images = []
+    other_fills = []
+    for idx, fill in enumerate(content.get("fillPaints", [])):
+        if is_cropped_image(fill):
+            image_layer = cropped_image_layer(fig_node, fill)
+            image_layer["guid"] = fig_node["guid"] + (1, idx)
+            cropped_images.append(image_layer)
+        else:
+            other_fills.append(fill)
+
+    content["fillPaints"] = other_fills
+    content["transform"] = Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    old = copy.copy(fig_node)
+    fig_node.clear()
+    fig_node.update(
+        {
+            "type": "FRAME",
+            "name": f'{old["name"]} (crop group)',
+            "guid": old["guid"] + (0, 0),
+            "size": old["size"],
+            "transform": old["transform"],
+            "locked": old["locked"],
+            "visible": old["visible"],
+            "horizontalConstraint": old["horizontalConstraint"],
+            "verticalConstraint": old["verticalConstraint"],
+            "blendMode": old["blendMode"],
+            "opacity": old["opacity"],
+            "resizeToFit": True,
+            "children": [
+                {
+                    **content,
+                    "mask": True,
+                    "maskType": "OUTLINE",
+                    "f2sForceOutline": True,
+                },
+                *cropped_images,
+            ],
+        }
+    )
+    raise Fig2SketchNodeChanged
+
+
+def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
+    invmat = fill["transform"].inv()
+
+    iw = fill["originalImageWidth"]
+    ih = fill["originalImageHeight"]
+    image_scale = Matrix.scale(1.0 / iw, 1.0 / ih)
+    layer_scale = Matrix.scale(fig_node["size"]["x"], fig_node["size"]["y"])
+
+    transform = layer_scale * invmat * image_scale
+
+    height = transform.dot2([0, ih]).length()
+    width = transform.dot2([iw, 0]).length()
+
+    normalize_scale = Matrix.scale(iw / width, ih / height)
+
+    image_layer = {
+        "type": "RECTANGLE",
+        "name": f'{fig_node["name"]} (cropped image)',
+        "size": {"x": width, "y": height},
+        "transform": transform * normalize_scale,
+        "locked": fig_node["locked"],
+        "visible": fig_node["visible"],
+        "horizontalConstraint": fig_node["horizontalConstraint"],
+        "verticalConstraint": fig_node["verticalConstraint"],
+        "blendMode": fig_node["blendMode"],
+        "opacity": fig_node["opacity"],
+        "fillPaints": [fill],
+    }
+    del image_layer["fillPaints"][0]["transform"]
+
+    return image_layer
 
 
 def convert_color(color: dict, opacity: Optional[float] = None) -> Color:

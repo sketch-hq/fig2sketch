@@ -54,6 +54,7 @@ def has_rounded_corners(fig: dict) -> bool:
     )
 
 
+# Commented messages are no longer used, but we keep them for referencing past errors
 WARNING_MESSAGES = {
     "TXT001": "is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
     "TXT002": "has multiple text fill colors. Only the first one will be converted",
@@ -66,7 +67,7 @@ WARNING_MESSAGES = {
     "STY001": "contains a layer blur and a background blur. Only one will be converted",
     "STY002": "contains a DIAMOND gradient, which is not supported. It is converted to a RADIAL gradient",
     "STY003": "contains a fill with a non-standard blend mode, which is not supported at the fill level (us the layer blend mode instead). It will be ignored",
-    "STY004": "has a cropped image background, which is not supported yet. It will be set to stretch",
+    # "STY004": "has a cropped image background, which is not supported yet. It will be set to stretch",
     "STY005": "contains a image fill property, which is not supported. The extra properties will be ignored",
     "SYM001": "references an invalid symbol. It will be converted to an empty placeholder group",
     "SYM002": "overrides unsupported properties: {props}. The override will be ignored",
