@@ -1,6 +1,9 @@
 from converter.style import *
+from converter import tree
 import dataclasses
 from .base import *
+from sketchformat.layer_group import Group
+from sketchformat.layer_shape import Oval, Rectangle
 
 
 class TestConvertColor:
@@ -339,3 +342,44 @@ class TestConvertEffects:
         assert blur.isEnabled
         assert blur.type == BlurType.BACKGROUND
         assert blur.radius == 2.5
+
+
+class TestConvertImageFill:
+    def test_cropped_image(self):
+        image_filled = {
+            **FIG_BASE,
+            "type": "ELLIPSE",
+            "fillPaints": [
+                {
+                    "type": "IMAGE",
+                    "image": {"filename": "abcdef"},
+                    "visible": True,
+                    "imageScaleMode": "FIT",
+                    "transform": Matrix([[2, 0, 1], [0, 0.5, -2], [0, 0, 1]]),
+                    "originalImageWidth": 100,
+                    "originalImageHeight": 100,
+                },
+                {"type": "SOLID", "color": FIG_COLOR[0], "visible": True, "opacity": 0.9},
+            ],
+        }
+        group = tree.convert_node(image_filled, "CANVAS")
+
+        assert isinstance(group, Group)
+        layer = group.layers[0]
+        image = group.layers[1]
+
+        assert isinstance(layer, Oval)
+        assert len(layer.style.fills) == 1
+        layer_fill = layer.style.fills[0]
+        assert layer_fill.color == SKETCH_COLOR[0]
+
+        assert isinstance(image, Rectangle)
+        assert len(image.style.fills) == 1
+        image_fill = image.style.fills[0]
+        assert image_fill.image._ref == "images/abcdef"
+        assert image_fill.patternFillType == PatternFillType.FIT
+
+        assert image.frame.width == 50
+        assert image.frame.height == 200
+        assert image.frame.x == -50
+        assert image.frame.y == 400
