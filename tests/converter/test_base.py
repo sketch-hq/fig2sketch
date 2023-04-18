@@ -81,6 +81,7 @@ class TestArtboardBackgroud:
         bg = ab.layers[0]
         assert len(bg.style.fills) == 1
         assert bg.style.fills[0].fillType == FillType.GRADIENT
+        assert bg.resizingConstraint == 18
 
         warnings.assert_any_call("ART003", ANY)
 

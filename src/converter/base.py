@@ -213,11 +213,13 @@ HORIZONTAL_CONSTRAINT = {
     # 'FIXED_MAX': 0, # Unused?
 }
 
-
 # Vertical constraints are equivalent to horizontal ones, with a 3 bit shift
+VERTICAL_CONSTRAINT = {k: v << 3 for k, v in HORIZONTAL_CONSTRAINT.items()}
+
+
 def resizing_constraint(fig_node: dict) -> int:
     h = HORIZONTAL_CONSTRAINT[fig_node["horizontalConstraint"]]
-    v = HORIZONTAL_CONSTRAINT[fig_node["verticalConstraint"]] << 3
+    v = VERTICAL_CONSTRAINT[fig_node["verticalConstraint"]]
     return h + v
 
 
