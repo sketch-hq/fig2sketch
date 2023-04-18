@@ -220,7 +220,7 @@ def find_refs(node, ref_id):
     refs = [
         (ref, node.get("overrideKey", node["guid"]))
         for ref in node.get("componentPropRefs", [])
-        if ref["defID"] == ref_id and not ref["isDeleted"]
+        if ref["defID"] == ref_id and not ref.get("isDeleted", False)
     ]
 
     for ch in node.get("children", []):

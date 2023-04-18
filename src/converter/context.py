@@ -68,7 +68,7 @@ class Context:
             if fig_font_name["postscript"]:
                 font_name = fig_font_name["postscript"]
             else:
-                font_name = f"{fig_font_name['family']}-{fig_font_name['subfamily']}"
+                font_name = f"{fig_font_name['family']}-{fig_font_name['style']}"
 
         self._used_fonts[font_descriptor] = (font_file, font_name)
         return font_name
