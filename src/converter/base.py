@@ -85,7 +85,7 @@ def base_styled(fig_node: dict) -> _BaseStyled:
     if (
         obj["hasClippingMask"]
         and obj["clippingMaskMode"] == ClippingMaskMode.OUTLINE
-        and not fig_node.get("f2sForceOutline")
+        and not fig_node.get("f2s_cropped_image")
     ):
         # Outline mask behave differently in fig files and Sketch in regard to fill/stroke colors
         # Remove fill

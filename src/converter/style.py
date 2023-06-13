@@ -102,7 +102,7 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                 isEnabled=fig_fill["visible"],
             )
         case {"type": "IMAGE"}:
-            if is_cropped_image(fig_fill):
+            if is_cropped_image(fig_fill) and not fig_node.get("f2s_cropped_image"):
                 # Extract images to a separate layer and retrigger conversion
                 convert_crop_image_to_mask(fig_node)
 
@@ -168,7 +168,7 @@ def convert_crop_image_to_mask(fig_node: dict) -> None:
                     **content,
                     "mask": True,
                     "maskType": "OUTLINE",
-                    "f2sForceOutline": True,
+                    "f2s_cropped_image": True,
                 },
                 *cropped_images,
             ],

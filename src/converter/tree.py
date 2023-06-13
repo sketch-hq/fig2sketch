@@ -54,7 +54,7 @@ POST_PROCESSING: Dict[str, Callable[[dict, Any], AbstractLayer]] = {
 def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
     name = fig_node["name"]
     type_ = get_node_type(fig_node, parent_type)
-    logging.debug(f"{type_}: {name}")
+    logging.debug(f"{type_}: {name} {fig_node['guid']}")
 
     try:
         sketch_item = CONVERTERS[type_](fig_node)
