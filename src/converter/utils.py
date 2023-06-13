@@ -97,6 +97,7 @@ WARNING_MESSAGES = {
     "IMG002": "appears to be corrupted in the .fig file, it will not be converted",
     "IMG003": "is missing from the .fig file, it will not be converted",
     "IMG004": "appears to be corrupted in the .fig file ({error}), it will not be converted",
+    "LAY001": "is an unsupported layer type, it will not be converted"
 }
 
 

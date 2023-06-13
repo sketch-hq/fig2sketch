@@ -19,6 +19,9 @@ import traceback
 from .errors import *
 from . import utils
 
+def ignored_layer_type(fig_layer: dict) -> None:
+    raise Fig2SketchWarning("LAY001")
+
 CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
     "CANVAS": page.convert,
     "ARTBOARD": artboard.convert,
@@ -35,6 +38,7 @@ CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
     "SLICE": slice.convert,
     "SYMBOL": symbol.convert,
     "INSTANCE": instance.convert,
+    "STICKY": ignored_layer_type
 }
 
 POST_PROCESSING: Dict[str, Callable[[dict, Any], AbstractLayer]] = {
