@@ -19,7 +19,7 @@ def symbols_page() -> Page:
 def make_page(guid: Sequence[int], name: str, suffix: bytes = b"") -> Page:
     return Page(
         do_objectID=utils.gen_object_id(guid, suffix),
-        frame=Rect(height=300, width=300, x=0, y=0),
+        frame=Rect(height=0, width=0, x=0, y=0),
         name=name,
         resizingConstraint=63,
         rotation=0.0,
