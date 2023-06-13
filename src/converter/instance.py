@@ -240,6 +240,7 @@ def detach_symbol(fig_instance, all_overrides):
 
     fig_instance["children"] = detached_children
     fig_instance["type"] = "FRAME"
+    fig_instance["f2s_detached"] = True
 
 
 def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
@@ -275,14 +276,26 @@ def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
                 fig_node["size"] = derived["size"]
             if "transform" in derived:
                 fig_node["transform"] = derived["transform"]
+            # Should we do all properties instead?
+            # A lot of them can be potentially set by derived data
+            # by things like scaling the instance
+            if "strokeWeight" in derived:
+                fig_node["strokeWeight"] = derived["strokeWeight"]
 
     # Generate a unique ID by concatenating instance_id + node_id
-    fig_node["guid"] = tuple(j for i in (instance_id, guid) for j in i)
+    fig_node["guid"] = tuple(j for i in (instance_id, fig_node["guid"]) for j in i)
 
     # If it's an instance, pass the overrides down. Otherwise, convert the children
     if fig_node["type"] == "INSTANCE":
         fig_node["symbolData"]["symbolOverrides"] += child_overrides
         fig_node["derivedSymbolData"] += child_derived_data
     else:
+        if fig_node.get("f2s_detached"):
+            # This was previously an instance that was detached before this usage
+            # We didn't change the override keys of children, and they are still relative
+            # to the symbol, so we have to pass the key without our guid prefix
+            overrides = child_overrides
+            derived_symbol_data = child_derived_data
+
         for c in fig_node.get("children", []):
             apply_overrides(c, instance_id, overrides, derived_symbol_data)
