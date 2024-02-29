@@ -63,12 +63,16 @@ def convert(fig_node: dict) -> Style:
     sketch_style = Style(
         do_objectID=utils.gen_object_id(fig_node["guid"], b"style"),
         borderOptions=BorderOptions(
-            lineCapStyle=LINE_CAP_STYLE[fig_node["strokeCap"]]
-            if "strokeCap" in fig_node
-            else BorderOptions.__dict__["lineCapStyle"],
-            lineJoinStyle=LINE_JOIN_STYLE[fig_node["strokeJoin"]]
-            if "strokeJoin" in fig_node
-            else BorderOptions.__dict__["lineCapStyle"],
+            lineCapStyle=(
+                LINE_CAP_STYLE[fig_node["strokeCap"]]
+                if "strokeCap" in fig_node
+                else BorderOptions.__dict__["lineCapStyle"]
+            ),
+            lineJoinStyle=(
+                LINE_JOIN_STYLE[fig_node["strokeJoin"]]
+                if "strokeJoin" in fig_node
+                else BorderOptions.__dict__["lineCapStyle"]
+            ),
             dashPattern=fig_node.get("dashPattern", []),
         ),
         borders=[convert_border(fig_node, b) for b in fig_node.get("strokePaints", [])],

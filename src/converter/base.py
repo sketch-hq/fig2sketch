@@ -104,9 +104,11 @@ def base_shape(fig_node: dict) -> _BaseShape:
     return {
         **base_styled(fig_node),  # type: ignore
         # Sketch smooth corners are a boolean, but here it's a percent. Use an arbitrary threshold
-        "pointRadiusBehaviour": PointRadiusBehaviour.V1_SMOOTH
-        if fig_node.get("cornerSmoothing", 0) > 0.4
-        else PointRadiusBehaviour.V1,
+        "pointRadiusBehaviour": (
+            PointRadiusBehaviour.V1_SMOOTH
+            if fig_node.get("cornerSmoothing", 0) > 0.4
+            else PointRadiusBehaviour.V1
+        ),
     }
 
 
