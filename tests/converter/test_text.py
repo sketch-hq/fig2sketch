@@ -22,7 +22,6 @@ def build_emoji_text(chars: str, glyphs: List):
         "textData": {
             "characters": chars,
             "glyphs": glyphs,
-            "styleOverrideTable": [{"styleID": 2, "fillPaints": [{"type": "EMOJI"}]}],
         },
     }
 
@@ -86,8 +85,8 @@ class TestOverrideStyles:
 
     def test_emoji_text(self):
         chars = "Sketch ❤️ you"
-        glyphs = [{"firstCharacter": i, "styleID": 0} for i in range(len(chars))]
-        glyphs[7]["styleID"] = 2
+        glyphs = [{"firstCharacter": i} for i in range(len(chars))]
+        glyphs[7]["emojiCodePoints"] = [10084, 65039]
 
         text = override_characters_style(build_emoji_text(chars, glyphs))
 
@@ -113,9 +112,9 @@ class TestOverrideStyles:
 
     def test_multi_code_point_text(self):
         chars = "nice 🏳️‍🌈 flag"
-        glyphs = [{"firstCharacter": i, "styleID": 0} for i in range(len(chars))]
+        glyphs = [{"firstCharacter": i} for i in range(len(chars))]
         # Multi-codepoint flag is a single glyph
-        glyphs[5]["styleID"] = 2
+        glyphs[5]["emojiCodePoints"] = [127987, 65039, 8205, 127752]
         glyphs.pop(6)
         glyphs.pop(6)
         glyphs.pop(6)
