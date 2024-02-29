@@ -56,13 +56,13 @@ def base_layer(fig_node: dict) -> _BaseLayer:
     return {
         "do_objectID": utils.gen_object_id(fig_node["guid"]),
         "name": fig_node["name"],
-        "booleanOperation": -1,
+        "booleanOperation": BooleanOperation.NONE,
         "exportOptions": export_options(fig_node.get("exportSettings", [])),
         **positioning.convert(fig_node),  # type: ignore
         "isFixedToViewport": False,
         "isLocked": fig_node["locked"],
         "isVisible": fig_node["visible"],
-        "layerListExpandedType": 0,
+        "layerListExpandedType": LayerListStatus.COLLAPSED,
         "nameIsFixed": False,
         "resizingConstraint": resizing_constraint(fig_node),
         "resizingType": ResizeType.STRETCH,
@@ -104,9 +104,11 @@ def base_shape(fig_node: dict) -> _BaseShape:
     return {
         **base_styled(fig_node),  # type: ignore
         # Sketch smooth corners are a boolean, but here it's a percent. Use an arbitrary threshold
-        "pointRadiusBehaviour": PointRadiusBehaviour.V1_SMOOTH
-        if fig_node.get("cornerSmoothing", 0) > 0.4
-        else PointRadiusBehaviour.V1,
+        "pointRadiusBehaviour": (
+            PointRadiusBehaviour.V1_SMOOTH
+            if fig_node.get("cornerSmoothing", 0) > 0.4
+            else PointRadiusBehaviour.V1
+        ),
     }
 
 
