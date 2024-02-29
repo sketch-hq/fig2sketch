@@ -18,7 +18,7 @@ fig2sketch reads design data from a .fig file and converts it into data that Ske
 
 ### Using a release from PyPi
 
-1. Install with `pip install fig2sketch[fast]`
+1. Install with `pip install "fig2sketch[fast]"`
 2. Run `fig2sketch <path to .fig file> <path to store the .sketch file>`
 3. Open the resulting .sketch document in Sketch
 
@@ -65,7 +65,7 @@ pip install maturin
 Now, you can proceed to install the performance improvements:
 
 ```
-pip install .[fast]
+pip install ".[fast]"
 sh scripts/install_patched_orjson.sh
 ```
 
@@ -75,7 +75,7 @@ sh scripts/install_patched_orjson.sh
 Before running the tests for the first time, you'll need to install the dev requirements (within the virtual environment):
 
 ```
-pip install .[dev]
+pip install ".[dev]"
 ```
 
 Then, you can run the tests just executing this in the project root:
