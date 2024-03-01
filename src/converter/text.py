@@ -198,9 +198,8 @@ def override_characters_style(fig_text):
         # Compute the override for this character. Aside from style override,
         # we have to set the emoji font if this is an emoji
         style_override = copy.deepcopy(override_table[style_id])
-        override_fills = override_table[current_glyph["styleID"]].get("fillPaints", [{}])
 
-        is_emoji = override_fills and override_fills[0].get("type") == "EMOJI"
+        is_emoji = "emojiCodePoints" in current_glyph
 
         if is_emoji:
             style_override["fontName"] = {
