@@ -1,9 +1,6 @@
 name: release
 
-on:
-  push:
-    tags:
-      - v[0-9]+.[0-9]+.?[0-9]*
+on: push
 
 jobs:
   build:
@@ -13,19 +10,19 @@ jobs:
           - os: linux
             arch: x86_64
             runs: ubuntu-latest
-            ext: ''
+            ext: ""
           - os: windows
             arch: x86_64
             runs: windows-latest
-            ext: '.exe'
+            ext: ".exe"
           - os: macos
             arch: x86_64
             runs: macos-12
-            ext: ''
+            ext: ""
           - os: macos
             arch: arm64
             runs: macos-14
-            ext: ''
+            ext: ""
 
     runs-on: ${{ matrix.runs }}
     steps:
@@ -34,17 +31,17 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: "3.11"
           architecture: x64 # Otherwise the runner will try to download Python arm64, which is not available. x64 has support for both archs (universal2).
       - name: Install latest stable
         uses: actions-rs/toolchain@v1
         with:
-            toolchain: stable
-            override: true
+          toolchain: stable
+          override: true
       - name: Build
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
+          pip install "pyinstaller>=5.12"
           pip install certifi
           pip install maturin
           pip install .[fast]
@@ -56,10 +53,10 @@ jobs:
       - name: zip release
         uses: thedoctor0/zip-release@main
         with:
-          type: 'zip'
-          filename: 'fig2sketch-${{ matrix.os }}-${{ matrix.arch }}.zip'
-          directory: 'dist'
-          path: '*'
+          type: "zip"
+          filename: "fig2sketch-${{ matrix.os }}-${{ matrix.arch }}.zip"
+          directory: "dist"
+          path: "*"
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -67,7 +64,7 @@ jobs:
           path: dist/fig2sketch-${{ matrix.os }}-${{ matrix.arch }}.zip
 
   build-macos-universal:
-    needs: [ build ]
+    needs: [build]
     runs-on: macos-latest
     steps:
       - name: Download artifact
@@ -97,47 +94,46 @@ jobs:
       - name: zip release
         uses: thedoctor0/zip-release@main
         with:
-          type: 'zip'
-          filename: 'fig2sketch-macos-universal.zip'
-          directory: 'dist'
-          path: '*'
+          type: "zip"
+          filename: "fig2sketch-macos-universal.zip"
+          directory: "dist"
+          path: "*"
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: builds
           path: dist/fig2sketch-macos-universal.zip
 
+  # create-release:
+  #   needs: [build, build-macos-universal]
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   steps:
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: builds
+  #     - uses: ncipollo/release-action@v1
+  #       with:
+  #         artifacts: "fig2sketch-*.zip"
+  #         generateReleaseNotes: true
 
-  create-release:
-    needs: [ build, build-macos-universal ]
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: builds
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "fig2sketch-*.zip"
-          generateReleaseNotes: true
-
-  publish-to-pypi:
-    name: Build and publish to PyPi
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.11'
-      - name: Install build tools
-        run: pip install build
-      - name: Build source distribution
-        run: python -m build --sdist
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+  # publish-to-pypi:
+  #   name: Build and publish to PyPi
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@master
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v3
+  #       with:
+  #         python-version: "3.11"
+  #     - name: Install build tools
+  #       run: pip install build
+  #     - name: Build source distribution
+  #       run: python -m build --sdist
+  #     - name: Publish to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         password: ${{ secrets.PYPI_API_TOKEN }}
