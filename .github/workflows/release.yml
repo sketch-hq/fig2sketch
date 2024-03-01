@@ -20,11 +20,11 @@ jobs:
             ext: '.exe'
           - os: macos
             arch: x86_64
-            runs: macos-latest
+            runs: macos-12
             ext: ''
           - os: macos
             arch: arm64
-            runs: self-hosted
+            runs: macos-14
             ext: ''
 
     runs-on: ${{ matrix.runs }}
