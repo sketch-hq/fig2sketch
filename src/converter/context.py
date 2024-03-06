@@ -1,4 +1,5 @@
 import logging
+from urllib.error import HTTPError
 from . import component, page, font
 from sketchformat.document import Swatch
 from typing import Sequence, Tuple, Optional, Dict, IO, List
@@ -62,8 +63,14 @@ class Context:
 
         try:
             font_file, font_name = font.get_webfont(*font_descriptor)
-        except:
-            logging.warning(f"Could not download font {font_descriptor}")
+        except Exception as e:
+            if isinstance(e, font.FontNotFoundError) or (
+                isinstance(e, HTTPError) and e.code == 404
+            ):
+                logging.warning(f"Could not find font {font_descriptor} via Google Fonts")
+            else:
+                logging.warning(f"Could not download font {font_descriptor}: {e}")
+
             font_file = None
             if fig_font_name["postscript"]:
                 font_name = fig_font_name["postscript"]

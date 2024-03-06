@@ -1,4 +1,4 @@
-import copy
+import copy, logging
 from . import base, group
 from .context import context
 from .config import config
@@ -220,7 +220,11 @@ def find_refs(node, ref_id):
     refs = [
         (ref, node.get("overrideKey", node["guid"]))
         for ref in node.get("componentPropRefs", [])
-        if ref["defID"] == ref_id and not ref.get("isDeleted", False)
+        if (
+            ("defID" in ref and ref["defID"] == ref_id)
+            or ("zombieFallbackName" in ref and ref["zombieFallbackName"] == ref_id)
+        )
+        and not ref.get("isDeleted", False)
     ]
 
     for ch in node.get("children", []):

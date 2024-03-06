@@ -12,7 +12,7 @@ fonts_cache_dir = appdirs.user_cache_dir("Fig2Sketch", "Sketch") + "/fonts"
 os.makedirs(fonts_cache_dir, exist_ok=True)
 
 
-class FontError(Exception):
+class FontNotFoundError(Exception):
     pass
 
 
@@ -42,7 +42,7 @@ def get_webfont(family, subfamily):
             font_file.seek(0)
             return font_file, font_names["postscript"]
 
-    raise FontError(f"Could not find font {family} {subfamily}")
+    raise FontNotFoundError(f"Could not find font {family} {subfamily}")
 
 
 def convert(
