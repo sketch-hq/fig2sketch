@@ -32,10 +32,7 @@ def get_webfont(family, subfamily):
         filename = fi["filename"].replace("static/", "")
         if not filename.endswith((".ttf", ".otf")):
             continue
-        if (
-            family.lower() in filename.lower()
-            and subfamily.lower() in filename.lower()
-        ):
+        if family.lower() in filename.lower() and subfamily.lower() in filename.lower():
             font_file_path = f"{fonts_cache_dir}/{filename}"
             if not os.path.exists(font_file_path):
                 urllib.request.urlretrieve(fi["url"], font_file_path)
