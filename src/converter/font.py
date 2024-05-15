@@ -2,6 +2,8 @@ import appdirs
 import os
 import urllib.request
 import urllib.parse
+import json
+import logging
 from converter import utils
 from fontTools.ttLib import TTFont
 from sketchformat.document import FontReference, JsonFileReference
@@ -12,37 +14,35 @@ fonts_cache_dir = appdirs.user_cache_dir("Fig2Sketch", "Sketch") + "/fonts"
 os.makedirs(fonts_cache_dir, exist_ok=True)
 
 
-class FontError(Exception):
+class FontNotFoundError(Exception):
     pass
 
 
-def retrieve_webfont(family):
-    WEB_FONT_BASE_URL = "http://fonts.google.com/download?family="
-    font_url = WEB_FONT_BASE_URL + urllib.parse.quote(family)
-    font_file = f"{fonts_cache_dir}/{family}.zip"
-
-    if not os.path.exists(font_file):
-        urllib.request.urlretrieve(font_url, font_file)
-
-    return ZipFile(font_file)
+def retrieve_webfont_family(family):
+    WEB_FONT_LIST_URL = "https://fonts.google.com/download/list?family="
+    list_url = WEB_FONT_LIST_URL + urllib.parse.quote(family)
+    list_response = urllib.request.urlopen(list_url)
+    return json.loads(bytearray(list_response.read())[5:])
 
 
 def get_webfont(family, subfamily):
-    font_zip = retrieve_webfont(family)
-    for fi in font_zip.infolist():
-        if not fi.filename.endswith((".ttf", ".otf")):
-            continue
+    family_list = retrieve_webfont_family(family)
 
-        font_file = font_zip.open(fi.filename, "r")
-        font_names = extract_names(font_file)
-        if (
-            font_names["family"].lower() == family.lower()
-            and font_names["subfamily"].lower() == subfamily.lower()
-        ):
-            font_file.seek(0)
+    for fi in family_list["manifest"]["fileRefs"]:
+        filename = fi["filename"].replace("static/", "")
+        if not filename.endswith((".ttf", ".otf")):
+            continue
+        if family.lower() in filename.lower() and subfamily.lower() in filename.lower():
+            font_file_path = f"{fonts_cache_dir}/{filename}"
+            if not os.path.exists(font_file_path):
+                urllib.request.urlretrieve(fi["url"], font_file_path)
+
+            font_file = open(font_file_path, "rb")
+            font_names = extract_names(font_file)
+
             return font_file, font_names["postscript"]
 
-    raise FontError(f"Could not find font {family} {subfamily}")
+    raise FontNotFoundError(f"Could not find font {family} {subfamily}")
 
 
 def convert(
