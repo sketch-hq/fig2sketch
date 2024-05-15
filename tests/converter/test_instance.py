@@ -49,7 +49,11 @@ FIG_INSTANCE = {
 
 @pytest.fixture
 def symbol(monkeypatch):
-    context.init(None, {(0, 3): FIG_SYMBOL, (0, 1): FIG_TEXT, (0, 2): FIG_RECT, (1, 9): FIG_TEXT})
+    context.init(
+        None,
+        {(0, 3): FIG_SYMBOL, (0, 1): FIG_TEXT, (0, 2): FIG_RECT, (1, 9): FIG_TEXT},
+        "DISPLAY_P3",
+    )
     context._component_symbols = {(0, 3): False}
 
 

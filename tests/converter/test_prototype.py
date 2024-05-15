@@ -74,17 +74,18 @@ def canvas(monkeypatch):
             (0, 4): FIG_ARTBOARD,
             (0, 5): FIG_OVERLAY,
         },
+        "DISPLAY_P3",
     )
 
 
 @pytest.fixture
 def overlay(monkeypatch):
-    context.init(None, {(0, 5): FIG_OVERLAY})
+    context.init(None, {(0, 5): FIG_OVERLAY}, "DISPLAY_P3")
 
 
 @pytest.fixture
 def manual_overlay(monkeypatch):
-    context.init(None, {(0, 6): FIG_MANUAL_OVERLAY})
+    context.init(None, {(0, 6): FIG_MANUAL_OVERLAY}, "DISPLAY_P3")
 
 
 @pytest.mark.usefixtures("canvas")

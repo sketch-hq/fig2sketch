@@ -23,7 +23,7 @@ def convert(pages: List[Page], output_zip: zipfile.ZipFile) -> dict:
             "gradients": [],
             "exportPresets": [],
         },
-        "colorSpace": 1,
+        "colorSpace": context.color_space(),
         "currentPageIndex": 0,
         "foreignLayerStyles": [],
         "foreignSymbols": [],
