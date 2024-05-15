@@ -13,7 +13,7 @@ FIG_SYMBOL = {
 
 @pytest.fixture
 def empty_context(monkeypatch):
-    context.init(None, {})
+    context.init(None, {}, "DISPLAY_P3")
 
 
 def test_rounded_corners(no_prototyping, empty_context):

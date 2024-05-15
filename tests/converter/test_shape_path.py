@@ -139,7 +139,7 @@ class TestArrows:
 
 def test_complex_vector():
     figtree, id_map = fig2tree.convert_fig("tests/data/vector.fig", None)
-    context.init(None, id_map)
+    context.init(None, id_map, "DISPLAY_P3")
     figpage = figtree["document"]["children"][0]
     page = tree.convert_node(figpage, "DOCUMENT")
     vector = page.layers[0].layers[0]

@@ -16,7 +16,10 @@ def find_symbols(node: dict) -> List[Sequence[int]]:
 
 
 class Context:
-    def init(self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict]) -> None:
+    def init(
+        self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict], color_space: str
+    ) -> None:
+        self._color_space = color_space
         self._sketch_components: Dict[Sequence[int], Swatch] = {}
         self.symbols_page = None
         self._node_by_id = id_map
@@ -28,6 +31,9 @@ class Context:
         # Where to position symbols of the specified width
         # width -> (x, y)
         self._symbol_position = {0: [0, 0]}
+
+    def color_space(self) -> int:
+        return 2 if self._color_space == "DISPLAY_P3" else 1
 
     def component(self, cid: Sequence[int]) -> Tuple[dict, Optional[Swatch]]:
         fig_component = self.fig_node(cid)

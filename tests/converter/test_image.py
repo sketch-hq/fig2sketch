@@ -10,7 +10,7 @@ from .base import FIG_BASE, warnings
 
 def test_corrupted_images(warnings):
     figtree, id_map = fig2tree.convert_fig("tests/data/broken_images.fig", None)
-    context.init(None, id_map)
+    context.init(None, id_map, "DISPLAY_P3")
     figpage = figtree["document"]["children"][0]
     page = tree.convert_node(figpage, "DOCUMENT")
 
