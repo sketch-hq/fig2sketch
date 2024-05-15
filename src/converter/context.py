@@ -20,7 +20,7 @@ class Context:
         self._sketch_components: Dict[Sequence[int], Swatch] = {}
         self.symbols_page = None
         self._node_by_id = id_map
-        self._used_fonts: Dict[Tuple[str, str], Tuple[IO[bytes], str]] = {}
+        self._used_fonts: Dict[Tuple[str, str], Tuple[IO[bytes] | None, str]] = {}
         self._component_symbols = (
             {s: False for s in find_symbols(components_page)} if components_page else {}
         )
@@ -73,7 +73,7 @@ class Context:
         self._used_fonts[font_descriptor] = (font_file, font_name)
         return font_name
 
-    def used_fonts(self) -> Dict[Tuple[str, str], Tuple[IO[bytes], str]]:
+    def used_fonts(self) -> Dict[Tuple[str, str], Tuple[IO[bytes] | None, str]]:
         return self._used_fonts
 
     def find_symbol(self, sid: Sequence[int]) -> dict:
