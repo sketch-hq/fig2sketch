@@ -49,7 +49,10 @@ def convert(
     name: Tuple[str, str], font_file: IO[bytes], postscript: str, output_zip: ZipFile
 ) -> FontReference:
     family, subfamily = name
+
+    font_file.seek(0)
     data = font_file.read()
+
     sha = utils.generate_file_ref(data)
     path = f"fonts/{sha}"
     output_zip.open(path, "w").write(data)
