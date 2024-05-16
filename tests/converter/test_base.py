@@ -113,7 +113,7 @@ FIG_TEXT_STYLE = {
 
 @pytest.fixture
 def style_overrides(monkeypatch):
-    context.init(None, {(0, 1): FIG_TEXT_STYLE, (0, 2): FIG_COLOR_STYLE})
+    context.init(None, {(0, 1): FIG_TEXT_STYLE, (0, 2): FIG_COLOR_STYLE}, "DISPLAY_P3")
 
 
 @pytest.mark.usefixtures("style_overrides")

@@ -14,7 +14,12 @@ def convert_fig_tree_to_sketch(
     # We should either bring the fonts to the same indexed_components to pass
     # them as parameter or move the indexed components to the component file
     # and store there the components, for consistency purposes
-    context.init(components_page, id_map)
+    if "documentColorProfile" in fig["document"]:
+        color_space = fig["document"]["documentColorProfile"]
+    else:
+        color_space = "sRGB"
+
+    context.init(components_page, id_map, color_space)
 
     # Convert all normal pages
     sketch_pages: List[Page] = convert_pages(fig_pages, output)
