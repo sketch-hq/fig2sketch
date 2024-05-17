@@ -71,7 +71,7 @@ class Context:
             font_file, font_name = font.get_webfont(*font_descriptor)
         except Exception as e:
             if isinstance(e, font.FontNotFoundError) or (
-                isinstance(e, HTTPError) and e.code == 404
+                isinstance(e, HTTPError) and (e.code == 404 or e.code == 400)
             ):
                 logging.warning(f"Could not find font {font_descriptor} via Google Fonts")
             else:
