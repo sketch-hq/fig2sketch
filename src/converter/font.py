@@ -3,7 +3,6 @@ import os
 import urllib.request
 import urllib.parse
 import json
-import logging
 from converter import utils
 from fontTools.ttLib import TTFont
 from sketchformat.document import FontReference, JsonFileReference
@@ -25,21 +24,37 @@ def retrieve_webfont_family(family):
     return json.loads(bytearray(list_response.read())[5:])
 
 
-def get_webfont(family, subfamily):
-    family_list = retrieve_webfont_family(family)
+def download_webfonts(font_file_urls):
+    font_files = []
 
-    for fi in family_list["manifest"]["fileRefs"]:
-        filename = fi["filename"].replace("static/", "")
+    for fi in font_file_urls:
+        filename = fi["filename"].split("/")[-1]
         if not filename.endswith((".ttf", ".otf")):
             continue
-        if family.lower() in filename.lower() and subfamily.lower() in filename.lower():
-            font_file_path = f"{fonts_cache_dir}/{filename}"
-            if not os.path.exists(font_file_path):
-                urllib.request.urlretrieve(fi["url"], font_file_path)
 
-            font_file = open(font_file_path, "rb")
-            font_names = extract_names(font_file)
+        font_file_path = f"{fonts_cache_dir}/{filename}"
+        if not os.path.exists(font_file_path):
+            urllib.request.urlretrieve(fi["url"], font_file_path)
 
+        font_files.append(font_file_path)
+
+    return font_files
+
+
+def get_webfont(family, subfamily):
+    family_list = retrieve_webfont_family(family)
+    font_files = download_webfonts(family_list["manifest"]["fileRefs"])
+
+    for font_file_path in font_files:
+        font_file = open(font_file_path, "rb")
+        font_names = extract_names(font_file)
+
+        if font_names["family"].lower() == family.lower() and (
+            font_names["subfamily"].lower() == subfamily.lower()
+            or font_names["subfamily"].replace(" ", "").lower()
+            == subfamily.replace(" ", "").lower()
+        ):
+            font_file.seek(0)
             return font_file, font_names["postscript"]
 
     raise FontNotFoundError(f"Could not find font {family} {subfamily}")
