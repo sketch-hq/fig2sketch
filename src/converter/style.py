@@ -186,7 +186,7 @@ def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
 
     iw = fill["originalImageWidth"]
     ih = fill["originalImageHeight"]
-    image_scale = Matrix.scale(1.0 / iw, 1.0 / ih)
+    image_scale = Matrix.scale(1.0 / iw if iw else 1, 1.0 / ih if ih else 1)
     layer_scale = Matrix.scale(fig_node["size"]["x"], fig_node["size"]["y"])
 
     transform = layer_scale * invmat * image_scale
@@ -194,7 +194,7 @@ def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
     height = transform.dot2([0, ih]).length()
     width = transform.dot2([iw, 0]).length()
 
-    normalize_scale = Matrix.scale(iw / width, ih / height)
+    normalize_scale = Matrix.scale(iw / width if iw else 1, ih / height if ih else 1)
 
     image_layer = {
         "type": "RECTANGLE",
