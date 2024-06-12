@@ -60,8 +60,8 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         "exportOptions": export_options(fig_node.get("exportSettings", [])),
         **positioning.convert(fig_node),  # type: ignore
         "isFixedToViewport": False,
-        "isLocked": fig_node["locked"],
-        "isVisible": fig_node["visible"],
+        "isLocked": fig_node.get("locked", False),
+        "isVisible": fig_node.get("visible", True),
         "layerListExpandedType": LayerListStatus.COLLAPSED,
         "nameIsFixed": False,
         "resizingConstraint": resizing_constraint(fig_node),
@@ -224,8 +224,8 @@ VERTICAL_CONSTRAINT = {k: v << 3 for k, v in HORIZONTAL_CONSTRAINT.items()}
 
 
 def resizing_constraint(fig_node: dict) -> int:
-    h = HORIZONTAL_CONSTRAINT[fig_node["horizontalConstraint"]]
-    v = VERTICAL_CONSTRAINT[fig_node["verticalConstraint"]]
+    h = HORIZONTAL_CONSTRAINT[fig_node.get("horizontalConstraint", "MIN")]
+    v = VERTICAL_CONSTRAINT[fig_node.get("verticalConstraint", "MIN")]
     return h + v
 
 

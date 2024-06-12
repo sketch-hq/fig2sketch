@@ -64,7 +64,7 @@ def convert(fig_node: dict) -> Style:
         do_objectID=utils.gen_object_id(fig_node["guid"], b"style"),
         borderOptions=BorderOptions(
             lineCapStyle=(
-                LINE_CAP_STYLE[fig_node["strokeCap"]]
+                LINE_CAP_STYLE[fig_node.get("strokeCap", "NONE")]
                 if "strokeCap" in fig_node
                 else BorderOptions.__dict__["lineCapStyle"]
             ),
@@ -160,10 +160,10 @@ def convert_crop_image_to_mask(fig_node: dict) -> None:
             "guid": old["guid"] + (0, 0),
             "size": old["size"],
             "transform": old["transform"],
-            "locked": old["locked"],
-            "visible": old["visible"],
-            "horizontalConstraint": old["horizontalConstraint"],
-            "verticalConstraint": old["verticalConstraint"],
+            "locked": old.get("locked", False),
+            "visible": old.get("visible", True),
+            "horizontalConstraint": old.get("horizontalConstraint", "MIN"),
+            "verticalConstraint": old.get("verticalConstraint", "MIN"),
             "blendMode": old["blendMode"],
             "opacity": old["opacity"],
             "resizeToFit": True,
@@ -186,7 +186,7 @@ def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
 
     iw = fill["originalImageWidth"]
     ih = fill["originalImageHeight"]
-    image_scale = Matrix.scale(1.0 / iw, 1.0 / ih)
+    image_scale = Matrix.scale(1.0 / iw if iw else 1, 1.0 / ih if ih else 1)
     layer_scale = Matrix.scale(fig_node["size"]["x"], fig_node["size"]["y"])
 
     transform = layer_scale * invmat * image_scale
@@ -194,17 +194,17 @@ def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
     height = transform.dot2([0, ih]).length()
     width = transform.dot2([iw, 0]).length()
 
-    normalize_scale = Matrix.scale(iw / width, ih / height)
+    normalize_scale = Matrix.scale(iw / width if iw else 1, ih / height if ih else 1)
 
     image_layer = {
         "type": "RECTANGLE",
         "name": f'{fig_node["name"]} (cropped image)',
         "size": {"x": width, "y": height},
         "transform": transform * normalize_scale,
-        "locked": fig_node["locked"],
-        "visible": fig_node["visible"],
-        "horizontalConstraint": fig_node["horizontalConstraint"],
-        "verticalConstraint": fig_node["verticalConstraint"],
+        "locked": fig_node.get("locked", False),
+        "visible": fig_node.get("visible", True),
+        "horizontalConstraint": fig_node.get("horizontalConstraint", "MIN"),
+        "verticalConstraint": fig_node.get("verticalConstraint", "MIN"),
         "blendMode": fig_node["blendMode"],
         "opacity": fig_node["opacity"],
         "fillPaints": [fill],

@@ -131,15 +131,15 @@ def text_style(fig_text):
                 name=font_name, size=fig_text["fontSize"], featureSettings=font_features(fig_text)
             ),
             MSAttributedStringColorAttribute=color,
-            textStyleVerticalAlignmentKey=AlignVertical[fig_text["textAlignVertical"]],
+            textStyleVerticalAlignmentKey=AlignVertical[fig_text.get("textAlignVertical", "TOP")],
             **text_decoration(fig_text),
             kerning=kerning(fig_text),
             paragraphStyle=ParagraphStyle(
-                alignment=AlignHorizontal[fig_text["textAlignHorizontal"]],
+                alignment=AlignHorizontal[fig_text.get("textAlignHorizontal", "LEFT")],
                 **line_height(fig_text),
             ),
         ),
-        verticalAlignment=AlignVertical[fig_text["textAlignVertical"]],
+        verticalAlignment=AlignVertical[fig_text.get("textAlignVertical", "TOP")],
     )
 
     if fig_text.get("paragraphSpacing", 0) != 0:
