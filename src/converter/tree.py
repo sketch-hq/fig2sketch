@@ -95,7 +95,7 @@ def get_node_type(fig_node: dict, parent_type: str) -> str:
     # If a Frame is detected inside another Frame, the internal one
     # is considered a group
     if fig_node["type"] in ["FRAME", "SECTION"]:
-        if parent_type == "CANVAS" and not fig_node["resizeToFit"]:
+        if parent_type == "CANVAS" and not fig_node.get("resizeToFit", False):
             return "ARTBOARD"
         else:
             return "GROUP"

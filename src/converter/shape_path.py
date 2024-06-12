@@ -350,14 +350,16 @@ def get_or_create_point(
 
 
 def points_marker_types(fig_vector: dict, start_point: dict, end_point: dict) -> _Markers:
-    start_marker_type = STROKE_CAP_TO_MARKER_TYPE[fig_vector["strokeCap"]]
-    end_marker_type = STROKE_CAP_TO_MARKER_TYPE[fig_vector["strokeCap"]]
+    start_marker_type = STROKE_CAP_TO_MARKER_TYPE[fig_vector.get("strokeCap", "NONE")]
+    end_marker_type = STROKE_CAP_TO_MARKER_TYPE[fig_vector.get("strokeCap", "NONE")]
 
     if ("style" in start_point) and ("strokeCap" in start_point["style"]):
-        start_marker_type = STROKE_CAP_TO_MARKER_TYPE[start_point["style"]["strokeCap"]]
+        start_marker_type = STROKE_CAP_TO_MARKER_TYPE[
+            start_point["style"].get("strokeCap", "NONE")
+        ]
 
     if ("style" in end_point) and ("strokeCap" in end_point["style"]):
-        end_marker_type = STROKE_CAP_TO_MARKER_TYPE[end_point["style"]["strokeCap"]]
+        end_marker_type = STROKE_CAP_TO_MARKER_TYPE[end_point["style"].get("strokeCap", "NONE")]
 
     if STROKE_CAP_TO_MARKER_TYPE["TRIANGLE_FILLED"] in [
         start_marker_type,
