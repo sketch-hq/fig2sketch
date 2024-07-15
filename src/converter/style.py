@@ -164,8 +164,8 @@ def convert_crop_image_to_mask(fig_node: dict) -> None:
             "visible": old.get("visible", True),
             "horizontalConstraint": old.get("horizontalConstraint", "MIN"),
             "verticalConstraint": old.get("verticalConstraint", "MIN"),
-            "blendMode": old["blendMode"],
-            "opacity": old["opacity"],
+            "blendMode": old.get("blendMode", "NORMAL"),
+            "opacity": old.get("opacity", 1),
             "resizeToFit": True,
             "children": [
                 {
@@ -205,8 +205,8 @@ def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
         "visible": fig_node.get("visible", True),
         "horizontalConstraint": fig_node.get("horizontalConstraint", "MIN"),
         "verticalConstraint": fig_node.get("verticalConstraint", "MIN"),
-        "blendMode": fig_node["blendMode"],
-        "opacity": fig_node["opacity"],
+        "blendMode": fig_node.get("blendMode", "NORMAL"),
+        "opacity": fig_node.get("opacity", 1),
         "fillPaints": [fill],
     }
     del image_layer["fillPaints"][0]["transform"]
@@ -375,10 +375,10 @@ def convert_effects(fig_node: dict) -> _Effects:
 
 
 def context_settings(fig_node: dict) -> ContextSettings:
-    blend_mode = BLEND_MODE[fig_node["blendMode"]]
-    opacity = fig_node["opacity"]
+    blend_mode = BLEND_MODE[fig_node.get("blendMode", "NORMAL")]
+    opacity = fig_node.get("opacity", 1)
 
-    if fig_node["blendMode"] == "NORMAL" and opacity == 1:
+    if blend_mode == BlendMode.NORMAL and opacity == 1:
         # Sketch interprets normal at 100% opacity as pass-through
         opacity = 0.99
 
