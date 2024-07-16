@@ -184,8 +184,8 @@ def convert_crop_image_to_mask(fig_node: dict) -> None:
 def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
     invmat = fill["transform"].inv()
 
-    iw = fill["originalImageWidth"]
-    ih = fill["originalImageHeight"]
+    iw = fill.get("originalImageWidth", fig_node["size"]["x"])
+    ih = fill.get("originalImageHeight", fig_node["size"]["y"])
     image_scale = Matrix.scale(1.0 / iw if iw else 1, 1.0 / ih if ih else 1)
     layer_scale = Matrix.scale(fig_node["size"]["x"], fig_node["size"]["y"])
 
