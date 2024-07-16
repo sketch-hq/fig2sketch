@@ -240,7 +240,9 @@ def detach_symbol(fig_instance, all_overrides):
 
     # Apply overrides to children
     for c in detached_children:
-        apply_overrides(c, fig_instance["guid"], all_overrides, fig_instance["derivedSymbolData"])
+        apply_overrides(
+            c, fig_instance["guid"], all_overrides, fig_instance.get("derivedSymbolData", [])
+        )
 
     fig_instance["children"] = detached_children
     fig_instance["type"] = "FRAME"
