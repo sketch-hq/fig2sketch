@@ -41,11 +41,11 @@ BLEND_MODE = {
     "NORMAL": BlendMode.NORMAL,
     "DARKEN": BlendMode.DARKEN,
     "MULTIPLY": BlendMode.MULTIPLY,
-    # 'LINEAR_BURN': , Unused?
+    "LINEAR_BURN": BlendMode.PLUS_DARKER,
     "COLOR_BURN": BlendMode.COLOR_BURN,
     "LIGHTEN": BlendMode.LIGHTEN,
     "SCREEN": BlendMode.SCREEN,
-    # 'LINEAR_DODGE': , Unused?
+    "LINEAR_DODGE": BlendMode.PLUS_LIGHTER,
     "COLOR_DODGE": BlendMode.COLOR_DODGE,
     "OVERLAY": BlendMode.OVERLAY,
     "SOFT_LIGHT": BlendMode.SOFT_LIGHT,
