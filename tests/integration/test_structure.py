@@ -91,11 +91,11 @@ def test_document(sketch_doc):
         assert doc["fontReferences"] == [
             {
                 "_class": "fontReference",
-                "do_objectID": "46BF164E-CB00-4E1A-A5DE-9E6EB74A4F1F",
+                "do_objectID": "CC5A46C8-DB4E-4481-A0D9-7F1971488367",
                 "fontData": {
                     "_class": "MSJSONFileReference",
                     "_ref_class": "MSFontData",
-                    "_ref": "fonts/be10cc8996f037af7331dc965bae42ef33478700",
+                    "_ref": "fonts/f0b7cea3f659e72f3ea9285a4d60712878169c07",
                 },
                 "fontFamilyName": "Inter",
                 "fontFileName": "Inter-Regular.ttf",
@@ -116,7 +116,7 @@ def test_document(sketch_doc):
     [
         "images/616d10a80971e08c6b43a164746afac1972c7ccc.png",
         "images/92e4d5e0c24ffd632c3db3264e62cc907c2f5e29",
-        "fonts/be10cc8996f037af7331dc965bae42ef33478700",
+        "fonts/f0b7cea3f659e72f3ea9285a4d60712878169c07",
     ],
 )
 def test_file_hashes(sketch_doc, img):
@@ -223,7 +223,7 @@ def test_files(sketch_doc):
         "images/92e4d5e0c24ffd632c3db3264e62cc907c2f5e29",
         "pages/8F292FCA-49C0-4E31-957E-93FB2D1A7231.json",
         "pages/A4E5259A-9CE6-49D9-B4A1-A8062C205347.json",
-        "fonts/be10cc8996f037af7331dc965bae42ef33478700",
+        "fonts/f0b7cea3f659e72f3ea9285a4d60712878169c07",
         "document.json",
         "user.json",
         "meta.json",
