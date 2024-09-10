@@ -21,14 +21,14 @@ def decode(path):
     if header == b"PK":
         fig_zip = zipfile.ZipFile(reader)
 
-    # try:
-    #     import fig_kiwi
+    try:
+        import fig_kiwi
 
-    #     logging.debug("Using fast (rust) kiwi reader")
-    #     return fig_kiwi.decode(path, type_converters), fig_zip
+        logging.debug("Using fast (rust) kiwi reader")
+        return fig_kiwi.decode(path, type_converters), fig_zip
 
-    # except ImportError:
-    #     logging.debug("Falling back to slow (python) kiwi reader")
+    except ImportError:
+        logging.debug("Falling back to slow (python) kiwi reader")
 
     if fig_zip:
         reader = fig_zip.open("canvas.fig")
