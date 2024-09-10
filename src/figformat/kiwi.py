@@ -145,7 +145,7 @@ class KiwiDecoder:
 
 def decode(reader, type_converters):
     MIN_SUPPORTED_VERSIONS = 15
-    MAX_SUPPORTED_VERSION = 25
+    MAX_SUPPORTED_VERSION = 70
 
     # `zstd` data will start with a magic number frame
     # the value of which is `0xfd2fb528`
