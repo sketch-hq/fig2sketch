@@ -3,7 +3,12 @@ name = "fig2sketch"
 readme = "README.md"
 requires-python = ">=3.10"
 dynamic = ["version"]
-dependencies = ["Pillow==10.3.0", "fonttools==4.43.0", "appdirs==1.4.4"]
+dependencies = [
+  "Pillow==10.3.0",
+  "fonttools==4.43.0",
+  "appdirs==1.4.4",
+  "zstd==1.5.5.1",
+]
 
 [project.scripts]
 fig2sketch = "fig2sketch:main"

@@ -2,6 +2,7 @@ import codecs
 import ctypes
 from collections import OrderedDict
 import zlib
+import zstd
 import struct
 import io
 import logging
@@ -146,6 +147,10 @@ def decode(reader, type_converters):
     MIN_SUPPORTED_VERSIONS = 15
     MAX_SUPPORTED_VERSION = 25
 
+    # `zstd` data will start with a magic number frame
+    # the value of which is `0xfd2fb528`
+    ZSTD_MAGIC_NUMBER = b"\x28\xb5\x2f\xfd"
+
     header = reader.read(12)
     fig_version = struct.unpack("<I", header[8:12])[0]
     if fig_version < MIN_SUPPORTED_VERSIONS:
@@ -159,10 +164,29 @@ def decode(reader, type_converters):
 
     segment_header = reader.read(4)
     size = struct.unpack("<I", segment_header)[0]
-    data = io.BytesIO(zlib.decompress(reader.read(size), wbits=-15))
-    schema = KiwiSchema(data)
+    compressedSchema = reader.read(size)
+
+    schemaData = b""
+    # Check to see if the first four bytes are the zstd magic number.
+    # If so we need to use zstd to decompress, not zlib
+    if compressedSchema.startswith(ZSTD_MAGIC_NUMBER):
+        schemaData = io.BytesIO(zstd.decompress(compressedSchema))
+    else:
+        schemaData = io.BytesIO(zlib.decompress(compressedSchema, wbits=-15))
+
+    schema = KiwiSchema(schemaData)
 
     segment_header = reader.read(4)
     size = struct.unpack("<I", segment_header)[0]
-    data = io.BytesIO(zlib.decompress(reader.read(size), wbits=-15))
+    compressedData = reader.read(size)
+
+    data = b""
+    # Check to see if the first four bytes are the zstd magic number.
+    # If so we need to use zstd to decompress, not zlib
+
+    if compressedData.startswith(ZSTD_MAGIC_NUMBER):
+        data = io.BytesIO(zstd.decompress(compressedData))
+    else:
+        data = io.BytesIO(zlib.decompress(compressedData, wbits=-15))
+
     return KiwiDecoder(schema, type_converters).decode(data, "Message")
