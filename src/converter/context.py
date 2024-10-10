@@ -1,6 +1,7 @@
 import logging
 from urllib.error import HTTPError
 from . import component, page, font
+from .errors import Fig2SketchWarning
 from sketchformat.document import Swatch
 from typing import Sequence, Tuple, Optional, Dict, IO, List
 
@@ -59,7 +60,10 @@ class Context:
         self._position_symbol(sketch_symbol)
 
     def fig_node(self, fid: Sequence[int]) -> dict:
-        return self._node_by_id[fid]
+        if fid in self._node_by_id:
+            return self._node_by_id[fid]
+        else:
+            raise Fig2SketchWarning("NOD001")
 
     def record_font(self, fig_font_name):
         font_descriptor = (fig_font_name["family"], fig_font_name["style"])
