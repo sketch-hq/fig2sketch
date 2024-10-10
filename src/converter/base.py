@@ -2,6 +2,7 @@ import logging
 from sketchformat.layer_common import *
 from sketchformat.layer_shape import *
 from sketchformat.style import *
+from .errors import *
 from typing import TypedDict
 
 from . import positioning, style, prototype, utils
@@ -140,7 +141,11 @@ def process_styles(fig_node: dict) -> Style:
         if sketch_component:
             components[inherit_style] = sketch_component
 
-    st = style.convert(fig_node)
+    try:
+        st = style.convert(fig_node)
+    except Fig2SketchWarning:
+        # The style node is missing. Process a blank style
+        return style.convert({})
 
     for key, value in components.items():
         if key == "inheritFillStyleID":
