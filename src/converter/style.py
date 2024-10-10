@@ -4,6 +4,7 @@ import math
 from .positioning import Vector, Matrix
 from converter import utils
 from sketchformat.style import *
+from .utils import safe_div
 from typing import List, TypedDict
 from .errors import Fig2SketchNodeChanged
 
@@ -257,8 +258,8 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
         except:
             x_scale = 1
 
-        ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
-            point_from, point_to, x_scale
+        ellipse_ratio = safe_div(scaled_distance(point_from, point_ellipse, x_scale), scaled_distance(
+            point_from, point_to, x_scale)
         )
 
         return Gradient.Radial(

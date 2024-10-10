@@ -7,6 +7,10 @@ from typing import Sequence, Dict, Optional
 
 issued_warnings: Dict[tuple[int, int], list[str]] = {}
 
+def safe_div(x,y):
+    if y == 0:
+        return 0
+    return x / y
 
 def gen_object_id(fig_id: Sequence[int], suffix: bytes = b"") -> str:
     # Generate UUIDs by hashing the fig GUID with a salt
@@ -98,6 +102,7 @@ WARNING_MESSAGES = {
     "IMG003": "is missing from the .fig file, it will not be converted",
     "IMG004": "appears to be corrupted in the .fig file ({error}), it will not be converted",
     "LAY001": "is an unsupported layer type, it will not be converted",
+    "NOD001": "node could not be found",
 }
 
 
