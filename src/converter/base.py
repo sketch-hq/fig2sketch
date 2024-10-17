@@ -2,6 +2,7 @@ import logging
 from sketchformat.layer_common import *
 from sketchformat.layer_shape import *
 from sketchformat.style import *
+from .errors import *
 from typing import TypedDict
 
 from . import positioning, style, prototype, utils
