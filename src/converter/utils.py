@@ -7,10 +7,12 @@ from typing import Sequence, Dict, Optional
 
 issued_warnings: Dict[tuple[int, int], list[str]] = {}
 
-def safe_div(x,y):
+
+def safe_div(x: float, y: float) -> float:
     if y == 0:
         return 0
     return x / y
+
 
 def gen_object_id(fig_id: Sequence[int], suffix: bytes = b"") -> str:
     # Generate UUIDs by hashing the fig GUID with a salt
