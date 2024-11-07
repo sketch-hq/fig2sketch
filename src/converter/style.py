@@ -4,6 +4,7 @@ import math
 from .positioning import Vector, Matrix
 from converter import utils
 from sketchformat.style import *
+from .utils import safe_div
 from typing import List, TypedDict
 from .errors import Fig2SketchNodeChanged
 
@@ -186,7 +187,7 @@ def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
 
     iw = fill.get("originalImageWidth", fig_node["size"]["x"])
     ih = fill.get("originalImageHeight", fig_node["size"]["y"])
-    image_scale = Matrix.scale(1.0 / iw if iw else 1, 1.0 / ih if ih else 1)
+    image_scale = Matrix.scale(safe_div(1.0, iw), safe_div(1.0, ih))
     layer_scale = Matrix.scale(fig_node["size"]["x"], fig_node["size"]["y"])
 
     transform = layer_scale * invmat * image_scale
@@ -194,7 +195,7 @@ def cropped_image_layer(fig_node: dict, fill: dict) -> dict:
     height = transform.dot2([0, ih]).length()
     width = transform.dot2([iw, 0]).length()
 
-    normalize_scale = Matrix.scale(iw / width if iw else 1, ih / height if ih else 1)
+    normalize_scale = Matrix.scale(safe_div(iw, width), safe_div(ih, height))
 
     image_layer = {
         "type": "RECTANGLE",
@@ -257,8 +258,9 @@ def convert_gradient(fig_node: dict, fig_fill: dict) -> Gradient:
         except:
             x_scale = 1
 
-        ellipse_ratio = scaled_distance(point_from, point_ellipse, x_scale) / scaled_distance(
-            point_from, point_to, x_scale
+        ellipse_ratio = safe_div(
+            scaled_distance(point_from, point_ellipse, x_scale),
+            scaled_distance(point_from, point_to, x_scale),
         )
 
         return Gradient.Radial(

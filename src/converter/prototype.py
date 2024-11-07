@@ -1,5 +1,5 @@
 from .context import context
-from .errors import Fig2SketchWarning
+from .errors import *
 from converter import utils
 from sketchformat.prototype import *
 from typing import TypedDict, Tuple, Optional
