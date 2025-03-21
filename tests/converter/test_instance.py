@@ -198,7 +198,7 @@ class TestDetach:
                 "fillPaints": [],
             }
         ]
-        fig["resizeToFit"] = False
+        fig["resizeToFit"] = True
 
         i = tree.convert_node(fig, "")
         assert isinstance(i, Group)

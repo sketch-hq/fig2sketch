@@ -91,13 +91,10 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
 
 
 def get_node_type(fig_node: dict, parent_type: str) -> str:
-    # We do this because Sketch does not support nested frames
-    # If a Frame is detected inside another Frame, the internal one
-    # is considered a group
     if fig_node["type"] in ["FRAME", "SECTION"]:
-        # if parent_type == "CANVAS" and not fig_node.get("resizeToFit", False):
+        if not fig_node.get("resizeToFit", False):
             return "FRAME"
-        # else:
-            # return "GROUP"
+        else:
+            return "GROUP"
     else:
         return fig_node["type"]

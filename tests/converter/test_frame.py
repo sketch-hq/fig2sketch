@@ -60,8 +60,9 @@ class TestFrameBackgroud:
             "CANVAS",
         )
 
-        assert ab.hasBackgroundColor
-        assert ab.backgroundColor == SKETCH_COLOR[0]
+        assert not ab.hasBackgroundColor
+        assert ab.style.fills[0].fillType == FillType.COLOR
+        assert ab.style.fills[0].color == SKETCH_COLOR[0]
 
     def test_gradient_background(self, warnings):
         ab = tree.convert_node(
@@ -70,12 +71,8 @@ class TestFrameBackgroud:
         )
 
         assert not ab.hasBackgroundColor
-        assert len(ab.layers) == 1
-        bg = ab.layers[0]
-        assert len(bg.style.fills) == 1
-        assert bg.style.fills[0].fillType == FillType.GRADIENT
-
-        warnings.assert_any_call("ART003", ANY)
+        assert len(ab.style.fills) == 1
+        assert ab.style.fills[0].fillType == FillType.GRADIENT
 
     def test_rounded_corners(self):
         ab = tree.convert_node(
@@ -106,8 +103,8 @@ class TestFrameBackgroud:
         ab = tree.convert_node(fig_section, "CANVAS")
 
         assert ab._class == "group"
-        assert ab.hasBackgroundColor
-        assert ab.backgroundColor == SKETCH_COLOR[0]
+        assert not ab.hasBackgroundColor
+        assert ab.style.fills[0].color == SKETCH_COLOR[0]
 
 
 class TestGrid:
@@ -125,9 +122,7 @@ class TestGrid:
         }
 
     def test_single_grid(self):
-        grid = frame.convert_grid(
-            {**FIG_ARTBOARD, "layoutGrids": [self._grid(20, FIG_COLOR[0])]}
-        )
+        grid = frame.convert_grid({**FIG_ARTBOARD, "layoutGrids": [self._grid(20, FIG_COLOR[0])]})
 
         assert grid.isEnabled
         assert grid.gridSize == 20

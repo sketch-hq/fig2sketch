@@ -50,25 +50,25 @@ def test_meta(sketch_doc):
                     "artboards": {"FA7E522B-5FF7-4393-AD4D-44C2A82CF837": {"name": "Component 1"}},
                 },
             },
-            "version": 144,
+            "version": 164,
             "compatibilityVersion": 99,
-            "coeditCompatibilityVersion": 143,
+            "coeditCompatibilityVersion": 164,
             "app": "com.bohemiancoding.sketch3",
             "autosaved": 0,
             "variant": "NONAPPSTORE",
             "created": {
                 "commit": "1899e24f63af087a9dd3c66f73b492b72c27c2c8",
-                "appVersion": "93",
-                "build": 155335,
+                "appVersion": "2025.1",
+                "build": 199630,
                 "app": "com.bohemiancoding.sketch3",
                 "compatibilityVersion": 99,
-                "coeditCompatibilityVersion": 143,
-                "version": 144,
+                "coeditCompatibilityVersion": 164,
+                "version": 164,
                 "variant": "NONAPPSTORE",
             },
-            "saveHistory": ["NONAPPSTORE.155335"],
-            "appVersion": "93",
-            "build": 155335,
+            "saveHistory": ["NONAPPSTORE.199630"],
+            "appVersion": "2025.1",
+            "build": 199630,
         }
 
 
@@ -198,7 +198,6 @@ def test_page(sketch_doc):
 
         # SVG image
         assert svg["_class"] == "group"
-        assert svg["layers"][0]["hasClippingMask"] == True
         for l in svg["layers"][1:]:
             assert l["_class"] in ["shapePath", "shapeGroup"]
 
