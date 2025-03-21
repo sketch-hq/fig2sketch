@@ -1,6 +1,6 @@
 import pytest
 from .base import *
-from converter import prototype, tree, artboard
+from converter import prototype, tree, frame
 from sketchformat.layer_common import Rect
 from sketchformat.layer_shape import Rectangle
 from sketchformat.style import *
@@ -20,7 +20,7 @@ def no_prototyping(monkeypatch):
 
 
 @pytest.mark.usefixtures("no_prototyping")
-class TestArtboardBackgroud:
+class TestFrameBackgroud:
     def test_no_background(self):
         ab = tree.convert_node(FIG_ARTBOARD, "CANVAS")
 
@@ -87,7 +87,7 @@ class TestArtboardBackgroud:
         assert ab.layers[0].hasClippingMask
         assert ab.layers[0].points[0].cornerRadius == 5
 
-    def test_section_as_artboard(self):
+    def test_section_as_frame(self):
         fig_section = {
             **FIG_BASE,
             "type": "SECTION",
@@ -105,7 +105,7 @@ class TestArtboardBackgroud:
 
         ab = tree.convert_node(fig_section, "CANVAS")
 
-        assert ab._class == "artboard"
+        assert ab._class == "frame"
         assert ab.hasBackgroundColor
         assert ab.backgroundColor == SKETCH_COLOR[0]
 
@@ -125,7 +125,7 @@ class TestGrid:
         }
 
     def test_single_grid(self):
-        grid = artboard.convert_grid(
+        grid = frame.convert_grid(
             {**FIG_ARTBOARD, "layoutGrids": [self._grid(20, FIG_COLOR[0])]}
         )
 
@@ -134,7 +134,7 @@ class TestGrid:
         assert grid.thickGridTimes == 0
 
     def test_dual_multiple_grid(self):
-        grid = artboard.convert_grid(
+        grid = frame.convert_grid(
             {
                 **FIG_ARTBOARD,
                 "layoutGrids": [
@@ -149,7 +149,7 @@ class TestGrid:
         assert grid.thickGridTimes == 3
 
     def test_dual_nonmultiple_grid(self, warnings):
-        grid = artboard.convert_grid(
+        grid = frame.convert_grid(
             {
                 **FIG_ARTBOARD,
                 "layoutGrids": [
@@ -166,7 +166,7 @@ class TestGrid:
         warnings.assert_any_call("GRD002", ANY)
 
     def test_triple_grid(self, warnings):
-        grid = artboard.convert_grid(
+        grid = frame.convert_grid(
             {
                 **FIG_ARTBOARD,
                 "layoutGrids": [
@@ -184,7 +184,7 @@ class TestGrid:
         warnings.assert_any_call("GRD003", ANY)
 
     def test_triple_multiple_grid(self):
-        grid = artboard.convert_grid(
+        grid = frame.convert_grid(
             {
                 **FIG_ARTBOARD,
                 "layoutGrids": [
@@ -215,7 +215,7 @@ class TestLayout:
         }
 
     def test_4_columns(self):
-        layout = artboard.convert_layout(
+        layout = frame.convert_layout(
             {**FIG_ARTBOARD, "layoutGrids": [self._layout()]},
             Rect(x=0, y=0, width=110, height=0),
         )
@@ -228,7 +228,7 @@ class TestLayout:
         assert layout.numberOfColumns == 4
 
     def test_centered_columns(self):
-        layout = artboard.convert_layout(
+        layout = frame.convert_layout(
             {**FIG_ARTBOARD, "layoutGrids": [self._layout(align="CENTER")]},
             Rect(x=0, y=0, width=200, height=0),
         )
@@ -242,7 +242,7 @@ class TestLayout:
         assert layout.horizontalOffset == 45
 
     def test_multiple_column_layouts(self, warnings):
-        layout = artboard.convert_layout(
+        layout = frame.convert_layout(
             {
                 **FIG_ARTBOARD,
                 "layoutGrids": [
@@ -264,7 +264,7 @@ class TestLayout:
         warnings.assert_any_call("GRD004", ANY)
 
     def test_row_layout(self):
-        layout = artboard.convert_layout(
+        layout = frame.convert_layout(
             {
                 **FIG_ARTBOARD,
                 "layoutGrids": [self._layout(axis="Y")],
@@ -279,7 +279,7 @@ class TestLayout:
         assert layout.rowHeightMultiplication == 2
 
     def test_float_row_layout(self, warnings):
-        layout = artboard.convert_layout(
+        layout = frame.convert_layout(
             {
                 **FIG_ARTBOARD,
                 "layoutGrids": [self._layout(axis="Y", align="CENTER", spacing=27)],

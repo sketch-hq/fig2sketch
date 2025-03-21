@@ -92,8 +92,8 @@ class Group(AbstractLayerGroup):
 
 
 @dataclass(kw_only=True)
-class Artboard(AbstractLayerGroup):
-    _class: str = field(default="artboard")
+class Frame(AbstractLayerGroup):
+    _class: str = field(default="frame")
     horizontalRulerData: RulerData = field(default_factory=RulerData)
     verticalRulerData: RulerData = field(default_factory=RulerData)
     grid: Optional[SimpleGrid] = None
@@ -120,7 +120,7 @@ class OverrideProperty:
 
 
 @dataclass(kw_only=True)
-class SymbolMaster(Artboard):
+class SymbolMaster(Frame):
     _class: str = field(default="symbolMaster")
     allowsOverrides: bool = True
     includeBackgroundColorInInstance: bool = False

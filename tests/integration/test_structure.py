@@ -133,7 +133,7 @@ def test_page(sketch_doc):
         groups, syms = page["layers"]
 
         # Groups artboard
-        assert groups["_class"] == "artboard"
+        assert groups["_class"] == "frame"
         assert groups["name"] == "Groups"
         assert len(groups["layers"]) == 1
 
@@ -150,7 +150,7 @@ def test_page(sketch_doc):
         assert "layers" not in r
 
         # Symbols artboard
-        assert syms["_class"] == "artboard"
+        assert syms["_class"] == "frame"
         assert syms["name"] == "Symbols and images"
         i1, i2, i3, jpg, png, svg = syms["layers"]
 
