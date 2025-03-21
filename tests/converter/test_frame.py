@@ -105,7 +105,7 @@ class TestFrameBackgroud:
 
         ab = tree.convert_node(fig_section, "CANVAS")
 
-        assert ab._class == "frame"
+        assert ab._class == "group"
         assert ab.hasBackgroundColor
         assert ab.backgroundColor == SKETCH_COLOR[0]
 

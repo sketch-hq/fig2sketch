@@ -14,6 +14,7 @@ def convert(fig_frame: dict) -> Frame:
         grid=convert_grid(fig_frame),
     )
 
+    obj.groupBehavior = 1
     obj.layout = convert_layout(fig_frame, obj.frame)
 
     return obj
@@ -40,17 +41,17 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
             0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame)
         )
 
-    match sketch_frame.style.fills:
-        case [Fill(fillType=FillType.COLOR, color=color, isEnabled=True)]:
-            # Single color, apply to artboard
-            sketch_frame.backgroundColor = color
-            sketch_frame.hasBackgroundColor = True
-            sketch_frame.style.fills = []
+    # match sketch_frame.style.fills:
+    #     case [Fill(fillType=FillType.COLOR, color=color, isEnabled=True)]:
+    #         # Single color, apply to artboard
+    #         sketch_frame.backgroundColor = color
+    #         sketch_frame.hasBackgroundColor = True
+    #         sketch_frame.style.fills = []
 
-    if sketch_frame.style.fills or sketch_frame.style.borders:
-        # Anything else, add a background rect
-        utils.log_conversion_warning("ART003", fig_frame)
-        group.convert_frame_style(fig_frame, sketch_frame)
+    # if sketch_frame.style.fills or sketch_frame.style.borders:
+    #     # Anything else, add a background rect
+    #     utils.log_conversion_warning("ART003", fig_frame)
+    #     group.convert_frame_style(fig_frame, sketch_frame)
 
     return sketch_frame
 
