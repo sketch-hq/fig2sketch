@@ -2,6 +2,9 @@
 
 fig2sketch is a command line tool that converts .fig files into Sketch design documents (.sketch), which can then be opened with [Sketch](https://www.sketch.com/) applications.
 
+> [!IMPORTANT]
+> Sketch `2025.1` introduced Frames as a replacement to Artboards. This was a breaking change in the Sketch file format, and has also been implemented as a breaking change in `fig2sketch`. If you are using Sketch `101` or older, you need to use fig2sketch `0.3.6`.
+
 ## How it works
 
 fig2sketch reads design data from a .fig file and converts it into data that Sketch apps can open. While the conversion is as accurate as possible, the types of data supported by .fig files and .sketch documents are not exactly the same. This means that some data need to be prepared in slightly different ways so that they’re displayed with the highest fidelity possible in Sketch apps.
