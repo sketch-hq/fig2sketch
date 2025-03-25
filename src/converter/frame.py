@@ -1,8 +1,16 @@
 import math
 from . import base, group, prototype, rectangle
 from converter import utils
-from sketchformat.layer_group import Frame, SimpleGrid, LayoutGrid, Rect
-from sketchformat.style import Fill, FillType
+from sketchformat.layer_group import (
+    Frame,
+    FlexGroupLayout,
+    FlexDirection,
+    FlexJustify,
+    FlexAlign,
+    SimpleGrid,
+    LayoutGrid,
+    Rect,
+)
 from typing import Optional
 from collections import namedtuple
 
@@ -15,6 +23,13 @@ def convert(fig_frame: dict) -> Frame:
         groupBehavior=1,
     )
 
+    if fig_frame.get("stackMode"):
+        obj.groupLayout = convert_group_layout(fig_frame)
+        obj.topPadding = fig_frame.get("stackVerticalPadding", 0)
+        obj.rightPadding = fig_frame.get("stackPaddingRight", 0)
+        obj.bottomPadding = fig_frame.get("stackPaddingBottom", 0)
+        obj.leftPadding = fig_frame.get("stackHorizontalPadding", 0)
+
     obj.layout = convert_layout(fig_frame, obj.frame)
 
     return obj
@@ -25,7 +40,52 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
     if sketch_frame.overlaySettings is not None:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
 
+    # Figma stores its stack children in bottom up order, but Sketch uses top down
+    if fig_frame.get("stackMode"):
+        sketch_frame.layers.reverse()
+
     return sketch_frame
+
+
+def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
+    flex_direction = (
+        FlexDirection.VERTICAL
+        if fig_frame["stackMode"] == "VERTICAL"
+        else FlexDirection.HORIZONTAL
+    )
+    all_gutters_gap = fig_frame.get("stackSpacing", 0)
+
+    justify = convert_flex_justify(fig_frame.get("stackPrimaryAlignItems", "MIN"))
+    align = convert_flex_align(fig_frame.get("stackCounterAlignItems", "MIN"))
+
+    return FlexGroupLayout(
+        flexDirection=flex_direction,
+        justifyContent=justify,
+        alignItems=align,
+        allGuttersGap=all_gutters_gap,
+    )
+
+
+def convert_flex_justify(justify: str) -> FlexJustify:
+    if justify == "MIN":
+        return FlexJustify.START
+    elif justify == "CENTER":
+        return FlexJustify.CENTER
+    elif justify == "MAX":
+        return FlexJustify.END
+    else:
+        return FlexJustify.START
+
+
+def convert_flex_align(alignment: str) -> FlexAlign:
+    if alignment == "MIN":
+        return FlexAlign.START
+    elif alignment == "CENTER":
+        return FlexAlign.CENTER
+    elif alignment == "MAX":
+        return FlexAlign.END
+    else:
+        return FlexAlign.NONE
 
 
 def convert_grid(fig_frame: dict) -> Optional[SimpleGrid]:

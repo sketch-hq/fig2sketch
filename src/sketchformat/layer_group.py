@@ -48,6 +48,36 @@ class LayoutGrid:
     isEnabled: bool = True
 
 
+class FlexDirection(IntEnum):
+    HORIZONTAL = 0
+    VERTICAL = 1
+
+
+class FlexJustify(IntEnum):
+    START = 0
+    CENTER = 1
+    END = 2
+    SPACE_BETWEEN = 3
+    SPACE_AROUND = 4
+    SPACE_EVENLY = 5
+
+
+class FlexAlign(IntEnum):
+    START = 0
+    CENTER = 1
+    END = 2
+    NONE = 5
+
+
+@dataclass(kw_only=True)
+class FlexGroupLayout:
+    _class: str = field(default="MSImmutableFlexGroupLayout")
+    flexDirection: FlexDirection = FlexDirection.HORIZONTAL
+    justifyContent: FlexJustify = FlexJustify.START
+    alignItems: FlexAlign = FlexAlign.START
+    allGuttersGap: int = 0
+
+
 @dataclass(kw_only=True)
 class FreeFormGroupLayout:
     _class: str = field(default="MSImmutableFreeformGroupLayout")
@@ -66,9 +96,13 @@ class InferredGroupLayout:
 class AbstractLayerGroup(AbstractStyledLayer):
     hasClickThrough: bool = False
     groupBehavior: int = 0
-    groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout] = field(
+    groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout, FlexGroupLayout] = field(
         default_factory=FreeFormGroupLayout
     )
+    leftPadding: float = 0
+    topPadding: float = 0
+    rightPadding: float = 0
+    bottomPadding: float = 0
     layers: List[AbstractLayer] = field(default_factory=list)
 
 
