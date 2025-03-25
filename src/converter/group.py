@@ -17,12 +17,7 @@ def convert(fig_group):
 
 def post_process_frame(fig_group: dict, sketch_group: Group) -> Group:
     convert_frame_style(fig_group, sketch_group)
-
-    if fig_group.get("resizeToFit", False):
-        adjust_group_resizing_constraint(fig_group, sketch_group)
-    else:
-        # For frames converted to groups, add clipmask, resize children, etc
-        convert_frame_to_group(fig_group, sketch_group)
+    adjust_group_resizing_constraint(fig_group, sketch_group)
 
     return sketch_group
 
@@ -45,31 +40,6 @@ def adjust_group_resizing_constraint(fig_group: dict, sketch_group: Group) -> No
         utils.log_conversion_warning("GRP002", fig_group)
 
     sketch_group.resizingConstraint = constraint
-
-
-def convert_frame_to_group(fig_group: dict, sketch_group: AbstractLayerGroup) -> None:
-    has_clip_mask = create_clip_mask_if_needed(fig_group, sketch_group)
-
-    if not has_clip_mask:
-        # When converting from a frame to a group, the bounding box should be adjusted
-        # The frame box in a fig doc can be smalled than the children bounds, but not so in Sketch
-        # To do so, we resize the frame to match the children bbox and also move the children
-        # so that the top-left corner sits at 0,0
-        children_bbox = positioning.group_bbox(sketch_group.layers)
-        vector = positioning.Vector(children_bbox[0], children_bbox[2])
-
-        # Translate children
-        for child in sketch_group.layers:
-            child.frame.x -= vector[0]
-            child.frame.y -= vector[1]
-
-        # Translate group
-        tr_vector = positioning.apply_transform(fig_group, vector)
-        w = children_bbox[1] - children_bbox[0]
-        h = children_bbox[3] - children_bbox[2]
-        new_xy = positioning.transform_frame(fig_group, {"x": w, "y": h}) + tr_vector
-
-        sketch_group.frame = Rect(x=new_xy[0], y=new_xy[1], width=w, height=h)
 
 
 def create_clip_mask_if_needed(fig_group: dict, sketch_group: AbstractLayerGroup) -> bool:

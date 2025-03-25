@@ -4,7 +4,7 @@ import pytest
 from converter import tree
 from converter.config import config
 from converter.context import context
-from sketchformat.layer_group import Group, SymbolInstance, OverrideValue, Artboard
+from sketchformat.layer_group import Group, SymbolInstance, OverrideValue, Frame
 from unittest.mock import ANY
 
 FIG_TEXT = {
@@ -198,7 +198,7 @@ class TestDetach:
                 "fillPaints": [],
             }
         ]
-        fig["resizeToFit"] = False
+        fig["resizeToFit"] = True
 
         i = tree.convert_node(fig, "")
         assert isinstance(i, Group)
@@ -214,4 +214,4 @@ class TestDetach:
         fig["resizeToFit"] = False
 
         i = tree.convert_node(fig, "CANVAS")
-        assert isinstance(i, Artboard)
+        assert isinstance(i, Frame)

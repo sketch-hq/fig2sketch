@@ -27,7 +27,7 @@ class TestIDs:
 
 
 @pytest.mark.usefixtures("no_prototyping")
-class TestArtboardBackgroud:
+class TestFrameBackgroud:
     def test_no_background(self):
         ab = tree.convert_node(FIG_ARTBOARD, "CANVAS")
 
@@ -67,8 +67,9 @@ class TestArtboardBackgroud:
             "CANVAS",
         )
 
-        assert ab.hasBackgroundColor == True
-        assert ab.backgroundColor == SKETCH_COLOR[0]
+        assert ab.hasBackgroundColor == False
+        assert ab.style.fills[0].fillType == FillType.COLOR
+        assert ab.style.fills[0].color == SKETCH_COLOR[0]
 
     def test_gradient_background(self, warnings):
         ab = tree.convert_node(
@@ -77,13 +78,8 @@ class TestArtboardBackgroud:
         )
 
         assert ab.hasBackgroundColor == False
-        assert len(ab.layers) == 1
-        bg = ab.layers[0]
-        assert len(bg.style.fills) == 1
-        assert bg.style.fills[0].fillType == FillType.GRADIENT
-        assert bg.resizingConstraint == 18
-
-        warnings.assert_any_call("ART003", ANY)
+        assert len(ab.style.fills) == 1
+        assert ab.style.fills[0].fillType == FillType.GRADIENT
 
 
 FIG_TEXT = {

@@ -1,17 +1,18 @@
 import math
 from . import base, group, prototype, rectangle
 from converter import utils
-from sketchformat.layer_group import Artboard, SimpleGrid, LayoutGrid, Rect
+from sketchformat.layer_group import Frame, SimpleGrid, LayoutGrid, Rect
 from sketchformat.style import Fill, FillType
 from typing import Optional
 from collections import namedtuple
 
 
-def convert(fig_frame: dict) -> Artboard:
-    obj = Artboard(
+def convert(fig_frame: dict) -> Frame:
+    obj = Frame(
         **base.base_styled(fig_frame),
         **prototype.prototyping_information(fig_frame),
         grid=convert_grid(fig_frame),
+        groupBehavior=1,
     )
 
     obj.layout = convert_layout(fig_frame, obj.frame)
@@ -19,7 +20,7 @@ def convert(fig_frame: dict) -> Artboard:
     return obj
 
 
-def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
+def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
     # Sketch only supports one custom color as an artboard background
     # If the frame has more than one color or other custom style we just create
     # the background rectangle with whatever style
@@ -29,30 +30,16 @@ def post_process_frame(fig_frame: dict, sketch_artboard: Artboard) -> Artboard:
     # adding always a background rectangle is an overhead for the document itself
     if utils.has_rounded_corners(fig_frame):
         utils.log_conversion_warning("ART001", fig_frame)
-        group.create_clip_mask_if_needed(fig_frame, sketch_artboard)
+        group.create_clip_mask_if_needed(fig_frame, sketch_frame)
 
-    if sketch_artboard.rotation != 0:
+    if sketch_frame.rotation != 0:
         utils.log_conversion_warning("ART002", fig_frame)
 
     # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
-    if sketch_artboard.overlaySettings is not None:
-        sketch_artboard.layers.insert(
-            0, rectangle.make_clipping_rect(fig_frame, sketch_artboard.frame)
-        )
+    if sketch_frame.overlaySettings is not None:
+        sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
 
-    match sketch_artboard.style.fills:
-        case [Fill(fillType=FillType.COLOR, color=color, isEnabled=True)]:
-            # Single color, apply to artboard
-            sketch_artboard.backgroundColor = color
-            sketch_artboard.hasBackgroundColor = True
-            sketch_artboard.style.fills = []
-
-    if sketch_artboard.style.fills or sketch_artboard.style.borders:
-        # Anything else, add a background rect
-        utils.log_conversion_warning("ART003", fig_frame)
-        group.convert_frame_style(fig_frame, sketch_artboard)
-
-    return sketch_artboard
+    return sketch_frame
 
 
 def convert_grid(fig_frame: dict) -> Optional[SimpleGrid]:

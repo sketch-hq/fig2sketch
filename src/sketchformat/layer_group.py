@@ -65,6 +65,7 @@ class InferredGroupLayout:
 @dataclass(kw_only=True)
 class AbstractLayerGroup(AbstractStyledLayer):
     hasClickThrough: bool = False
+    groupBehavior: int = 0
     groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout] = field(
         default_factory=FreeFormGroupLayout
     )
@@ -92,8 +93,8 @@ class Group(AbstractLayerGroup):
 
 
 @dataclass(kw_only=True)
-class Artboard(AbstractLayerGroup):
-    _class: str = field(default="artboard")
+class Frame(AbstractLayerGroup):
+    _class: str = field(default="group")
     horizontalRulerData: RulerData = field(default_factory=RulerData)
     verticalRulerData: RulerData = field(default_factory=RulerData)
     grid: Optional[SimpleGrid] = None
@@ -108,6 +109,9 @@ class Artboard(AbstractLayerGroup):
     overlaySettings: Optional[FlowOverlaySettings] = None
     prototypeViewport: Optional[PrototypeViewport] = None
 
+    horizontalSizing: int = 0
+    verticalSizing: int = 0
+
     shouldBreakMaskChain: bool = True
     layerListExpandedType: LayerListStatus = LayerListStatus.EXPANDED
 
@@ -120,7 +124,7 @@ class OverrideProperty:
 
 
 @dataclass(kw_only=True)
-class SymbolMaster(Artboard):
+class SymbolMaster(Frame):
     _class: str = field(default="symbolMaster")
     allowsOverrides: bool = True
     includeBackgroundColorInInstance: bool = False

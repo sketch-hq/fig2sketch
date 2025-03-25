@@ -1,4 +1,4 @@
-from sketchformat.layer_group import Page, Artboard, SymbolMaster
+from sketchformat.layer_group import Page, Frame, SymbolMaster
 from typing import List
 
 
@@ -11,28 +11,28 @@ def convert(pages: List[Page]) -> dict:
                 "artboards": {
                     artboard.do_objectID: {"name": artboard.name}
                     for artboard in page.layers
-                    if isinstance(artboard, Artboard) or isinstance(artboard, SymbolMaster)
+                    if isinstance(artboard, Frame) or isinstance(artboard, SymbolMaster)
                 },
             }
             for page in pages
         },
-        "version": 144,
+        "version": 162,
         "compatibilityVersion": 99,
-        "coeditCompatibilityVersion": 143,
+        "coeditCompatibilityVersion": 162,
         "app": "com.bohemiancoding.sketch3",
         "autosaved": 0,
         "variant": "NONAPPSTORE",
         "created": {
             "commit": "1899e24f63af087a9dd3c66f73b492b72c27c2c8",
-            "appVersion": "93",
-            "build": 155335,
+            "appVersion": "2025.1",
+            "build": 199630,
             "app": "com.bohemiancoding.sketch3",
             "compatibilityVersion": 99,
-            "coeditCompatibilityVersion": 143,
-            "version": 144,
+            "coeditCompatibilityVersion": 162,
+            "version": 162,
             "variant": "NONAPPSTORE",
         },
-        "saveHistory": ["NONAPPSTORE.155335"],
-        "appVersion": "93",
-        "build": 155335,
+        "saveHistory": ["NONAPPSTORE.199630"],
+        "appVersion": "2025.1",
+        "build": 199630,
     }

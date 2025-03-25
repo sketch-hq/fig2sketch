@@ -1,5 +1,5 @@
 from converter import (
-    artboard,
+    frame,
     group,
     page,
     rectangle,
@@ -26,7 +26,7 @@ def ignored_layer_type(fig_layer: dict) -> AbstractLayer:
 
 CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
     "CANVAS": page.convert,
-    "ARTBOARD": artboard.convert,
+    "FRAME": frame.convert,
     "GROUP": group.convert,
     "ROUNDED_RECTANGLE": rectangle.convert,
     "RECTANGLE": rectangle.convert,
@@ -45,7 +45,7 @@ CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
 
 POST_PROCESSING: Dict[str, Callable[[dict, Any], AbstractLayer]] = {
     "CANVAS": page.add_page_background,
-    "ARTBOARD": artboard.post_process_frame,
+    "FRAME": frame.post_process_frame,
     "GROUP": group.post_process_frame,
     "BOOLEAN_OPERATION": shape_group.post_process,
     "SYMBOL": symbol.move_to_symbols_page,
@@ -65,7 +65,7 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
         # This happens on instance detaching
         return convert_node(fig_node, parent_type)
 
-    if fig_node.get("layoutGrids", []) and type_ != "ARTBOARD":
+    if fig_node.get("layoutGrids", []) and type_ != "FRAME":
         utils.log_conversion_warning("GRD001", fig_node)
 
     children = []
@@ -91,12 +91,9 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
 
 
 def get_node_type(fig_node: dict, parent_type: str) -> str:
-    # We do this because Sketch does not support nested artboards
-    # If a Frame is detected inside another Frame, the internal one
-    # is considered a group
     if fig_node["type"] in ["FRAME", "SECTION"]:
-        if parent_type == "CANVAS" and not fig_node.get("resizeToFit", False):
-            return "ARTBOARD"
+        if not fig_node.get("resizeToFit", False):
+            return "FRAME"
         else:
             return "GROUP"
     else:
