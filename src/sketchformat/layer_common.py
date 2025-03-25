@@ -50,6 +50,13 @@ class ResizeType(IntEnum):
     FLOAT = 2
 
 
+class SizingBehaviour(IntEnum):
+    FIXED = 0
+    FIT = 1
+    FILL = 2
+    RELATIVE = 3
+
+
 @dataclass(kw_only=True)
 class ExportFormat:
     _class: str = field(default="exportFormat")
@@ -99,6 +106,8 @@ class AbstractLayer:
     layerListExpandedType: LayerListStatus = LayerListStatus.UNDECIDED
     nameIsFixed: bool = False
     resizingType: ResizeType = ResizeType.STRETCH
+    horizontalSizing: SizingBehaviour = SizingBehaviour.FIXED
+    verticalSizing: SizingBehaviour = SizingBehaviour.FIXED
     shouldBreakMaskChain: bool = False
 
 
