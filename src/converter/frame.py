@@ -8,6 +8,7 @@ from sketchformat.layer_group import (
     FlexJustify,
     FlexAlign,
     SimpleGrid,
+    SizingBehaviour,
     LayoutGrid,
     Rect,
 )

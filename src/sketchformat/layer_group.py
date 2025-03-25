@@ -143,9 +143,6 @@ class Frame(AbstractLayerGroup):
     overlaySettings: Optional[FlowOverlaySettings] = None
     prototypeViewport: Optional[PrototypeViewport] = None
 
-    horizontalSizing: int = 0
-    verticalSizing: int = 0
-
     shouldBreakMaskChain: bool = True
     layerListExpandedType: LayerListStatus = LayerListStatus.EXPANDED
 

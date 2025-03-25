@@ -67,6 +67,17 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         "nameIsFixed": False,
         "resizingConstraint": resizing_constraint(fig_node),
         "resizingType": ResizeType.STRETCH,
+        # TODO: Improve how we convert sizing behaviour
+        "horizontalSizing": (
+            SizingBehaviour.FILL
+            if fig_node.get("stackChildPrimaryGrow") == 1
+            else SizingBehaviour.FIXED
+        ),
+        "verticalSizing": (
+            SizingBehaviour.FILL
+            if fig_node.get("stackChildAlignSelf") == "STRETCH"
+            else SizingBehaviour.FIXED
+        ),
         **prototype.convert_flow(fig_node),  # type: ignore
         "isTemplate": False,
     }
