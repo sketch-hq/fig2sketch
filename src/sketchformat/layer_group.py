@@ -48,6 +48,12 @@ class LayoutGrid:
     isEnabled: bool = True
 
 
+class PaddingSelection(IntEnum):
+    UNIFORM = 0
+    PAIRED = 1
+    INDIVIDUAL = 2
+
+
 class FlexDirection(IntEnum):
     HORIZONTAL = 0
     VERTICAL = 1
@@ -103,6 +109,7 @@ class AbstractLayerGroup(AbstractStyledLayer):
     topPadding: float = 0
     rightPadding: float = 0
     bottomPadding: float = 0
+    paddingSelection: PaddingSelection = PaddingSelection.UNIFORM
     layers: List[AbstractLayer] = field(default_factory=list)
 
 
