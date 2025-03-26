@@ -70,6 +70,7 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         "resizingType": ResizeType.STRETCH,
         "horizontalSizing": horizontal_sizing_behaviour(fig_node),
         "verticalSizing": vertical_sizing_behaviour(fig_node),
+        "flexItem": flex_item(fig_node),
         **prototype.convert_flow(fig_node),  # type: ignore
         "isTemplate": False,
     }
@@ -259,6 +260,13 @@ def parent_stack_mode(fig_node: dict) -> Optional[FlexDirection]:
             return FlexDirection.VERTICAL
         else:
             return FlexDirection.HORIZONTAL
+
+    return None
+
+
+def flex_item(fig_node: dict) -> Optional[FlexItem]:
+    if fig_node.get("stackPositioning") == "ABSOLUTE":
+        return FlexItem(ignoreLayout=True)
 
     return None
 
