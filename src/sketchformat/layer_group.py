@@ -165,8 +165,7 @@ class OverrideProperty:
 class SymbolMaster(Frame):
     _class: str = field(default="symbolMaster")
     allowsOverrides: bool = True
-    includeBackgroundColorInInstance: bool = False
-    includeBackgroundColorInExport: bool = True
+    includeBackgroundColorInInstance: bool = True
     symbolID: str
     overrideProperties: List[OverrideProperty] = field(default_factory=list)
 
