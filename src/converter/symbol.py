@@ -27,7 +27,7 @@ def convert(fig_symbol):
         symbolID=utils.gen_object_id(fig_symbol["guid"]),
     )
 
-    if fig_symbol.get("stackMode"):
+    if utils.has_auto_layout(fig_symbol):
         master = convert_auto_layout(master, fig_symbol)
 
     # Keep the base ID as the symbol reference, create a new one for the container
@@ -53,7 +53,7 @@ def move_to_symbols_page(fig_symbol, sketch_symbol):
     context.add_symbol(sketch_symbol)
 
     # Figma stores its stack children in bottom up order, but Sketch uses top down
-    if fig_symbol.get("stackMode"):
+    if utils.has_auto_layout(fig_symbol):
         sketch_symbol.layers.reverse()
 
     # Since we put the Symbol in a different page in Sketch, leave an instance where the

@@ -254,7 +254,7 @@ def parent_stack_mode(fig_node: dict) -> Optional[FlexDirection]:
         parent = context.fig_node(fig_node["parent"]["guid"])
 
     # Return stack mode if parent has one
-    if parent and parent.get("stackMode"):
+    if parent and utils.has_auto_layout(parent):
         if parent.get("stackMode") == "VERTICAL":
             return FlexDirection.VERTICAL
         else:

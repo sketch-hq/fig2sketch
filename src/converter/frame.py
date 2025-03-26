@@ -24,7 +24,7 @@ def convert(fig_frame: dict) -> Frame:
         groupBehavior=1,
     )
 
-    if fig_frame.get("stackMode"):
+    if utils.has_auto_layout(fig_frame):
         obj = convert_auto_layout(obj, fig_frame)
 
     obj.layout = convert_layout(fig_frame, obj.frame)
@@ -52,7 +52,7 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
 
     # Figma stores its stack children in bottom up order, but Sketch uses top down
-    if fig_frame.get("stackMode"):
+    if utils.has_auto_layout(fig_frame):
         sketch_frame.layers.reverse()
 
     return sketch_frame
