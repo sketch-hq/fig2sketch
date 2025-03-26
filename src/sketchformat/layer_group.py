@@ -81,7 +81,7 @@ class FlexGroupLayout:
     flexDirection: FlexDirection = FlexDirection.HORIZONTAL
     justifyContent: FlexJustify = FlexJustify.START
     alignItems: FlexAlign = FlexAlign.START
-    allGuttersGap: int = 0
+    allGuttersGap: float = 0
 
 
 @dataclass(kw_only=True)
