@@ -48,33 +48,6 @@ class LayoutGrid:
     isEnabled: bool = True
 
 
-class PaddingSelection(IntEnum):
-    UNIFORM = 0
-    PAIRED = 1
-    INDIVIDUAL = 2
-
-
-class FlexDirection(IntEnum):
-    HORIZONTAL = 0
-    VERTICAL = 1
-
-
-class FlexJustify(IntEnum):
-    START = 0
-    CENTER = 1
-    END = 2
-    SPACE_BETWEEN = 3
-    SPACE_AROUND = 4
-    SPACE_EVENLY = 5
-
-
-class FlexAlign(IntEnum):
-    START = 0
-    CENTER = 1
-    END = 2
-    NONE = 5
-
-
 @dataclass(kw_only=True)
 class FlexGroupLayout:
     _class: str = field(default="MSImmutableFlexGroupLayout")

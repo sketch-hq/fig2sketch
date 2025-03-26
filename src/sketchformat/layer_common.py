@@ -6,6 +6,33 @@ from .prototype import FlowConnection
 from .style import Style, Color
 
 
+class PaddingSelection(IntEnum):
+    UNIFORM = 0
+    PAIRED = 1
+    INDIVIDUAL = 2
+
+
+class FlexDirection(IntEnum):
+    HORIZONTAL = 0
+    VERTICAL = 1
+
+
+class FlexJustify(IntEnum):
+    START = 0
+    CENTER = 1
+    END = 2
+    SPACE_BETWEEN = 3
+    SPACE_AROUND = 4
+    SPACE_EVENLY = 5
+
+
+class FlexAlign(IntEnum):
+    START = 0
+    CENTER = 1
+    END = 2
+    NONE = 5
+
+
 class ExportLayerOptions(IntEnum):
     ALL = 0
     SELECTED = 1
@@ -88,6 +115,14 @@ class Rect:
 
 
 @dataclass(kw_only=True)
+class FlexItem:
+    _class: str = field(default="MSImmutableFlexItem")
+    alignSelf: FlexAlign = FlexAlign.NONE
+    ignoreLayout: bool = False
+    preserveSpaceWhenHidden: bool = False
+
+
+@dataclass(kw_only=True)
 class AbstractLayer:
     do_objectID: str
     frame: Rect
@@ -108,6 +143,7 @@ class AbstractLayer:
     resizingType: ResizeType = ResizeType.STRETCH
     horizontalSizing: SizingBehaviour = SizingBehaviour.FIXED
     verticalSizing: SizingBehaviour = SizingBehaviour.FIXED
+    flexItem: Optional[FlexItem] = None
     shouldBreakMaskChain: bool = False
 
 
