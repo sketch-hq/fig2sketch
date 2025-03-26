@@ -7,8 +7,8 @@ from sketchformat.layer_group import (
     FlexDirection,
     FlexJustify,
     FlexAlign,
+    PaddingSelection,
     SimpleGrid,
-    SizingBehaviour,
     LayoutGrid,
     Rect,
 )
@@ -25,11 +25,7 @@ def convert(fig_frame: dict) -> Frame:
     )
 
     if fig_frame.get("stackMode"):
-        obj.groupLayout = convert_group_layout(fig_frame)
-        obj.topPadding = fig_frame.get("stackVerticalPadding", 0)
-        obj.rightPadding = fig_frame.get("stackPaddingRight", 0)
-        obj.bottomPadding = fig_frame.get("stackPaddingBottom", 0)
-        obj.leftPadding = fig_frame.get("stackHorizontalPadding", 0)
+        obj = convert_auto_layout(obj, fig_frame)
 
     obj.layout = convert_layout(fig_frame, obj.frame)
 
@@ -44,6 +40,23 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
     # Figma stores its stack children in bottom up order, but Sketch uses top down
     if fig_frame.get("stackMode"):
         sketch_frame.layers.reverse()
+
+    return sketch_frame
+
+
+def convert_auto_layout(sketch_frame: Frame, fig_frame: dict) -> Frame:
+    sketch_frame.groupLayout = convert_group_layout(fig_frame)
+    sketch_frame.topPadding = fig_frame.get("stackVerticalPadding", 0)
+    sketch_frame.rightPadding = fig_frame.get("stackPaddingRight", 0)
+    sketch_frame.bottomPadding = fig_frame.get("stackPaddingBottom", 0)
+    sketch_frame.leftPadding = fig_frame.get("stackHorizontalPadding", 0)
+
+    sketch_frame.paddingSelection = (
+        PaddingSelection.INDIVIDUAL
+        if sketch_frame.topPadding != sketch_frame.bottomPadding
+        or sketch_frame.leftPadding != sketch_frame.rightPadding
+        else PaddingSelection.PAIRED
+    )
 
     return sketch_frame
 

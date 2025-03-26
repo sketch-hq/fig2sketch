@@ -48,6 +48,12 @@ class LayoutGrid:
     isEnabled: bool = True
 
 
+class PaddingSelection(IntEnum):
+    UNIFORM = 0
+    PAIRED = 1
+    INDIVIDUAL = 2
+
+
 class FlexDirection(IntEnum):
     HORIZONTAL = 0
     VERTICAL = 1
@@ -75,7 +81,7 @@ class FlexGroupLayout:
     flexDirection: FlexDirection = FlexDirection.HORIZONTAL
     justifyContent: FlexJustify = FlexJustify.START
     alignItems: FlexAlign = FlexAlign.START
-    allGuttersGap: int = 0
+    allGuttersGap: float = 0
 
 
 @dataclass(kw_only=True)
@@ -103,6 +109,7 @@ class AbstractLayerGroup(AbstractStyledLayer):
     topPadding: float = 0
     rightPadding: float = 0
     bottomPadding: float = 0
+    paddingSelection: PaddingSelection = PaddingSelection.UNIFORM
     layers: List[AbstractLayer] = field(default_factory=list)
 
 
