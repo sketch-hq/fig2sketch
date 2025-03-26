@@ -92,7 +92,7 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
 
 def get_node_type(fig_node: dict, parent_type: str) -> str:
     if fig_node["type"] in ["FRAME", "SECTION"]:
-        if not fig_node.get("resizeToFit", False) or fig_node.get("stackMode"):
+        if not fig_node.get("resizeToFit", False) or utils.has_auto_layout(fig_node):
             return "FRAME"
         else:
             return "GROUP"

@@ -142,7 +142,7 @@ class Frame(AbstractLayerGroup):
     layout: Optional[LayoutGrid] = None
     hasBackgroundColor: bool = False
     backgroundColor: Color = field(default_factory=Color.White)
-    includeBackgroundColorInExport: bool = False
+    includeBackgroundColorInExport: bool = True
     resizesContent: bool = True
     isFlowHome: bool = False
     overlayBackgroundInteraction: OverlayBackgroundInteraction = OverlayBackgroundInteraction.NONE
@@ -166,6 +166,7 @@ class SymbolMaster(Frame):
     _class: str = field(default="symbolMaster")
     allowsOverrides: bool = True
     includeBackgroundColorInInstance: bool = False
+    includeBackgroundColorInExport: bool = True
     symbolID: str
     overrideProperties: List[OverrideProperty] = field(default_factory=list)
 

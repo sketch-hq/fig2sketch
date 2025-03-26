@@ -1,5 +1,6 @@
 import logging
 from sketchformat.layer_common import *
+from sketchformat.layer_group import FlexDirection
 from sketchformat.layer_shape import *
 from sketchformat.style import *
 from .errors import *
@@ -67,17 +68,8 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         "nameIsFixed": False,
         "resizingConstraint": resizing_constraint(fig_node),
         "resizingType": ResizeType.STRETCH,
-        # TODO: Improve how we convert sizing behaviour
-        "horizontalSizing": (
-            SizingBehaviour.FILL
-            if fig_node.get("stackChildPrimaryGrow") == 1
-            else SizingBehaviour.FIXED
-        ),
-        "verticalSizing": (
-            SizingBehaviour.FILL
-            if fig_node.get("stackChildAlignSelf") == "STRETCH"
-            else SizingBehaviour.FIXED
-        ),
+        "horizontalSizing": horizontal_sizing_behaviour(fig_node),
+        "verticalSizing": vertical_sizing_behaviour(fig_node),
         **prototype.convert_flow(fig_node),  # type: ignore
         "isTemplate": False,
     }
@@ -253,3 +245,67 @@ def masking(fig_node: dict) -> _Masking:
         "hasClippingMask": bool(fig_node.get("mask")),
         "clippingMaskMode": CLIPPING_MODE[fig_node.get("maskType", "OUTLINE")],
     }
+
+
+def parent_stack_mode(fig_node: dict) -> Optional[FlexDirection]:
+    # Get parent node if it exists
+    parent = None
+    if fig_node.get("parent"):
+        parent = context.fig_node(fig_node["parent"]["guid"])
+
+    # Return stack mode if parent has one
+    if parent and utils.has_auto_layout(parent):
+        if parent.get("stackMode") == "VERTICAL":
+            return FlexDirection.VERTICAL
+        else:
+            return FlexDirection.HORIZONTAL
+
+    return None
+
+
+def horizontal_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
+    stack_mode = parent_stack_mode(fig_node)
+
+    # Check condition for FIT behavior
+    is_resize_to_fit = fig_node.get("stackCounterSizing") == "RESIZE_TO_FIT_WITH_IMPLICIT_SIZE"
+    if is_resize_to_fit:
+        return SizingBehaviour.FIT
+
+    # Check conditions for FILL behavior
+    vertical_parent_with_stretch = (
+        stack_mode == FlexDirection.VERTICAL and fig_node.get("stackChildAlignSelf") == "STRETCH"
+    )
+
+    horizontal_parent_with_grow = stack_mode == FlexDirection.HORIZONTAL and fig_node.get(
+        "stackChildPrimaryGrow"
+    )
+
+    if vertical_parent_with_stretch or horizontal_parent_with_grow:
+        return SizingBehaviour.FILL
+
+    # Default behavior
+    return SizingBehaviour.FIXED
+
+
+def vertical_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
+    stack_mode = parent_stack_mode(fig_node)
+
+    # Check conditions for FILL behavior
+    horizontal_parent_with_stretch = (
+        stack_mode == FlexDirection.HORIZONTAL and fig_node.get("stackChildAlignSelf") == "STRETCH"
+    )
+
+    vertical_parent_with_grow = stack_mode == FlexDirection.VERTICAL and fig_node.get(
+        "stackChildPrimaryGrow"
+    )
+
+    if horizontal_parent_with_stretch or vertical_parent_with_grow:
+        return SizingBehaviour.FILL
+
+    # Check condition for FIXED behavior
+    is_resize_to_fit = fig_node.get("stackPrimarySizing") == "FIXED"
+    if is_resize_to_fit:
+        return SizingBehaviour.FIXED
+
+    # Default behavior
+    return SizingBehaviour.FIT

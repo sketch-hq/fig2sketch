@@ -24,7 +24,7 @@ def convert(fig_frame: dict) -> Frame:
         groupBehavior=1,
     )
 
-    if fig_frame.get("stackMode"):
+    if utils.has_auto_layout(fig_frame):
         obj = convert_auto_layout(obj, fig_frame)
 
     obj.layout = convert_layout(fig_frame, obj.frame)
@@ -38,7 +38,7 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
 
     # Figma stores its stack children in bottom up order, but Sketch uses top down
-    if fig_frame.get("stackMode"):
+    if utils.has_auto_layout(fig_frame):
         sketch_frame.layers.reverse()
 
     return sketch_frame
@@ -46,31 +46,40 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
 
 def convert_auto_layout(sketch_frame: Frame, fig_frame: dict) -> Frame:
     sketch_frame.groupLayout = convert_group_layout(fig_frame)
+
+    # Set padding values from Figma frame
     sketch_frame.topPadding = fig_frame.get("stackVerticalPadding", 0)
     sketch_frame.rightPadding = fig_frame.get("stackPaddingRight", 0)
     sketch_frame.bottomPadding = fig_frame.get("stackPaddingBottom", 0)
     sketch_frame.leftPadding = fig_frame.get("stackHorizontalPadding", 0)
 
-    sketch_frame.paddingSelection = (
-        PaddingSelection.INDIVIDUAL
-        if sketch_frame.topPadding != sketch_frame.bottomPadding
+    # Determine padding selection type based on symmetry
+    has_asymmetric_padding = (
+        sketch_frame.topPadding != sketch_frame.bottomPadding
         or sketch_frame.leftPadding != sketch_frame.rightPadding
-        else PaddingSelection.PAIRED
+    )
+
+    sketch_frame.paddingSelection = (
+        PaddingSelection.INDIVIDUAL if has_asymmetric_padding else PaddingSelection.PAIRED
     )
 
     return sketch_frame
 
 
 def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
-    flex_direction = (
-        FlexDirection.VERTICAL
-        if fig_frame["stackMode"] == "VERTICAL"
-        else FlexDirection.HORIZONTAL
-    )
+    # Determine stack direction
+    is_vertical = fig_frame["stackMode"] == "VERTICAL"
+    flex_direction = FlexDirection.VERTICAL if is_vertical else FlexDirection.HORIZONTAL
+
+    # Get spacing between items
     all_gutters_gap = fig_frame.get("stackSpacing", 0)
 
-    justify = convert_flex_justify(fig_frame.get("stackPrimaryAlignItems", "MIN"))
-    align = convert_flex_align(fig_frame.get("stackCounterAlignItems", "MIN"))
+    # Convert alignment properties
+    primary_align = fig_frame.get("stackPrimaryAlignItems", "MIN")
+    counter_align = fig_frame.get("stackCounterAlignItems", "MIN")
+
+    justify = convert_flex_justify(primary_align)
+    align = convert_flex_align(counter_align)
 
     return FlexGroupLayout(
         flexDirection=flex_direction,
@@ -81,25 +90,23 @@ def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
 
 
 def convert_flex_justify(justify: str) -> FlexJustify:
-    if justify == "MIN":
-        return FlexJustify.START
-    elif justify == "CENTER":
-        return FlexJustify.CENTER
-    elif justify == "MAX":
-        return FlexJustify.END
-    else:
-        return FlexJustify.START
+    justify_mapping = {
+        "MIN": FlexJustify.START,
+        "CENTER": FlexJustify.CENTER,
+        "MAX": FlexJustify.END,
+    }
+
+    return justify_mapping.get(justify, FlexJustify.START)
 
 
 def convert_flex_align(alignment: str) -> FlexAlign:
-    if alignment == "MIN":
-        return FlexAlign.START
-    elif alignment == "CENTER":
-        return FlexAlign.CENTER
-    elif alignment == "MAX":
-        return FlexAlign.END
-    else:
-        return FlexAlign.NONE
+    align_mapping = {
+        "MIN": FlexAlign.START,
+        "CENTER": FlexAlign.CENTER,
+        "MAX": FlexAlign.END,
+    }
+
+    return align_mapping.get(alignment, FlexAlign.NONE)
 
 
 def convert_grid(fig_frame: dict) -> Optional[SimpleGrid]:

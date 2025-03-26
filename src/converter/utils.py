@@ -60,6 +60,10 @@ def has_rounded_corners(fig: dict) -> bool:
     )
 
 
+def has_auto_layout(fig: dict) -> bool:
+    return bool(fig.get("stackMode"))
+
+
 # Commented messages are no longer used, but we keep them for referencing past errors
 WARNING_MESSAGES = {
     "TXT001": "is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
