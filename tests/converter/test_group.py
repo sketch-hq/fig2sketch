@@ -147,8 +147,15 @@ class TestFrameStyles:
         assert not g.style.blur.isEnabled
 
         child = g.layers[0]
-        assert child.style.innerShadows == [
-            InnerShadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
+        assert child.style.shadows == [
+            Shadow(
+                blurRadius=4,
+                offsetX=1,
+                offsetY=3,
+                spread=0,
+                color=SKETCH_COLOR[1],
+                isInnerShadow=True,
+            )
         ]
 
     def test_inner_shadows_background(self):
@@ -186,8 +193,15 @@ class TestFrameStyles:
         assert bg.style.fills[0].fillType == FillType.COLOR
         assert bg.style.fills[0].color == SKETCH_COLOR[0]
 
-        assert bg.style.innerShadows == [
-            InnerShadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
+        assert bg.style.shadows == [
+            Shadow(
+                blurRadius=4,
+                offsetX=1,
+                offsetY=3,
+                spread=0,
+                color=SKETCH_COLOR[1],
+                isInnerShadow=True,
+            )
         ]
 
 

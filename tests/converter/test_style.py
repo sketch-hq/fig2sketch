@@ -263,7 +263,7 @@ class TestConvertEffects:
                 ]
             }
         )
-        [shadow] = effects["innerShadows"]
+        [shadow] = effects["shadows"]
         assert shadow.blurRadius == 5
         assert shadow.offsetX == 3
         assert shadow.offsetY == 6

@@ -283,14 +283,10 @@ class Shadow:
     offsetX: float
     offsetY: float
     spread: float
+    isInnerShadow: bool = False
     isEnabled: bool = True
     color: Color = field(default_factory=Color.Translucent)
     contextSettings: ContextSettings = field(default_factory=ContextSettings)
-
-
-@dataclass(kw_only=True)
-class InnerShadow(Shadow):
-    _class: str = field(default="innerShadow")
 
 
 @dataclass(kw_only=True)
@@ -314,7 +310,6 @@ class Style:
     blur: Blur = field(default_factory=Blur.Disabled)
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
-    innerShadows: List[InnerShadow] = field(default_factory=list)
     startDecorationType: Optional[MarkerType] = None  # Legacy, should match startMarkerType
     endDecorationType: Optional[MarkerType] = None  # Legacy, should match endMarkerType
 
