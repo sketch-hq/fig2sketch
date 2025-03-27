@@ -1,3 +1,4 @@
+from operator import is_
 from converter import utils
 from . import base, positioning, rectangle
 from sketchformat.layer_group import (
@@ -63,7 +64,7 @@ def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> Ab
     # Fill and borders go on a rectangle on the bottom
     has_fills = any([f.isEnabled for f in style.fills])
     has_borders = any([b.isEnabled for b in style.borders])
-    has_inner_shadows = any([b.isEnabled for b in style.innerShadows])
+    has_inner_shadows = any([b.isEnabled and b.isInnerShadow for b in style.shadows])
     has_bgblur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
     has_blur = style.blur.isEnabled and style.blur.type == BlurType.GAUSSIAN
 
@@ -73,14 +74,14 @@ def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> Ab
         bgrect.style.borders = style.borders
         if has_bgblur:
             bgrect.style.blur = Blur(type=BlurType.BACKGROUND, radius=style.blur.radius)
-        bgrect.style.innerShadows = style.innerShadows
+        bgrect.style.shadows = style.shadows
 
         sketch_group.layers.insert(0, bgrect)
 
         style.fills = []
         style.borders = []
         style.blur.isEnabled = False
-        style.innerShadows = []
+        style.shadows = [s for s in style.shadows if not s.isInnerShadow]
 
     # Blur goes in a rectangle with bgblur at the top
     if has_blur:
@@ -95,18 +96,19 @@ def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> Ab
 
     # Inner shadows apply to each child (if they were not put in the background rect earlier)
     # Normal shadows are untouched
-    for shadow in style.innerShadows:
-        utils.log_conversion_warning("GRP001", fig_group)
-        apply_inner_shadow(sketch_group, shadow)
+    for shadow in style.shadows:
+        if shadow.isInnerShadow:
+            utils.log_conversion_warning("GRP001", fig_group)
+            apply_inner_shadow(sketch_group, shadow)
 
-    style.innerShadows = []
+    style.shadows = [s for s in style.shadows if not s.isInnerShadow]
 
     return sketch_group
 
 
-def apply_inner_shadow(layer: AbstractLayerGroup, shadow: InnerShadow) -> None:
+def apply_inner_shadow(layer: AbstractLayerGroup, shadow: Shadow) -> None:
     for child in layer.layers:
         if isinstance(child, AbstractLayerGroup):
             apply_inner_shadow(child, shadow)
         elif isinstance(child, AbstractStyledLayer):
-            child.style.innerShadows.append(shadow)
+            child.style.shadows.append(shadow)
