@@ -42,6 +42,7 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
                     "spread": 0,
                     "offset": {"x": 1, "y": 3},
                     "color": FIG_COLOR[1],
+                    "visible": True,
                 }
             ],
             "children": [{**FIG_BASE, "type": "ROUNDED_RECTANGLE"}],
@@ -50,11 +51,13 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
     )
 
     symbol = context.symbols_page.layers[0]
-    assert symbol.style.innerShadows == []
+    assert symbol.style.shadows == []
 
     [child] = symbol.layers
-    assert child.style.innerShadows == [
-        InnerShadow(blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1])
+    assert child.style.shadows == [
+        Shadow(
+            blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1], isInnerShadow=True
+        )
     ]
 
 

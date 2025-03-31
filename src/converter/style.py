@@ -321,21 +321,22 @@ def rotated_stop(position: float, offset: float) -> float:
 class _Effects(TypedDict):
     blur: Blur
     shadows: List[Shadow]
-    innerShadows: List[InnerShadow]
 
 
 def convert_effects(fig_node: dict) -> _Effects:
-    sketch: _Effects = {"blur": Blur.Disabled(), "shadows": [], "innerShadows": []}
+    sketch: _Effects = {"blur": Blur.Disabled(), "shadows": []}
 
     for e in fig_node.get("effects", []):
         if e["type"] == "INNER_SHADOW":
-            sketch["innerShadows"].append(
-                InnerShadow(
+            sketch["shadows"].append(
+                Shadow(
                     blurRadius=e["radius"],
                     offsetX=e["offset"]["x"],
                     offsetY=e["offset"]["y"],
                     spread=e.get("spread", 0),
                     color=convert_color(e["color"]),
+                    isInnerShadow=True,
+                    isEnabled=e.get("visible"),
                 )
             )
 
@@ -347,6 +348,7 @@ def convert_effects(fig_node: dict) -> _Effects:
                     offsetY=e["offset"]["y"],
                     spread=e.get("spread", 0),
                     color=convert_color(e["color"]),
+                    isEnabled=e.get("visible"),
                 )
             )
 
