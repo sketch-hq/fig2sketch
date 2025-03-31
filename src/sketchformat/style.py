@@ -294,6 +294,21 @@ class TextStyle:
     pass
 
 
+class CornerStyle(IntEnum):
+    ROUNDED = 0
+    SMOOTH = 1
+    ANGLED = 2
+    INSIDE_SQUARE = 3
+    INSIDE_ARC = 4
+
+
+@dataclass(kw_only=True)
+class StyleCorners:
+    _class: str = field(default="MSImmutableStyleCorners")
+    radii: List[float] = field(default_factory=List)
+    style: CornerStyle = CornerStyle.ROUNDED
+
+
 @dataclass(kw_only=True)
 class Style:
     _class: str = field(default="style")
@@ -311,7 +326,8 @@ class Style:
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
     startDecorationType: Optional[MarkerType] = None  # Legacy, should match startMarkerType
-    endDecorationType: Optional[MarkerType] = None  # Legacy, should match endMarkerType
+    endDecorationType: Optional[MarkerType] = None  # Legacy, should match endMarkerType\
+    corners: Optional[StyleCorners] = None
 
     def set_markers(self, startMarkerType: MarkerType, endMarkerType: MarkerType) -> None:
         self.startMarkerType = startMarkerType

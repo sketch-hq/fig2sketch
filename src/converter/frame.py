@@ -21,20 +21,6 @@ def convert(fig_frame: dict) -> Frame:
 
 
 def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
-    # Sketch only supports one custom color as an artboard background
-    # If the frame has more than one color or other custom style we just create
-    # the background rectangle with whatever style
-    # If the frame/artboard has just one color (and not any other custom style)
-    # we set the background color in sketch property
-    # We could just always create the rectangle to simplify the logic, but I guess
-    # adding always a background rectangle is an overhead for the document itself
-    if utils.has_rounded_corners(fig_frame):
-        utils.log_conversion_warning("ART001", fig_frame)
-        group.create_clip_mask_if_needed(fig_frame, sketch_frame)
-
-    if sketch_frame.rotation != 0:
-        utils.log_conversion_warning("ART002", fig_frame)
-
     # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
     if sketch_frame.overlaySettings is not None:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
