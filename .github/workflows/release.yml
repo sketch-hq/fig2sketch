@@ -30,9 +30,9 @@ jobs:
     runs-on: ${{ matrix.runs }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           architecture: x64 # Otherwise the runner will try to download Python arm64, which is not available. x64 has support for both archs (universal2).
