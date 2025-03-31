@@ -109,6 +109,7 @@ class TestFrameStyles:
                         "spread": 0,
                         "offset": {"x": 1, "y": 3},
                         "color": FIG_COLOR[1],
+                        "visible": True,
                     }
                 ],
             },
@@ -135,6 +136,7 @@ class TestFrameStyles:
                         "spread": 0,
                         "offset": {"x": 1, "y": 3},
                         "color": FIG_COLOR[1],
+                        "visible": True,
                     }
                 ],
             },
@@ -169,6 +171,7 @@ class TestFrameStyles:
                         "spread": 0,
                         "offset": {"x": 1, "y": 3},
                         "color": FIG_COLOR[1],
+                        "visible": True,
                     }
                 ],
                 "fillPaints": [

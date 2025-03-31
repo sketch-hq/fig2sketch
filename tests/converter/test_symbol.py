@@ -42,6 +42,7 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
                     "spread": 0,
                     "offset": {"x": 1, "y": 3},
                     "color": FIG_COLOR[1],
+                    "visible": True,
                 }
             ],
             "children": [{**FIG_BASE, "type": "ROUNDED_RECTANGLE"}],

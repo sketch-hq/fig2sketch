@@ -336,6 +336,7 @@ def convert_effects(fig_node: dict) -> _Effects:
                     spread=e.get("spread", 0),
                     color=convert_color(e["color"]),
                     isInnerShadow=True,
+                    isEnabled=e.get("visible"),
                 )
             )
 
@@ -347,6 +348,7 @@ def convert_effects(fig_node: dict) -> _Effects:
                     offsetY=e["offset"]["y"],
                     spread=e.get("spread", 0),
                     color=convert_color(e["color"]),
+                    isEnabled=e.get("visible"),
                 )
             )
 

@@ -259,6 +259,7 @@ class TestConvertEffects:
                         "offset": {"x": 3, "y": 6},
                         "spread": 2,
                         "color": FIG_COLOR[1],
+                        "visible": True,
                     }
                 ]
             }
@@ -280,6 +281,7 @@ class TestConvertEffects:
                         "offset": {"x": 3, "y": 6},
                         "spread": 2,
                         "color": FIG_COLOR[1],
+                        "visible": True,
                     }
                 ]
             }
@@ -290,6 +292,30 @@ class TestConvertEffects:
         assert shadow.offsetY == 6
         assert shadow.spread == 2
         assert shadow.color == SKETCH_COLOR[1]
+        assert shadow.isEnabled
+
+    def test_hidden_shadow(self):
+        effects = convert_effects(
+            {
+                "effects": [
+                    {
+                        "type": "DROP_SHADOW",
+                        "radius": 5,
+                        "offset": {"x": 3, "y": 6},
+                        "spread": 2,
+                        "color": FIG_COLOR[1],
+                        "visible": False,
+                    }
+                ]
+            }
+        )
+        [shadow] = effects["shadows"]
+        assert shadow.blurRadius == 5
+        assert shadow.offsetX == 3
+        assert shadow.offsetY == 6
+        assert shadow.spread == 2
+        assert shadow.color == SKETCH_COLOR[1]
+        assert not shadow.isEnabled
 
     def test_shadow_spread_is_optional(self):
         effects = convert_effects(
@@ -300,6 +326,7 @@ class TestConvertEffects:
                         "radius": 5,
                         "offset": {"x": 3, "y": 6},
                         "color": FIG_COLOR[1],
+                        "visible": True,
                     }
                 ]
             }
