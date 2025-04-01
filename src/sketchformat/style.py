@@ -188,16 +188,28 @@ class Fill:
     image: Optional[Image] = None
 
     @staticmethod
-    def Color(color: Color, isEnabled: bool = True) -> "Fill":
-        return Fill(color=color, fillType=FillType.COLOR, isEnabled=isEnabled)
+    def Color(
+        color: Color, isEnabled: bool = True, blendMode: BlendMode = BlendMode.NORMAL
+    ) -> "Fill":
+        return Fill(
+            color=color,
+            fillType=FillType.COLOR,
+            isEnabled=isEnabled,
+            contextSettings=ContextSettings(blendMode=blendMode),
+        )
 
     @staticmethod
-    def Gradient(gradient: Gradient, isEnabled: bool, opacity: float = 1) -> "Fill":
+    def Gradient(
+        gradient: Gradient,
+        isEnabled: bool,
+        opacity: float = 1,
+        blendMode: BlendMode = BlendMode.NORMAL,
+    ) -> "Fill":
         return Fill(
             gradient=gradient,
             fillType=FillType.GRADIENT,
             isEnabled=isEnabled,
-            contextSettings=ContextSettings(opacity=opacity),
+            contextSettings=ContextSettings(opacity=opacity, blendMode=blendMode),
         )
 
     @staticmethod
@@ -207,6 +219,7 @@ class Fill:
         patternTileScale: float,
         isEnabled: bool,
         opacity: float = 1,
+        blendMode: BlendMode = BlendMode.NORMAL,
     ) -> "Fill":
         return Fill(
             image=Image(_ref=path),
@@ -214,7 +227,7 @@ class Fill:
             patternFillType=patternFillType,
             patternTileScale=patternTileScale,
             isEnabled=isEnabled,
-            contextSettings=ContextSettings(opacity=opacity),
+            contextSettings=ContextSettings(opacity=opacity, blendMode=blendMode),
         )
 
 

@@ -115,9 +115,6 @@ def convert_border(fig_node: dict, fig_border: dict) -> Border:
 
 
 def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
-    if fig_fill.get("blendMode", "NORMAL") != "NORMAL":
-        utils.log_conversion_warning("STY003", fig_node)
-
     match fig_fill:
         case {"type": "EMOJI"}:
             raise Exception("Unsupported fill: EMOJI")
@@ -127,6 +124,7 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
             return Fill.Color(
                 convert_color(fig_fill["color"], fig_fill["opacity"]),
                 isEnabled=fig_fill["visible"],
+                blendMode=BLEND_MODE[fig_fill.get("blendMode", "NORMAL")],
             )
         case {"type": "IMAGE"}:
             if is_cropped_image(fig_fill) and not fig_node.get("f2s_cropped_image"):
@@ -142,12 +140,14 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                 patternTileScale=fig_fill.get("scale", 1),
                 isEnabled=fig_fill["visible"],
                 opacity=fig_fill.get("opacity", 1),
+                blendMode=BLEND_MODE[fig_fill.get("blendMode", "NORMAL")],
             )
         case _:
             return Fill.Gradient(
                 convert_gradient(fig_node, fig_fill),
                 isEnabled=fig_fill["visible"],
                 opacity=fig_fill.get("opacity", 1),
+                blendMode=BLEND_MODE[fig_fill.get("blendMode", "NORMAL")],
             )
 
 

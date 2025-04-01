@@ -231,4 +231,4 @@ class TestResizingConstraints:
         assert g.resizingConstraint == g.layers[0].resizingConstraint
         assert g.horizontalSizing != g.layers[1].resizingConstraint
 
-        warnings.assert_not_called()
+        warnings.assert_any_call("GRP002", ANY)

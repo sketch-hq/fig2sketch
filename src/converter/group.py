@@ -22,6 +22,7 @@ def post_process_frame(fig_group: dict, sketch_group: Group) -> Group:
 
     return sketch_group
 
+
 def adjust_group_resizing_constraint(fig_group: dict, sketch_group: Group) -> None:
     """Adjust the resizing constraint of the group to better match the .fig doc.
     Groups in .fig don't really have a resizing constraint. Instead, the children of the group resize
@@ -39,6 +40,7 @@ def adjust_group_resizing_constraint(fig_group: dict, sketch_group: Group) -> No
 
     sketch_group.horizontalPins = sketch_group.layers[0].horizontalPins
     sketch_group.verticalPins = sketch_group.layers[0].verticalPins
+
 
 def create_clip_mask_if_needed(fig_group: dict, sketch_group: AbstractLayerGroup) -> bool:
     needs_clip_mask = not fig_group.get("frameMaskDisabled", False)
