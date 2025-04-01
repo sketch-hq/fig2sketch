@@ -106,6 +106,7 @@ WARNING_MESSAGES = {
     "IMG004": "appears to be corrupted in the .fig file ({error}), it will not be converted",
     "LAY001": "is an unsupported layer type, it will not be converted",
     "NOD001": "node could not be found",
+    "STK001": "has a stack layout with last on top ordering and a child which ignores the layout. This layout will not be converted.",
 }
 
 

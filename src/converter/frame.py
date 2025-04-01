@@ -7,6 +7,7 @@ from sketchformat.layer_group import (
     FlexDirection,
     FlexJustify,
     FlexAlign,
+    FreeFormGroupLayout,
     PaddingSelection,
     SimpleGrid,
     LayoutGrid,
@@ -39,7 +40,24 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
 
     # Figma stores its stack children in bottom up order, but Sketch uses top down
     if utils.has_auto_layout(fig_frame):
-        sketch_frame.layers.reverse()
+        # If the layout has a child which is ignoring the Stack layout, and the stack
+        # has a "Last on top" z-index order, we'll remove the stack layout.
+        has_child_ignoring_layout = False
+
+        for layer in sketch_frame.layers:
+            if (
+                hasattr(layer, "flexItem")
+                and layer.flexItem
+                and getattr(layer.flexItem, "ignoreLayout", False)
+            ):
+                has_child_ignoring_layout = True
+                break
+
+        if has_child_ignoring_layout and not fig_frame.get("stackReverseZIndex"):
+            sketch_frame.groupLayout = FreeFormGroupLayout()
+            utils.log_conversion_warning("STK001", fig_frame)
+        else:
+            sketch_frame.layers.reverse()
 
     return sketch_frame
 
