@@ -229,6 +229,6 @@ class TestResizingConstraints:
         g = tree.convert_node(fig, "")
 
         assert g.resizingConstraint == g.layers[0].resizingConstraint
-        assert g.resizingConstraint != g.layers[1].resizingConstraint
+        assert g.horizontalSizing != g.layers[1].resizingConstraint
 
-        warnings.assert_any_call("GRP002", ANY)
+        warnings.assert_not_called()

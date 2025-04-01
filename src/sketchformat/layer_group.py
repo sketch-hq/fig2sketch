@@ -15,10 +15,12 @@ class LayoutAnchor(IntEnum):
     MIDDLE = 1
     MAX = 2
 
+
 class ClippingBehavior(IntEnum):
     DEFAULT = 0
     CLIP_TO_BOUNDS = 1
     NONE = 2
+
 
 @dataclass(kw_only=True)
 class RulerData:

@@ -127,7 +127,6 @@ class AbstractLayer:
     do_objectID: str
     frame: Rect
     name: str
-    resizingConstraint: int
     rotation: float
     booleanOperation: BooleanOperation = BooleanOperation.NONE
     exportOptions: ExportOptions = field(default_factory=ExportOptions)
@@ -141,8 +140,11 @@ class AbstractLayer:
     layerListExpandedType: LayerListStatus = LayerListStatus.UNDECIDED
     nameIsFixed: bool = False
     resizingType: ResizeType = ResizeType.STRETCH
+    verticalPins: int = 0
+    horizontalPins: int = 0
     horizontalSizing: SizingBehaviour = SizingBehaviour.FIXED
     verticalSizing: SizingBehaviour = SizingBehaviour.FIXED
+    resizingConstraint: int = 0
     flexItem: Optional[FlexItem] = None
     shouldBreakMaskChain: bool = False
 

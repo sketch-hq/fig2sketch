@@ -22,13 +22,10 @@ def post_process_frame(fig_group: dict, sketch_group: Group) -> Group:
 
     return sketch_group
 
-
 def adjust_group_resizing_constraint(fig_group: dict, sketch_group: Group) -> None:
     """Adjust the resizing constraint of the group to better match the .fig doc.
-
     Groups in .fig don't really have a resizing constraint. Instead, the children of the group resize
     relative to the parent of the group.
-
     If all childs have the same constraint, we can have the same behaviour in Sketch, by setting the group
     constraints to be equal to the sublayers.
     However, if there is a mix, we cannot replicate the behaviour, so we just choose some constraint and throw
@@ -36,12 +33,12 @@ def adjust_group_resizing_constraint(fig_group: dict, sketch_group: Group) -> No
     if not sketch_group.layers:
         return
 
-    constraint = sketch_group.layers[0].resizingConstraint
-    if any([l.resizingConstraint != constraint for l in sketch_group.layers[1:]]):
+    constraint = [sketch_group.layers[0].horizontalPins, sketch_group.layers[0].verticalPins]
+    if any([[l.horizontalPins, l.verticalPins] != constraint for l in sketch_group.layers[1:]]):
         utils.log_conversion_warning("GRP002", fig_group)
 
-    sketch_group.resizingConstraint = constraint
-
+    sketch_group.horizontalPins = sketch_group.layers[0].horizontalPins
+    sketch_group.verticalPins = sketch_group.layers[0].verticalPins
 
 def create_clip_mask_if_needed(fig_group: dict, sketch_group: AbstractLayerGroup) -> bool:
     needs_clip_mask = not fig_group.get("frameMaskDisabled", False)

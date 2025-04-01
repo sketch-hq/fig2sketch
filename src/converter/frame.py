@@ -1,5 +1,5 @@
 import math
-from . import base, group, prototype, rectangle
+from . import base, group, prototype, rectangle, layout
 from converter import utils
 from sketchformat.layer_group import (
     ClippingBehavior,
@@ -9,7 +9,6 @@ from sketchformat.layer_group import (
     FlexJustify,
     FlexAlign,
     FreeFormGroupLayout,
-    PaddingSelection,
     SimpleGrid,
     LayoutGrid,
     Rect,
@@ -21,14 +20,11 @@ from collections import namedtuple
 def convert(fig_frame: dict) -> Frame:
     obj = Frame(
         **base.base_styled(fig_frame),
+        **layout.layout_information(fig_frame),
         **prototype.prototyping_information(fig_frame),
         grid=convert_grid(fig_frame),
-        clippingBehavior=ClippingBehavior.NONE if fig_frame.get("frameMaskDisabled") else ClippingBehavior.DEFAULT,
         groupBehavior=1,
     )
-
-    if utils.has_auto_layout(fig_frame):
-        obj = convert_auto_layout(obj, fig_frame)
 
     obj.layout = convert_layout(fig_frame, obj.frame)
 
@@ -40,93 +36,10 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
     if sketch_frame.overlaySettings is not None:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
 
-    # Figma stores its stack children in bottom up order, but Sketch uses top down
     if utils.has_auto_layout(fig_frame):
-        # If the layout has a child which is ignoring the Stack layout, and the stack
-        # has a "Last on top" z-index order, we'll remove the stack layout.
-        has_child_ignoring_layout = False
-
-        for layer in sketch_frame.layers:
-            if (
-                hasattr(layer, "flexItem")
-                and layer.flexItem
-                and getattr(layer.flexItem, "ignoreLayout", False)
-            ):
-                has_child_ignoring_layout = True
-                break
-
-        if has_child_ignoring_layout and not fig_frame.get("stackReverseZIndex"):
-            sketch_frame.groupLayout = FreeFormGroupLayout()
-            utils.log_conversion_warning("STK001", fig_frame)
-        else:
-            sketch_frame.layers.reverse()
+        sketch_frame = layout.post_process_group_layout(fig_frame, sketch_frame)
 
     return sketch_frame
-
-
-def convert_auto_layout(sketch_frame: Frame, fig_frame: dict) -> Frame:
-    sketch_frame.groupLayout = convert_group_layout(fig_frame)
-
-    # Set padding values from Figma frame
-    sketch_frame.topPadding = fig_frame.get("stackVerticalPadding", 0)
-    sketch_frame.rightPadding = fig_frame.get("stackPaddingRight", 0)
-    sketch_frame.bottomPadding = fig_frame.get("stackPaddingBottom", 0)
-    sketch_frame.leftPadding = fig_frame.get("stackHorizontalPadding", 0)
-
-    # Determine padding selection type based on symmetry
-    has_asymmetric_padding = (
-        sketch_frame.topPadding != sketch_frame.bottomPadding
-        or sketch_frame.leftPadding != sketch_frame.rightPadding
-    )
-
-    sketch_frame.paddingSelection = (
-        PaddingSelection.INDIVIDUAL if has_asymmetric_padding else PaddingSelection.PAIRED
-    )
-
-    return sketch_frame
-
-
-def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
-    # Determine stack direction
-    is_vertical = fig_frame["stackMode"] == "VERTICAL"
-    flex_direction = FlexDirection.VERTICAL if is_vertical else FlexDirection.HORIZONTAL
-
-    # Get spacing between items
-    all_gutters_gap = fig_frame.get("stackSpacing", 0)
-
-    # Convert alignment properties
-    primary_align = fig_frame.get("stackPrimaryAlignItems", "MIN")
-    counter_align = fig_frame.get("stackCounterAlignItems", "MIN")
-
-    justify = convert_flex_justify(primary_align)
-    align = convert_flex_align(counter_align)
-
-    return FlexGroupLayout(
-        flexDirection=flex_direction,
-        justifyContent=justify,
-        alignItems=align,
-        allGuttersGap=all_gutters_gap,
-    )
-
-
-def convert_flex_justify(justify: str) -> FlexJustify:
-    justify_mapping = {
-        "MIN": FlexJustify.START,
-        "CENTER": FlexJustify.CENTER,
-        "MAX": FlexJustify.END,
-    }
-
-    return justify_mapping.get(justify, FlexJustify.START)
-
-
-def convert_flex_align(alignment: str) -> FlexAlign:
-    align_mapping = {
-        "MIN": FlexAlign.START,
-        "CENTER": FlexAlign.CENTER,
-        "MAX": FlexAlign.END,
-    }
-
-    return align_mapping.get(alignment, FlexAlign.NONE)
 
 
 def convert_grid(fig_frame: dict) -> Optional[SimpleGrid]:
