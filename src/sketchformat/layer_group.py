@@ -15,6 +15,10 @@ class LayoutAnchor(IntEnum):
     MIDDLE = 1
     MAX = 2
 
+class ClippingBehavior(IntEnum):
+    DEFAULT = 0
+    CLIP_TO_BOUNDS = 1
+    NONE = 2
 
 @dataclass(kw_only=True)
 class RulerData:
@@ -78,6 +82,7 @@ class AbstractLayerGroup(AbstractStyledLayer):
     groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout, FlexGroupLayout] = field(
         default_factory=FreeFormGroupLayout
     )
+    clippingBehavior: ClippingBehavior = ClippingBehavior.DEFAULT
     leftPadding: float = 0
     topPadding: float = 0
     rightPadding: float = 0

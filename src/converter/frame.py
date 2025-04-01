@@ -2,6 +2,7 @@ import math
 from . import base, group, prototype, rectangle
 from converter import utils
 from sketchformat.layer_group import (
+    ClippingBehavior,
     Frame,
     FlexGroupLayout,
     FlexDirection,
@@ -22,6 +23,7 @@ def convert(fig_frame: dict) -> Frame:
         **base.base_styled(fig_frame),
         **prototype.prototyping_information(fig_frame),
         grid=convert_grid(fig_frame),
+        clippingBehavior=ClippingBehavior.NONE if fig_frame.get("frameMaskDisabled") else ClippingBehavior.DEFAULT,
         groupBehavior=1,
     )
 
