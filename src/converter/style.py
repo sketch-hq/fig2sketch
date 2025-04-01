@@ -5,7 +5,7 @@ from .positioning import Vector, Matrix
 from converter import utils
 from sketchformat.style import *
 from .utils import safe_div
-from typing import List, TypedDict
+from typing import List, TypedDict, Optional
 from .errors import Fig2SketchNodeChanged
 
 BORDER_POSITION = {
@@ -80,8 +80,30 @@ def convert(fig_node: dict) -> Style:
         fills=[convert_fill(fig_node, f) for f in fig_node.get("fillPaints", [])],
         **convert_effects(fig_node),
         contextSettings=context_settings(fig_node),
+        corners=convert_corners(fig_node),
     )
     return sketch_style
+
+
+def convert_corners(fig_node: dict) -> Optional[StyleCorners]:
+    # Return None if no corner radius is specified
+    if not fig_node.get("cornerRadius", False):
+        return None
+
+    base_radius = float(fig_node.get("cornerRadius", 0))
+
+    # Get individual corner radii, defaulting to base radius if not specified
+    top_left = fig_node.get("rectangleTopLeftCornerRadius", base_radius)
+    top_right = fig_node.get("rectangleTopRightCornerRadius", base_radius)
+    bottom_left = fig_node.get("rectangleBottomLeftCornerRadius", base_radius)
+    bottom_right = fig_node.get("rectangleBottomRightCornerRadius", base_radius)
+
+    corner_style = CornerStyle.SMOOTH if fig_node.get("cornerSmoothing") else CornerStyle.ROUNDED
+
+    return StyleCorners(
+        radii=[top_left, top_right, bottom_right, bottom_left],
+        style=corner_style,
+    )
 
 
 def convert_border(fig_node: dict, fig_border: dict) -> Border:

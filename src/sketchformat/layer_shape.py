@@ -12,7 +12,7 @@ class PointRadiusBehaviour(IntEnum):
     V1_SMOOTH = 2
 
 
-class CornerStyle(IntEnum):
+class ShapeCornerStyle(IntEnum):
     ROUNDED = 0
     ROUNDED_INVERTED = 1
     ANGLED = 2
@@ -34,7 +34,7 @@ class CurvePoint:
     curveTo: Point
     point: Point
     cornerRadius: float = 0.0
-    cornerStyle: CornerStyle = CornerStyle.ROUNDED
+    cornerStyle: ShapeCornerStyle = ShapeCornerStyle.ROUNDED
     hasCurveFrom: bool = False
     hasCurveTo: bool = False
     curveMode: CurveMode = CurveMode.UNDEFINED

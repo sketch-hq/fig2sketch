@@ -76,13 +76,11 @@ class TestFrameBackgroud:
 
     def test_rounded_corners(self):
         ab = tree.convert_node(
-            {**FIG_ARTBOARD, "rectangleTopLeftCornerRadius": 5},
+            {**FIG_ARTBOARD, "cornerRadius": 5},
             "CANVAS",
         )
 
-        assert isinstance(ab.layers[0], Rectangle)
-        assert ab.layers[0].hasClippingMask
-        assert ab.layers[0].points[0].cornerRadius == 5
+        assert ab.style.corners.radii == [5, 5, 5, 5]
 
     def test_section_as_frame(self):
         fig_section = {
