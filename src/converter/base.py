@@ -1,5 +1,6 @@
 import logging
 from sketchformat.layer_common import *
+from sketchformat.layer_group import FlexDirection
 from sketchformat.layer_shape import *
 from sketchformat.style import *
 from .errors import *
@@ -22,7 +23,7 @@ SUPPORTED_INHERIT_STYLES = {
         "paragraphSpacing",
     ),
     "inheritExportStyleID": (),  # Unused?
-    "inheritEffectStyleID": ("blur", "shadows"),
+    "inheritEffectStyleID": ("blurs", "shadows"),
     "inheritGridStyleID": ("layoutGrids"),
     "inheritFillStyleIDForBackground": (),  # Unused?
 }
@@ -45,6 +46,8 @@ class _BaseLayer(positioning._Positioning, prototype._Flow):
     layerListExpandedType: LayerListStatus
     nameIsFixed: bool
     resizingConstraint: int
+    horizontalPins: int
+    verticalPins: int
     resizingType: ResizeType
     isTemplate: bool
 
@@ -65,8 +68,12 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         "isVisible": fig_node.get("visible", True),
         "layerListExpandedType": LayerListStatus.COLLAPSED,
         "nameIsFixed": False,
-        "resizingConstraint": resizing_constraint(fig_node),
         "resizingType": ResizeType.STRETCH,
+        "horizontalPins": pinning_value(fig_node.get("horizontalConstraint", "MIN")),
+        "verticalPins": pinning_value(fig_node.get("verticalConstraint", "MIN")),
+        "horizontalSizing": horizontal_sizing_behaviour(fig_node),
+        "verticalSizing": vertical_sizing_behaviour(fig_node),
+        "flexItem": flex_item(fig_node),
         **prototype.convert_flow(fig_node),  # type: ignore
         "isTemplate": False,
     }
@@ -202,32 +209,18 @@ def export_scale(fig_constraint: dict) -> _ExportScale:
             }
 
 
-# resizingConstraint is a bitfield:
-#  1: right sizeable
-#  2: width sizeable
-#  4: left sizeable
-#  8: bottom sizeable
-# 16: height sizeable
-# 32: top sizeable
-# 64: all fixed (should be 0 but it's overridden to mean all sizeable, same as 63). Impossible
-HORIZONTAL_CONSTRAINT = {
-    "MIN": 1,  # Fixed left + width
-    "CENTER": 5,  # Fixed width
-    "MAX": 4,  # Fixed right + width
-    "STRETCH": 2,  # Fixed left and right
-    "SCALE": 7,  # All free
-    # 'FIXED_MIN': 0, # Unused?
-    # 'FIXED_MAX': 0, # Unused?
+# BCPinSet is a bitfield:
+BC_PIN_SET = {
+    "MIN": 1,
+    "CENTER": 2,
+    "MAX": 4,
+    "STRETCH": 7,  # All fixed
+    "SCALE": 2,  # All free
 }
 
-# Vertical constraints are equivalent to horizontal ones, with a 3 bit shift
-VERTICAL_CONSTRAINT = {k: v << 3 for k, v in HORIZONTAL_CONSTRAINT.items()}
 
-
-def resizing_constraint(fig_node: dict) -> int:
-    h = HORIZONTAL_CONSTRAINT[fig_node.get("horizontalConstraint", "MIN")]
-    v = VERTICAL_CONSTRAINT[fig_node.get("verticalConstraint", "MIN")]
-    return h + v
+def pinning_value(fig_value: str) -> int:
+    return BC_PIN_SET[fig_value]
 
 
 CLIPPING_MODE = {
@@ -242,3 +235,62 @@ def masking(fig_node: dict) -> _Masking:
         "hasClippingMask": bool(fig_node.get("mask")),
         "clippingMaskMode": CLIPPING_MODE[fig_node.get("maskType", "OUTLINE")],
     }
+
+
+def parent_stack_mode(fig_node: dict) -> Optional[FlexDirection]:
+    # Get parent node if it exists
+    parent = None
+    if fig_node.get("parent"):
+        parent = context.fig_node(fig_node["parent"]["guid"])
+
+    # Return stack mode if parent has one
+    if parent and utils.has_auto_layout(parent):
+        if parent.get("stackMode") == "VERTICAL":
+            return FlexDirection.VERTICAL
+        else:
+            return FlexDirection.HORIZONTAL
+
+    return None
+
+
+def flex_item(fig_node: dict) -> Optional[FlexItem]:
+    if fig_node.get("stackPositioning") == "ABSOLUTE":
+        return FlexItem(ignoreLayout=True)
+
+    return None
+
+
+def horizontal_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
+    stack_mode = parent_stack_mode(fig_node)
+
+    # Check constraints and behaviors in order of priority
+    if fig_node.get("horizontalConstraint") == "SCALE":
+        return SizingBehaviour.RELATIVE
+
+    if fig_node.get("stackCounterSizing") == "RESIZE_TO_FIT_WITH_IMPLICIT_SIZE":
+        return SizingBehaviour.FIT
+
+    # Check for FILL behavior based on parent/child relationships
+    is_fill = (
+        stack_mode == FlexDirection.VERTICAL and fig_node.get("stackChildAlignSelf") == "STRETCH"
+    ) or (stack_mode == FlexDirection.HORIZONTAL and fig_node.get("stackChildPrimaryGrow"))
+
+    return SizingBehaviour.FILL if is_fill else SizingBehaviour.FIXED
+
+
+def vertical_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
+    stack_mode = parent_stack_mode(fig_node)
+
+    # Check constraints and behaviors in order of priority
+    if fig_node.get("verticalConstraint") == "SCALE":
+        return SizingBehaviour.RELATIVE
+
+    if fig_node.get("stackCounterSizing") == "RESIZE_TO_FIT_WITH_IMPLICIT_SIZE":
+        return SizingBehaviour.FIT
+
+    # Check for FILL behavior based on parent/child relationships
+    is_fill = (
+        stack_mode == FlexDirection.HORIZONTAL and fig_node.get("stackChildAlignSelf") == "STRETCH"
+    ) or (stack_mode == FlexDirection.VERTICAL and fig_node.get("stackChildPrimaryGrow"))
+
+    return SizingBehaviour.FILL if is_fill else SizingBehaviour.FIXED

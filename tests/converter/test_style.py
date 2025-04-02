@@ -349,7 +349,7 @@ class TestConvertEffects:
                 ]
             }
         )
-        blur = effects["blur"]
+        blur = effects["blurs"][0]
         assert blur.isEnabled
         assert blur.type == BlurType.GAUSSIAN
         assert blur.radius == 2.5
@@ -365,7 +365,7 @@ class TestConvertEffects:
                 ]
             }
         )
-        blur = effects["blur"]
+        blur = effects["blurs"][0]
         assert blur.isEnabled
         assert blur.type == BlurType.BACKGROUND
         assert blur.radius == 2.5
