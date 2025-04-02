@@ -284,10 +284,6 @@ class Blur:
     saturation: float = 1
     type: BlurType = BlurType.GAUSSIAN
 
-    @staticmethod
-    def Disabled() -> "Blur":
-        return Blur(isEnabled=False)
-
 
 @dataclass(kw_only=True)
 class Shadow:
@@ -335,7 +331,7 @@ class Style:
     colorControls: ColorControls = field(default_factory=ColorControls)
     startMarkerType: MarkerType = MarkerType.NONE
     endMarkerType: MarkerType = MarkerType.NONE
-    blur: Blur = field(default_factory=Blur.Disabled)
+    blurs: List[Blur] = field(default_factory=list)
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
     startDecorationType: Optional[MarkerType] = None  # Legacy, should match startMarkerType

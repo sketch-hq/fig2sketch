@@ -64,22 +64,28 @@ def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> Ab
     has_fills = any([f.isEnabled for f in style.fills])
     has_borders = any([b.isEnabled for b in style.borders])
     has_inner_shadows = any([b.isEnabled and b.isInnerShadow for b in style.shadows])
-    has_bgblur = style.blur.isEnabled and style.blur.type == BlurType.BACKGROUND
-    has_blur = style.blur.isEnabled and style.blur.type == BlurType.GAUSSIAN
+    has_bgblur = (
+        len(style.blurs)
+        and style.blurs[0].isEnabled
+        and style.blurs[0].type == BlurType.BACKGROUND
+    )
+    has_blur = (
+        len(style.blurs) and style.blurs[0].isEnabled and style.blurs[0].type == BlurType.GAUSSIAN
+    )
 
     if has_fills or has_borders or has_bgblur:
         bgrect = rectangle.make_background_rect(fig_group, sketch_group.frame, "Frame Background")
         bgrect.style.fills = style.fills
         bgrect.style.borders = style.borders
         if has_bgblur:
-            bgrect.style.blur = Blur(type=BlurType.BACKGROUND, radius=style.blur.radius)
+            bgrect.style.blurs.append(Blur(type=BlurType.BACKGROUND, radius=style.blurs[0].radius))
         bgrect.style.shadows = style.shadows
 
         sketch_group.layers.insert(0, bgrect)
 
         style.fills = []
         style.borders = []
-        style.blur.isEnabled = False
+        style.blurs = []
         style.shadows = [s for s in style.shadows if not s.isInnerShadow]
 
     # Blur goes in a rectangle with bgblur at the top
@@ -87,11 +93,11 @@ def convert_frame_style(fig_group: dict, sketch_group: AbstractLayerGroup) -> Ab
         blur = rectangle.make_background_rect(
             fig_group, sketch_group.frame, f"{sketch_group.name} blur"
         )
-        blur.style.blur = Blur(type=BlurType.BACKGROUND, radius=style.blur.radius)
+        blur.style.blurs.append(Blur(type=BlurType.BACKGROUND, radius=style.blurs[0].radius))
 
         # Foreground blur, add as a layer at the top of the group
         sketch_group.layers.append(blur)
-        style.blur.isEnabled = False
+        style.blurs = []
 
     # Inner shadows apply to each child (if they were not put in the background rect earlier)
     # Normal shadows are untouched

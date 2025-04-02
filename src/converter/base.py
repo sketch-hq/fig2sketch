@@ -23,7 +23,7 @@ SUPPORTED_INHERIT_STYLES = {
         "paragraphSpacing",
     ),
     "inheritExportStyleID": (),  # Unused?
-    "inheritEffectStyleID": ("blur", "shadows"),
+    "inheritEffectStyleID": ("blurs", "shadows"),
     "inheritGridStyleID": ("layoutGrids"),
     "inheritFillStyleIDForBackground": (),  # Unused?
 }

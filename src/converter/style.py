@@ -341,12 +341,12 @@ def rotated_stop(position: float, offset: float) -> float:
 
 
 class _Effects(TypedDict):
-    blur: Blur
+    blurs: List[Blur]
     shadows: List[Shadow]
 
 
 def convert_effects(fig_node: dict) -> _Effects:
-    sketch: _Effects = {"blur": Blur.Disabled(), "shadows": []}
+    sketch: _Effects = {"blurs": [], "shadows": []}
 
     for e in fig_node.get("effects", []):
         if e["type"] == "INNER_SHADOW":
@@ -375,23 +375,35 @@ def convert_effects(fig_node: dict) -> _Effects:
             )
 
         elif e["type"] == "FOREGROUND_BLUR":
-            if sketch["blur"].isEnabled:
+            if (
+                len(sketch["blurs"])
+                and hasattr(sketch["blurs"][0], "isEnabled")
+                and sketch["blurs"][0].isEnabled
+            ):
                 utils.log_conversion_warning("STY001", fig_node)
                 continue
 
-            sketch["blur"] = Blur(
-                radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
-                type=BlurType.GAUSSIAN,
+            sketch["blurs"].append(
+                Blur(
+                    radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
+                    type=BlurType.GAUSSIAN,
+                )
             )
 
         elif e["type"] == "BACKGROUND_BLUR":
-            if sketch["blur"].isEnabled:
+            if (
+                len(sketch["blurs"])
+                and hasattr(sketch["blurs"][0], "isEnabled")
+                and sketch["blurs"][0].isEnabled
+            ):
                 utils.log_conversion_warning("STY001", fig_node)
                 continue
 
-            sketch["blur"] = Blur(
-                radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
-                type=BlurType.BACKGROUND,
+            sketch["blurs"].append(
+                Blur(
+                    radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
+                    type=BlurType.BACKGROUND,
+                )
             )
 
         else:
