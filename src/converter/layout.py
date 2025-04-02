@@ -2,7 +2,6 @@ from typing import TypedDict, Union
 from converter import utils
 from sketchformat.layer_common import PaddingSelection
 from sketchformat.layer_group import (
-    AbstractLayerGroup,
     ClippingBehavior,
     Frame,
     FlexGroupLayout,
@@ -11,7 +10,6 @@ from sketchformat.layer_group import (
     FlexDirection,
     FlexJustify,
     FlexAlign,
-    SymbolMaster,
 )
 
 
