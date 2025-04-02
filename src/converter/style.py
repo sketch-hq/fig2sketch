@@ -404,7 +404,10 @@ def context_settings(fig_node: dict) -> ContextSettings:
     blend_mode = BLEND_MODE[fig_node.get("blendMode", "NORMAL")]
     opacity = fig_node.get("opacity", 1)
 
-    if blend_mode == BlendMode.NORMAL and opacity == 1:
+    # Figma's default blend mode is pass-through, but its not expressed as a
+    # value in the fig model. When "NORMAL" is set explicity we need to tweak Sketch'
+    # opacity to avoid pass-through.
+    if fig_node.get("blendMode") == "NORMAL" and opacity == 1:
         # Sketch interprets normal at 100% opacity as pass-through
         opacity = 0.99
 
