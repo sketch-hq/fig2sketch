@@ -40,8 +40,8 @@ def make_background_rect(fig: dict, frame: Rect, name: str) -> Rectangle:
         name=name,
         frame=Rect(height=frame.height, width=frame.width, x=0, y=0),
         style=Style(do_objectID=utils.gen_object_id(fig["guid"], f"{name}_style".encode())),
-        resizingConstraint=base.HORIZONTAL_CONSTRAINT["STRETCH"]
-        + base.VERTICAL_CONSTRAINT["STRETCH"],
+        horizontalPins=2,
+        verticalPins=2,
         rotation=0,
         fixedRadius=radius,
         corners=corners,

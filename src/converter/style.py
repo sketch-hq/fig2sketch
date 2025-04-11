@@ -115,9 +115,6 @@ def convert_border(fig_node: dict, fig_border: dict) -> Border:
 
 
 def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
-    if fig_fill.get("blendMode", "NORMAL") != "NORMAL":
-        utils.log_conversion_warning("STY003", fig_node)
-
     match fig_fill:
         case {"type": "EMOJI"}:
             raise Exception("Unsupported fill: EMOJI")
@@ -127,6 +124,7 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
             return Fill.Color(
                 convert_color(fig_fill["color"], fig_fill["opacity"]),
                 isEnabled=fig_fill["visible"],
+                blendMode=BLEND_MODE[fig_fill.get("blendMode", "NORMAL")],
             )
         case {"type": "IMAGE"}:
             if is_cropped_image(fig_fill) and not fig_node.get("f2s_cropped_image"):
@@ -142,12 +140,14 @@ def convert_fill(fig_node: dict, fig_fill: dict) -> Fill:
                 patternTileScale=fig_fill.get("scale", 1),
                 isEnabled=fig_fill["visible"],
                 opacity=fig_fill.get("opacity", 1),
+                blendMode=BLEND_MODE[fig_fill.get("blendMode", "NORMAL")],
             )
         case _:
             return Fill.Gradient(
                 convert_gradient(fig_node, fig_fill),
                 isEnabled=fig_fill["visible"],
                 opacity=fig_fill.get("opacity", 1),
+                blendMode=BLEND_MODE[fig_fill.get("blendMode", "NORMAL")],
             )
 
 
@@ -341,12 +341,12 @@ def rotated_stop(position: float, offset: float) -> float:
 
 
 class _Effects(TypedDict):
-    blur: Blur
+    blurs: List[Blur]
     shadows: List[Shadow]
 
 
 def convert_effects(fig_node: dict) -> _Effects:
-    sketch: _Effects = {"blur": Blur.Disabled(), "shadows": []}
+    sketch: _Effects = {"blurs": [], "shadows": []}
 
     for e in fig_node.get("effects", []):
         if e["type"] == "INNER_SHADOW":
@@ -375,23 +375,35 @@ def convert_effects(fig_node: dict) -> _Effects:
             )
 
         elif e["type"] == "FOREGROUND_BLUR":
-            if sketch["blur"].isEnabled:
+            if (
+                len(sketch["blurs"])
+                and hasattr(sketch["blurs"][0], "isEnabled")
+                and sketch["blurs"][0].isEnabled
+            ):
                 utils.log_conversion_warning("STY001", fig_node)
                 continue
 
-            sketch["blur"] = Blur(
-                radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
-                type=BlurType.GAUSSIAN,
+            sketch["blurs"].append(
+                Blur(
+                    radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
+                    type=BlurType.GAUSSIAN,
+                )
             )
 
         elif e["type"] == "BACKGROUND_BLUR":
-            if sketch["blur"].isEnabled:
+            if (
+                len(sketch["blurs"])
+                and hasattr(sketch["blurs"][0], "isEnabled")
+                and sketch["blurs"][0].isEnabled
+            ):
                 utils.log_conversion_warning("STY001", fig_node)
                 continue
 
-            sketch["blur"] = Blur(
-                radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
-                type=BlurType.BACKGROUND,
+            sketch["blurs"].append(
+                Blur(
+                    radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
+                    type=BlurType.BACKGROUND,
+                )
             )
 
         else:
@@ -404,7 +416,10 @@ def context_settings(fig_node: dict) -> ContextSettings:
     blend_mode = BLEND_MODE[fig_node.get("blendMode", "NORMAL")]
     opacity = fig_node.get("opacity", 1)
 
-    if blend_mode == BlendMode.NORMAL and opacity == 1:
+    # Figma's default blend mode is pass-through, but its not expressed as a
+    # value in the fig model. When "NORMAL" is set explicity we need to tweak Sketch'
+    # opacity to avoid pass-through.
+    if fig_node.get("blendMode") == "NORMAL" and opacity == 1:
         # Sketch interprets normal at 100% opacity as pass-through
         opacity = 0.99
 

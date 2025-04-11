@@ -6,6 +6,33 @@ from .prototype import FlowConnection
 from .style import Style, Color
 
 
+class PaddingSelection(IntEnum):
+    UNIFORM = 0
+    PAIRED = 1
+    INDIVIDUAL = 2
+
+
+class FlexDirection(IntEnum):
+    HORIZONTAL = 0
+    VERTICAL = 1
+
+
+class FlexJustify(IntEnum):
+    START = 0
+    CENTER = 1
+    END = 2
+    SPACE_BETWEEN = 3
+    SPACE_AROUND = 4
+    SPACE_EVENLY = 5
+
+
+class FlexAlign(IntEnum):
+    START = 0
+    CENTER = 1
+    END = 2
+    NONE = 5
+
+
 class ExportLayerOptions(IntEnum):
     ALL = 0
     SELECTED = 1
@@ -50,6 +77,13 @@ class ResizeType(IntEnum):
     FLOAT = 2
 
 
+class SizingBehaviour(IntEnum):
+    FIXED = 0
+    FIT = 1
+    FILL = 2
+    RELATIVE = 3
+
+
 @dataclass(kw_only=True)
 class ExportFormat:
     _class: str = field(default="exportFormat")
@@ -81,11 +115,18 @@ class Rect:
 
 
 @dataclass(kw_only=True)
+class FlexItem:
+    _class: str = field(default="MSImmutableFlexItem")
+    alignSelf: FlexAlign = FlexAlign.NONE
+    ignoreLayout: bool = False
+    preserveSpaceWhenHidden: bool = False
+
+
+@dataclass(kw_only=True)
 class AbstractLayer:
     do_objectID: str
     frame: Rect
     name: str
-    resizingConstraint: int
     rotation: float
     booleanOperation: BooleanOperation = BooleanOperation.NONE
     exportOptions: ExportOptions = field(default_factory=ExportOptions)
@@ -99,6 +140,12 @@ class AbstractLayer:
     layerListExpandedType: LayerListStatus = LayerListStatus.UNDECIDED
     nameIsFixed: bool = False
     resizingType: ResizeType = ResizeType.STRETCH
+    verticalPins: int = 0
+    horizontalPins: int = 0
+    horizontalSizing: SizingBehaviour = SizingBehaviour.FIXED
+    verticalSizing: SizingBehaviour = SizingBehaviour.FIXED
+    resizingConstraint: int = 0
+    flexItem: Optional[FlexItem] = None
     shouldBreakMaskChain: bool = False
 
 
