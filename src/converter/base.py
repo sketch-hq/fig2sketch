@@ -212,10 +212,10 @@ def export_scale(fig_constraint: dict) -> _ExportScale:
 # BCPinSet is a bitfield:
 BC_PIN_SET = {
     "MIN": 1,
-    "CENTER": 2,
+    "CENTER": 0,
     "MAX": 4,
-    "STRETCH": 7,  # All fixed
-    "SCALE": 2,  # All free
+    "STRETCH": 5,  # All fixed
+    "SCALE": 0,  # All free
 }
 
 
@@ -261,36 +261,76 @@ def flex_item(fig_node: dict) -> Optional[FlexItem]:
 
 
 def horizontal_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
-    stack_mode = parent_stack_mode(fig_node)
+    parent_mode = parent_stack_mode(fig_node)
+    self_mode = fig_node.get("stackMode", None)
 
-    # Check constraints and behaviors in order of priority
+    # Check for RELATIVE sizing behavior
     if fig_node.get("horizontalConstraint") == "SCALE":
         return SizingBehaviour.RELATIVE
 
-    if fig_node.get("stackCounterSizing") == "RESIZE_TO_FIT_WITH_IMPLICIT_SIZE":
+    # Check for FILL sizing behavior
+    is_fill = (
+        parent_mode == FlexDirection.VERTICAL and fig_node.get("stackChildAlignSelf") == "STRETCH"
+    ) or (parent_mode == FlexDirection.HORIZONTAL and fig_node.get("stackChildPrimaryGrow"))
+    if is_fill:
+        return SizingBehaviour.FILL
+
+    # Check for FIT sizing behavior
+    if fig_node.get("textAutoResize") == "WIDTH":
         return SizingBehaviour.FIT
 
-    # Check for FILL behavior based on parent/child relationships
-    is_fill = (
-        stack_mode == FlexDirection.VERTICAL and fig_node.get("stackChildAlignSelf") == "STRETCH"
-    ) or (stack_mode == FlexDirection.HORIZONTAL and fig_node.get("stackChildPrimaryGrow"))
+    counter_sizing_fits = (
+        self_mode == "VERTICAL"
+        and fig_node.get("stackCounterSizing") == "RESIZE_TO_FIT_WITH_IMPLICIT_SIZE"
+    )
+    if counter_sizing_fits:
+        return SizingBehaviour.FIT
 
-    return SizingBehaviour.FILL if is_fill else SizingBehaviour.FIXED
+    # Check for FIXED sizing behavior
+    is_fixed = (self_mode == "HORIZONTAL" and fig_node.get("stackPrimarySizing") == "FIXED") or (
+        parent_mode == FlexDirection.HORIZONTAL
+        and fig_node.get("stackChildPrimaryGrow") == "FIXED"
+    )
+    if is_fixed:
+        return SizingBehaviour.FIXED
+
+    # Default behavior based on stack mode
+    return SizingBehaviour.FIT if self_mode == "HORIZONTAL" else SizingBehaviour.FIXED
 
 
 def vertical_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
-    stack_mode = parent_stack_mode(fig_node)
+    parent_mode = parent_stack_mode(fig_node)
+    self_mode = fig_node.get("stackMode", None)
 
-    # Check constraints and behaviors in order of priority
+    # Check for RELATIVE sizing behavior
     if fig_node.get("verticalConstraint") == "SCALE":
         return SizingBehaviour.RELATIVE
 
-    if fig_node.get("stackCounterSizing") == "RESIZE_TO_FIT_WITH_IMPLICIT_SIZE":
+    # Check for FILL sizing behavior
+    is_fill = (
+        parent_mode == FlexDirection.HORIZONTAL
+        and fig_node.get("stackChildAlignSelf") == "STRETCH"
+    ) or (parent_mode == FlexDirection.VERTICAL and fig_node.get("stackChildPrimaryGrow"))
+    if is_fill:
+        return SizingBehaviour.FILL
+
+    # Check for FIT sizing behavior
+    if fig_node.get("textAutoResize") == "HEIGHT":
         return SizingBehaviour.FIT
 
-    # Check for FILL behavior based on parent/child relationships
-    is_fill = (
-        stack_mode == FlexDirection.HORIZONTAL and fig_node.get("stackChildAlignSelf") == "STRETCH"
-    ) or (stack_mode == FlexDirection.VERTICAL and fig_node.get("stackChildPrimaryGrow"))
+    counter_sizing_fits = (
+        self_mode == "HORIZONTAL"
+        and fig_node.get("stackCounterSizing") == "RESIZE_TO_FIT_WITH_IMPLICIT_SIZE"
+    )
+    if counter_sizing_fits:
+        return SizingBehaviour.FIT
 
-    return SizingBehaviour.FILL if is_fill else SizingBehaviour.FIXED
+    # Check for FIXED sizing behavior
+    is_fixed = (self_mode == "VERTICAL" and fig_node.get("stackPrimarySizing") == "FIXED") or (
+        parent_mode == FlexDirection.VERTICAL and fig_node.get("stackChildPrimaryGrow") == "FIXED"
+    )
+    if is_fixed:
+        return SizingBehaviour.FIXED
+
+    # Default behavior based on stack mode
+    return SizingBehaviour.FIT if self_mode == "VERTICAL" else SizingBehaviour.FIXED
