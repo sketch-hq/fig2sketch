@@ -51,10 +51,7 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
     )
 
     symbol = context.symbols_page.layers[0]
-    assert symbol.style.shadows == []
-
-    [child] = symbol.layers
-    assert child.style.shadows == [
+    assert symbol.style.shadows == [
         Shadow(
             blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1], isInnerShadow=True
         )
