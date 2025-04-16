@@ -82,6 +82,8 @@ def convert_flex_justify(justify: str) -> FlexJustify:
         "MIN": FlexJustify.START,
         "CENTER": FlexJustify.CENTER,
         "MAX": FlexJustify.END,
+        # We seem to have a different interpretation of "SPACE_EVENLY"
+        "SPACE_EVENLY": FlexJustify.SPACE_BETWEEN,
     }
 
     return justify_mapping.get(justify, FlexJustify.START)

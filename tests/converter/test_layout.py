@@ -119,6 +119,23 @@ class TestLayoutJustify:
             flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.END
         )
 
+    def test_layout_justify_space_evenly(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "VERTICAL",
+                "stackPrimaryAlignItems": "SPACE_EVENLY",
+                "children": [],
+            },
+            "CANVAS",
+        )
+
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.SPACE_BETWEEN
+        )
+
 
 @pytest.mark.usefixtures("no_prototyping")
 class TestLayoutAlignment:
