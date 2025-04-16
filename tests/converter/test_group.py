@@ -215,8 +215,14 @@ class TestResizingConstraints:
         fig["children"].append({**FIG_BASE, "type": "ROUNDED_RECTANGLE"})
         g = tree.convert_node(fig, "")
 
-        assert g.resizingConstraint == g.layers[0].resizingConstraint
-        assert g.resizingConstraint == g.layers[1].resizingConstraint
+        assert [g.horizontalSizing, g.verticalSizing] == [
+            g.layers[0].horizontalSizing,
+            g.layers[0].verticalSizing,
+        ]
+        assert [g.horizontalSizing, g.verticalSizing] == [
+            g.layers[1].horizontalSizing,
+            g.layers[1].verticalSizing,
+        ]
 
         warnings.assert_not_called()
 
@@ -228,7 +234,13 @@ class TestResizingConstraints:
         )
         g = tree.convert_node(fig, "")
 
-        assert g.resizingConstraint == g.layers[0].resizingConstraint
-        assert g.horizontalSizing != g.layers[1].resizingConstraint
+        assert [g.horizontalSizing, g.verticalSizing] == [
+            g.layers[0].horizontalSizing,
+            g.layers[0].verticalSizing,
+        ]
+        assert [g.horizontalSizing, g.verticalSizing] != [
+            g.layers[1].horizontalSizing,
+            g.layers[1].verticalSizing,
+        ]
 
         warnings.assert_any_call("GRP002", ANY)
