@@ -31,34 +31,31 @@ def test_rounded_corners(no_prototyping, empty_context):
     assert symbol.layers[0].points[0].cornerRadius == 5
 
 
-# def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
-#     g = tree.convert_node(
-#         {
-#             **FIG_SYMBOL,
-#             "effects": [
-#                 {
-#                     "type": "INNER_SHADOW",
-#                     "radius": 4,
-#                     "spread": 0,
-#                     "offset": {"x": 1, "y": 3},
-#                     "color": FIG_COLOR[1],
-#                     "visible": True,
-#                 }
-#             ],
-#             "children": [{**FIG_BASE, "type": "ROUNDED_RECTANGLE"}],
-#         },
-#         "",
-#     )
+def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
+    g = tree.convert_node(
+        {
+            **FIG_SYMBOL,
+            "effects": [
+                {
+                    "type": "INNER_SHADOW",
+                    "radius": 4,
+                    "spread": 0,
+                    "offset": {"x": 1, "y": 3},
+                    "color": FIG_COLOR[1],
+                    "visible": True,
+                }
+            ],
+            "children": [{**FIG_BASE, "type": "ROUNDED_RECTANGLE"}],
+        },
+        "",
+    )
 
-#     symbol = context.symbols_page.layers[0]
-#     assert symbol.style.shadows == []
-
-#     [child] = symbol.layers
-#     assert child.style.shadows == [
-#         Shadow(
-#             blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1], isInnerShadow=True
-#         )
-#     ]
+    symbol = context.symbols_page.layers[0]
+    assert symbol.style.shadows == [
+        Shadow(
+            blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1], isInnerShadow=True
+        )
+    ]
 
 
 def test_variant_name():

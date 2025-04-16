@@ -34,8 +34,19 @@ def adjust_group_resizing_constraint(fig_group: dict, sketch_group: Group) -> No
     if not sketch_group.layers:
         return
 
-    constraint = [sketch_group.layers[0].horizontalPins, sketch_group.layers[0].verticalPins]
-    if any([[l.horizontalPins, l.verticalPins] != constraint for l in sketch_group.layers[1:]]):
+    first_layer_constraint = [
+        sketch_group.layers[0].horizontalPins,
+        sketch_group.layers[0].verticalPins,
+    ]
+
+    constraints_are_inconsistent = False
+    for layer in sketch_group.layers[1:]:
+        current_constraint = [layer.horizontalPins, layer.verticalPins]
+        if current_constraint != first_layer_constraint:
+            constraints_are_inconsistent = True
+            break
+
+    if constraints_are_inconsistent:
         utils.log_conversion_warning("GRP002", fig_group)
 
     sketch_group.horizontalPins = sketch_group.layers[0].horizontalPins
