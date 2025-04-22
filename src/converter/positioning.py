@@ -100,7 +100,7 @@ def convert(fig_item: dict) -> _Positioning:
 
     return {
         "frame": Rect(
-            constrainProportions=fig_item.get("proportionsConstrained", False),
+            constrainProportions=True if "targetAspectRatio" in fig_item else False,
             height=fig_item["size"]["y"] or 0.1,
             width=fig_item["size"]["x"] or 0.1,
             x=coordinates[0],

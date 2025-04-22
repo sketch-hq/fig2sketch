@@ -60,6 +60,10 @@ def has_rounded_corners(fig: dict) -> bool:
     )
 
 
+def has_auto_layout(fig: dict) -> bool:
+    return bool(fig.get("stackMode"))
+
+
 # Commented messages are no longer used, but we keep them for referencing past errors
 WARNING_MESSAGES = {
     "TXT001": "is missing the glyphs property. If the text has unicode characters, it may not convert the format properly",
@@ -102,6 +106,7 @@ WARNING_MESSAGES = {
     "IMG004": "appears to be corrupted in the .fig file ({error}), it will not be converted",
     "LAY001": "is an unsupported layer type, it will not be converted",
     "NOD001": "node could not be found",
+    "STK001": "has a stack layout with last on top ordering and a child which ignores the layout. This layout will not be converted.",
 }
 
 

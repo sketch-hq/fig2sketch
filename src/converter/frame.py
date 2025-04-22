@@ -1,8 +1,18 @@
 import math
-from . import base, group, prototype, rectangle
+from . import base, group, prototype, rectangle, layout
 from converter import utils
-from sketchformat.layer_group import Frame, SimpleGrid, LayoutGrid, Rect
-from sketchformat.style import Fill, FillType
+from sketchformat.layer_group import (
+    ClippingBehavior,
+    Frame,
+    FlexGroupLayout,
+    FlexDirection,
+    FlexJustify,
+    FlexAlign,
+    FreeFormGroupLayout,
+    SimpleGrid,
+    LayoutGrid,
+    Rect,
+)
 from typing import Optional
 from collections import namedtuple
 
@@ -10,6 +20,7 @@ from collections import namedtuple
 def convert(fig_frame: dict) -> Frame:
     obj = Frame(
         **base.base_styled(fig_frame),
+        **layout.layout_information(fig_frame),
         **prototype.prototyping_information(fig_frame),
         grid=convert_grid(fig_frame),
         groupBehavior=1,
@@ -24,6 +35,9 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
     # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
     if sketch_frame.overlaySettings is not None:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
+
+    if utils.has_auto_layout(fig_frame):
+        sketch_frame = layout.post_process_group_layout(fig_frame, sketch_frame)
 
     return sketch_frame
 

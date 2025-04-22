@@ -188,16 +188,28 @@ class Fill:
     image: Optional[Image] = None
 
     @staticmethod
-    def Color(color: Color, isEnabled: bool = True) -> "Fill":
-        return Fill(color=color, fillType=FillType.COLOR, isEnabled=isEnabled)
+    def Color(
+        color: Color, isEnabled: bool = True, blendMode: BlendMode = BlendMode.NORMAL
+    ) -> "Fill":
+        return Fill(
+            color=color,
+            fillType=FillType.COLOR,
+            isEnabled=isEnabled,
+            contextSettings=ContextSettings(blendMode=blendMode),
+        )
 
     @staticmethod
-    def Gradient(gradient: Gradient, isEnabled: bool, opacity: float = 1) -> "Fill":
+    def Gradient(
+        gradient: Gradient,
+        isEnabled: bool,
+        opacity: float = 1,
+        blendMode: BlendMode = BlendMode.NORMAL,
+    ) -> "Fill":
         return Fill(
             gradient=gradient,
             fillType=FillType.GRADIENT,
             isEnabled=isEnabled,
-            contextSettings=ContextSettings(opacity=opacity),
+            contextSettings=ContextSettings(opacity=opacity, blendMode=blendMode),
         )
 
     @staticmethod
@@ -207,6 +219,7 @@ class Fill:
         patternTileScale: float,
         isEnabled: bool,
         opacity: float = 1,
+        blendMode: BlendMode = BlendMode.NORMAL,
     ) -> "Fill":
         return Fill(
             image=Image(_ref=path),
@@ -214,7 +227,7 @@ class Fill:
             patternFillType=patternFillType,
             patternTileScale=patternTileScale,
             isEnabled=isEnabled,
-            contextSettings=ContextSettings(opacity=opacity),
+            contextSettings=ContextSettings(opacity=opacity, blendMode=blendMode),
         )
 
 
@@ -271,10 +284,6 @@ class Blur:
     saturation: float = 1
     type: BlurType = BlurType.GAUSSIAN
 
-    @staticmethod
-    def Disabled() -> "Blur":
-        return Blur(isEnabled=False)
-
 
 @dataclass(kw_only=True)
 class Shadow:
@@ -322,7 +331,7 @@ class Style:
     colorControls: ColorControls = field(default_factory=ColorControls)
     startMarkerType: MarkerType = MarkerType.NONE
     endMarkerType: MarkerType = MarkerType.NONE
-    blur: Blur = field(default_factory=Blur.Disabled)
+    blurs: List[Blur] = field(default_factory=list)
     textStyle: Optional[TextStyle] = None
     shadows: List[Shadow] = field(default_factory=list)
     startDecorationType: Optional[MarkerType] = None  # Legacy, should match startMarkerType

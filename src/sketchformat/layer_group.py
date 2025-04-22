@@ -16,6 +16,12 @@ class LayoutAnchor(IntEnum):
     MAX = 2
 
 
+class ClippingBehavior(IntEnum):
+    DEFAULT = 0
+    CLIP_TO_BOUNDS = 1
+    NONE = 2
+
+
 @dataclass(kw_only=True)
 class RulerData:
     _class: str = field(default="rulerData")
@@ -49,6 +55,15 @@ class LayoutGrid:
 
 
 @dataclass(kw_only=True)
+class FlexGroupLayout:
+    _class: str = field(default="MSImmutableFlexGroupLayout")
+    flexDirection: FlexDirection = FlexDirection.HORIZONTAL
+    justifyContent: FlexJustify = FlexJustify.START
+    alignItems: FlexAlign = FlexAlign.START
+    allGuttersGap: float = 0
+
+
+@dataclass(kw_only=True)
 class FreeFormGroupLayout:
     _class: str = field(default="MSImmutableFreeformGroupLayout")
 
@@ -66,9 +81,15 @@ class InferredGroupLayout:
 class AbstractLayerGroup(AbstractStyledLayer):
     hasClickThrough: bool = False
     groupBehavior: int = 0
-    groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout] = field(
+    groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout, FlexGroupLayout] = field(
         default_factory=FreeFormGroupLayout
     )
+    clippingBehavior: ClippingBehavior = ClippingBehavior.DEFAULT
+    leftPadding: float = 0
+    topPadding: float = 0
+    rightPadding: float = 0
+    bottomPadding: float = 0
+    paddingSelection: PaddingSelection = PaddingSelection.UNIFORM
     layers: List[AbstractLayer] = field(default_factory=list)
 
 
@@ -101,16 +122,13 @@ class Frame(AbstractLayerGroup):
     layout: Optional[LayoutGrid] = None
     hasBackgroundColor: bool = False
     backgroundColor: Color = field(default_factory=Color.White)
-    includeBackgroundColorInExport: bool = False
+    includeBackgroundColorInExport: bool = True
     resizesContent: bool = True
     isFlowHome: bool = False
     overlayBackgroundInteraction: OverlayBackgroundInteraction = OverlayBackgroundInteraction.NONE
     presentationStyle: PresentationStyle = PresentationStyle.SCREEN
     overlaySettings: Optional[FlowOverlaySettings] = None
     prototypeViewport: Optional[PrototypeViewport] = None
-
-    horizontalSizing: int = 0
-    verticalSizing: int = 0
 
     shouldBreakMaskChain: bool = True
     layerListExpandedType: LayerListStatus = LayerListStatus.EXPANDED
@@ -127,7 +145,7 @@ class OverrideProperty:
 class SymbolMaster(Frame):
     _class: str = field(default="symbolMaster")
     allowsOverrides: bool = True
-    includeBackgroundColorInInstance: bool = False
+    includeBackgroundColorInInstance: bool = True
     symbolID: str
     overrideProperties: List[OverrideProperty] = field(default_factory=list)
 

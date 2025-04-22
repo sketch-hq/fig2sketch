@@ -21,7 +21,6 @@ def make_page(guid: Sequence[int], name: str, suffix: bytes = b"") -> Page:
         do_objectID=utils.gen_object_id(guid, suffix),
         frame=Rect(height=0, width=0, x=0, y=0),
         name=name,
-        resizingConstraint=63,
         rotation=0.0,
         style=Style(do_objectID=utils.gen_object_id(guid, suffix + b"style")),
         hasClickThrough=True,
@@ -48,7 +47,6 @@ def add_page_background(fig_canvas, sketch_page):
                     do_objectID=utils.gen_object_id(fig_canvas["guid"], b"background_style"),
                     fills=[Fill.Color(background_color)],
                 ),
-                resizingConstraint=0,
                 rotation=0,
                 frame=Rect(
                     x=page_bbox[0] - 1000,
