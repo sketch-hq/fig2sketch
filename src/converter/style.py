@@ -87,7 +87,9 @@ def convert(fig_node: dict) -> Style:
 
 def convert_corners(fig_node: dict) -> Optional[StyleCorners]:
     # Return None if no corner radius is specified
-    if not fig_node.get("cornerRadius", False):
+    if not fig_node.get("cornerRadius", False) and not fig_node.get(
+        "rectangleTopLeftCornerRadius", False
+    ):
         return None
 
     base_radius = float(fig_node.get("cornerRadius", 0))
