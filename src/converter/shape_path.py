@@ -35,11 +35,14 @@ class _Markers(TypedDict, total=False):
 
 
 def convert(fig_vector: dict) -> Union[Group, ShapeGroup, ShapePath]:
-    if len(fig_vector["vectorNetwork"]["vertices"]) == 0:
+    if len(fig_vector["vectorNetwork"].get("vertices", [])) == 0:
         raise Fig2SketchWarning("SHP002")
 
     fig_regions = get_all_segments(fig_vector["vectorNetwork"])
     regions = [convert_region(fig_vector, region, i) for i, region in enumerate(fig_regions)]
+
+    if len(regions) == 0:
+        raise Fig2SketchWarning("SHP003")
 
     if len(regions) > 1:
         # Ignore positioning for children. TODO: We should probably be building these shapePaths by
