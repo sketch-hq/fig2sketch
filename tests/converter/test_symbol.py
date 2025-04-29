@@ -25,10 +25,7 @@ def test_rounded_corners(no_prototyping, empty_context):
     symbol = context.symbols_page.layers[0]
 
     assert instance.symbolID == symbol.symbolID
-
-    assert isinstance(symbol.layers[0], Rectangle)
-    assert symbol.layers[0].hasClippingMask
-    assert symbol.layers[0].points[0].cornerRadius == 5
+    assert symbol.style.corners.radii[0] == 5
 
 
 def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):

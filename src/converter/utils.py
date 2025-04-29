@@ -74,6 +74,7 @@ WARNING_MESSAGES = {
     "TXT006": "uses OpenType features not supported by Sketch: {features}. They will be ignored",
     "SHP001": "contains a line with at least one 'Reversed triangle' end. This type of marker does not exist in Sketch. It has been converted to a 'Line' type marker",
     "SHP002": "does not have any points. It will be skipped",
+    "SHP003": "does not have any regions. It will be skipped",
     "STY001": "contains a layer blur and a background blur. Only one will be converted",
     "STY002": "contains a DIAMOND gradient, which is not supported. It is converted to a RADIAL gradient",
     "STY003": "contains a fill with a non-standard blend mode, which is not supported at the fill level (us the layer blend mode instead). It will be ignored",
