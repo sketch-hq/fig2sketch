@@ -142,29 +142,30 @@ def get_destination_settings_if_any(
     overlay_settings = None
     destination: Optional[str]
 
-    match action["connectionType"], action.get("transitionNodeID", None):
-        case "BACK", _:
-            destination = "back"
-        case "INTERNAL_NODE", None:
+    connection_type = action.get("connectionType")
+    transition_node_id = action.get("transitionNodeID", None)
+
+    if connection_type == "BACK":
+        destination = "back"
+    elif connection_type == "INTERNAL_NODE" and transition_node_id is None:
+        destination = None
+    elif connection_type == "INTERNAL_NODE" and transition_node_id is not None:
+        if utils.is_invalid_ref(transition_node_id):
             destination = None
-        case "INTERNAL_NODE", transition_node_id:
-            if utils.is_invalid_ref(transition_node_id):
-                destination = None
-            else:
-                destination = utils.gen_object_id(transition_node_id)
-                transition_node = context.fig_node(transition_node_id)
+        else:
+            destination = utils.gen_object_id(transition_node_id)
+            transition_node = context.fig_node(transition_node_id)
 
-                if "overlayBackgroundInteraction" in transition_node:
-                    offset = action.get("overlayRelativePosition", {"x": 0, "y": 0})
+            if "overlayBackgroundInteraction" in transition_node:
+                offset = action.get("overlayRelativePosition", {"x": 0, "y": 0})
 
-                    overlay_settings = FlowOverlaySettings.Positioned(
-                        transition_node.get("overlayPositionType", "CENTER"),
-                        Point.from_dict(offset),
-                    )
-
-        case "NONE", _:
-            destination = None
-        case _:
-            raise Fig2SketchWarning("PRT004")
+                overlay_settings = FlowOverlaySettings.Positioned(
+                    transition_node.get("overlayPositionType", "CENTER"),
+                    Point.from_dict(offset),
+                )
+    elif connection_type == "NONE":
+        destination = None
+    else:
+        raise Fig2SketchWarning("PRT004")
 
     return destination, overlay_settings
