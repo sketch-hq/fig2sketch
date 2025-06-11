@@ -29,6 +29,21 @@ class KiwiReader:
 
         return uint
 
+    def uint64(self):
+        uint = 0
+        shift = 0
+        for shift in range(0, 64, 7):
+            b = self.byte()
+            uint |= (b & 127) << shift
+            if b < 128:
+                break
+
+        return uint
+
+    def int64(self):
+        v = self.uint64()
+        return ~(v >> 1) if v & 1 else v >> 1
+
     def float(self):
         b = self.byte()
         if b == 0:
@@ -82,7 +97,7 @@ class KiwiSchema:
 
 
 class KiwiDecoder:
-    TYPES = ["bool", "byte", "int", "uint", "float", "string"]
+    TYPES = ["bool", "byte", "int", "uint", "float", "string", "int64", "uint64"]
     KINDS = ["ENUM", "STRUCT", "MESSAGE"]
 
     def __init__(self, schema, type_converters):
