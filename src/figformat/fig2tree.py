@@ -61,7 +61,7 @@ def transform_node(fig, node, fig_zip, output):
         parent = node.pop("parentIndex")
         node["parent"] = {"guid": parent["guid"], "position": parent["position"]}
 
-    if "vectorData" in node:
+    if "vectorData" in node and "vectorNetworkBlob" in node["vectorData"]:
         blob_id = node["vectorData"]["vectorNetworkBlob"]
         scale = node["vectorData"]["normalizedSize"]
         style_table_override = utils.get_style_table_override(node["vectorData"])
