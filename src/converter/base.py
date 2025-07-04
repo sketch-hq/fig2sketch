@@ -233,7 +233,7 @@ def masking(fig_node: dict) -> _Masking:
     return {
         "shouldBreakMaskChain": False,
         "hasClippingMask": bool(fig_node.get("mask")),
-        "clippingMaskMode": CLIPPING_MODE[fig_node.get("maskType", "OUTLINE")],
+        "clippingMaskMode": CLIPPING_MODE[fig_node.get("maskType", "ALPHA")],
     }
 
 
