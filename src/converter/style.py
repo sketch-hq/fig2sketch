@@ -59,6 +59,10 @@ BLEND_MODE = {
     "LUMINOSITY": BlendMode.LUMINOSITY,
 }
 
+GLASS_RADIUS_SCALING_FACTOR = 0.5
+GLASS_DEPTH_SCALING_FACTOR = 0.02
+GLASS_DISTORTION_SCALING_FACTOR = 0.01
+
 
 def convert(fig_node: dict) -> Style:
     sketch_style = Style(
@@ -405,6 +409,29 @@ def convert_effects(fig_node: dict) -> _Effects:
                 Blur(
                     radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
                     type=BlurType.BACKGROUND,
+                )
+            )
+
+        elif e["type"] == "GLASS":
+            if (
+                len(sketch["blurs"])
+                and hasattr(sketch["blurs"][0], "isEnabled")
+                and sketch["blurs"][0].isEnabled
+            ):
+                utils.log_conversion_warning("STY001", fig_node)
+                continue
+
+            radius = e.get("radius", 4.0)
+            refractionRadius = e.get("refractionRadius", 20.0)
+
+            sketch["blurs"].append(
+                Blur(
+                    type=BlurType.GLASS,
+                    isCustomGlass=True,
+                    chromaticAberrationMultiplier=max(0, e["chromaticAberration"] - 1),
+                    radius=radius * GLASS_RADIUS_SCALING_FACTOR,
+                    depth=refractionRadius * GLASS_DEPTH_SCALING_FACTOR,
+                    distortion=refractionRadius * GLASS_DISTORTION_SCALING_FACTOR,
                 )
             )
 
