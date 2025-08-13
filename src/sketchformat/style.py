@@ -78,6 +78,7 @@ class BlurType(IntEnum):
     MOTION = 1
     ZOOM = 2
     BACKGROUND = 3
+    GLASS = 4
 
 
 @dataclass(kw_only=True)
@@ -282,7 +283,13 @@ class Blur:
     motionAngle: float = 0
     radius: float = 10
     saturation: float = 1
+    brightness: float = 1
     type: BlurType = BlurType.GAUSSIAN
+    # Glass effect support
+    isCustomGlass: bool = False
+    distortion: float = 0
+    depth: float = 0
+    chromaticAberrationMultiplier: float = 0
 
 
 @dataclass(kw_only=True)
