@@ -82,7 +82,7 @@ class TestConvertFill:
         assert fill.isEnabled
         assert fill.gradient.gradientType == GradientType.LINEAR
         assert fill.gradient.to == Point(0.7071135624381276, 0.1414227124876255)
-        assert getattr(fill.gradient, "from") == Point(0, 0.8485362749257531)
+        assert fill.gradient.from_ == Point(0, 0.8485362749257531)
 
         assert fill.gradient.stops == [
             GradientStop(color=SKETCH_COLOR[0], position=0),
@@ -108,7 +108,7 @@ class TestConvertFill:
         assert fill.isEnabled
         assert fill.gradient.gradientType == GradientType.RADIAL
         assert fill.gradient.to == Point(0.7071135624381276, 0.1414227124876255)
-        assert getattr(fill.gradient, "from") == Point(0.3535567812190638, 0.4949794937066893)
+        assert fill.gradient.from_ == Point(0.3535567812190638, 0.4949794937066893)
         assert fill.gradient.elipseLength == 1
         assert fill.gradient.stops == [
             GradientStop(color=SKETCH_COLOR[0], position=0),
@@ -225,7 +225,7 @@ class TestConvertBorder:
         assert border.isEnabled
         assert border.gradient.gradientType == GradientType.RADIAL
         assert border.gradient.to == Point(0.5, -1.5)
-        assert getattr(border.gradient, "from") == Point(0, -1.5)
+        assert border.gradient.from_ == Point(0, -1.5)
 
         # (width+2*stroke) / (height+2*stroke)
         assert border.gradient.elipseLength == 2 / 52
