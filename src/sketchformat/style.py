@@ -127,7 +127,7 @@ class Gradient:
     _class: str = field(default="gradient")
     gradientType: GradientType = GradientType.LINEAR
     elipseLength: float = 0
-    from_: Point = field(default_factory=lambda: Point(0.5, 1))
+    from_: InitVar[Point] = Point(0.5, 0)
     to: Point = field(default_factory=lambda: Point(0.5, 1))
     stops: List[GradientStop] = field(
         default_factory=lambda: [
@@ -135,6 +135,9 @@ class Gradient:
             GradientStop(color=Color.Black(), position=1),
         ]
     )
+
+    def __post_init__(self, from_):
+        setattr(self, "from", from_)
 
     @staticmethod
     def Linear(from_: Point, to: Point, stops: List[GradientStop]) -> "Gradient":
