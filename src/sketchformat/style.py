@@ -285,6 +285,9 @@ class Blur:
     saturation: float = 1
     brightness: float = 1
     type: BlurType = BlurType.GAUSSIAN
+    # Progressive blur support
+    isProgressive: bool = False
+    gradient: Optional[Gradient] = None
     # Glass effect support
     isCustomGlass: bool = False
     distortion: float = 0

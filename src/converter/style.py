@@ -380,7 +380,7 @@ def convert_effects(fig_node: dict) -> _Effects:
                 )
             )
 
-        elif e["type"] == "FOREGROUND_BLUR":
+        elif e["type"] == "FOREGROUND_BLUR" or e["type"] == "BACKGROUND_BLUR":
             if (
                 len(sketch["blurs"])
                 and hasattr(sketch["blurs"][0], "isEnabled")
@@ -389,26 +389,39 @@ def convert_effects(fig_node: dict) -> _Effects:
                 utils.log_conversion_warning("STY001", fig_node)
                 continue
 
-            sketch["blurs"].append(
-                Blur(
-                    radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
-                    type=BlurType.GAUSSIAN,
-                )
+            blur_type = (
+                BlurType.GAUSSIAN if e["type"] == "FOREGROUND_BLUR" else BlurType.BACKGROUND
             )
-
-        elif e["type"] == "BACKGROUND_BLUR":
-            if (
-                len(sketch["blurs"])
-                and hasattr(sketch["blurs"][0], "isEnabled")
-                and sketch["blurs"][0].isEnabled
-            ):
-                utils.log_conversion_warning("STY001", fig_node)
-                continue
+            blur_radius = e["radius"] / 2  # Looks best dividing by 2
+            is_progressive = "blurOpType" in e.keys() and e["blurOpType"] == "PROGRESSIVE"
+            progressive_blur_start = e.get("startOffset", {"x": 0, "y": 0})
+            progressive_blur_end = e.get("endOffset", {"x": 0, "y": 0})
+            progressive_start_radius = (e.get("startRadius", 0) / 2) / blur_radius
 
             sketch["blurs"].append(
                 Blur(
-                    radius=e["radius"] / 2,  # Looks best dividing by 2, no idea why,
-                    type=BlurType.BACKGROUND,
+                    radius=blur_radius,
+                    type=blur_type,
+                    isProgressive=is_progressive,
+                    gradient=(
+                        Gradient(
+                            from_=Point(progressive_blur_start["x"], progressive_blur_start["y"]),
+                            to=Point(progressive_blur_end["x"], progressive_blur_end["y"]),
+                            stops=[
+                                GradientStop(
+                                    color=Color(
+                                        red=0, green=0, blue=0, alpha=progressive_start_radius
+                                    ),
+                                    position=0,
+                                ),
+                                GradientStop(
+                                    color=Color(red=0, green=0, blue=0, alpha=1), position=1
+                                ),
+                            ],
+                        )
+                        if is_progressive
+                        else None
+                    ),
                 )
             )
 
