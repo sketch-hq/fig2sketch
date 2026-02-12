@@ -2,7 +2,6 @@ from sketchformat.layer_group import Page, Point
 from typing import List
 from . import positioning
 
-
 # Default area in pixels of the canvas. This is taken from a macbook 16" as a mid-sized device
 CANVAS_RESOLUTION = (1200, 900)
 

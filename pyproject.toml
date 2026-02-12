@@ -4,7 +4,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dynamic = ["version"]
 dependencies = [
-    "Pillow==11.1.0",
+    "Pillow==12.1.1",
     "fonttools==4.61.0",
     "appdirs==1.4.4",
     "zstd==1.5.5.1",
@@ -22,7 +22,7 @@ enabled = true
 
 [project.optional-dependencies]
 fast = ["fig-kiwi==0.1.2"]
-dev = ["black==24.2.0", "mypy==0.991", "pytest==8.2.0", "fig-kiwi==0.1.2"]
+dev = ["black==26.1.0", "mypy==0.991", "pytest==8.2.0", "fig-kiwi==0.1.2"]
 
 [tool.black]
 line-length = 99
