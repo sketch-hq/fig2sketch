@@ -20,7 +20,7 @@ jobs:
             ext: ".exe"
           - os: macos
             arch: x86_64
-            runs: macos-13
+            runs: macos-14-large
             ext: ""
           - os: macos
             arch: arm64
