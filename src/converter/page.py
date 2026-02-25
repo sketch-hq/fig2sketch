@@ -1,9 +1,10 @@
-from . import style, positioning
+from typing import Sequence
+
 from converter import utils
 from sketchformat.layer_group import *
-from sketchformat.layer_shape import Rectangle
 from sketchformat.style import Fill
-from typing import Sequence
+
+from . import style
 
 
 def convert(fig_canvas: dict) -> Page:
@@ -33,28 +34,14 @@ DEFAULT_CANVAS_BACKGROUND = Color(
 
 
 def add_page_background(fig_canvas, sketch_page):
+    if "backgroundColor" not in fig_canvas or fig_canvas["backgroundColor"] is None:
+        return sketch_page
+
     background_color = style.convert_color(
-        fig_canvas["backgroundColor"], fig_canvas["backgroundOpacity"]
+        fig_canvas["backgroundColor"],
+        fig_canvas.get("backgroundOpacity"),
     )
     if background_color != DEFAULT_CANVAS_BACKGROUND:
-        page_bbox = positioning.group_bbox(sketch_page.layers)
-        sketch_page.layers.insert(
-            0,
-            Rectangle(
-                do_objectID=utils.gen_object_id(fig_canvas["guid"], b"background"),
-                name="Page background",
-                style=Style(
-                    do_objectID=utils.gen_object_id(fig_canvas["guid"], b"background_style"),
-                    fills=[Fill.Color(background_color)],
-                ),
-                rotation=0,
-                frame=Rect(
-                    x=page_bbox[0] - 1000,
-                    y=page_bbox[2] - 1000,
-                    width=(page_bbox[1] - page_bbox[0]) + 2000,
-                    height=(page_bbox[3] - page_bbox[2]) + 2000,
-                ),
-            ),
-        )
+        sketch_page.style.fills = [Fill.Color(background_color)]
 
     return sketch_page
