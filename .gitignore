@@ -9,3 +9,6 @@ output/
 *.egg-info
 dist
 build
+swift/.build
+swift/.swiftpm
+swift/.vscode
