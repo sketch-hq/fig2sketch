@@ -44,6 +44,20 @@ class TestCorners:
 
         assert rect.pointRadiusBehaviour == PointRadiusBehaviour.V1_SMOOTH
 
+    def test_float_noise_smoothing_does_not_mark_shape_as_smooth(self):
+        rect = convert(
+            {
+                **FIG_BASE,
+                "cornerRadius": 25,
+                "cornerSmoothing": 0.0000001,
+                "rectangleCornerRadiiIndependent": False,
+            }
+        )
+
+        assert rect.style.corners.style == CornerStyle.ROUNDED
+        assert rect.style.corners.smoothing is None
+        assert rect.pointRadiusBehaviour == PointRadiusBehaviour.V1
+
 
 class TestSyntheticRectangles:
     def test_clipping_rect_preserves_smoothing(self):

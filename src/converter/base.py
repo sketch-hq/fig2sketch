@@ -113,7 +113,7 @@ def point_radius_behaviour(fig_node: dict) -> PointRadiusBehaviour:
     # Sketch still uses the smooth-corner behaviour flag alongside the exact smoothing amount.
     return (
         PointRadiusBehaviour.V1_SMOOTH
-        if fig_node.get("cornerSmoothing", 0) > 0
+        if style.normalized_corner_smoothing(fig_node) > 0
         else PointRadiusBehaviour.V1
     )
 

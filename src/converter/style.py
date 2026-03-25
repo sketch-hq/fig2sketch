@@ -118,6 +118,10 @@ def convert_corners(fig_node: dict) -> Optional[StyleCorners]:
     return make_style_corners(fig_node, [top_left, top_right, bottom_right, bottom_left])
 
 
+def normalized_corner_smoothing(fig_node: dict) -> float:
+    return round(fig_node.get("cornerSmoothing", 0), 6)
+
+
 def make_style_corners(fig_node: dict, radii: List[float]) -> Optional[StyleCorners]:
     """Normalize Sketch corner serialization for the supplied radii.
 
@@ -125,7 +129,7 @@ def make_style_corners(fig_node: dict, radii: List[float]) -> Optional[StyleCorn
     uniform radii, while vectors keep all four entries. Corner smoothing is
     rounded to avoid float32 noise from the source `.fig`.
     """
-    corner_smoothing = round(fig_node.get("cornerSmoothing", 0), 6)
+    corner_smoothing = normalized_corner_smoothing(fig_node)
     if not any(radii) and not corner_smoothing:
         return None
 
