@@ -134,9 +134,10 @@ def make_style_corners(fig_node: dict, radii: List[float]) -> Optional[StyleCorn
         return None
 
     # Sketch stores uniform corners on rectangle-like layers in a compact `[radius]` form.
-    if fig_node.get("type") in {"RECTANGLE", "ROUNDED_RECTANGLE", "FRAME", "SECTION", "SYMBOL"} and len(
-        set(radii)
-    ) == 1:
+    if (
+        fig_node.get("type") in {"RECTANGLE", "ROUNDED_RECTANGLE", "FRAME", "SECTION", "SYMBOL"}
+        and len(set(radii)) == 1
+    ):
         radii = [float(radii[0])]
 
     corner_style = CornerStyle.SMOOTH if corner_smoothing else CornerStyle.ROUNDED
