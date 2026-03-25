@@ -1,6 +1,7 @@
 from .base import *
 from converter import group, tree
 from sketchformat.layer_common import ClippingMaskMode
+from sketchformat.layer_shape import PointRadiusBehaviour
 from sketchformat.style import *
 import copy
 from unittest.mock import ANY
@@ -49,6 +50,34 @@ class TestFrameStyles:
         assert bg.style.fills[0].color == SKETCH_COLOR[0]
 
         assert bg.style.blurs == []
+
+    def test_background_rect_preserves_smoothing(self):
+        g = tree.convert_node(
+            {
+                **FIG_GROUP,
+                "cornerRadius": 25,
+                "cornerSmoothing": 0.6,
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[0],
+                        "opacity": 0.9,
+                        "visible": True,
+                    }
+                ],
+            },
+            "",
+        )
+
+        bg = g.layers[0]
+
+        assert bg.style.corners == StyleCorners(
+            radii=[25],
+            style=CornerStyle.SMOOTH,
+            prefersConcentric=False,
+            smoothing=0.6,
+        )
+        assert bg.pointRadiusBehaviour == PointRadiusBehaviour.V1_SMOOTH
 
     def test_fg_blur(self):
         g = tree.convert_node(

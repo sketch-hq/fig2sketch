@@ -80,7 +80,38 @@ class TestFrameBackgroud:
             "CANVAS",
         )
 
-        assert ab.style.corners.radii == [5, 5, 5, 5]
+        assert ab.style.corners.radii == [5]
+        assert ab.style.corners.style == CornerStyle.ROUNDED
+        assert ab.style.corners.smoothing is None
+
+    def test_smooth_corners_preserve_smoothing_amount(self):
+        ab = tree.convert_node(
+            {**FIG_ARTBOARD, "cornerRadius": 5, "cornerSmoothing": 0.2},
+            "CANVAS",
+        )
+
+        assert ab.style.corners.style == CornerStyle.SMOOTH
+        assert not ab.style.corners.prefersConcentric
+        assert ab.style.corners.smoothing == 0.2
+
+    def test_mixed_corners_with_zero_smoothing_stay_rounded(self):
+        ab = tree.convert_node(
+            {
+                **FIG_ARTBOARD,
+                "cornerRadius": 12,
+                "rectangleCornerRadiiIndependent": True,
+                "rectangleTopLeftCornerRadius": 4,
+                "rectangleTopRightCornerRadius": 8,
+                "rectangleBottomRightCornerRadius": 16,
+                "rectangleBottomLeftCornerRadius": 12,
+                "cornerSmoothing": 0,
+            },
+            "CANVAS",
+        )
+
+        assert ab.style.corners.radii == [4, 8, 16, 12]
+        assert ab.style.corners.style == CornerStyle.ROUNDED
+        assert ab.style.corners.smoothing is None
 
     def test_section_as_frame(self):
         fig_section = {

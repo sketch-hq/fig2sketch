@@ -4,6 +4,7 @@ import dataclasses
 from .base import *
 from sketchformat.layer_group import Group
 from sketchformat.layer_shape import Oval, Rectangle
+from sketchformat.serialize.json import convert_object
 
 
 class TestConvertColor:
@@ -229,6 +230,70 @@ class TestConvertBorder:
 
         # (width+2*stroke) / (height+2*stroke)
         assert border.gradient.elipseLength == 2 / 52
+
+
+class TestConvertCorners:
+    def test_non_top_left_independent_corner_is_not_dropped(self):
+        style = convert(
+            {
+                **FIG_BASE,
+                "type": "ROUNDED_RECTANGLE",
+                "rectangleTopRightCornerRadius": 8,
+            }
+        )
+
+        assert style.corners.radii == [0, 8, 0, 0]
+
+    def test_uniform_independent_rectangle_corners_do_not_collapse_to_zero(self):
+        style = convert(
+            {
+                **FIG_BASE,
+                "type": "ROUNDED_RECTANGLE",
+                "rectangleTopLeftCornerRadius": 8,
+                "rectangleTopRightCornerRadius": 8,
+                "rectangleBottomRightCornerRadius": 8,
+                "rectangleBottomLeftCornerRadius": 8,
+            }
+        )
+
+        assert style.corners.radii == [8]
+
+    def test_preserves_smoothing_amount(self):
+        style = convert(
+            {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "cornerRadius": 25, "cornerSmoothing": 0.6}
+        )
+
+        assert style.corners == StyleCorners(
+            radii=[25],
+            style=CornerStyle.SMOOTH,
+            prefersConcentric=False,
+            smoothing=0.6,
+        )
+
+        assert convert_object(style)["corners"] == {
+            "_class": "MSImmutableStyleCorners",
+            "radii": [25],
+            "style": CornerStyle.SMOOTH.value,
+            "prefersConcentric": False,
+            "smoothing": 0.6,
+        }
+
+    def test_vectors_keep_per_corner_radii(self):
+        style = convert({**FIG_BASE, "type": "VECTOR", "cornerRadius": 25, "cornerSmoothing": 1})
+
+        assert style.corners.radii == [25, 25, 25, 25]
+
+    def test_normalizes_float32_smoothing_noise(self):
+        style = convert(
+            {
+                **FIG_BASE,
+                "type": "ROUNDED_RECTANGLE",
+                "cornerRadius": 25,
+                "cornerSmoothing": 0.6000000238418579,
+            }
+        )
+
+        assert style.corners.smoothing == 0.6
 
 
 class TestConvertContextSettings:
