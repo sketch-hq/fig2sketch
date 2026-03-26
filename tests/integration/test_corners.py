@@ -66,7 +66,7 @@ def test_shape_uniform_smoothing(corners_page):
     assert layer["_class"] == "shapePath"
     assert layer["pointRadiusBehaviour"] == PointRadiusBehaviour.V1_SMOOTH.value
     assert [point["cornerRadius"] for point in layer["points"]] == [12.0, 12.0, 12.0, 12.0]
-    assert_corners(layer, radii=[12.0, 12.0, 12.0, 12.0], style=CornerStyle.SMOOTH, smoothing=1.0)
+    assert_corners(layer, radii=[12.0], style=CornerStyle.SMOOTH, smoothing=1.0)
 
 
 def test_rect_mixed_corner_radii(corners_page):

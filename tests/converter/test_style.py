@@ -278,10 +278,10 @@ class TestConvertCorners:
             "smoothing": 0.6,
         }
 
-    def test_vectors_keep_per_corner_radii(self):
+    def test_uniform_vectors_use_compact_radii(self):
         style = convert({**FIG_BASE, "type": "VECTOR", "cornerRadius": 25, "cornerSmoothing": 1})
 
-        assert style.corners.radii == [25, 25, 25, 25]
+        assert style.corners.radii == [25]
 
     def test_normalizes_float32_smoothing_noise(self):
         style = convert(

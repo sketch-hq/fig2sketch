@@ -125,19 +125,15 @@ def normalized_corner_smoothing(fig_node: dict) -> float:
 def make_style_corners(fig_node: dict, radii: List[float]) -> Optional[StyleCorners]:
     """Normalize Sketch corner serialization for the supplied radii.
 
-    Rectangle-like layers use Sketch's compact single-value representation for
-    uniform radii, while vectors keep all four entries. Corner smoothing is
-    rounded to avoid float32 noise from the source `.fig`.
+    Sketch serializes uniform corners in a compact single-value representation.
+    Corner smoothing is rounded to avoid float32 noise from the source `.fig`.
     """
     corner_smoothing = normalized_corner_smoothing(fig_node)
     if not any(radii) and not corner_smoothing:
         return None
 
-    # Sketch stores uniform corners on rectangle-like layers in a compact `[radius]` form.
-    if (
-        fig_node.get("type") in {"RECTANGLE", "ROUNDED_RECTANGLE", "FRAME", "SECTION", "SYMBOL"}
-        and len(set(radii)) == 1
-    ):
+    # Sketch stores uniform corners in a compact `[radius]` form.
+    if len(set(radii)) == 1:
         radii = [float(radii[0])]
 
     corner_style = CornerStyle.SMOOTH if corner_smoothing else CornerStyle.ROUNDED
