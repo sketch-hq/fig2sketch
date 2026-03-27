@@ -1,10 +1,28 @@
-from converter.style import *
-from converter import tree
 import dataclasses
-from .base import *
-from sketchformat.layer_group import Group
+from unittest.mock import ANY
+
+from converter import tree
+from converter.context import context
+from converter.style import *
+from figformat import fig2tree
+from sketchformat.layer_group import AbstractLayerGroup, Group
 from sketchformat.layer_shape import Oval, Rectangle
 from sketchformat.serialize.json import convert_object
+
+from .base import *
+
+
+def walk_layers(layer):
+    yield layer
+    if isinstance(layer, AbstractLayerGroup):
+        for child in layer.layers:
+            yield from walk_layers(child)
+
+
+def walk_json_layers(layer):
+    yield layer
+    for child in layer.get("layers", []):
+        yield from walk_json_layers(child)
 
 
 class TestConvertColor:
@@ -460,6 +478,21 @@ class TestConvertEffects:
         assert blur.type == BlurType.BACKGROUND
         assert blur.radius == 2.5
 
+    def test_unsupported_effect_is_ignored(self, warnings):
+        effects = convert_effects(
+            {
+                **FIG_BASE,
+                "effects": [
+                    {
+                        "type": "NOISE",
+                    }
+                ],
+            }
+        )
+
+        assert effects == {"blurs": [], "shadows": []}
+        warnings.assert_called_once_with("STY006", ANY, props=["NOISE"])
+
 
 class TestConvertImageFill:
     def test_cropped_image(self):
@@ -500,3 +533,38 @@ class TestConvertImageFill:
         assert image.frame.height == 200
         assert image.frame.x == -50
         assert image.frame.y == 400
+
+
+class TestUnsupportedEffectsInTree:
+    def test_layer_is_not_skipped_when_effect_is_unsupported(self, warnings):
+        layer = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "RECTANGLE",
+                "effects": [
+                    {
+                        "type": "GRAIN",
+                    }
+                ],
+            },
+            "CANVAS",
+        )
+
+        assert isinstance(layer, Rectangle)
+        assert layer.style.blurs == []
+        assert layer.style.shadows == []
+        warnings.assert_called_once_with("STY006", ANY, props=["GRAIN"])
+
+    def test_noise_and_grain_doc_keeps_text_layers(self, warnings):
+        figtree, id_map = fig2tree.convert_fig("tests/data/noise_and_grain.fig", None)
+        context.init(None, id_map, "DISPLAY_P3")
+        figpage = figtree["document"]["children"][0]
+        page = tree.convert_node(figpage, "DOCUMENT")
+        serialized_page = convert_object(page)
+        text_layers = [
+            layer for layer in walk_json_layers(serialized_page) if layer["_class"] == "text"
+        ]
+
+        assert len(text_layers) == 2
+        warnings.assert_any_call("STY006", ANY, props=["NOISE"])
+        warnings.assert_any_call("STY006", ANY, props=["GRAIN"])

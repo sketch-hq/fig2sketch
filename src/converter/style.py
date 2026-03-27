@@ -507,7 +507,8 @@ def convert_effects(fig_node: dict) -> _Effects:
             )
 
         else:
-            raise Exception(f'Unsupported effect: {e["type"]}')
+            utils.log_conversion_warning("STY006", fig_node, props=[e["type"]])
+            continue
 
     return sketch
 
