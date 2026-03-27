@@ -19,7 +19,6 @@ class TestCorners:
                 **FIG_BASE,
                 "rectangleTopLeftCornerRadius": 5,
                 "rectangleBottomRightCornerRadius": 7,
-                "fixedRadius": 10,
                 "rectangleCornerRadiiIndependent": True,
             }
         )
