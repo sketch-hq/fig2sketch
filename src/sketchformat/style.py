@@ -233,6 +233,15 @@ class Fill:
 
 
 @dataclass(kw_only=True)
+class BorderSides:
+    _class: str = field(default="MSImmutableStyleBorderSides")
+    leftInset: float = 0
+    rightInset: float = 0
+    topInset: float = 0
+    bottomInset: float = 0
+
+
+@dataclass(kw_only=True)
 class Border:
     _class: str = field(default="border")
     fillType: FillType
@@ -242,9 +251,15 @@ class Border:
     color: Color = field(default_factory=Color.DefaultBorder)
     contextSettings: ContextSettings = field(default_factory=ContextSettings)
     gradient: Gradient = field(default_factory=Gradient)
+    sides: Optional[BorderSides] = None
 
     @staticmethod
-    def from_fill(fill: Fill, position: BorderPosition, thickness: int) -> "Border":
+    def from_fill(
+        fill: Fill,
+        position: BorderPosition,
+        thickness: int,
+        sides: Optional[BorderSides] = None,
+    ) -> "Border":
         return Border(
             fillType=fill.fillType,
             color=fill.color,
@@ -253,6 +268,7 @@ class Border:
             position=position,
             thickness=thickness,
             isEnabled=fill.isEnabled,
+            sides=sides,
         )
 
 
