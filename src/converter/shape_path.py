@@ -1,4 +1,4 @@
-from . import base, positioning, style as converter_style
+from . import base, positioning, style as style_converter
 import copy
 import itertools
 from collections import defaultdict
@@ -62,6 +62,8 @@ def convert(fig_vector: dict) -> Union[Group, ShapeGroup, ShapePath]:
 def convert_region(
     fig_vector: dict, region: dict, region_index: int = 0
 ) -> Union[ShapeGroup, ShapePath]:
+    maybe_convert_cropped_image_fill(fig_vector, region["style"])
+
     loops = [
         convert_shape_path(fig_vector, region["style"], loop, region_index, i)
         for i, loop in enumerate(region["loops"])
@@ -89,6 +91,16 @@ def convert_region(
         return loops[0]
 
 
+def maybe_convert_cropped_image_fill(fig_vector: dict, style: dict) -> None:
+    if fig_vector.get("f2s_cropped_image"):
+        return
+
+    merged_node = {**fig_vector, **style}
+    if any(style_converter.is_cropped_image(fill) for fill in merged_node.get("fillPaints", [])):
+        fig_vector.update(style)
+        style_converter.convert_crop_image_to_mask(fig_vector)
+
+
 def convert_shape_path(
     fig_vector: dict, style: dict, segments: List[dict], region: int = 0, loop: int = 0
 ) -> ShapePath:
@@ -105,7 +117,7 @@ def convert_shape_path(
     )
     # Vector points can override the shared `cornerRadius`, so rebuild the serialized style from
     # the converted point radii instead of the top-level node value.
-    obj.style.corners = converter_style.make_style_corners(
+    obj.style.corners = style_converter.make_style_corners(
         shape_style, [point.cornerRadius for point in obj.points]
     )
 
