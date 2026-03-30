@@ -183,23 +183,23 @@ def get_all_segments(vector_network: dict) -> List[dict]:
         )
 
     if unused_segments:
-        loops: List[List[dict]] = reorder_segments(
+        remaining_loops: List[List[dict]] = reorder_segments(
             [vector_network["segments"][i] for i in unused_segments]
         )
 
         closed = False
-        if len(loops) == 1:
-            loop = loops[0]
+        if len(remaining_loops) == 1:
+            loop = remaining_loops[0]
             if loop[0]["start"] == loop[-1]["end"]:
                 closed = True
 
         rest = {
             "style": {} if closed else {"fillPaints": []},
             "windingRule": "NONZERO",
-            "loops": loops,
+            "loops": remaining_loops,
         }
 
-        if loops:
+        if remaining_loops:
             regions.append(rest)
 
     return regions
