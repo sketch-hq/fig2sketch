@@ -123,7 +123,6 @@ class Frame(AbstractLayerGroup):
     hasBackgroundColor: bool = False
     backgroundColor: Color = field(default_factory=Color.White)
     includeBackgroundColorInExport: bool = True
-    resizesContent: bool = True
     isFlowHome: bool = False
     overlayBackgroundInteraction: OverlayBackgroundInteraction = OverlayBackgroundInteraction.NONE
     presentationStyle: PresentationStyle = PresentationStyle.SCREEN

@@ -7,10 +7,9 @@ from typing import Tuple
 
 
 def convert(fig_rect: dict) -> Rectangle:
-    radius, corners = convert_corners(fig_rect)
+    _, corners = convert_corners(fig_rect)
     return Rectangle(
         **base.base_shape(fig_rect),
-        fixedRadius=radius,
         corners=corners,
     )
 
@@ -37,7 +36,7 @@ def make_clipping_rect(fig: dict, frame: Rect) -> Rectangle:
 
 
 def make_background_rect(fig: dict, frame: Rect, name: str) -> Rectangle:
-    radius, corners = convert_corners(fig)
+    _, corners = convert_corners(fig)
     return Rectangle(
         do_objectID=utils.gen_object_id(fig["guid"], name.encode()),
         name=name,
@@ -49,7 +48,6 @@ def make_background_rect(fig: dict, frame: Rect, name: str) -> Rectangle:
         horizontalPins=2,
         verticalPins=2,
         rotation=0,
-        fixedRadius=radius,
         corners=corners,
         pointRadiusBehaviour=base.point_radius_behaviour(fig),
     )
