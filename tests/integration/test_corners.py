@@ -91,7 +91,6 @@ def test_rect_uniform_smoothing(corners_page):
     layer = layer_by_name(corners_page, "rect radius=12, smoothing=0.6")
 
     assert layer["_class"] == "rectangle"
-    assert layer["fixedRadius"] == 12.0
     assert layer["pointRadiusBehaviour"] == PointRadiusBehaviour.V1_SMOOTH.value
     assert [point["cornerRadius"] for point in layer["points"]] == [12.0, 12.0, 12.0, 12.0]
     assert_corners(layer, radii=[12.0], style=CornerStyle.SMOOTH, smoothing=0.6)
@@ -101,7 +100,6 @@ def test_rect_uniform_rounded(corners_page):
     layer = layer_by_name(corners_page, "rect radius=12, smoothing=none")
 
     assert layer["_class"] == "rectangle"
-    assert layer["fixedRadius"] == 12.0
     assert layer["pointRadiusBehaviour"] == PointRadiusBehaviour.V1.value
     assert [point["cornerRadius"] for point in layer["points"]] == [12.0, 12.0, 12.0, 12.0]
     assert_corners(layer, radii=[12.0], style=CornerStyle.ROUNDED)

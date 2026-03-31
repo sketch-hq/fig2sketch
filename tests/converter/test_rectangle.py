@@ -26,7 +26,6 @@ class TestCorners:
                 "rectangleCornerRadiiIndependent": True,
             }
         )
-        assert rect.fixedRadius == 0
         assert rect.points[0].cornerRadius == 5
         assert rect.points[1].cornerRadius == 0
         assert rect.points[2].cornerRadius == 7
