@@ -108,15 +108,20 @@ class _BaseShape(_BaseStyled):
     pointRadiusBehaviour: PointRadiusBehaviour
 
 
+def point_radius_behaviour(fig_node: dict) -> PointRadiusBehaviour:
+    """Map Figma corner smoothing onto Sketch's smooth-corner behavior flag."""
+    # Sketch still uses the smooth-corner behaviour flag alongside the exact smoothing amount.
+    return (
+        PointRadiusBehaviour.V1_SMOOTH
+        if style.normalized_corner_smoothing(fig_node) > 0
+        else PointRadiusBehaviour.V1
+    )
+
+
 def base_shape(fig_node: dict) -> _BaseShape:
     return {
         **base_styled(fig_node),  # type: ignore
-        # Sketch smooth corners are a boolean, but here it's a percent. Use an arbitrary threshold
-        "pointRadiusBehaviour": (
-            PointRadiusBehaviour.V1_SMOOTH
-            if fig_node.get("cornerSmoothing", 0) > 0.4
-            else PointRadiusBehaviour.V1
-        ),
+        "pointRadiusBehaviour": point_radius_behaviour(fig_node),
     }
 
 

@@ -1,10 +1,10 @@
 from figformat import fig2tree
 from converter import tree, shape_path
 from converter.context import context
-from sketchformat.layer_shape import ShapePath
+from sketchformat.layer_shape import ShapePath, PointRadiusBehaviour
 from sketchformat.layer_group import ShapeGroup
 from sketchformat.layer_common import BooleanOperation
-from sketchformat.style import FillType, MarkerType, WindingRule
+from sketchformat.style import FillType, MarkerType, WindingRule, CornerStyle
 from .base import FIG_BASE
 from converter.errors import Fig2SketchWarning
 import pytest
@@ -135,6 +135,62 @@ class TestArrows:
 
         assert sp.style.startMarkerType == MarkerType.NONE
         assert sp.style.endMarkerType == MarkerType.OPEN_ARROW
+
+
+def test_mixed_corner_radii_are_reflected_in_style_corners():
+    fig = {
+        **FIG_VECTOR,
+        "cornerRadius": 12,
+        "vectorNetwork": {
+            "regions": [
+                {
+                    "windingRule": "NONZERO",
+                    "loops": [[0, 1, 2, 3]],
+                    "style": {},
+                }
+            ],
+            "segments": [
+                {
+                    "start": 0,
+                    "end": 1,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 1,
+                    "end": 2,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 2,
+                    "end": 3,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 3,
+                    "end": 0,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+            ],
+            "vertices": [
+                {"x": 0, "y": 0, "style": {"cornerRadius": 4}},
+                {"x": 1, "y": 0, "style": {"cornerRadius": 8}},
+                {"x": 1, "y": 1, "style": {"cornerRadius": 12}},
+                {"x": 0, "y": 1, "style": {"cornerRadius": 16}},
+            ],
+        },
+    }
+
+    sp = shape_path.convert(fig)
+
+    assert sp.style.corners.radii == [4, 8, 12, 16]
+    assert [point.cornerRadius for point in sp.points] == [4, 8, 12, 16]
+    assert sp.style.corners.style == CornerStyle.ROUNDED
+    assert sp.style.corners.smoothing is None
+    assert sp.pointRadiusBehaviour == PointRadiusBehaviour.V1
 
 
 def test_complex_vector():

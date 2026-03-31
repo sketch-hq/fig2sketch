@@ -1,4 +1,4 @@
-from . import base, positioning
+from . import base, positioning, style as converter_style
 import copy
 import itertools
 from collections import defaultdict
@@ -93,14 +93,20 @@ def convert_shape_path(
     fig_vector: dict, style: dict, segments: List[dict], region: int = 0, loop: int = 0
 ) -> ShapePath:
     points, styles = convert_points(fig_vector, segments)
+    shape_style = {**fig_vector, **style}
 
     obj = ShapePath(
-        **base.base_shape({**fig_vector, **style}),
+        **base.base_shape(shape_style),
         **points,
     )
     obj.do_objectID = utils.gen_object_id(fig_vector["guid"], f"region{region}loop{loop}".encode())
     obj.style.do_objectID = utils.gen_object_id(
         fig_vector["guid"], f"style_region{region}loop{loop}".encode()
+    )
+    # Vector points can override the shared `cornerRadius`, so rebuild the serialized style from
+    # the converted point radii instead of the top-level node value.
+    obj.style.corners = converter_style.make_style_corners(
+        shape_style, [point.cornerRadius for point in obj.points]
     )
 
     if styles:

@@ -326,6 +326,8 @@ class StyleCorners:
     _class: str = field(default="MSImmutableStyleCorners")
     radii: List[float] = field(default_factory=List)
     style: CornerStyle = CornerStyle.ROUNDED
+    prefersConcentric: bool = False
+    smoothing: Optional[float] = None
 
 
 @dataclass(kw_only=True)

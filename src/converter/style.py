@@ -90,25 +90,60 @@ def convert(fig_node: dict) -> Style:
 
 
 def convert_corners(fig_node: dict) -> Optional[StyleCorners]:
+    """Build Sketch corner style data from the node-level corner fields.
+
+    Figma can encode corners either as a shared `cornerRadius` or as four
+    independent per-corner values, so we need to check all four fields before
+    deciding that the node has no corner metadata.
+    """
     # Return None if no corner radius is specified
-    if not fig_node.get("cornerRadius", False) and not fig_node.get(
-        "rectangleTopLeftCornerRadius", False
+    if not fig_node.get("cornerRadius", False) and not any(
+        fig_node.get(corner, False)
+        for corner in (
+            "rectangleTopLeftCornerRadius",
+            "rectangleTopRightCornerRadius",
+            "rectangleBottomRightCornerRadius",
+            "rectangleBottomLeftCornerRadius",
+        )
     ):
         return None
 
     base_radius = float(fig_node.get("cornerRadius", 0))
+    independent = fig_node.get("rectangleCornerRadiiIndependent", False)
+    default_radius = 0 if independent else base_radius
 
     # Get individual corner radii, defaulting to base radius if not specified
-    top_left = fig_node.get("rectangleTopLeftCornerRadius", base_radius)
-    top_right = fig_node.get("rectangleTopRightCornerRadius", base_radius)
-    bottom_left = fig_node.get("rectangleBottomLeftCornerRadius", base_radius)
-    bottom_right = fig_node.get("rectangleBottomRightCornerRadius", base_radius)
+    top_left = fig_node.get("rectangleTopLeftCornerRadius", default_radius)
+    top_right = fig_node.get("rectangleTopRightCornerRadius", default_radius)
+    bottom_left = fig_node.get("rectangleBottomLeftCornerRadius", default_radius)
+    bottom_right = fig_node.get("rectangleBottomRightCornerRadius", default_radius)
+    return make_style_corners(fig_node, [top_left, top_right, bottom_right, bottom_left])
 
-    corner_style = CornerStyle.SMOOTH if fig_node.get("cornerSmoothing") else CornerStyle.ROUNDED
+
+def normalized_corner_smoothing(fig_node: dict) -> float:
+    return round(fig_node.get("cornerSmoothing", 0), 6)
+
+
+def make_style_corners(fig_node: dict, radii: List[float]) -> Optional[StyleCorners]:
+    """Normalize Sketch corner serialization for the supplied radii.
+
+    Sketch serializes uniform corners in a compact single-value representation.
+    Corner smoothing is rounded to avoid float32 noise from the source `.fig`.
+    """
+    corner_smoothing = normalized_corner_smoothing(fig_node)
+    if not any(radii) and not corner_smoothing:
+        return None
+
+    # Sketch stores uniform corners in a compact `[radius]` form.
+    if len(set(radii)) == 1:
+        radii = [float(radii[0])]
+
+    corner_style = CornerStyle.SMOOTH if corner_smoothing else CornerStyle.ROUNDED
 
     return StyleCorners(
-        radii=[top_left, top_right, bottom_right, bottom_left],
+        radii=radii,
         style=corner_style,
+        smoothing=corner_smoothing if corner_smoothing else None,
     )
 
 
