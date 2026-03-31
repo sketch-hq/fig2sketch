@@ -109,12 +109,14 @@ def convert_corners(fig_node: dict) -> Optional[StyleCorners]:
         return None
 
     base_radius = float(fig_node.get("cornerRadius", 0))
+    independent = fig_node.get("rectangleCornerRadiiIndependent", False)
+    default_radius = 0 if independent else base_radius
 
     # Get individual corner radii, defaulting to base radius if not specified
-    top_left = fig_node.get("rectangleTopLeftCornerRadius", base_radius)
-    top_right = fig_node.get("rectangleTopRightCornerRadius", base_radius)
-    bottom_left = fig_node.get("rectangleBottomLeftCornerRadius", base_radius)
-    bottom_right = fig_node.get("rectangleBottomRightCornerRadius", base_radius)
+    top_left = fig_node.get("rectangleTopLeftCornerRadius", default_radius)
+    top_right = fig_node.get("rectangleTopRightCornerRadius", default_radius)
+    bottom_left = fig_node.get("rectangleBottomLeftCornerRadius", default_radius)
+    bottom_right = fig_node.get("rectangleBottomRightCornerRadius", default_radius)
     return make_style_corners(fig_node, [top_left, top_right, bottom_right, bottom_left])
 
 

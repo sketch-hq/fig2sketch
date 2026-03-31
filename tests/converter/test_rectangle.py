@@ -2,17 +2,23 @@ from converter.rectangle import convert, make_clipping_rect
 from .base import FIG_BASE
 from sketchformat.layer_common import ClippingMaskMode, Rect
 from sketchformat.layer_shape import PointRadiusBehaviour
-from sketchformat.style import CornerStyle
+from sketchformat.style import CornerStyle, StyleCorners
 
 
 class TestCorners:
     def test_straight_corners(self):
         rect = convert({**FIG_BASE})
+        assert rect.style.corners is None
         for p in rect.points:
             assert p.cornerRadius == 0
 
     def test_round_corners(self):
         rect = convert({**FIG_BASE, "cornerRadius": 5, "rectangleCornerRadiiIndependent": False})
+        assert rect.style.corners == StyleCorners(
+            radii=[5],
+            style=CornerStyle.ROUNDED,
+            prefersConcentric=False,
+        )
         for p in rect.points:
             assert p.cornerRadius == 5
 
@@ -25,6 +31,11 @@ class TestCorners:
                 "rectangleBottomRightCornerRadius": 7,
                 "rectangleCornerRadiiIndependent": True,
             }
+        )
+        assert rect.style.corners == StyleCorners(
+            radii=[5, 0, 7, 0],
+            style=CornerStyle.ROUNDED,
+            prefersConcentric=False,
         )
         assert rect.points[0].cornerRadius == 5
         assert rect.points[1].cornerRadius == 0
