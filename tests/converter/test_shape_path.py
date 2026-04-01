@@ -2,10 +2,17 @@ from figformat import fig2tree
 from converter import tree, shape_path
 from converter.context import context
 from sketchformat.layer_shape import ShapePath, PointRadiusBehaviour
-from sketchformat.layer_group import ShapeGroup
+from sketchformat.layer_group import Group, ShapeGroup
 from sketchformat.layer_common import BooleanOperation
-from sketchformat.style import FillType, MarkerType, WindingRule, CornerStyle
+from sketchformat.style import (
+    CornerStyle,
+    FillType,
+    MarkerType,
+    PatternFillType,
+    WindingRule,
+)
 from .base import FIG_BASE
+from converter.positioning import Matrix
 from converter.errors import Fig2SketchWarning
 import pytest
 
@@ -296,3 +303,64 @@ def test_empty_region_loop_only_raises_existing_warning():
         shape_path.convert(fig)
 
     assert e.value.code == "SHP003"
+
+
+def test_cropped_image_fill_rewrites_vector_once():
+    fig = {
+        **FIG_VECTOR,
+        "fillPaints": [],
+        "vectorNetwork": {
+            "regions": [
+                {
+                    "windingRule": "NONZERO",
+                    "loops": [[0, 1, 2]],
+                    "style": {
+                        "fillPaints": [
+                            {
+                                "type": "IMAGE",
+                                "image": {"filename": "abcdef"},
+                                "visible": True,
+                                "imageScaleMode": "FIT",
+                                "transform": Matrix([[2, 0, 1], [0, 0.5, -2], [0, 0, 1]]),
+                                "originalImageWidth": 100,
+                                "originalImageHeight": 100,
+                            }
+                        ]
+                    },
+                }
+            ],
+            "segments": [
+                {
+                    "start": 0,
+                    "end": 1,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 1,
+                    "end": 2,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 2,
+                    "end": 0,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+            ],
+            "vertices": [
+                {"x": 0, "y": 0},
+                {"x": 100, "y": 0},
+                {"x": 0, "y": 100},
+            ],
+        },
+    }
+
+    group = tree.convert_node(fig, "CANVAS")
+
+    assert isinstance(group, Group)
+    assert len(group.layers) == 2
+    assert isinstance(group.layers[0], ShapePath)
+    assert group.layers[1].style.fills[0].image._ref == "images/abcdef"
+    assert group.layers[1].style.fills[0].patternFillType == PatternFillType.FIT
