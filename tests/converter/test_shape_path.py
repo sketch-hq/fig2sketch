@@ -234,3 +234,65 @@ def test_empty_path():
         tree.convert_node(fig, "DOCUMENT")
 
     assert e.value.code == "SHP002"
+
+
+def test_empty_region_loop_is_skipped_when_other_loops_are_valid():
+    fig = {
+        **FIG_VECTOR,
+        "vectorNetwork": {
+            "regions": [
+                {
+                    "windingRule": "NONZERO",
+                    "loops": [[], [0, 1, 2]],
+                    "style": {},
+                }
+            ],
+            "segments": [
+                {
+                    "start": 0,
+                    "end": 1,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 1,
+                    "end": 2,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 2,
+                    "end": 0,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+            ],
+            "vertices": [
+                {"x": 0, "y": 0},
+                {"x": 100, "y": 0},
+                {"x": 0, "y": 100},
+            ],
+        },
+    }
+
+    sketch = shape_path.convert(fig)
+
+    assert isinstance(sketch, ShapePath)
+    assert sketch.isClosed == True
+    assert len(sketch.points) == 3
+
+
+def test_empty_region_loop_only_raises_existing_warning():
+    fig = {
+        **FIG_VECTOR,
+        "vectorNetwork": {
+            "regions": [{"windingRule": "NONZERO", "loops": [[]], "style": {}}],
+            "segments": [],
+            "vertices": [{"x": 0, "y": 0}],
+        },
+    }
+
+    with pytest.raises(Fig2SketchWarning) as e:
+        shape_path.convert(fig)
+
+    assert e.value.code == "SHP003"

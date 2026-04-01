@@ -163,36 +163,44 @@ def get_all_segments(vector_network: dict) -> List[dict]:
         unused_segments.discard(i)
         return i
 
-    regions = [
-        {
-            "loops": [
-                reorder_segment_points([vector_network["segments"][use_segment(i)] for i in loop])
-                for loop in region["loops"]
-            ],
-            "style": region["style"],
-            "windingRule": region["windingRule"],
-        }
-        for region in vector_network["regions"]
-    ]
+    regions = []
+    for region in vector_network["regions"]:
+        loops = [
+            reorder_segment_points([vector_network["segments"][use_segment(i)] for i in loop])
+            for loop in region["loops"]
+            if loop
+        ]
+
+        if not loops:
+            continue
+
+        regions.append(
+            {
+                "loops": loops,
+                "style": region["style"],
+                "windingRule": region["windingRule"],
+            }
+        )
 
     if unused_segments:
-        loops: List[List[dict]] = reorder_segments(
+        remaining_loops: List[List[dict]] = reorder_segments(
             [vector_network["segments"][i] for i in unused_segments]
         )
 
         closed = False
-        if len(loops) == 1:
-            loop = loops[0]
+        if len(remaining_loops) == 1:
+            loop = remaining_loops[0]
             if loop[0]["start"] == loop[-1]["end"]:
                 closed = True
 
         rest = {
             "style": {} if closed else {"fillPaints": []},
             "windingRule": "NONZERO",
-            "loops": loops,
+            "loops": remaining_loops,
         }
 
-        regions.append(rest)
+        if remaining_loops:
+            regions.append(rest)
 
     return regions
 
