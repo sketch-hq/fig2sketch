@@ -49,7 +49,6 @@ def parse_args(args: List[str] = sys.argv[1:]) -> argparse.Namespace:
     group.add_argument("--salt", type=str, help="salt used to generate ids, defaults to random")
     group.add_argument(
         "--dump-fig-json",
-        type=argparse.FileType("w"),
         help="output a fig representation in json for debugging purposes",
     )
 
@@ -103,13 +102,14 @@ def run(args: argparse.Namespace) -> None:
         fig_tree, id_map = fig2tree.convert_fig(args.fig_file, output)
 
         if args.dump_fig_json:
-            json.dump(
-                fig_tree,
-                args.dump_fig_json,
-                indent=2,
-                ensure_ascii=False,
-                default=lambda x: x.tolist(),
-            )
+            with open(args.dump_fig_json, "w") as dump_fig_json:
+                json.dump(
+                    fig_tree,
+                    dump_fig_json,
+                    indent=2,
+                    ensure_ascii=False,
+                    default=lambda x: x.tolist(),
+                )
 
         convert.convert_fig_tree_to_sketch(fig_tree, id_map, output)
 
