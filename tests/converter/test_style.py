@@ -195,6 +195,31 @@ class TestConvertBorder:
         assert border.thickness == 5
         assert border.position == BorderPosition.CENTER
 
+    def test_convert_individual_borders(self):
+        border = convert_border(
+            {
+                "strokeAlign": "INSIDE",
+                "strokeWeight": 1,
+                "borderStrokeWeightsIndependent": True,
+                "borderLeftWeight": 2,
+                "borderTopWeight": 4,
+                "borderRightWeight": 8,
+                "borderBottomWeight": 16,
+            },
+            {"type": "SOLID", "color": FIG_COLOR[0], "visible": True, "opacity": 0.9},
+        )
+        assert border.fillType == FillType.COLOR
+        assert border.isEnabled
+        assert border.color == SKETCH_COLOR[0]
+        assert border.thickness == 16
+        assert border.position == BorderPosition.INSIDE
+        assert border.sides == BorderSides(
+            leftInset=14,
+            topInset=12,
+            rightInset=8,
+            bottomInset=0,
+        )
+
     def test_disabled_border(self):
         border = convert_border(
             {

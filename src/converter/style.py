@@ -148,10 +148,33 @@ def make_style_corners(fig_node: dict, radii: List[float]) -> Optional[StyleCorn
 
 
 def convert_border(fig_node: dict, fig_border: dict) -> Border:
+    sides = None
+    if fig_node.get("borderStrokeWeightsIndependent"):
+        left = fig_node.get("borderLeftWeight", 0)
+        top = fig_node.get("borderTopWeight", 0)
+        right = fig_node.get("borderRightWeight", 0)
+        bottom = fig_node.get("borderBottomWeight", 0)
+
+        thickness = max(
+            left,
+            top,
+            right,
+            bottom,
+        )
+        sides = BorderSides(
+            leftInset=thickness - left,
+            topInset=thickness - top,
+            rightInset=thickness - right,
+            bottomInset=thickness - bottom,
+        )
+    else:
+        thickness = fig_node["strokeWeight"]
+
     return Border.from_fill(
         convert_fill(fig_node, fig_border),
         position=BORDER_POSITION[fig_node.get("strokeAlign", "CENTER")],
-        thickness=fig_node["strokeWeight"],
+        thickness=thickness,
+        sides=sides,
     )
 
 
