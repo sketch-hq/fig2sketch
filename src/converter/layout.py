@@ -1,4 +1,6 @@
+import math
 from typing import TypedDict, Union
+
 from converter import utils
 from sketchformat.layer_common import PaddingSelection
 from sketchformat.layer_group import (
@@ -69,11 +71,23 @@ def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
     justify = convert_flex_justify(primary_align)
     align = convert_flex_align(counter_align)
 
+    # Convert Wrap properties
+    wrap_mode = fig_frame.get("stackWrap")
+    wrapping_enabled = wrap_mode == "WRAP"
+    align_content = convert_flex_justify(counter_align) if wrapping_enabled else FlexJustify.START
+    cross_axis_gutter_gap = fig_frame.get("stackCounterSpacing", 0)
+    # stackCounterSpacing can be NaN when the value is not set; Sketch expects 0.
+    if math.isnan(cross_axis_gutter_gap):
+        cross_axis_gutter_gap = 0
+
     return FlexGroupLayout(
         flexDirection=flex_direction,
         justifyContent=justify,
         alignItems=align,
         allGuttersGap=all_gutters_gap,
+        crossAxisGutterGap=cross_axis_gutter_gap,
+        wrappingEnabled=wrapping_enabled,
+        alignContent=align_content,
     )
 
 

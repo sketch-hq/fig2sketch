@@ -65,6 +65,108 @@ class TestLayout:
             flexDirection=FlexDirection.VERTICAL, allGuttersGap=10
         )
 
+    def test_layout_wrap_enabled(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "HORIZONTAL",
+                "stackWrap": "WRAP",
+                "children": [],
+            },
+            "CANVAS",
+        )
+
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.HORIZONTAL,
+            wrappingEnabled=True,
+            alignContent=FlexJustify.START,
+        )
+
+    def test_layout_wrap_cross_axis_spacing(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "HORIZONTAL",
+                "stackWrap": "WRAP",
+                "stackCounterSpacing": 12,
+                "children": [],
+            },
+            "CANVAS",
+        )
+
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.HORIZONTAL,
+            crossAxisGutterGap=12,
+            wrappingEnabled=True,
+            alignContent=FlexJustify.START,
+        )
+
+    def test_layout_wrap_cross_axis_spacing_nan(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "HORIZONTAL",
+                "stackWrap": "WRAP",
+                "stackCounterSpacing": float("nan"),
+                "children": [],
+            },
+            "CANVAS",
+        )
+
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.HORIZONTAL,
+            wrappingEnabled=True,
+            alignContent=FlexJustify.START,
+        )
+
+    def test_layout_wrap_align_content_center(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "HORIZONTAL",
+                "stackWrap": "WRAP",
+                "stackCounterAlignItems": "CENTER",
+                "children": [],
+            },
+            "CANVAS",
+        )
+
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.HORIZONTAL,
+            alignItems=FlexAlign.CENTER,
+            wrappingEnabled=True,
+            alignContent=FlexJustify.CENTER,
+        )
+
+    def test_layout_wrap_align_content_end(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "HORIZONTAL",
+                "stackWrap": "WRAP",
+                "stackCounterAlignItems": "MAX",
+                "children": [],
+            },
+            "CANVAS",
+        )
+
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.HORIZONTAL,
+            alignItems=FlexAlign.END,
+            wrappingEnabled=True,
+            alignContent=FlexJustify.END,
+        )
+
 
 @pytest.mark.usefixtures("no_prototyping")
 class TestLayoutJustify:
