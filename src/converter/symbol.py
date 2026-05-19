@@ -2,7 +2,7 @@ from . import instance, group, base, prototype, layout
 from .context import context
 from converter import utils
 from sketchformat.layer_group import *
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 # LAYOUT_AXIS = {
 #     "NONE": None,
@@ -93,7 +93,7 @@ def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
 
 
 def _variant_properties_from_orders(
-    parent_guid, orders: list
+    parent_guid: Sequence[int], orders: list
 ) -> List[VariantProperty]:
     properties = []
     for order in orders:
@@ -146,7 +146,8 @@ def _variant_properties_from_children(parent: dict) -> Optional[List[VariantProp
     return properties
 
 
-def build_variant_specs(parent_guid, fig_symbol: dict) -> Optional[Dict[str, str]]:
+def build_variant_specs(parent_guid: Sequence[int], fig_symbol: dict) -> Optional[Dict[str, str]]:
+    """Map VariantProperty objectID → VariantPropertyValue objectID for this symbol."""
     pairs = parse_variant_values(fig_symbol["name"])
     if not pairs:
         utils.log_conversion_warning("VAR002", fig_symbol)
