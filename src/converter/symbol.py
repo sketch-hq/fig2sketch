@@ -31,11 +31,11 @@ def convert(fig_symbol):
     # Keep the base ID as the symbol reference, create a new one for the container
     master.do_objectID = utils.gen_object_id(fig_symbol["guid"], b"symbol_master")
 
-    # Use better names for variants if possible
     try:
         parent = context.fig_node(fig_symbol["parent"]["guid"])
         if parent and parent.get("isStateGroup", False):
             master.name = symbol_variant_name(parent, fig_symbol)
+            master.variantSpecs = build_variant_specs(parent["guid"], fig_symbol)
 
     except Exception as e:
         print(e)
