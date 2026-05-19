@@ -2,7 +2,7 @@ from .layer_common import *
 from .common import WindingRule
 from .prototype import *
 from enum import IntEnum
-from typing import Any, Optional, List
+from typing import Any, Dict, Optional, List
 
 
 class LayoutAxis(IntEnum):
@@ -81,6 +81,21 @@ class InferredGroupLayout:
 
 
 @dataclass(kw_only=True)
+class VariantPropertyValue:
+    _class: str = field(default="variantPropertyValue")
+    do_objectID: str
+    name: str
+
+
+@dataclass(kw_only=True)
+class VariantProperty:
+    _class: str = field(default="variantProperty")
+    do_objectID: str
+    name: str
+    values: List[VariantPropertyValue] = field(default_factory=list)
+
+
+@dataclass(kw_only=True)
 class AbstractLayerGroup(AbstractStyledLayer):
     hasClickThrough: bool = False
     groupBehavior: int = 0
@@ -94,6 +109,7 @@ class AbstractLayerGroup(AbstractStyledLayer):
     bottomPadding: float = 0
     paddingSelection: PaddingSelection = PaddingSelection.UNIFORM
     layers: List[AbstractLayer] = field(default_factory=list)
+    variantProperties: Optional[List[VariantProperty]] = None
 
 
 @dataclass(kw_only=True)
@@ -150,6 +166,7 @@ class SymbolMaster(Frame):
     includeBackgroundColorInInstance: bool = True
     symbolID: str
     overrideProperties: List[OverrideProperty] = field(default_factory=list)
+    variantSpecs: Optional[Dict[str, str]] = None
 
 
 @dataclass(kw_only=True)
