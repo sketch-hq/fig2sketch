@@ -93,6 +93,9 @@ class Context:
     def used_fonts(self) -> Dict[Tuple[str, str], Tuple[IO[bytes], str]]:
         return self._used_fonts
 
+    def is_component_page_symbol(self, sid: Sequence[int]) -> bool:
+        return sid in self._component_symbols
+
     def find_symbol(self, sid: Sequence[int]) -> dict:
         symbol = self.fig_node(sid)
         sid = symbol["guid"]
