@@ -43,17 +43,18 @@ def convert(fig_symbol):
     return master
 
 
-def move_to_symbols_page(fig_symbol, sketch_symbol):
-    # After the entire symbol is converted, move it to the Symbols page
-    context.add_symbol(sketch_symbol)
-
+def move_to_symbols_page_if_needed(fig_symbol, sketch_symbol):
     # Figma stores its stack children in bottom up order, but Sketch uses top down
     if utils.has_auto_layout(fig_symbol):
         sketch_symbol = layout.post_process_group_layout(fig_symbol, sketch_symbol)
 
-    # Since we put the Symbol in a different page in Sketch, leave an instance where the
-    # master used to be
-    return instance.master_instance(fig_symbol)
+    if context.is_component_page_symbol(fig_symbol["guid"]):
+        # Symbol lives on Figma's hidden components page — move it to the Symbols page
+        context.add_symbol(sketch_symbol)
+        return instance.master_instance(fig_symbol)
+
+    # Symbol lives on a visible page — keep it in place
+    return sketch_symbol
 
 
 def parse_variant_values(symbol_name: str) -> List[Tuple[str, str]]:
