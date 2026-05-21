@@ -40,6 +40,7 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
         sketch_frame = layout.post_process_group_layout(fig_frame, sketch_frame)
 
     if fig_frame.get("isStateGroup", False):
+        sketch_frame.groupBehavior = 3
         sketch_frame.variantProperties = symbol.build_variant_properties(fig_frame)
 
     return sketch_frame

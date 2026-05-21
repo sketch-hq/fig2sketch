@@ -245,7 +245,15 @@ def test_non_variant_symbol_unaffected(no_prototyping, empty_context):
 def test_variant_properties_on_frame(no_prototyping, component_set_context):
     sketch_frame = tree.convert_node(FIG_COMPONENT_SET, "CANVAS")
 
+    assert sketch_frame.groupBehavior == 3
     assert sketch_frame.variantProperties is not None
     assert len(sketch_frame.variantProperties) == 2
     assert sketch_frame.variantProperties[0].name == "Size"
     assert sketch_frame.variantProperties[1].name == "State"
+
+
+def test_non_variant_frame_keeps_default_group_behavior(no_prototyping, empty_context):
+    fig_frame = {**FIG_BASE, "type": "FRAME", "resizeToFit": False, "children": []}
+    sketch_frame = tree.convert_node(fig_frame, "CANVAS")
+
+    assert sketch_frame.groupBehavior == 1
