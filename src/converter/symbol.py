@@ -46,18 +46,18 @@ def convert(fig_symbol):
 def post_process_symbol(fig_symbol, sketch_symbol):
     """Finalize a converted symbol and decide where its master should live.
 
-    Symbols from Figma's hidden components page are moved to Sketch's Symbols page
-    and replaced at the original site with an instance. Symbols from visible Figma
+    Symbols from .fig format's hidden components page are moved to Sketch's Symbols page
+    and replaced at the original site with an instance. Symbols from visible .fig
     pages are returned unchanged so they stay in place. The hidden-page check is
-    based on the component symbol IDs collected when the conversion context is
+    based on the component symbol IDs collected when the conversion context iss
     initialized.
     """
-    # Figma stores its stack children in bottom up order, but Sketch uses top down
+    # .fig stores its stack children in bottom up order, but Sketch uses top down
     if utils.has_auto_layout(fig_symbol):
         sketch_symbol = layout.post_process_group_layout(fig_symbol, sketch_symbol)
 
     if context.is_component_page_symbol(fig_symbol["guid"]):
-        # Symbol lives on Figma's hidden components page — move it to the Symbols page
+        # Symbol lives on .fig's hidden components page — move it to the Symbols page
         context.add_symbol(sketch_symbol)
         return instance.master_instance(fig_symbol)
 
@@ -68,7 +68,7 @@ def post_process_symbol(fig_symbol, sketch_symbol):
 def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
     """Build VariantProperty list from stateGroupPropertyValueOrders on the component set.
 
-    The order of properties and their values is preserved from Figma's ordering,
+    The order of properties and their values is preserved from .fig format ordering,
     which controls how variants are presented in the Sketch inspector.
     """
     orderedPropertyValues = parent.get("stateGroupPropertyValueOrders", [])

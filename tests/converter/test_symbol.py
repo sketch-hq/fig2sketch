@@ -98,7 +98,7 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
     ]
 
 
-def test_variant_name_uses_figma_name_as_is(no_prototyping, empty_context):
+def test_variant_name_uses_fig_name_as_is(no_prototyping, empty_context):
     variants = {
         **FIG_BASE,
         "type": "FRAME",
