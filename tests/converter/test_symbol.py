@@ -208,6 +208,51 @@ def test_variant_properties_on_frame(no_prototyping, component_set_context):
     assert sketch_frame.variantProperties[1].name == "State"
 
 
+def test_hidden_component_set_emits_variant_set(no_prototyping, empty_context):
+    component_set = {**FIG_COMPONENT_SET, "parent": {"guid": (2, 2)}}
+    components_page = {
+        **FIG_BASE,
+        "type": "CANVAS",
+        "name": "Internal Only Canvas",
+        "guid": (2, 2),
+        "internalOnly": True,
+        "children": [component_set],
+        "parent": {"guid": (0, 0)},
+    }
+    fig_instance = {
+        **FIG_BASE,
+        "type": "INSTANCE",
+        "name": "Button instance",
+        "guid": (20, 20),
+        "symbolData": {
+            "symbolID": FIG_COMPONENT_SET["children"][0]["guid"],
+            "symbolOverrides": [],
+        },
+        "derivedSymbolData": [],
+        "resizeToFit": True,
+    }
+    id_map = {}
+    _collect_ids(components_page, id_map)
+    context.init(components_page, id_map, "DISPLAY_P3")
+
+    sketch_instance = tree.convert_node(fig_instance, "FRAME")
+
+    assert sketch_instance._class == "symbolInstance"
+    assert len(context.symbols_page.layers) == 1
+
+    variant_set = context.symbols_page.layers[0]
+    assert variant_set._class == "group"
+    assert variant_set.name == "Button"
+    assert variant_set.groupBehavior == 3
+    assert variant_set.variantProperties is not None
+    assert len(variant_set.layers) == 2
+
+    variant_master = variant_set.layers[0]
+    assert variant_master._class == "symbolMaster"
+    assert variant_master.variantSpecs is not None
+    assert sketch_instance.symbolID == variant_master.symbolID
+
+
 def test_variant_specs_from_variantPropSpecs(no_prototyping, component_set_context):
     """variantSpecs are built from variantPropSpecs + componentPropDefs, not name parsing."""
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")

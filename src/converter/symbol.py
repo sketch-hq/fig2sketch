@@ -56,6 +56,12 @@ def post_process_symbol(fig_symbol, sketch_symbol):
     if utils.has_auto_layout(fig_symbol):
         sketch_symbol = layout.post_process_group_layout(fig_symbol, sketch_symbol)
 
+    if context.component_set_for_symbol(fig_symbol["guid"]):
+        # The hidden component set frame is emitted to the Symbols page. Keep its
+        # variant symbol masters inside that frame so their variantSpecs match the
+        # frame's variantProperties.
+        return sketch_symbol
+
     if context.is_component_page_symbol(fig_symbol["guid"]):
         # Symbol lives on .fig's hidden components page — move it to the Symbols page
         context.add_symbol(sketch_symbol)
