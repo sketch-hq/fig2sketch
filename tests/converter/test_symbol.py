@@ -207,17 +207,15 @@ def _collect_ids(node, id_map):
 
 
 def test_variant_specs_on_symbol_master(no_prototyping, component_set_context):
-    tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
-    master = context.symbols_page.layers[0]
     assert master.variantSpecs is not None
     assert len(master.variantSpecs) == 2
 
 
 def test_variant_ids_match(no_prototyping, component_set_context):
-    tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
-    master = context.symbols_page.layers[0]
     props = symbol.build_variant_properties(FIG_COMPONENT_SET)
 
     prop_ids = {p.do_objectID for p in props}
@@ -229,16 +227,14 @@ def test_variant_ids_match(no_prototyping, component_set_context):
 
 
 def test_variant_name_preserved(no_prototyping, component_set_context):
-    tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
-    master = context.symbols_page.layers[0]
     assert master.name == "Button/Small/Default"
 
 
 def test_non_variant_symbol_unaffected(no_prototyping, empty_context):
-    tree.convert_node({**FIG_SYMBOL}, "")
+    master = tree.convert_node({**FIG_SYMBOL}, "")
 
-    master = context.symbols_page.layers[0]
     assert master.variantSpecs is None
 
 
