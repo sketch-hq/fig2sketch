@@ -2,7 +2,7 @@ from . import instance, group, base, prototype, layout
 from .context import context
 from converter import utils
 from sketchformat.layer_group import *
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # LAYOUT_AXIS = {
 #     "NONE": None,
@@ -70,12 +70,7 @@ def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
     if not orderedPropertyValues:
         utils.log_conversion_warning("VAR001", parent)
         return None
-    return _variant_properties_from_orders(parent["guid"], orderedPropertyValues)
-
-
-def _variant_properties_from_orders(
-    parent_guid: Sequence[int], orderedPropertyValues: list
-) -> List[VariantProperty]:
+    parent_guid = parent["guid"]
     properties = []
     for orderedPropertyValue in orderedPropertyValues:
         prop_name = orderedPropertyValue["property"]
