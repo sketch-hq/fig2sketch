@@ -100,7 +100,10 @@ def test_variant_name():
         "children": [{**FIG_SYMBOL, "name": "Property 1=Potato, Property 2=Another"}],
         "parent": {"guid": (22, 22)},
     }
-    assert symbol.symbol_variant_name(variants, variants["children"][0]) == "Starch/Potato/Another"
+    assert (
+        symbol.symbol_variant_name(variants, variants["children"][0])
+        == "Property 1=Potato, Property 2=Another"
+    )
 
 
 # --- parse_variant_values ---
@@ -229,7 +232,7 @@ def test_variant_ids_match(no_prototyping, component_set_context):
 def test_variant_name_preserved(no_prototyping, component_set_context):
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
-    assert master.name == "Button/Small/Default"
+    assert master.name == "Size=Small, State=Default"
 
 
 def test_non_variant_symbol_unaffected(no_prototyping, empty_context):
