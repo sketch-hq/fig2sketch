@@ -35,7 +35,7 @@ def convert(fig_symbol):
         parent = context.fig_node(fig_symbol["parent"]["guid"])
         if parent and parent.get("isStateGroup", False):
             master.name = fig_symbol["name"]
-            master.variantSpecs = build_variant_specs(parent["guid"], fig_symbol)
+            master.variantSpecs = build_variant_specs(parent, fig_symbol)
 
     except Exception as e:
         print(e)
@@ -140,9 +140,16 @@ def _variant_properties_from_children(parent: dict) -> Optional[List[VariantProp
     return properties
 
 
-def build_variant_specs(parent_guid: Sequence[int], fig_symbol: dict) -> Optional[Dict[str, str]]:
+def build_variant_specs(parent: dict, fig_symbol: dict) -> Optional[Dict[str, str]]:
     """Map VariantProperty objectID → VariantPropertyValue objectID for this symbol."""
-    pairs = parse_variant_values(fig_symbol["name"])
+    parent_guid = parent["guid"]
+    prop_specs = fig_symbol.get("variantPropSpecs", [])
+
+    if prop_specs:
+        pairs = _pairs_from_prop_specs(parent, prop_specs)
+    else:
+        pairs = parse_variant_values(fig_symbol["name"])
+
     if not pairs:
         utils.log_conversion_warning("VAR002", fig_symbol)
         return None
@@ -158,3 +165,19 @@ def build_variant_specs(parent_guid: Sequence[int], fig_symbol: dict) -> Optiona
         )
         specs[prop_id] = val_id
     return specs
+
+
+def _pairs_from_prop_specs(parent: dict, prop_specs: list) -> List[Tuple[str, str]]:
+    """Resolve variantPropSpecs entries to (property_name, value) pairs via componentPropDefs."""
+    prop_defs = {
+        tuple(d["id"]): d["name"]
+        for d in parent.get("componentPropDefs", [])
+        if d.get("type") == "VARIANT"
+    }
+
+    pairs = []
+    for spec in prop_specs:
+        prop_name = prop_defs.get(tuple(spec["propDefId"]))
+        if prop_name is not None:
+            pairs.append((prop_name, spec["value"]))
+    return pairs

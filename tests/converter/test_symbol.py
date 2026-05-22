@@ -22,6 +22,10 @@ FIG_COMPONENT_SET = {
         {"property": "Size", "values": ["Small", "Large"]},
         {"property": "State", "values": ["Default", "Hover"]},
     ],
+    "componentPropDefs": [
+        {"id": (100, 1), "name": "Size", "type": "VARIANT"},
+        {"id": (100, 2), "name": "State", "type": "VARIANT"},
+    ],
     "children": [
         {
             **FIG_BASE,
@@ -30,6 +34,10 @@ FIG_COMPONENT_SET = {
             "guid": (11, 11),
             "children": [],
             "parent": {"guid": (10, 10)},
+            "variantPropSpecs": [
+                {"propDefId": (100, 1), "value": "Small"},
+                {"propDefId": (100, 2), "value": "Default"},
+            ],
         },
         {
             **FIG_BASE,
@@ -38,6 +46,10 @@ FIG_COMPONENT_SET = {
             "guid": (12, 12),
             "children": [],
             "parent": {"guid": (10, 10)},
+            "variantPropSpecs": [
+                {"propDefId": (100, 1), "value": "Large"},
+                {"propDefId": (100, 2), "value": "Hover"},
+            ],
         },
     ],
     "parent": {"guid": (1, 1)},
@@ -250,6 +262,38 @@ def test_variant_properties_on_frame(no_prototyping, component_set_context):
     assert len(sketch_frame.variantProperties) == 2
     assert sketch_frame.variantProperties[0].name == "Size"
     assert sketch_frame.variantProperties[1].name == "State"
+
+
+def test_variant_specs_from_variantPropSpecs(no_prototyping, component_set_context):
+    """variantSpecs are built from variantPropSpecs + componentPropDefs, not name parsing."""
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+    props = symbol.build_variant_properties(FIG_COMPONENT_SET)
+
+    prop_by_name = {p.name: p for p in props}
+    val_by_name = {(p.name, v.name): v for p in props for v in p.values}
+
+    size_prop_id = prop_by_name["Size"].do_objectID
+    small_val_id = val_by_name[("Size", "Small")].do_objectID
+    state_prop_id = prop_by_name["State"].do_objectID
+    default_val_id = val_by_name[("State", "Default")].do_objectID
+
+    assert master.variantSpecs[size_prop_id] == small_val_id
+    assert master.variantSpecs[state_prop_id] == default_val_id
+
+
+def test_variant_specs_fallback_to_name_parsing(no_prototyping, component_set_context):
+    """Without variantPropSpecs, fall back to parsing the symbol name."""
+    child = {
+        **FIG_COMPONENT_SET["children"][0],
+        "guid": (11, 11),
+    }
+    del child["variantPropSpecs"]
+    context._node_by_id[(11, 11)] = child
+
+    master = tree.convert_node(child, "FRAME")
+
+    assert master.variantSpecs is not None
+    assert len(master.variantSpecs) == 2
 
 
 def test_non_variant_frame_keeps_default_group_behavior(no_prototyping, empty_context):
