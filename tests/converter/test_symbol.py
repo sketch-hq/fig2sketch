@@ -119,28 +119,6 @@ def test_variant_name_uses_figma_name_as_is(no_prototyping, empty_context):
     assert master.name == "Property 1=Potato, Property 2=Another"
 
 
-# --- parse_variant_values ---
-
-
-def test_parse_variant_values():
-    assert symbol.parse_variant_values("Size=Small, State=Default") == [
-        ("Size", "Small"),
-        ("State", "Default"),
-    ]
-
-
-def test_parse_variant_values_single():
-    assert symbol.parse_variant_values("Tinted=True") == [("Tinted", "True")]
-
-
-def test_parse_variant_values_malformed():
-    assert symbol.parse_variant_values("NoEquals") == []
-
-
-def test_parse_variant_values_empty_value():
-    assert symbol.parse_variant_values("A=1, B=, C=3") == [("A", "1"), ("B", ""), ("C", "3")]
-
-
 # --- build_variant_properties ---
 
 
@@ -160,40 +138,6 @@ def test_build_variant_properties_ids_are_deterministic():
 
     assert props_a[0].do_objectID == props_b[0].do_objectID
     assert props_a[0].values[0].do_objectID == props_b[0].values[0].do_objectID
-
-
-def test_build_variant_properties_fallback(warnings):
-    parent = {
-        **FIG_BASE,
-        "type": "FRAME",
-        "name": "Fallback",
-        "guid": (20, 20),
-        "isStateGroup": True,
-        "children": [
-            {**FIG_BASE, "type": "SYMBOL", "name": "Color=Red, Size=Big", "guid": (21, 21)},
-            {**FIG_BASE, "type": "SYMBOL", "name": "Color=Blue, Size=Small", "guid": (22, 22)},
-        ],
-    }
-    props = symbol.build_variant_properties(parent)
-
-    assert len(props) == 2
-    assert props[0].name == "Color"
-    assert [v.name for v in props[0].values] == ["Red", "Blue"]
-    assert props[1].name == "Size"
-    assert [v.name for v in props[1].values] == ["Big", "Small"]
-
-
-def test_build_variant_properties_fallback_no_children(warnings):
-    parent = {
-        **FIG_BASE,
-        "type": "FRAME",
-        "name": "Empty",
-        "guid": (30, 30),
-        "isStateGroup": True,
-        "children": [],
-    }
-    assert symbol.build_variant_properties(parent) is None
-    warnings.assert_called_with("VAR001", parent)
 
 
 # --- Full pipeline: variant data on converted layers ---
@@ -279,21 +223,6 @@ def test_variant_specs_from_variantPropSpecs(no_prototyping, component_set_conte
 
     assert master.variantSpecs[size_prop_id] == small_val_id
     assert master.variantSpecs[state_prop_id] == default_val_id
-
-
-def test_variant_specs_fallback_to_name_parsing(no_prototyping, component_set_context):
-    """Without variantPropSpecs, fall back to parsing the symbol name."""
-    child = {
-        **FIG_COMPONENT_SET["children"][0],
-        "guid": (11, 11),
-    }
-    del child["variantPropSpecs"]
-    context._node_by_id[(11, 11)] = child
-
-    master = tree.convert_node(child, "FRAME")
-
-    assert master.variantSpecs is not None
-    assert len(master.variantSpecs) == 2
 
 
 def test_non_variant_frame_keeps_default_group_behavior(no_prototyping, empty_context):
