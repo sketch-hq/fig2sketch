@@ -66,24 +66,24 @@ def post_process_symbol(fig_symbol, sketch_symbol):
 
 
 def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
-    orders = parent.get("stateGroupPropertyValueOrders", [])
-    if not orders:
+    orderedPropertyValues = parent.get("stateGroupPropertyValueOrders", [])
+    if not orderedPropertyValues:
         utils.log_conversion_warning("VAR001", parent)
         return None
-    return _variant_properties_from_orders(parent["guid"], orders)
+    return _variant_properties_from_orders(parent["guid"], orderedPropertyValues)
 
 
 def _variant_properties_from_orders(
-    parent_guid: Sequence[int], orders: list
+    parent_guid: Sequence[int], orderedPropertyValues: list
 ) -> List[VariantProperty]:
     properties = []
-    for order in orders:
-        prop_name = order["property"]
+    for orderedPropertyValue in orderedPropertyValues:
+        prop_name = orderedPropertyValue["property"]
         prop_id = utils.gen_object_id(
             parent_guid, b"variant_property:" + prop_name.encode("utf-8")
         )
         values = []
-        for val_name in order["values"]:
+        for val_name in orderedPropertyValue["values"]:
             val_id = utils.gen_object_id(
                 parent_guid,
                 b"variant_value:" + prop_name.encode("utf-8") + b":" + val_name.encode("utf-8"),
