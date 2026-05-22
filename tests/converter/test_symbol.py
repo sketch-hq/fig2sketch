@@ -22,6 +22,10 @@ FIG_COMPONENT_SET = {
         {"property": "Size", "values": ["Small", "Large"]},
         {"property": "State", "values": ["Default", "Hover"]},
     ],
+    "componentPropDefs": [
+        {"id": (100, 1), "name": "Size", "type": "VARIANT"},
+        {"id": (100, 2), "name": "State", "type": "VARIANT"},
+    ],
     "children": [
         {
             **FIG_BASE,
@@ -30,6 +34,10 @@ FIG_COMPONENT_SET = {
             "guid": (11, 11),
             "children": [],
             "parent": {"guid": (10, 10)},
+            "variantPropSpecs": [
+                {"propDefId": (100, 1), "value": "Small"},
+                {"propDefId": (100, 2), "value": "Default"},
+            ],
         },
         {
             **FIG_BASE,
@@ -38,6 +46,10 @@ FIG_COMPONENT_SET = {
             "guid": (12, 12),
             "children": [],
             "parent": {"guid": (10, 10)},
+            "variantPropSpecs": [
+                {"propDefId": (100, 1), "value": "Large"},
+                {"propDefId": (100, 2), "value": "Hover"},
+            ],
         },
     ],
     "parent": {"guid": (1, 1)},
@@ -86,7 +98,7 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
     ]
 
 
-def test_variant_name_uses_figma_name_as_is(no_prototyping, empty_context):
+def test_variant_name_uses_fig_name_as_is(no_prototyping, empty_context):
     variants = {
         **FIG_BASE,
         "type": "FRAME",
@@ -105,28 +117,6 @@ def test_variant_name_uses_figma_name_as_is(no_prototyping, empty_context):
     master = tree.convert_node(variants["children"][0], "FRAME")
 
     assert master.name == "Property 1=Potato, Property 2=Another"
-
-
-# --- parse_variant_values ---
-
-
-def test_parse_variant_values():
-    assert symbol.parse_variant_values("Size=Small, State=Default") == [
-        ("Size", "Small"),
-        ("State", "Default"),
-    ]
-
-
-def test_parse_variant_values_single():
-    assert symbol.parse_variant_values("Tinted=True") == [("Tinted", "True")]
-
-
-def test_parse_variant_values_malformed():
-    assert symbol.parse_variant_values("NoEquals") == []
-
-
-def test_parse_variant_values_empty_value():
-    assert symbol.parse_variant_values("A=1, B=, C=3") == [("A", "1"), ("B", ""), ("C", "3")]
 
 
 # --- build_variant_properties ---
@@ -148,40 +138,6 @@ def test_build_variant_properties_ids_are_deterministic():
 
     assert props_a[0].do_objectID == props_b[0].do_objectID
     assert props_a[0].values[0].do_objectID == props_b[0].values[0].do_objectID
-
-
-def test_build_variant_properties_fallback(warnings):
-    parent = {
-        **FIG_BASE,
-        "type": "FRAME",
-        "name": "Fallback",
-        "guid": (20, 20),
-        "isStateGroup": True,
-        "children": [
-            {**FIG_BASE, "type": "SYMBOL", "name": "Color=Red, Size=Big", "guid": (21, 21)},
-            {**FIG_BASE, "type": "SYMBOL", "name": "Color=Blue, Size=Small", "guid": (22, 22)},
-        ],
-    }
-    props = symbol.build_variant_properties(parent)
-
-    assert len(props) == 2
-    assert props[0].name == "Color"
-    assert [v.name for v in props[0].values] == ["Red", "Blue"]
-    assert props[1].name == "Size"
-    assert [v.name for v in props[1].values] == ["Big", "Small"]
-
-
-def test_build_variant_properties_fallback_no_children(warnings):
-    parent = {
-        **FIG_BASE,
-        "type": "FRAME",
-        "name": "Empty",
-        "guid": (30, 30),
-        "isStateGroup": True,
-        "children": [],
-    }
-    assert symbol.build_variant_properties(parent) is None
-    warnings.assert_called_with("VAR001", parent)
 
 
 # --- Full pipeline: variant data on converted layers ---
@@ -250,6 +206,23 @@ def test_variant_properties_on_frame(no_prototyping, component_set_context):
     assert len(sketch_frame.variantProperties) == 2
     assert sketch_frame.variantProperties[0].name == "Size"
     assert sketch_frame.variantProperties[1].name == "State"
+
+
+def test_variant_specs_from_variantPropSpecs(no_prototyping, component_set_context):
+    """variantSpecs are built from variantPropSpecs + componentPropDefs, not name parsing."""
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+    props = symbol.build_variant_properties(FIG_COMPONENT_SET)
+
+    prop_by_name = {p.name: p for p in props}
+    val_by_name = {(p.name, v.name): v for p in props for v in p.values}
+
+    size_prop_id = prop_by_name["Size"].do_objectID
+    small_val_id = val_by_name[("Size", "Small")].do_objectID
+    state_prop_id = prop_by_name["State"].do_objectID
+    default_val_id = val_by_name[("State", "Default")].do_objectID
+
+    assert master.variantSpecs[size_prop_id] == small_val_id
+    assert master.variantSpecs[state_prop_id] == default_val_id
 
 
 def test_non_variant_frame_keeps_default_group_behavior(no_prototyping, empty_context):
