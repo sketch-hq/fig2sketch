@@ -76,10 +76,12 @@ def parse_variant_values(symbol_name: str) -> List[Tuple[str, str]]:
     return pairs
 
 
-def symbol_variant_name(parent, symbol):
+def symbol_variant_name(_parent, symbol):
     pairs = parse_variant_values(symbol["name"])
-    ordered_values = [parent["name"]] + [val for _, val in pairs]
-    return "/".join(ordered_values)
+    if not pairs:
+        return symbol["name"]
+
+    return ", ".join(f"{prop}={val}" for prop, val in pairs)
 
 
 def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
