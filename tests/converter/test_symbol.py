@@ -86,7 +86,7 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
     ]
 
 
-def test_variant_name():
+def test_variant_name_uses_figma_name_as_is(no_prototyping, empty_context):
     variants = {
         **FIG_BASE,
         "type": "FRAME",
@@ -100,10 +100,11 @@ def test_variant_name():
         "children": [{**FIG_SYMBOL, "name": "Property 1=Potato, Property 2=Another"}],
         "parent": {"guid": (22, 22)},
     }
-    assert (
-        symbol.symbol_variant_name(variants, variants["children"][0])
-        == "Property 1=Potato, Property 2=Another"
-    )
+    context._node_by_id[(22, 22)] = variants
+
+    master = tree.convert_node(variants["children"][0], "FRAME")
+
+    assert master.name == "Property 1=Potato, Property 2=Another"
 
 
 # --- parse_variant_values ---

@@ -34,7 +34,7 @@ def convert(fig_symbol):
     try:
         parent = context.fig_node(fig_symbol["parent"]["guid"])
         if parent and parent.get("isStateGroup", False):
-            master.name = symbol_variant_name(parent, fig_symbol)
+            master.name = fig_symbol["name"]
             master.variantSpecs = build_variant_specs(parent["guid"], fig_symbol)
 
     except Exception as e:
@@ -74,14 +74,6 @@ def parse_variant_values(symbol_name: str) -> List[Tuple[str, str]]:
         prop, _, val = part.partition("=")
         pairs.append((prop.strip(), val.strip()))
     return pairs
-
-
-def symbol_variant_name(_parent, symbol):
-    pairs = parse_variant_values(symbol["name"])
-    if not pairs:
-        return symbol["name"]
-
-    return ", ".join(f"{prop}={val}" for prop, val in pairs)
 
 
 def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
