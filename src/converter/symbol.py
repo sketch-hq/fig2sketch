@@ -66,6 +66,11 @@ def post_process_symbol(fig_symbol, sketch_symbol):
 
 
 def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
+    """Build VariantProperty list from stateGroupPropertyValueOrders on the component set.
+
+    The order of properties and their values is preserved from Figma's ordering,
+    which controls how variants are presented in the Sketch inspector.
+    """
     orderedPropertyValues = parent.get("stateGroupPropertyValueOrders", [])
     if not orderedPropertyValues:
         utils.log_conversion_warning("VAR001", parent)
