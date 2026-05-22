@@ -2,7 +2,7 @@ from . import instance, group, base, prototype, layout
 from .context import context
 from converter import utils
 from sketchformat.layer_group import *
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # LAYOUT_AXIS = {
 #     "NONE": None,
@@ -35,7 +35,7 @@ def convert(fig_symbol):
         parent = context.fig_node(fig_symbol["parent"]["guid"])
         if parent and parent.get("isStateGroup", False):
             master.name = fig_symbol["name"]
-            master.variantSpecs = build_variant_specs(parent["guid"], fig_symbol)
+            master.variantSpecs = build_variant_specs(parent, fig_symbol)
 
     except Exception as e:
         print(e)
@@ -46,18 +46,18 @@ def convert(fig_symbol):
 def post_process_symbol(fig_symbol, sketch_symbol):
     """Finalize a converted symbol and decide where its master should live.
 
-    Symbols from Figma's hidden components page are moved to Sketch's Symbols page
-    and replaced at the original site with an instance. Symbols from visible Figma
+    Symbols from .fig format's hidden components page are moved to Sketch's Symbols page
+    and replaced at the original site with an instance. Symbols from visible .fig
     pages are returned unchanged so they stay in place. The hidden-page check is
-    based on the component symbol IDs collected when the conversion context is
+    based on the component symbol IDs collected when the conversion context iss
     initialized.
     """
-    # Figma stores its stack children in bottom up order, but Sketch uses top down
+    # .fig stores its stack children in bottom up order, but Sketch uses top down
     if utils.has_auto_layout(fig_symbol):
         sketch_symbol = layout.post_process_group_layout(fig_symbol, sketch_symbol)
 
     if context.is_component_page_symbol(fig_symbol["guid"]):
-        # Symbol lives on Figma's hidden components page — move it to the Symbols page
+        # Symbol lives on .fig's hidden components page — move it to the Symbols page
         context.add_symbol(sketch_symbol)
         return instance.master_instance(fig_symbol)
 
@@ -65,72 +65,25 @@ def post_process_symbol(fig_symbol, sketch_symbol):
     return sketch_symbol
 
 
-def parse_variant_values(symbol_name: str) -> List[Tuple[str, str]]:
-    pairs = []
-    for part in symbol_name.split(","):
-        part = part.strip()
-        if "=" not in part:
-            continue
-        prop, _, val = part.partition("=")
-        pairs.append((prop.strip(), val.strip()))
-    return pairs
-
-
 def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
-    parent_guid = parent["guid"]
-    orders = parent.get("stateGroupPropertyValueOrders", [])
+    """Build VariantProperty list from stateGroupPropertyValueOrders on the component set.
 
-    if orders:
-        return _variant_properties_from_orders(parent_guid, orders)
-
-    return _variant_properties_from_children(parent)
-
-
-def _variant_properties_from_orders(
-    parent_guid: Sequence[int], orders: list
-) -> List[VariantProperty]:
-    properties = []
-    for order in orders:
-        prop_name = order["property"]
-        prop_id = utils.gen_object_id(
-            parent_guid, b"variant_property:" + prop_name.encode("utf-8")
-        )
-        values = []
-        for val_name in order["values"]:
-            val_id = utils.gen_object_id(
-                parent_guid,
-                b"variant_value:" + prop_name.encode("utf-8") + b":" + val_name.encode("utf-8"),
-            )
-            values.append(VariantPropertyValue(do_objectID=val_id, name=val_name))
-        properties.append(VariantProperty(do_objectID=prop_id, name=prop_name, values=values))
-    return properties
-
-
-def _variant_properties_from_children(parent: dict) -> Optional[List[VariantProperty]]:
-    from collections import OrderedDict
-
-    prop_values: OrderedDict[str, list] = OrderedDict()
-    for child in parent.get("children", []):
-        if child.get("type") != "SYMBOL":
-            continue
-        for prop_name, val_name in parse_variant_values(child["name"]):
-            if prop_name not in prop_values:
-                prop_values[prop_name] = []
-            if val_name not in prop_values[prop_name]:
-                prop_values[prop_name].append(val_name)
-
-    if not prop_values:
+    The order of properties and their values is preserved from .fig format ordering,
+    which controls how variants are presented in the Sketch inspector.
+    """
+    orderedPropertyValues = parent.get("stateGroupPropertyValueOrders", [])
+    if not orderedPropertyValues:
         utils.log_conversion_warning("VAR001", parent)
         return None
-
     parent_guid = parent["guid"]
     properties = []
-    for prop_name, val_names in prop_values.items():
+    for orderedPropertyValue in orderedPropertyValues:
+        prop_name = orderedPropertyValue["property"]
         prop_id = utils.gen_object_id(
             parent_guid, b"variant_property:" + prop_name.encode("utf-8")
         )
         values = []
-        for val_name in val_names:
+        for val_name in orderedPropertyValue["values"]:
             val_id = utils.gen_object_id(
                 parent_guid,
                 b"variant_value:" + prop_name.encode("utf-8") + b":" + val_name.encode("utf-8"),
@@ -140,9 +93,13 @@ def _variant_properties_from_children(parent: dict) -> Optional[List[VariantProp
     return properties
 
 
-def build_variant_specs(parent_guid: Sequence[int], fig_symbol: dict) -> Optional[Dict[str, str]]:
+def build_variant_specs(parent: dict, fig_symbol: dict) -> Optional[Dict[str, str]]:
     """Map VariantProperty objectID → VariantPropertyValue objectID for this symbol."""
-    pairs = parse_variant_values(fig_symbol["name"])
+    parent_guid = parent["guid"]
+    prop_specs = fig_symbol.get("variantPropSpecs", [])
+
+    pairs = _pairs_from_prop_specs(parent, prop_specs)
+
     if not pairs:
         utils.log_conversion_warning("VAR002", fig_symbol)
         return None
@@ -158,3 +115,19 @@ def build_variant_specs(parent_guid: Sequence[int], fig_symbol: dict) -> Optiona
         )
         specs[prop_id] = val_id
     return specs
+
+
+def _pairs_from_prop_specs(parent: dict, prop_specs: list) -> List[Tuple[str, str]]:
+    """Resolve variantPropSpecs entries to (property_name, value) pairs via componentPropDefs."""
+    prop_defs = {
+        tuple(d["id"]): d["name"]
+        for d in parent.get("componentPropDefs", [])
+        if d.get("type") == "VARIANT"
+    }
+
+    pairs = []
+    for spec in prop_specs:
+        prop_name = prop_defs.get(tuple(spec["propDefId"]))
+        if prop_name is not None:
+            pairs.append((prop_name, spec["value"]))
+    return pairs
