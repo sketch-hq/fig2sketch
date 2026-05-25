@@ -6,7 +6,7 @@ from converter import utils
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
 from typing import List, Tuple
-from .errors import Fig2SketchNodeChanged
+from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
 
 
 def convert(fig_instance):
@@ -208,6 +208,14 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             sk, us = convert_style_part_overrides(sketch_path_str, value, "border")
             sketch_overrides += sk
             unsupported_overrides += [f"strokePaints.{p}" for p in us]
+        elif prop == "styleIdForFill":
+            sk, us = convert_style_ref_override(sketch_path_str, value, "fill")
+            sketch_overrides += sk
+            unsupported_overrides += [f"styleIdForFill.{p}" for p in us]
+        elif prop == "styleIdForStroke":
+            sk, us = convert_style_ref_override(sketch_path_str, value, "border")
+            sketch_overrides += sk
+            unsupported_overrides += [f"styleIdForStroke.{p}" for p in us]
         elif prop in ["size", "pluginData", "name", "exportSettings", "targetAspectRatio"]:
             # Size is handled by applying derivedSymbolData
             # The rest are surely not worth detaching for
@@ -217,6 +225,20 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             unsupported_overrides.append(prop)
 
     return sketch_overrides, unsupported_overrides
+
+
+def convert_style_ref_override(
+    sketch_path_str: str, style_ref: dict, sketch_part: str
+) -> Tuple[List[OverrideValue], List[str]]:
+    try:
+        fig_style = context.fig_node_by_key(style_ref["assetRef"]["key"])
+    except Fig2SketchWarning:
+        return [], ["assetRef"]
+
+    if "fillPaints" not in fig_style:
+        return [], ["fillPaints"]
+
+    return convert_style_part_overrides(sketch_path_str, fig_style["fillPaints"], sketch_part)
 
 
 def convert_style_part_overrides(

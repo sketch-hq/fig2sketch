@@ -35,6 +35,23 @@ FIG_RECT = {
     "strokeWeight": 1,
 }
 
+FIG_FILL_STYLE = {
+    **FIG_BASE,
+    "type": "ROUNDED_RECTANGLE",
+    "guid": (0, 5),
+    "key": "red-fill",
+    "styleType": "FILL",
+    "fillPaints": [
+        {
+            "type": "SOLID",
+            "color": FIG_COLOR[1],
+            "opacity": 0.7,
+            "blendMode": "MULTIPLY",
+            "visible": True,
+        }
+    ],
+}
+
 FIG_SYMBOL = {
     **FIG_BASE,
     "type": "SYMBOL",
@@ -57,7 +74,13 @@ FIG_INSTANCE = {
 def symbol(monkeypatch):
     context.init(
         None,
-        {(0, 3): FIG_SYMBOL, (0, 1): FIG_TEXT, (0, 2): FIG_RECT, (1, 9): FIG_TEXT},
+        {
+            (0, 3): FIG_SYMBOL,
+            (0, 1): FIG_TEXT,
+            (0, 2): FIG_RECT,
+            (0, 5): FIG_FILL_STYLE,
+            (1, 9): FIG_TEXT,
+        },
         "DISPLAY_P3",
     )
     context._component_symbols = {(0, 3): False}
@@ -218,6 +241,31 @@ class TestOverrides:
                 overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.SCREEN
             ),
             OverrideValue(overrideName=f"{symbol_rect_id}_opacity:border-0", value=0.5),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_fill_style_override(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "styleIdForFill": {"assetRef": {"key": "red-fill", "version": "1:1"}},
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_text_id = symbol.layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1]),
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
+            ),
+            OverrideValue(overrideName=f"{symbol_text_id}_opacity:fill-0", value=0.7),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
