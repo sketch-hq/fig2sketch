@@ -27,7 +27,13 @@ FIG_TEXT = {
     ],
 }
 
-FIG_RECT = {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "guid": (0, 2)}
+FIG_RECT = {
+    **FIG_BASE,
+    "type": "ROUNDED_RECTANGLE",
+    "guid": (0, 2),
+    "strokePaints": [{"type": "SOLID", "color": FIG_COLOR[0], "opacity": 0.9, "visible": True}],
+    "strokeWeight": 1,
+}
 
 FIG_SYMBOL = {
     **FIG_BASE,
@@ -124,7 +130,30 @@ class TestOverrides:
             OverrideValue(overrideName=f"{symbol_text_id}_stringValue", value="modified")
         ]
 
-    def test_color_override_detach(self, warnings):
+    def test_root_opacity_override_preserves_instance(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [{"guidPath": {"guids": [(0, 3)]}, "opacity": 0.7}]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.style.contextSettings.opacity == 0.7
+        assert i.overrideValues == []
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_nested_opacity_override_detaches(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [{"guidPath": {"guids": [(1, 9)]}, "opacity": 0.7}]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, Group)
+        warnings.assert_any_call("SYM003", ANY, props=["opacity"])
+
+    def test_fill_override(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [
             {
@@ -134,6 +163,7 @@ class TestOverrides:
                         "type": "SOLID",
                         "color": FIG_COLOR[1],
                         "opacity": 0.7,
+                        "blendMode": "MULTIPLY",
                         "visible": True,
                     }
                 ],
@@ -145,24 +175,56 @@ class TestOverrides:
         symbol = context.symbols_page.layers[0]
         symbol_text_id = symbol.layers[0].do_objectID
 
-        assert isinstance(i, Group)
-        assert i.layers[0].style.fills[0].color == SKETCH_COLOR[1]
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1]),
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
+            ),
+            OverrideValue(overrideName=f"{symbol_text_id}_opacity:fill-0", value=0.7),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
-        warnings.assert_any_call("SYM003", ANY, props=["fillPaints"])
+    def test_border_override(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[1],
+                        "opacity": 0.5,
+                        "blendMode": "SCREEN",
+                        "visible": True,
+                    }
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_rect_id = symbol.layers[1].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=SKETCH_COLOR[1]),
+            OverrideValue(
+                overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.SCREEN
+            ),
+            OverrideValue(overrideName=f"{symbol_rect_id}_opacity:border-0", value=0.5),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
     def test_color_override_ignored(self, no_detach, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [
             {
                 "guidPath": {"guids": [(0, 1)]},
-                "fillPaints": [
-                    {
-                        "type": "SOLID",
-                        "color": FIG_COLOR[1],
-                        "opacity": 0.7,
-                        "visible": True,
-                    }
-                ],
+                "fontSize": 16,
             }
         ]
 
@@ -174,7 +236,7 @@ class TestOverrides:
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues == []
 
-        warnings.assert_any_call("SYM002", ANY, props=["fillPaints"])
+        warnings.assert_any_call("SYM002", ANY, props=["fontSize"])
 
     def test_prop_and_symbol_override(self):
         """When a property and an override are specified for the same thing, we want
@@ -207,7 +269,7 @@ class TestDetach:
         fig["symbolData"]["symbolOverrides"] = [
             {
                 "guidPath": {"guids": [(1, 9)]},
-                "fillPaints": [],
+                "opacity": 0.5,
             }
         ]
         fig["resizeToFit"] = True
@@ -220,7 +282,7 @@ class TestDetach:
         fig["symbolData"]["symbolOverrides"] = [
             {
                 "guidPath": {"guids": [(1, 9)]},
-                "fillPaints": [],
+                "opacity": 0.5,
             }
         ]
         fig["resizeToFit"] = False
