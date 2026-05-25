@@ -52,11 +52,59 @@ FIG_FILL_STYLE = {
     ],
 }
 
+FIG_VECTOR = {
+    **FIG_BASE,
+    "type": "VECTOR",
+    "guid": (0, 6),
+    "overrideKey": (1, 10),
+    "cornerRadius": 0,
+    "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[0], "opacity": 0.9, "visible": True}],
+    "vectorNetwork": {
+        "regions": [
+            {
+                "loops": [[0, 1, 2]],
+                "style": {
+                    "fillPaints": [
+                        {
+                            "type": "SOLID",
+                            "color": FIG_COLOR[0],
+                            "opacity": 0.9,
+                            "visible": True,
+                        }
+                    ]
+                },
+                "windingRule": "NONZERO",
+            }
+        ],
+        "segments": [
+            {
+                "start": 0,
+                "end": 1,
+                "tangentStart": {"x": 0, "y": 0},
+                "tangentEnd": {"x": 0, "y": 0},
+            },
+            {
+                "start": 1,
+                "end": 2,
+                "tangentStart": {"x": 0, "y": 0},
+                "tangentEnd": {"x": 0, "y": 0},
+            },
+            {
+                "start": 2,
+                "end": 0,
+                "tangentStart": {"x": 0, "y": 0},
+                "tangentEnd": {"x": 0, "y": 0},
+            },
+        ],
+        "vertices": [{"x": 0, "y": 0}, {"x": 10, "y": 0}, {"x": 0, "y": 10}],
+    },
+}
+
 FIG_SYMBOL = {
     **FIG_BASE,
     "type": "SYMBOL",
     "guid": (0, 3),
-    "children": [FIG_TEXT, FIG_RECT],
+    "children": [FIG_TEXT, FIG_RECT, FIG_VECTOR],
     "parent": {"guid": (0, 3)},
 }
 
@@ -79,7 +127,9 @@ def symbol(monkeypatch):
             (0, 1): FIG_TEXT,
             (0, 2): FIG_RECT,
             (0, 5): FIG_FILL_STYLE,
+            (0, 6): FIG_VECTOR,
             (1, 9): FIG_TEXT,
+            (1, 10): FIG_VECTOR,
         },
         "DISPLAY_P3",
     )
@@ -267,6 +317,27 @@ class TestOverrides:
             ),
             OverrideValue(overrideName=f"{symbol_text_id}_opacity:fill-0", value=0.7),
         ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_vector_fill_style_override_uses_shape_path_id(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 10)]},
+                "styleIdForFill": {"assetRef": {"key": "red-fill", "version": "1:1"}},
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_vector_id = symbol.layers[2].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues[0] == OverrideValue(
+            overrideName=f"{symbol_vector_id}_color:fill-0", value=SKETCH_COLOR[1]
+        )
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
     def test_color_override_ignored(self, no_detach, warnings):

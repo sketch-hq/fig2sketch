@@ -1,5 +1,5 @@
 import copy, logging
-from . import base, group, style as style_converter
+from . import base, group, shape_path as shape_path_converter, style as style_converter
 from .context import context
 from .config import config
 from converter import utils
@@ -169,7 +169,7 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
     try:
         # Convert uuids in the path from top symbol to child instance
         sketch_path = [
-            utils.gen_object_id(context.fig_node(guid)["guid"])
+            sketch_override_object_id(context.fig_node(guid))
             for guid in override["guidPath"]["guids"]
         ]
         sketch_path_str = "/".join(sketch_path)
@@ -225,6 +225,20 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             unsupported_overrides.append(prop)
 
     return sketch_overrides, unsupported_overrides
+
+
+def sketch_override_object_id(fig_node: dict) -> str:
+    if fig_node["type"] != "VECTOR" or "vectorNetwork" not in fig_node:
+        return utils.gen_object_id(fig_node["guid"])
+
+    regions = shape_path_converter.get_all_segments(fig_node["vectorNetwork"])
+    if len(regions) != 1:
+        return utils.gen_object_id(fig_node["guid"])
+
+    if len(regions[0]["loops"]) == 1:
+        return utils.gen_object_id(fig_node["guid"], b"region0loop0")
+
+    return utils.gen_object_id(fig_node["guid"], b"region0")
 
 
 def convert_style_ref_override(
