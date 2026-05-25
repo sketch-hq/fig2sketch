@@ -35,12 +35,25 @@ def convert(fig_instance):
     obj = SymbolInstance(
         **base.base_styled(fig_instance),
         symbolID=utils.gen_object_id(fig_master["guid"]),
+        scale=instance_scale(fig_instance, fig_master),
         overrideValues=sketch_overrides,
     )
     # Replace style
     obj.style = Style(do_objectID=utils.gen_object_id(fig_instance["guid"], b"style"))
 
     return obj
+
+
+def instance_scale(fig_instance: dict, fig_master: dict) -> float:
+    scale_x = utils.safe_div(fig_instance["size"]["x"], fig_master["size"]["x"])
+    scale_y = utils.safe_div(fig_instance["size"]["y"], fig_master["size"]["y"])
+
+    if not scale_x:
+        return scale_y or 1
+    if not scale_y:
+        return scale_x
+
+    return scale_x
 
 
 def post_process(fig_instance, sketch_instance):

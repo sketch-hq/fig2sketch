@@ -76,7 +76,19 @@ class TestOverrides:
 
         assert isinstance(i, SymbolInstance)
         assert i.symbolID == symbol.symbolID
+        assert i.scale == 1
         assert i.overrideValues == []
+
+    def test_scaled_instance(self):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["size"] = {"x": 50, "y": 50}
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.frame.width == 50
+        assert i.frame.height == 50
+        assert i.scale == 0.5
 
     def test_text_override(self):
         fig = copy.deepcopy(FIG_INSTANCE)
