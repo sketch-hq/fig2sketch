@@ -17,15 +17,13 @@ def empty_context(monkeypatch):
 
 
 def test_rounded_corners(no_prototyping, empty_context):
-    instance = tree.convert_node(
+    master = tree.convert_node(
         {**FIG_SYMBOL, "rectangleTopLeftCornerRadius": 5},
         "",
     )
 
-    symbol = context.symbols_page.layers[0]
-
-    assert instance.symbolID == symbol.symbolID
-    assert symbol.style.corners.radii[0] == 5
+    assert master._class == "symbolMaster"
+    assert master.style.corners.radii[0] == 5
 
 
 def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
@@ -47,8 +45,8 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
         "",
     )
 
-    symbol = context.symbols_page.layers[0]
-    assert symbol.style.shadows == [
+    assert g._class == "symbolMaster"
+    assert g.style.shadows == [
         Shadow(
             blurRadius=4, offsetX=1, offsetY=3, spread=0, color=SKETCH_COLOR[1], isInnerShadow=True
         )

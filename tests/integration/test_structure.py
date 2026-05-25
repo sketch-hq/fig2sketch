@@ -22,7 +22,6 @@ def test_user(sketch_doc):
     with sketch_doc.open("user.json") as user_json:
         user = json.load(user_json)
         assert "8F292FCA-49C0-4E31-957E-93FB2D1A7231" in user
-        assert "A4E5259A-9CE6-49D9-B4A1-A8062C205347" in user
         assert user["document"] == {
             "expandedSymbolPathsInSidebar": [],
             "expandedTextStylePathsInPopover": [],
@@ -44,10 +43,6 @@ def test_meta(sketch_doc):
                         "60CDCBD8-345A-4796-804B-C6A97C9C0587": {"name": "Groups"},
                         "B4AC371F-D026-411F-985B-F92A86A928F6": {"name": "Symbols and images"},
                     },
-                },
-                "A4E5259A-9CE6-49D9-B4A1-A8062C205347": {
-                    "name": "Symbols",
-                    "artboards": {"FA7E522B-5FF7-4393-AD4D-44C2A82CF837": {"name": "Component 1"}},
                 },
             },
             "version": 187,
@@ -81,12 +76,7 @@ def test_document(sketch_doc):
                 "_class": "MSJSONFileReference",
                 "_ref_class": "MSImmutablePage",
                 "_ref": "pages/8F292FCA-49C0-4E31-957E-93FB2D1A7231",
-            },
-            {
-                "_class": "MSJSONFileReference",
-                "_ref_class": "MSImmutablePage",
-                "_ref": "pages/A4E5259A-9CE6-49D9-B4A1-A8062C205347",
-            },
+            }
         ]
         assert doc["fontReferences"] == [
             {
@@ -154,9 +144,10 @@ def test_page(sketch_doc):
         assert syms["name"] == "Symbols and images"
         i1, i2, i3, jpg, png, svg = syms["layers"]
 
-        # Master instance
-        assert i1["_class"] == "symbolInstance"
-        assert i1["overrideValues"] == []
+        # Visible symbol master
+        assert i1["_class"] == "symbolMaster"
+        assert i1["name"] == "Component 1"
+        assert len(i1["layers"]) == 2
 
         # Instance with text override
         assert i2["_class"] == "symbolInstance"
@@ -202,17 +193,8 @@ def test_page(sketch_doc):
             assert l["_class"] in ["shapePath", "shapeGroup"]
 
 
-def test_symbols_page(sketch_doc):
-    with sketch_doc.open("pages/A4E5259A-9CE6-49D9-B4A1-A8062C205347.json") as page_json:
-        page = json.load(page_json)
-        assert page["name"] == "Symbols"
-        assert len(page["layers"]) == 1
-
-        symbol = page["layers"][0]
-        assert symbol["name"] == "Component 1"
-        assert symbol["_class"] == "symbolMaster"
-
-        assert len(symbol["layers"]) == 2
+def test_visible_symbols_do_not_create_symbols_page(sketch_doc):
+    assert "pages/A4E5259A-9CE6-49D9-B4A1-A8062C205347.json" not in sketch_doc.namelist()
 
 
 def test_files(sketch_doc):
@@ -221,7 +203,6 @@ def test_files(sketch_doc):
         "images/616d10a80971e08c6b43a164746afac1972c7ccc.png",
         "images/92e4d5e0c24ffd632c3db3264e62cc907c2f5e29",
         "pages/8F292FCA-49C0-4E31-957E-93FB2D1A7231.json",
-        "pages/A4E5259A-9CE6-49D9-B4A1-A8062C205347.json",
         "fonts/f0b7cea3f659e72f3ea9285a4d60712878169c07",
         "document.json",
         "user.json",

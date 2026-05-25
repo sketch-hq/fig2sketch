@@ -48,7 +48,7 @@ POST_PROCESSING: Dict[str, Callable[[dict, Any], AbstractLayer]] = {
     "FRAME": frame.post_process_frame,
     "GROUP": group.post_process_frame,
     "BOOLEAN_OPERATION": shape_group.post_process,
-    "SYMBOL": symbol.move_to_symbols_page,
+    "SYMBOL": symbol.post_process_symbol,
     "INSTANCE": instance.post_process,
 }
 
