@@ -208,7 +208,7 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             sk, us = convert_style_part_overrides(sketch_path_str, value, "border")
             sketch_overrides += sk
             unsupported_overrides += [f"strokePaints.{p}" for p in us]
-        elif prop in ["size", "pluginData", "name", "exportSettings"]:
+        elif prop in ["size", "pluginData", "name", "exportSettings", "targetAspectRatio"]:
             # Size is handled by applying derivedSymbolData
             # The rest are surely not worth detaching for
             pass

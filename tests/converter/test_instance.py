@@ -132,7 +132,9 @@ class TestOverrides:
 
     def test_root_opacity_override_preserves_instance(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
-        fig["symbolData"]["symbolOverrides"] = [{"guidPath": {"guids": [(0, 3)]}, "opacity": 0.7}]
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(0, 3)]}, "opacity": 0.7, "targetAspectRatio": {}}
+        ]
 
         i = tree.convert_node(fig, "")
         assert len(context.symbols_page.layers) == 1
