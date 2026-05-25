@@ -2,6 +2,7 @@ from . import instance, group, base, prototype, layout
 from .context import context
 from converter import utils
 from sketchformat.layer_group import *
+from typing import Dict, List, Optional, Tuple
 
 # LAYOUT_AXIS = {
 #     "NONE": None,
@@ -30,11 +31,11 @@ def convert(fig_symbol):
     # Keep the base ID as the symbol reference, create a new one for the container
     master.do_objectID = utils.gen_object_id(fig_symbol["guid"], b"symbol_master")
 
-    # Use better names for variants if possible
     try:
         parent = context.fig_node(fig_symbol["parent"]["guid"])
         if parent and parent.get("isStateGroup", False):
-            master.name = symbol_variant_name(parent, fig_symbol)
+            master.name = fig_symbol["name"]
+            master.variantSpecs = build_variant_specs(parent, fig_symbol)
 
     except Exception as e:
         print(e)
@@ -45,18 +46,24 @@ def convert(fig_symbol):
 def post_process_symbol(fig_symbol, sketch_symbol):
     """Finalize a converted symbol and decide where its master should live.
 
-    Symbols from Figma's hidden components page are moved to Sketch's Symbols page
-    and replaced at the original site with an instance. Symbols from visible Figma
+    Symbols from .fig format's hidden components page are moved to Sketch's Symbols page
+    and replaced at the original site with an instance. Symbols from visible .fig
     pages are returned unchanged so they stay in place. The hidden-page check is
-    based on the component symbol IDs collected when the conversion context is
+    based on the component symbol IDs collected when the conversion context iss
     initialized.
     """
-    # Figma stores its stack children in bottom up order, but Sketch uses top down
+    # .fig stores its stack children in bottom up order, but Sketch uses top down
     if utils.has_auto_layout(fig_symbol):
         sketch_symbol = layout.post_process_group_layout(fig_symbol, sketch_symbol)
 
+    if context.component_set_for_symbol(fig_symbol["guid"]):
+        # The hidden component set frame is emitted to the Symbols page. Keep its
+        # variant symbol masters inside that frame so their variantSpecs match the
+        # frame's variantProperties.
+        return sketch_symbol
+
     if context.is_component_page_symbol(fig_symbol["guid"]):
-        # Symbol lives on Figma's hidden components page — move it to the Symbols page
+        # Symbol lives on .fig's hidden components page — move it to the Symbols page
         context.add_symbol(sketch_symbol)
         return instance.master_instance(fig_symbol)
 
@@ -64,7 +71,69 @@ def post_process_symbol(fig_symbol, sketch_symbol):
     return sketch_symbol
 
 
-def symbol_variant_name(parent, symbol):
-    property_values = [x.strip().split("=")[1] for x in symbol["name"].split(",")]
-    ordered_values = [parent["name"]] + property_values
-    return "/".join(ordered_values)
+def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:
+    """Build VariantProperty list from stateGroupPropertyValueOrders on the component set.
+
+    The order of properties and their values is preserved from .fig format ordering,
+    which controls how variants are presented in the Sketch inspector.
+    """
+    orderedPropertyValues = parent.get("stateGroupPropertyValueOrders", [])
+    if not orderedPropertyValues:
+        utils.log_conversion_warning("VAR001", parent)
+        return None
+    parent_guid = parent["guid"]
+    properties = []
+    for orderedPropertyValue in orderedPropertyValues:
+        prop_name = orderedPropertyValue["property"]
+        prop_id = utils.gen_object_id(
+            parent_guid, b"variant_property:" + prop_name.encode("utf-8")
+        )
+        values = []
+        for val_name in orderedPropertyValue["values"]:
+            val_id = utils.gen_object_id(
+                parent_guid,
+                b"variant_value:" + prop_name.encode("utf-8") + b":" + val_name.encode("utf-8"),
+            )
+            values.append(VariantPropertyValue(do_objectID=val_id, name=val_name))
+        properties.append(VariantProperty(do_objectID=prop_id, name=prop_name, values=values))
+    return properties
+
+
+def build_variant_specs(parent: dict, fig_symbol: dict) -> Optional[Dict[str, str]]:
+    """Map VariantProperty objectID → VariantPropertyValue objectID for this symbol."""
+    parent_guid = parent["guid"]
+    prop_specs = fig_symbol.get("variantPropSpecs", [])
+
+    pairs = _pairs_from_prop_specs(parent, prop_specs)
+
+    if not pairs:
+        utils.log_conversion_warning("VAR002", fig_symbol)
+        return None
+
+    specs = {}
+    for prop_name, val_name in pairs:
+        prop_id = utils.gen_object_id(
+            parent_guid, b"variant_property:" + prop_name.encode("utf-8")
+        )
+        val_id = utils.gen_object_id(
+            parent_guid,
+            b"variant_value:" + prop_name.encode("utf-8") + b":" + val_name.encode("utf-8"),
+        )
+        specs[prop_id] = val_id
+    return specs
+
+
+def _pairs_from_prop_specs(parent: dict, prop_specs: list) -> List[Tuple[str, str]]:
+    """Resolve variantPropSpecs entries to (property_name, value) pairs via componentPropDefs."""
+    prop_defs = {
+        tuple(d["id"]): d["name"]
+        for d in parent.get("componentPropDefs", [])
+        if d.get("type") == "VARIANT"
+    }
+
+    pairs = []
+    for spec in prop_specs:
+        prop_name = prop_defs.get(tuple(spec["propDefId"]))
+        if prop_name is not None:
+            pairs.append((prop_name, spec["value"]))
+    return pairs
