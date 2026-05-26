@@ -340,6 +340,40 @@ class TestOverrides:
         )
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
+    def test_detached_fill_style_override_with_paints(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 10)]},
+                "styleIdForFill": {"guid": [(2**32) - 1, (2**32) - 1]},
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[1],
+                        "opacity": 0.7,
+                        "blendMode": "MULTIPLY",
+                        "visible": True,
+                    }
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_vector_id = symbol.layers[2].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_vector_id}_color:fill-0", value=SKETCH_COLOR[1]),
+            OverrideValue(
+                overrideName=f"{symbol_vector_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
+            ),
+            OverrideValue(overrideName=f"{symbol_vector_id}_opacity:fill-0", value=0.7),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
     def test_color_override_ignored(self, no_detach, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [

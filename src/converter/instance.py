@@ -244,9 +244,13 @@ def sketch_override_object_id(fig_node: dict) -> str:
 def convert_style_ref_override(
     sketch_path_str: str, style_ref: dict, sketch_part: str
 ) -> Tuple[List[OverrideValue], List[str]]:
+    asset_ref = style_ref.get("assetRef")
+    if asset_ref is None:
+        return [], []
+
     try:
-        fig_style = context.fig_node_by_key(style_ref["assetRef"]["key"])
-    except Fig2SketchWarning:
+        fig_style = context.fig_node_by_key(asset_ref["key"])
+    except (Fig2SketchWarning, KeyError):
         return [], ["assetRef"]
 
     if "fillPaints" not in fig_style:
