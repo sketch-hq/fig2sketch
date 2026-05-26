@@ -24,6 +24,62 @@ FIG_VECTOR = {
 }
 
 
+def rotated_vector_with_regions(regions):
+    return {
+        **FIG_VECTOR,
+        "transform": Matrix([[0.7071, -0.7071, 0], [0.7071, 0.7071, 0]]),
+        "vectorNetwork": {
+            "regions": regions,
+            "segments": [
+                {
+                    "start": 0,
+                    "end": 1,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 1,
+                    "end": 2,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 2,
+                    "end": 0,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 3,
+                    "end": 4,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 4,
+                    "end": 5,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+                {
+                    "start": 5,
+                    "end": 3,
+                    "tangentStart": {"x": 0, "y": 0},
+                    "tangentEnd": {"x": 0, "y": 0},
+                },
+            ],
+            "vertices": [
+                {"x": 0, "y": 0},
+                {"x": 10, "y": 0},
+                {"x": 0, "y": 10},
+                {"x": 20, "y": 20},
+                {"x": 30, "y": 20},
+                {"x": 20, "y": 30},
+            ],
+        },
+    }
+
+
 class TestGeometry:
     def test_winding_rule_odd(self):
         fig = {
@@ -198,6 +254,51 @@ def test_mixed_corner_radii_are_reflected_in_style_corners():
     assert sp.style.corners.style == CornerStyle.ROUNDED
     assert sp.style.corners.smoothing is None
     assert sp.pointRadiusBehaviour == PointRadiusBehaviour.V1
+
+
+def test_generated_region_layers_do_not_duplicate_vector_rotation():
+    fig = rotated_vector_with_regions(
+        [
+            {
+                "windingRule": "NONZERO",
+                "loops": [[0, 1, 2]],
+                "style": {},
+            },
+            {
+                "windingRule": "NONZERO",
+                "loops": [[3, 4, 5]],
+                "style": {},
+            },
+        ]
+    )
+
+    sketch = shape_path.convert(fig)
+
+    assert isinstance(sketch, Group)
+    assert sketch.rotation == pytest.approx(-45)
+    assert [layer.rotation for layer in sketch.layers] == [0, 0]
+    assert [layer.frame.x for layer in sketch.layers] == [0, 0]
+    assert [layer.frame.y for layer in sketch.layers] == [0, 0]
+
+
+def test_generated_loop_layers_do_not_duplicate_vector_rotation():
+    fig = rotated_vector_with_regions(
+        [
+            {
+                "windingRule": "ODD",
+                "loops": [[0, 1, 2], [3, 4, 5]],
+                "style": {},
+            }
+        ]
+    )
+
+    sketch = shape_path.convert(fig)
+
+    assert isinstance(sketch, ShapeGroup)
+    assert sketch.rotation == pytest.approx(-45)
+    assert [layer.rotation for layer in sketch.layers] == [0, 0]
+    assert [layer.frame.x for layer in sketch.layers] == [0, 0]
+    assert [layer.frame.y for layer in sketch.layers] == [0, 0]
 
 
 def test_complex_vector():

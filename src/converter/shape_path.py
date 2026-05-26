@@ -48,8 +48,7 @@ def convert(fig_vector: dict) -> Union[Group, ShapeGroup, ShapePath]:
         # Ignore positioning for children. TODO: We should probably be building these shapePaths by
         # hand, instead of relying on the generic convert_shape_path function
         for s in regions:
-            s.frame.x = 0
-            s.frame.y = 0
+            reset_child_positioning(s)
 
         obj = Group(**base.base_styled(fig_vector), layers=regions)  # type: ignore[arg-type]
         obj.style.fills = []
@@ -72,8 +71,7 @@ def convert_region(
     if len(loops) > 1:
         # Ignore positioning for children.
         for s in loops:
-            s.frame.x = 0
-            s.frame.y = 0
+            reset_child_positioning(s)
 
         obj = ShapeGroup(
             **base.base_styled({**fig_vector, **region["style"]}),
@@ -89,6 +87,14 @@ def convert_region(
         return obj
     else:
         return loops[0]
+
+
+def reset_child_positioning(layer: Union[ShapeGroup, ShapePath]) -> None:
+    layer.frame.x = 0
+    layer.frame.y = 0
+    layer.rotation = 0
+    layer.isFlippedHorizontal = False
+    layer.isFlippedVertical = False
 
 
 def maybe_convert_cropped_image_fill(fig_vector: dict, style: dict) -> None:
