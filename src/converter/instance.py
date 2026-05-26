@@ -216,6 +216,10 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             sk, us = convert_style_ref_override(sketch_path_str, value, "border")
             sketch_overrides += sk
             unsupported_overrides += [f"styleIdForStroke.{p}" for p in us]
+        elif prop == "effects":
+            sk, us = convert_effect_overrides(sketch_path_str, value)
+            sketch_overrides += sk
+            unsupported_overrides += [f"effects.{p}" for p in us]
         elif prop in ["size", "pluginData", "name", "exportSettings", "targetAspectRatio"]:
             # Size is handled by applying derivedSymbolData
             # The rest are surely not worth detaching for
@@ -239,6 +243,36 @@ def sketch_override_object_id(fig_node: dict) -> str:
         return utils.gen_object_id(fig_node["guid"], b"region0loop0")
 
     return utils.gen_object_id(fig_node["guid"], b"region0")
+
+
+def convert_effect_overrides(
+    sketch_path_str: str, effects: list
+) -> Tuple[List[OverrideValue], List[str]]:
+    sketch_overrides = []
+    unsupported_overrides = []
+    effect_indexes = {"shadow": 0, "innershadow": 0}
+
+    for effect in effects:
+        if effect["type"] == "DROP_SHADOW":
+            part = "shadow"
+        elif effect["type"] == "INNER_SHADOW":
+            part = "innershadow"
+        else:
+            unsupported_overrides.append(effect["type"])
+            continue
+
+        part_path = f"{part}-{effect_indexes[part]}"
+        effect_indexes[part] += 1
+
+        if "color" in effect:
+            sketch_overrides.append(
+                OverrideValue(
+                    overrideName=f"{sketch_path_str}_color:{part_path}",
+                    value=style_converter.convert_color(effect["color"]),
+                )
+            )
+
+    return sketch_overrides, unsupported_overrides
 
 
 def convert_style_ref_override(
