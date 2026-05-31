@@ -261,6 +261,114 @@ class TestOverrides:
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
+    def test_fill_override_emits_default_opacity_when_master_differs(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[1],
+                        "opacity": 1,
+                        "blendMode": "NORMAL",
+                        "visible": True,
+                    }
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_text_id = symbol.layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1]),
+            OverrideValue(overrideName=f"{symbol_text_id}_opacity:fill-0", value=1),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_fill_override_omits_values_matching_master(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[1],
+                        "opacity": 0.9,
+                        "blendMode": "NORMAL",
+                        "visible": True,
+                    }
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_text_id = symbol.layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1])
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_fill_override_emits_normal_blend_when_master_differs(self, warnings):
+        text = copy.deepcopy(FIG_TEXT)
+        text["fillPaints"][0]["blendMode"] = "MULTIPLY"
+        symbol = {**copy.deepcopy(FIG_SYMBOL), "children": [text, FIG_RECT, FIG_VECTOR]}
+        context.init(
+            None,
+            {
+                (0, 3): symbol,
+                (0, 1): text,
+                (0, 2): FIG_RECT,
+                (0, 5): FIG_FILL_STYLE,
+                (0, 6): FIG_VECTOR,
+                (1, 9): text,
+                (1, 10): FIG_VECTOR,
+            },
+            "DISPLAY_P3",
+        )
+        context._component_symbols = {(0, 3): False}
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[0],
+                        "opacity": 0.9,
+                        "blendMode": "NORMAL",
+                        "visible": True,
+                    }
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_text_id = symbol.layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_blendMode:fill-0", value=BlendMode.NORMAL
+            )
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
     def test_border_override(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [

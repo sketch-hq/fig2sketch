@@ -173,17 +173,7 @@ def test_page(sketch_doc):
                     "green": 0.0,
                     "red": 1.0,
                 },
-            },
-            {
-                "_class": "overrideValue",
-                "overrideName": "82E52E33-0F1A-4CEA-8D95-0BFD55F9CEE3_blendMode:fill-0",
-                "value": 0,
-            },
-            {
-                "_class": "overrideValue",
-                "overrideName": "82E52E33-0F1A-4CEA-8D95-0BFD55F9CEE3_opacity:fill-0",
-                "value": 1.0,
-            },
+            }
         ]
 
         # JPG image
