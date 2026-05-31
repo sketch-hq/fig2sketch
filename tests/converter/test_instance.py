@@ -2,6 +2,7 @@ from .base import *
 import copy
 import pytest
 from converter import tree
+from converter import style as style_converter
 from converter.config import config
 from converter.context import context
 from sketchformat.layer_group import Group, SymbolInstance, OverrideValue, Frame
@@ -399,6 +400,114 @@ class TestOverrides:
                 overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.SCREEN
             ),
             OverrideValue(overrideName=f"{symbol_rect_id}_opacity:border-0", value=0.5),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_gradient_border_override(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [
+                    {
+                        "type": "GRADIENT_LINEAR",
+                        "transform": Matrix([[1, 0, 0], [0, 1, 0]]),
+                        "stops": [
+                            {"color": FIG_COLOR[0], "position": 0},
+                            {"color": FIG_COLOR[1], "position": 1},
+                        ],
+                        "opacity": 0.38,
+                        "blendMode": "NORMAL",
+                        "visible": True,
+                    }
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_rect_id = symbol.layers[1].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(
+                overrideName=f"{symbol_rect_id}_color:border-0",
+                value=style_converter.convert_gradient(
+                    FIG_RECT, fig["symbolData"]["symbolOverrides"][0]["strokePaints"][0]
+                ),
+            ),
+            OverrideValue(overrideName=f"{symbol_rect_id}_opacity:border-0", value=0.38),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_matching_gradient_border_override_is_omitted(self, warnings):
+        rect = copy.deepcopy(FIG_RECT)
+        rect["strokePaints"] = [
+            {
+                "type": "GRADIENT_LINEAR",
+                "transform": Matrix([[1, 0, 0], [0, 1, 0]]),
+                "stops": [
+                    {"color": FIG_COLOR[0], "position": 0},
+                    {"color": FIG_COLOR[1], "position": 1},
+                ],
+                "opacity": 0.38,
+                "blendMode": "NORMAL",
+                "visible": True,
+            }
+        ]
+        symbol = {**copy.deepcopy(FIG_SYMBOL), "children": [FIG_TEXT, rect, FIG_VECTOR]}
+        context.init(
+            None,
+            {
+                (0, 3): symbol,
+                (0, 1): FIG_TEXT,
+                (0, 2): rect,
+                (0, 5): FIG_FILL_STYLE,
+                (0, 6): FIG_VECTOR,
+                (1, 9): FIG_TEXT,
+                (1, 10): FIG_VECTOR,
+            },
+            "DISPLAY_P3",
+        )
+        context._component_symbols = {(0, 3): False}
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(0, 2)]}, "strokePaints": copy.deepcopy(rect["strokePaints"])}
+        ]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == []
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_gradient_border_opacity_override_without_gradient_fields(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [
+                    {
+                        "type": "GRADIENT_LINEAR",
+                        "opacity": 0.38,
+                        "visible": True,
+                    }
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_rect_id = symbol.layers[1].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_opacity:border-0", value=0.38),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 

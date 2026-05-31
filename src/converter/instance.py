@@ -8,6 +8,13 @@ from sketchformat.style import Style
 from typing import List, Tuple
 from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
 
+GRADIENT_PAINT_TYPES = {
+    "GRADIENT_LINEAR",
+    "GRADIENT_RADIAL",
+    "GRADIENT_ANGULAR",
+    "GRADIENT_DIAMOND",
+}
+
 
 def convert(fig_instance):
     if utils.is_invalid_ref(fig_instance["symbolData"]["symbolID"]):
@@ -200,25 +207,37 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             )
         elif prop == "fillPaints":
             sk, us = convert_style_part_overrides(
-                sketch_path_str, value, "fill", master_paints(fig_nodes[-1], "fill")
+                sketch_path_str,
+                value,
+                "fill",
+                fig_nodes[-1],
             )
             sketch_overrides += sk
             unsupported_overrides += [f"fillPaints.{p}" for p in us]
         elif prop == "strokePaints":
             sk, us = convert_style_part_overrides(
-                sketch_path_str, value, "border", master_paints(fig_nodes[-1], "border")
+                sketch_path_str,
+                value,
+                "border",
+                fig_nodes[-1],
             )
             sketch_overrides += sk
             unsupported_overrides += [f"strokePaints.{p}" for p in us]
         elif prop == "styleIdForFill":
             sk, us = convert_style_ref_override(
-                sketch_path_str, value, "fill", master_paints(fig_nodes[-1], "fill")
+                sketch_path_str,
+                value,
+                "fill",
+                fig_nodes[-1],
             )
             sketch_overrides += sk
             unsupported_overrides += [f"styleIdForFill.{p}" for p in us]
         elif prop == "styleIdForStroke":
             sk, us = convert_style_ref_override(
-                sketch_path_str, value, "border", master_paints(fig_nodes[-1], "border")
+                sketch_path_str,
+                value,
+                "border",
+                fig_nodes[-1],
             )
             sketch_overrides += sk
             unsupported_overrides += [f"styleIdForStroke.{p}" for p in us]
@@ -282,7 +301,10 @@ def convert_effect_overrides(
 
 
 def convert_style_ref_override(
-    sketch_path_str: str, style_ref: dict, sketch_part: str, master_part_paints: list
+    sketch_path_str: str,
+    style_ref: dict,
+    sketch_part: str,
+    master_node: dict,
 ) -> Tuple[List[OverrideValue], List[str]]:
     asset_ref = style_ref.get("assetRef")
     if asset_ref is None:
@@ -297,7 +319,10 @@ def convert_style_ref_override(
         return [], ["fillPaints"]
 
     return convert_style_part_overrides(
-        sketch_path_str, fig_style["fillPaints"], sketch_part, master_part_paints
+        sketch_path_str,
+        fig_style["fillPaints"],
+        sketch_part,
+        master_node,
     )
 
 
@@ -314,10 +339,14 @@ def master_paints(fig_node: dict, sketch_part: str) -> list:
 
 
 def convert_style_part_overrides(
-    sketch_path_str: str, paints: list, sketch_part: str, master_part_paints: list
+    sketch_path_str: str,
+    paints: list,
+    sketch_part: str,
+    master_node: dict,
 ) -> Tuple[List[OverrideValue], List[str]]:
     sketch_overrides = []
     unsupported_overrides = []
+    master_part_paints = master_paints(master_node, sketch_part)
 
     for index, paint in enumerate(paints):
         part_path = f"{sketch_part}-{index}"
@@ -340,6 +369,23 @@ def convert_style_part_overrides(
                     )
             else:
                 unsupported_overrides.append("color")
+
+        if paint.get("type") in GRADIENT_PAINT_TYPES and "stops" in paint and "transform" in paint:
+            gradient = style_converter.convert_gradient(master_node, paint)
+            master_gradient = (
+                style_converter.convert_gradient(master_node, master_paint)
+                if master_paint.get("type") in GRADIENT_PAINT_TYPES
+                and "stops" in master_paint
+                and "transform" in master_paint
+                else None
+            )
+            if gradient != master_gradient:
+                sketch_overrides.append(
+                    OverrideValue(
+                        overrideName=f"{sketch_path_str}_color:{part_path}",
+                        value=gradient,
+                    )
+                )
 
         blend_mode = style_converter.BLEND_MODE[paint.get("blendMode", "NORMAL")]
         master_blend_mode = style_converter.BLEND_MODE[master_paint.get("blendMode", "NORMAL")]
@@ -368,6 +414,16 @@ def unsupported_paint_override_props(paint: dict) -> List[str]:
     ignored_props = {"blendMode", "color", "opacity", "type", "visible"}
     if paint.get("type") == "SOLID":
         return [prop for prop in paint if prop not in ignored_props]
+
+    if paint.get("type") in GRADIENT_PAINT_TYPES:
+        gradient_props = {
+            "interpolationColorSpace",
+            "interpolationHueMethod",
+            "stops",
+            "stopsVar",
+            "transform",
+        }
+        return [prop for prop in paint if prop not in ignored_props and prop not in gradient_props]
 
     return [
         prop
