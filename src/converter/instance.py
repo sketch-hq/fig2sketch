@@ -208,8 +208,8 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
         elif prop == "fillPaints":
             sk, us = convert_style_part_overrides(
                 sketch_path_str,
-                value,
                 "fill",
+                value,
                 fig_nodes[-1],
             )
             sketch_overrides += sk
@@ -217,8 +217,8 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
         elif prop == "strokePaints":
             sk, us = convert_style_part_overrides(
                 sketch_path_str,
-                value,
                 "border",
+                value,
                 fig_nodes[-1],
             )
             sketch_overrides += sk
@@ -226,8 +226,8 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
         elif prop == "styleIdForFill":
             sk, us = convert_style_ref_override(
                 sketch_path_str,
-                value,
                 "fill",
+                value,
                 fig_nodes[-1],
             )
             sketch_overrides += sk
@@ -235,8 +235,8 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
         elif prop == "styleIdForStroke":
             sk, us = convert_style_ref_override(
                 sketch_path_str,
-                value,
                 "border",
+                value,
                 fig_nodes[-1],
             )
             sketch_overrides += sk
@@ -302,8 +302,8 @@ def convert_effect_overrides(
 
 def convert_style_ref_override(
     sketch_path_str: str,
-    style_ref: dict,
     sketch_part: str,
+    style_ref: dict,
     master_node: dict,
 ) -> Tuple[List[OverrideValue], List[str]]:
     asset_ref = style_ref.get("assetRef")
@@ -320,8 +320,8 @@ def convert_style_ref_override(
 
     return convert_style_part_overrides(
         sketch_path_str,
-        fig_style["fillPaints"],
         sketch_part,
+        fig_style["fillPaints"],
         master_node,
     )
 
@@ -340,8 +340,8 @@ def master_paints(fig_node: dict, sketch_part: str) -> list:
 
 def convert_style_part_overrides(
     sketch_path_str: str,
-    paints: list,
     sketch_part: str,
+    paints: list,
     master_node: dict,
 ) -> Tuple[List[OverrideValue], List[str]]:
     sketch_overrides = []
