@@ -411,6 +411,13 @@ def convert_style_part_overrides(
 
 
 def unsupported_paint_override_props(paint: dict) -> List[str]:
+    """Return paint override fields that are unsafe to keep on an attached instance.
+
+    Properties listed below are supported or intentionally dropped becuase Sketch has no
+    equivalent override representation. Any remaining fields are reported as unsupported
+    so the instance can detach rather than silently losing data the converter does not
+    understand.
+    """
     ignored_props = {"blendMode", "color", "opacity", "type", "visible"}
     if paint.get("type") == "SOLID":
         return [prop for prop in paint if prop not in ignored_props]
