@@ -1,12 +1,19 @@
 import copy, logging
-from . import base, group
+from . import base, group, shape_path as shape_path_converter, style as style_converter
 from .context import context
 from .config import config
 from converter import utils
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
 from typing import List, Tuple
-from .errors import Fig2SketchNodeChanged
+from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
+
+GRADIENT_PAINT_TYPES = {
+    "GRADIENT_LINEAR",
+    "GRADIENT_RADIAL",
+    "GRADIENT_ANGULAR",
+    "GRADIENT_DIAMOND",
+}
 
 
 def convert(fig_instance):
@@ -16,6 +23,7 @@ def convert(fig_instance):
         return group.convert(fig_instance)
 
     all_overrides = get_all_overrides(fig_instance)
+    all_overrides = apply_root_overrides_to_instance(fig_instance, all_overrides)
     sketch_overrides, unsupported = convert_overrides(all_overrides, fig_instance)
     if unsupported:
         if config.can_detach:
@@ -40,6 +48,7 @@ def convert(fig_instance):
     )
     # Replace style
     obj.style = Style(do_objectID=utils.gen_object_id(fig_instance["guid"], b"style"))
+    obj.style.contextSettings.opacity = fig_instance.get("opacity", 1)
 
     return obj
 
@@ -87,6 +96,31 @@ def convert_overrides(all_overrides, fig_instance):
         unsupported_overrides += us
 
     return sketch_overrides, unsupported_overrides
+
+
+def apply_root_overrides_to_instance(fig_instance: dict, all_overrides: list) -> list:
+    fig_master = context.find_symbol(fig_instance["symbolData"]["symbolID"])
+    root_guid = fig_master.get("overrideKey", fig_master["guid"])
+    remaining_overrides = []
+
+    for override in all_overrides:
+        if override["guidPath"]["guids"] != [root_guid]:
+            remaining_overrides.append(override)
+            continue
+
+        remaining_root_override = {"guidPath": override["guidPath"]}
+        for prop, value in override.items():
+            if prop == "guidPath":
+                continue
+            if prop == "opacity":
+                fig_instance["opacity"] = value
+            else:
+                remaining_root_override[prop] = value
+
+        if len(remaining_root_override) > 1:
+            remaining_overrides.append(remaining_root_override)
+
+    return remaining_overrides
 
 
 def get_all_overrides(fig_instance):
@@ -140,11 +174,9 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
     unsupported_overrides = []
 
     try:
+        fig_nodes = [context.fig_node(guid) for guid in override["guidPath"]["guids"]]
         # Convert uuids in the path from top symbol to child instance
-        sketch_path = [
-            utils.gen_object_id(context.fig_node(guid)["guid"])
-            for guid in override["guidPath"]["guids"]
-        ]
+        sketch_path = [sketch_override_object_id(fig_node) for fig_node in fig_nodes]
         sketch_path_str = "/".join(sketch_path)
     except KeyError as e:
         # Cannot find where to apply override
@@ -173,7 +205,47 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
                     value=utils.gen_object_id(value),
                 )
             )
-        elif prop in ["size", "pluginData", "name", "exportSettings"]:
+        elif prop == "fillPaints":
+            sk, us = convert_style_part_overrides(
+                sketch_path_str,
+                "fill",
+                value,
+                fig_nodes[-1],
+            )
+            sketch_overrides += sk
+            unsupported_overrides += [f"fillPaints.{p}" for p in us]
+        elif prop == "strokePaints":
+            sk, us = convert_style_part_overrides(
+                sketch_path_str,
+                "border",
+                value,
+                fig_nodes[-1],
+            )
+            sketch_overrides += sk
+            unsupported_overrides += [f"strokePaints.{p}" for p in us]
+        elif prop == "styleIdForFill":
+            sk, us = convert_style_ref_override(
+                sketch_path_str,
+                "fill",
+                value,
+                fig_nodes[-1],
+            )
+            sketch_overrides += sk
+            unsupported_overrides += [f"styleIdForFill.{p}" for p in us]
+        elif prop == "styleIdForStroke":
+            sk, us = convert_style_ref_override(
+                sketch_path_str,
+                "border",
+                value,
+                fig_nodes[-1],
+            )
+            sketch_overrides += sk
+            unsupported_overrides += [f"styleIdForStroke.{p}" for p in us]
+        elif prop == "effects":
+            sk, us = convert_effect_overrides(sketch_path_str, value)
+            sketch_overrides += sk
+            unsupported_overrides += [f"effects.{p}" for p in us]
+        elif prop in ["size", "pluginData", "name", "exportSettings", "targetAspectRatio"]:
             # Size is handled by applying derivedSymbolData
             # The rest are surely not worth detaching for
             pass
@@ -182,6 +254,189 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             unsupported_overrides.append(prop)
 
     return sketch_overrides, unsupported_overrides
+
+
+def sketch_override_object_id(fig_node: dict) -> str:
+    if fig_node["type"] != "VECTOR" or "vectorNetwork" not in fig_node:
+        return utils.gen_object_id(fig_node["guid"])
+
+    regions = shape_path_converter.get_all_segments(fig_node["vectorNetwork"])
+    if len(regions) != 1:
+        return utils.gen_object_id(fig_node["guid"])
+
+    if len(regions[0]["loops"]) == 1:
+        return utils.gen_object_id(fig_node["guid"], b"region0loop0")
+
+    return utils.gen_object_id(fig_node["guid"], b"region0")
+
+
+def convert_effect_overrides(
+    sketch_path_str: str, effects: list
+) -> Tuple[List[OverrideValue], List[str]]:
+    sketch_overrides = []
+    unsupported_overrides = []
+    effect_indexes = {"shadow": 0, "innershadow": 0}
+
+    for effect in effects:
+        if effect["type"] == "DROP_SHADOW":
+            part = "shadow"
+        elif effect["type"] == "INNER_SHADOW":
+            part = "innershadow"
+        else:
+            unsupported_overrides.append(effect["type"])
+            continue
+
+        part_path = f"{part}-{effect_indexes[part]}"
+        effect_indexes[part] += 1
+
+        if "color" in effect:
+            sketch_overrides.append(
+                OverrideValue(
+                    overrideName=f"{sketch_path_str}_color:{part_path}",
+                    value=style_converter.convert_color(effect["color"]),
+                )
+            )
+
+    return sketch_overrides, unsupported_overrides
+
+
+def convert_style_ref_override(
+    sketch_path_str: str,
+    sketch_part: str,
+    style_ref: dict,
+    master_node: dict,
+) -> Tuple[List[OverrideValue], List[str]]:
+    asset_ref = style_ref.get("assetRef")
+    if asset_ref is None:
+        return [], []
+
+    try:
+        fig_style = context.fig_node_by_key(asset_ref["key"])
+    except (Fig2SketchWarning, KeyError):
+        return [], ["assetRef"]
+
+    if "fillPaints" not in fig_style:
+        return [], ["fillPaints"]
+
+    return convert_style_part_overrides(
+        sketch_path_str,
+        sketch_part,
+        fig_style["fillPaints"],
+        master_node,
+    )
+
+
+def master_paints(fig_node: dict, sketch_part: str) -> list:
+    if sketch_part == "border":
+        return fig_node.get("strokePaints", [])
+
+    if fig_node["type"] == "VECTOR" and "vectorNetwork" in fig_node:
+        regions = shape_path_converter.get_all_segments(fig_node["vectorNetwork"])
+        if len(regions) == 1:
+            return regions[0]["style"].get("fillPaints", fig_node.get("fillPaints", []))
+
+    return fig_node.get("fillPaints", [])
+
+
+def convert_style_part_overrides(
+    sketch_path_str: str,
+    sketch_part: str,
+    paints: list,
+    master_node: dict,
+) -> Tuple[List[OverrideValue], List[str]]:
+    sketch_overrides = []
+    unsupported_overrides = []
+    master_part_paints = master_paints(master_node, sketch_part)
+
+    for index, paint in enumerate(paints):
+        part_path = f"{sketch_part}-{index}"
+        master_paint = master_part_paints[index] if index < len(master_part_paints) else {}
+
+        if "color" in paint:
+            if paint.get("type") == "SOLID":
+                color = style_converter.convert_color(paint["color"])
+                master_color = (
+                    style_converter.convert_color(master_paint["color"])
+                    if "color" in master_paint
+                    else None
+                )
+                if color != master_color:
+                    sketch_overrides.append(
+                        OverrideValue(
+                            overrideName=f"{sketch_path_str}_color:{part_path}",
+                            value=color,
+                        )
+                    )
+            else:
+                unsupported_overrides.append("color")
+
+        if paint.get("type") in GRADIENT_PAINT_TYPES and "stops" in paint and "transform" in paint:
+            gradient = style_converter.convert_gradient(master_node, paint)
+            master_gradient = (
+                style_converter.convert_gradient(master_node, master_paint)
+                if master_paint.get("type") in GRADIENT_PAINT_TYPES
+                and "stops" in master_paint
+                and "transform" in master_paint
+                else None
+            )
+            if gradient != master_gradient:
+                sketch_overrides.append(
+                    OverrideValue(
+                        overrideName=f"{sketch_path_str}_color:{part_path}",
+                        value=gradient,
+                    )
+                )
+
+        blend_mode = style_converter.BLEND_MODE[paint.get("blendMode", "NORMAL")]
+        master_blend_mode = style_converter.BLEND_MODE[master_paint.get("blendMode", "NORMAL")]
+        if "blendMode" in paint and blend_mode != master_blend_mode:
+            sketch_overrides.append(
+                OverrideValue(
+                    overrideName=f"{sketch_path_str}_blendMode:{part_path}",
+                    value=blend_mode,
+                )
+            )
+
+        if "opacity" in paint and paint["opacity"] != master_paint.get("opacity", 1):
+            sketch_overrides.append(
+                OverrideValue(
+                    overrideName=f"{sketch_path_str}_opacity:{part_path}",
+                    value=paint["opacity"],
+                )
+            )
+
+        unsupported_overrides += unsupported_paint_override_props(paint)
+
+    return sketch_overrides, unsupported_overrides
+
+
+def unsupported_paint_override_props(paint: dict) -> List[str]:
+    """Return paint override fields that are unsafe to keep on an attached instance.
+
+    Properties listed below are supported or intentionally dropped becuase Sketch has no
+    equivalent override representation. Any remaining fields are reported as unsupported
+    so the instance can detach rather than silently losing data the converter does not
+    understand.
+    """
+    ignored_props = {"blendMode", "color", "opacity", "type", "visible"}
+    if paint.get("type") == "SOLID":
+        return [prop for prop in paint if prop not in ignored_props]
+
+    if paint.get("type") in GRADIENT_PAINT_TYPES:
+        gradient_props = {
+            "interpolationColorSpace",
+            "interpolationHueMethod",
+            "stops",
+            "stopsVar",
+            "transform",
+        }
+        return [prop for prop in paint if prop not in ignored_props and prop not in gradient_props]
+
+    return [
+        prop
+        for prop in paint
+        if prop not in ignored_props and prop not in ["image", "imageScaleMode", "scale"]
+    ]
 
 
 def find_symbol_master(root_symbol, guid_path, overrides):

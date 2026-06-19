@@ -47,6 +47,9 @@ class Context:
         )
         self._component_nodes: Set[Sequence[int]] = set(find_node_ids(components_page))
         self._converted_component_sets: Set[Sequence[int]] = set()
+        self._node_by_key = {
+            node["key"]: node for node in id_map.values() if isinstance(node.get("key"), str)
+        }
 
         # Where to position symbols of the specified width
         # width -> (x, y)
@@ -80,6 +83,12 @@ class Context:
     def fig_node(self, fid: Sequence[int]) -> dict:
         if fid in self._node_by_id:
             return self._node_by_id[fid]
+        else:
+            raise Fig2SketchWarning("NOD001")
+
+    def fig_node_by_key(self, key: str) -> dict:
+        if key in self._node_by_key:
+            return self._node_by_key[key]
         else:
             raise Fig2SketchWarning("NOD001")
 

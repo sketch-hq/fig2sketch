@@ -159,17 +159,22 @@ def test_page(sketch_doc):
             }
         ]
 
-        # Instance with color override (detached)
-        assert i3["_class"] == "group"
-        assert len(i3["layers"]) == 2
-        assert i3["layers"][0]["_class"] == "rectangle"
-        assert i3["layers"][0]["style"]["fills"][0]["color"] == {
-            "_class": "color",
-            "alpha": 1.0,
-            "blue": 0.0,
-            "green": 0.0,
-            "red": 1.0,
-        }
+        # Instance with color override
+        assert i3["_class"] == "symbolInstance"
+        assert "layers" not in i3
+        assert i3["overrideValues"] == [
+            {
+                "_class": "overrideValue",
+                "overrideName": "82E52E33-0F1A-4CEA-8D95-0BFD55F9CEE3_color:fill-0",
+                "value": {
+                    "_class": "color",
+                    "alpha": 1.0,
+                    "blue": 0.0,
+                    "green": 0.0,
+                    "red": 1.0,
+                },
+            }
+        ]
 
         # JPG image
         assert jpg["_class"] == "rectangle"
