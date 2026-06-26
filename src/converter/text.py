@@ -87,10 +87,7 @@ def convert(fig_text):
     obj.resizingConstraint &= CONSTRAINT_MASK_FOR_AUTO_RESIZE[text_resize]
 
     obj.style.textStyle = text_style(fig_text)
-
-    # Potentially multiple colors, use the attributes instead of the top level color
-    if len(obj.attributedString.attributes) > 1:
-        obj.style.fills = []
+    reconcile_text_and_fill_colors(obj)
 
     # Adjust frame's width to include kerning so the text doesn't get cut
     converted_kerning = obj.style.textStyle.encodedAttributes.kerning
@@ -98,6 +95,28 @@ def convert(fig_text):
         obj.frame.width += converted_kerning
 
     return obj
+
+
+def reconcile_text_and_fill_colors(obj: Text) -> None:
+    text_colors = []
+    for attr in obj.attributedString.attributes:
+        color = attr.attributes.MSAttributedStringColorAttribute
+        if color not in text_colors:
+            text_colors.append(color)
+
+    if len(text_colors) > 1:
+        obj.style.fills = []
+        return
+
+    text_color = text_colors[0]
+    if len(obj.style.fills) == 1 and obj.style.fills[0].color == text_color:
+        obj.style.fills = []
+        return
+
+    if len(obj.style.fills) > 1:
+        obj.style.textStyle.encodedAttributes.MSAttributedStringColorAttribute = Color.Black()
+        for attr in obj.attributedString.attributes:
+            attr.attributes.MSAttributedStringColorAttribute = Color.Black()
 
 
 def text_style(fig_text):
