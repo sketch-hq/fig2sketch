@@ -1,4 +1,5 @@
 import logging
+from sketchformat.common import Size
 from sketchformat.layer_common import *
 from sketchformat.layer_group import FlexDirection
 from sketchformat.layer_shape import *
@@ -49,6 +50,8 @@ class _BaseLayer(positioning._Positioning, prototype._Flow):
     horizontalPins: int
     verticalPins: int
     resizingType: ResizeType
+    minSize: Size
+    maxSize: Size
     isTemplate: bool
 
 
@@ -74,6 +77,8 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         "horizontalSizing": horizontal_sizing_behaviour(fig_node),
         "verticalSizing": vertical_sizing_behaviour(fig_node),
         "flexItem": flex_item(fig_node),
+        "minSize": min_size(fig_node),
+        "maxSize": max_size(fig_node),
         **prototype.convert_flow(fig_node),  # type: ignore
         "isTemplate": False,
     }
@@ -263,6 +268,32 @@ def flex_item(fig_node: dict) -> Optional[FlexItem]:
         return FlexItem(ignoreLayout=True)
 
     return None
+
+
+def min_size(fig_node: dict) -> Size:
+    # Figma only stores these in auto-layout contexts; when absent we default to {0, 0}.
+    return _size(fig_node.get("minSize")) or Size(0, 0)
+
+
+def max_size(fig_node: dict) -> Size:
+    return _size(fig_node.get("maxSize")) or Size(0, 0)
+
+
+def _size(fig_size: Optional[dict]) -> Optional[Size]:
+    # Figma stores sizes as {"value": {"x": width, "y": height}}. An unset axis is 0 for min
+    # and Infinity for max; Sketch uses 0 for both to mean "no constraint".
+    if not fig_size:
+        return None
+
+    value = fig_size.get("value")
+    if not value:
+        return None
+
+    return Size(_finite(value.get("x", 0)), _finite(value.get("y", 0)))
+
+
+def _finite(value: float) -> float:
+    return 0 if math.isinf(value) or math.isnan(value) else value
 
 
 def horizontal_sizing_behaviour(fig_node: dict) -> SizingBehaviour:

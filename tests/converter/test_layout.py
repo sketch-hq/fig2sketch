@@ -1,4 +1,5 @@
 import pytest
+from sketchformat.common import Size
 from sketchformat.layer_common import FlexAlign, FlexDirection, FlexJustify, PaddingSelection
 from sketchformat.layer_group import ClippingBehavior, FlexGroupLayout, FreeFormGroupLayout
 from .base import *
@@ -425,3 +426,65 @@ class TestPadding:
         assert sketch_frame.bottomPadding == 5
         assert sketch_frame.leftPadding == 10
         assert sketch_frame.paddingSelection == PaddingSelection.PAIRED
+
+
+@pytest.mark.usefixtures("no_prototyping")
+class TestMinMaxSize:
+    def _frame(self, **extra):
+        return tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "VERTICAL",
+                "children": [],
+                **extra,
+            },
+            "CANVAS",
+        )
+
+    def test_no_constraints(self):
+        # A plain frame without min/max fields defaults to {0, 0}.
+        sketch_frame = self._frame()
+
+        assert sketch_frame.minSize == Size(0, 0)
+        assert sketch_frame.maxSize == Size(0, 0)
+
+    def test_min_and_max(self):
+        sketch_frame = self._frame(
+            minSize={"value": {"x": 10, "y": 20}},
+            maxSize={"value": {"x": 200, "y": 300}},
+        )
+
+        assert sketch_frame.minSize == Size(10, 20)
+        assert sketch_frame.maxSize == Size(200, 300)
+
+    def test_min_only(self):
+        sketch_frame = self._frame(minSize={"value": {"x": 10, "y": 20}})
+
+        assert sketch_frame.minSize == Size(10, 20)
+        assert sketch_frame.maxSize == Size(0, 0)
+
+    def test_max_only(self):
+        sketch_frame = self._frame(maxSize={"value": {"x": 200, "y": 300}})
+
+        assert sketch_frame.minSize == Size(0, 0)
+        assert sketch_frame.maxSize == Size(200, 300)
+
+    def test_single_axis_min(self):
+        # Figma leaves the unset axis at 0 for a minimum.
+        sketch_frame = self._frame(minSize={"value": {"x": 10, "y": 0}})
+
+        assert sketch_frame.minSize == Size(10, 0)
+
+    def test_infinite_max_axis_is_zeroed(self):
+        # Figma uses Infinity for an unconstrained maximum axis; Sketch expects 0.
+        sketch_frame = self._frame(maxSize={"value": {"x": float("inf"), "y": 500}})
+
+        assert sketch_frame.maxSize == Size(0, 500)
+
+    def test_serializes_as_sketch_string(self):
+        sketch_frame = self._frame(minSize={"value": {"x": 10, "y": 0}})
+
+        assert sketch_frame.minSize.to_json() == "{10, 0}"
+        assert sketch_frame.maxSize.to_json() == "{0, 0}"
