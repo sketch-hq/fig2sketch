@@ -64,6 +64,7 @@ class FlexGroupLayout:
     crossAxisGutterGap: float = 0
     wrappingEnabled: bool = False
     alignContent: FlexJustify = FlexJustify.START
+    bordersAffectLayout: bool = False
 
 
 @dataclass(kw_only=True)

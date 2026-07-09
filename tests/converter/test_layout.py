@@ -85,6 +85,21 @@ class TestLayout:
             alignContent=FlexJustify.START,
         )
 
+    def test_layout_borders_take_space(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "VERTICAL",
+                "bordersTakeSpace": True,
+                "children": [],
+            },
+            "CANVAS",
+        )
+
+        assert sketch_frame.groupLayout.bordersAffectLayout is True
+
     def test_layout_wrap_cross_axis_spacing(self):
         sketch_frame = tree.convert_node(
             {

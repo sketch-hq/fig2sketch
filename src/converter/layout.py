@@ -80,6 +80,9 @@ def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
     if math.isnan(cross_axis_gutter_gap):
         cross_axis_gutter_gap = 0
 
+    # Advanced stack settings
+    borders_affect_layout = fig_frame.get("bordersTakeSpace", False)
+
     return FlexGroupLayout(
         flexDirection=flex_direction,
         justifyContent=justify,
@@ -88,6 +91,7 @@ def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
         crossAxisGutterGap=cross_axis_gutter_gap,
         wrappingEnabled=wrapping_enabled,
         alignContent=align_content,
+        bordersAffectLayout=borders_affect_layout,
     )
 
 
