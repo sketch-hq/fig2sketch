@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Optional, List, Union
 
+from .common import Size
 from .prototype import FlowConnection
 from .style import Style, Color
 
@@ -31,6 +32,11 @@ class FlexAlign(IntEnum):
     CENTER = 1
     END = 2
     NONE = 5
+
+
+class FlexStackingOrder(IntEnum):
+    FORWARDS = 0
+    BACKWARDS = 1
 
 
 class ExportLayerOptions(IntEnum):
@@ -146,6 +152,8 @@ class AbstractLayer:
     verticalSizing: SizingBehaviour = SizingBehaviour.FIXED
     resizingConstraint: int = 0
     flexItem: Optional[FlexItem] = None
+    minSize: Size = field(default_factory=lambda: Size(0, 0))
+    maxSize: Size = field(default_factory=lambda: Size(0, 0))
     shouldBreakMaskChain: bool = False
 
 

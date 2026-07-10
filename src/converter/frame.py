@@ -37,7 +37,7 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
 
     if utils.has_auto_layout(fig_frame):
-        sketch_frame = layout.post_process_group_layout(fig_frame, sketch_frame)
+        sketch_frame = layout.post_process_group_layout(sketch_frame)
 
     if fig_frame.get("isStateGroup", False):
         sketch_frame.groupBehavior = 3

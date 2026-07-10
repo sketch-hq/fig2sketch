@@ -37,6 +37,8 @@ def test_stacks_wrap_page_layouts(stacks_wrap_page):
         "crossAxisGutterGap": 0,
         "wrappingEnabled": True,
         "alignContent": 0,
+        "bordersAffectLayout": False,
+        "stackingOrder": 1,
     }
     assert layers_by_name["Horizontal wrap middle center"]["groupLayout"] == {
         "_class": "MSImmutableFlexGroupLayout",
@@ -47,6 +49,8 @@ def test_stacks_wrap_page_layouts(stacks_wrap_page):
         "crossAxisGutterGap": 8.0,
         "wrappingEnabled": True,
         "alignContent": 1,
+        "bordersAffectLayout": False,
+        "stackingOrder": 1,
     }
     assert layers_by_name["Horizontal wrap bottom right"]["groupLayout"] == {
         "_class": "MSImmutableFlexGroupLayout",
@@ -57,6 +61,8 @@ def test_stacks_wrap_page_layouts(stacks_wrap_page):
         "crossAxisGutterGap": 8.0,
         "wrappingEnabled": True,
         "alignContent": 2,
+        "bordersAffectLayout": False,
+        "stackingOrder": 1,
     }
 
     assert layers_by_name["Vertical top left"]["groupLayout"] == {
@@ -68,6 +74,8 @@ def test_stacks_wrap_page_layouts(stacks_wrap_page):
         "crossAxisGutterGap": 8.0,
         "wrappingEnabled": False,
         "alignContent": 0,
+        "bordersAffectLayout": False,
+        "stackingOrder": 1,
     }
     assert layers_by_name["Vertical middle center"]["groupLayout"] == {
         "_class": "MSImmutableFlexGroupLayout",
@@ -78,6 +86,8 @@ def test_stacks_wrap_page_layouts(stacks_wrap_page):
         "crossAxisGutterGap": 8.0,
         "wrappingEnabled": False,
         "alignContent": 0,
+        "bordersAffectLayout": False,
+        "stackingOrder": 1,
     }
     assert layers_by_name["Vertical bottom right"]["groupLayout"] == {
         "_class": "MSImmutableFlexGroupLayout",
@@ -88,4 +98,6 @@ def test_stacks_wrap_page_layouts(stacks_wrap_page):
         "crossAxisGutterGap": 8.0,
         "wrappingEnabled": False,
         "alignContent": 0,
+        "bordersAffectLayout": False,
+        "stackingOrder": 1,
     }

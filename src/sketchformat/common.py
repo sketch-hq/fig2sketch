@@ -37,3 +37,20 @@ class Point:
 
     def __repr__(self):
         return f"Point({self.x}, {self.y})"
+
+
+class Size:
+    def __init__(self, width: float, height: float) -> None:
+        self.width = width
+        self.height = height
+
+    def to_json(self) -> str:
+        return f"{{{self.width}, {self.height}}}"
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Size):
+            return self.width == other.width and self.height == other.height
+        return False
+
+    def __repr__(self):
+        return f"Size({self.width}, {self.height})"
