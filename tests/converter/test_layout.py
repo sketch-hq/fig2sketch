@@ -1,6 +1,12 @@
 import pytest
 from sketchformat.common import Size
-from sketchformat.layer_common import FlexAlign, FlexDirection, FlexJustify, PaddingSelection
+from sketchformat.layer_common import (
+    FlexAlign,
+    FlexDirection,
+    FlexJustify,
+    FlexStackingOrder,
+    PaddingSelection,
+)
 from sketchformat.layer_group import ClippingBehavior, FlexGroupLayout, FreeFormGroupLayout
 from .base import *
 from converter import tree, frame
@@ -33,7 +39,9 @@ class TestLayout:
             "CANVAS",
         )
 
-        assert sketch_frame.groupLayout == FlexGroupLayout(flexDirection=FlexDirection.HORIZONTAL)
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.HORIZONTAL, stackingOrder=FlexStackingOrder.BACKWARDS
+        )
 
     def test_vertical_layout(self):
         sketch_frame = tree.convert_node(
@@ -47,7 +55,9 @@ class TestLayout:
             "CANVAS",
         )
 
-        assert sketch_frame.groupLayout == FlexGroupLayout(flexDirection=FlexDirection.VERTICAL)
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.VERTICAL, stackingOrder=FlexStackingOrder.BACKWARDS
+        )
 
     def test_layout_spacing(self):
         sketch_frame = tree.convert_node(
@@ -63,6 +73,7 @@ class TestLayout:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, allGuttersGap=10
         )
 
@@ -80,6 +91,7 @@ class TestLayout:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.HORIZONTAL,
             wrappingEnabled=True,
             alignContent=FlexJustify.START,
@@ -115,6 +127,7 @@ class TestLayout:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.HORIZONTAL,
             crossAxisGutterGap=12,
             wrappingEnabled=True,
@@ -136,6 +149,7 @@ class TestLayout:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.HORIZONTAL,
             wrappingEnabled=True,
             alignContent=FlexJustify.START,
@@ -156,6 +170,7 @@ class TestLayout:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.HORIZONTAL,
             alignItems=FlexAlign.CENTER,
             wrappingEnabled=True,
@@ -177,12 +192,37 @@ class TestLayout:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.HORIZONTAL,
             alignItems=FlexAlign.END,
             wrappingEnabled=True,
             alignContent=FlexJustify.END,
         )
-
+    
+    def test_absolute_child_ignores_layout(self, warnings):
+    
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "VERTICAL",
+                "children": [
+                    {
+                        **FIG_BASE,
+                        "type": "ROUNDED_RECTANGLE",
+                        "guid": (1, 1),
+                        "stackPositioning": "ABSOLUTE",
+                    },
+                    {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "guid": (2, 2)},
+                ],
+            },
+            "CANVAS",
+        )
+        
+        assert isinstance(sketch_frame.groupLayout, FlexGroupLayout)
+        # Index 1 since the order will be reversed once converted.
+        assert sketch_frame.layers[1].flexItem.ignoreLayout is True 
 
 @pytest.mark.usefixtures("no_prototyping")
 class TestLayoutJustify:
@@ -200,6 +240,7 @@ class TestLayoutJustify:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.START
         )
 
@@ -217,6 +258,7 @@ class TestLayoutJustify:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.CENTER
         )
 
@@ -234,6 +276,7 @@ class TestLayoutJustify:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.END
         )
 
@@ -251,6 +294,7 @@ class TestLayoutJustify:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.SPACE_BETWEEN
         )
 
@@ -271,6 +315,7 @@ class TestLayoutAlignment:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, alignItems=FlexAlign.START
         )
 
@@ -288,6 +333,7 @@ class TestLayoutAlignment:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, alignItems=FlexAlign.CENTER
         )
 
@@ -305,6 +351,7 @@ class TestLayoutAlignment:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, alignItems=FlexAlign.END
         )
 
@@ -321,6 +368,7 @@ class TestLayoutAlignment:
         )
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
+            stackingOrder=FlexStackingOrder.BACKWARDS,
             flexDirection=FlexDirection.VERTICAL, alignItems=FlexAlign.START
         )
 
@@ -338,7 +386,9 @@ class TestClipping:
             "CANVAS",
         )
 
-        assert sketch_frame.groupLayout == FlexGroupLayout(flexDirection=FlexDirection.VERTICAL)
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.VERTICAL, stackingOrder=FlexStackingOrder.BACKWARDS
+        )
         assert sketch_frame.clippingBehavior == ClippingBehavior.DEFAULT
 
     def test_behaviour_none_when_mask_disabled(self):
@@ -353,7 +403,9 @@ class TestClipping:
             "CANVAS",
         )
 
-        assert sketch_frame.groupLayout == FlexGroupLayout(flexDirection=FlexDirection.VERTICAL)
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.VERTICAL, stackingOrder=FlexStackingOrder.BACKWARDS
+        )
         assert sketch_frame.clippingBehavior == ClippingBehavior.NONE
 
     def test_behaviour_default_when_mask_enabled(self):
@@ -368,7 +420,9 @@ class TestClipping:
             "CANVAS",
         )
 
-        assert sketch_frame.groupLayout == FlexGroupLayout(flexDirection=FlexDirection.VERTICAL)
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.VERTICAL, stackingOrder=FlexStackingOrder.BACKWARDS
+        )
         assert sketch_frame.clippingBehavior == ClippingBehavior.DEFAULT
 
 
@@ -390,7 +444,9 @@ class TestPadding:
             "CANVAS",
         )
 
-        assert sketch_frame.groupLayout == FlexGroupLayout(flexDirection=FlexDirection.VERTICAL)
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.VERTICAL, stackingOrder=FlexStackingOrder.BACKWARDS
+        )
         assert sketch_frame.topPadding == 5
         assert sketch_frame.rightPadding == 10
         assert sketch_frame.bottomPadding == 15
@@ -412,7 +468,9 @@ class TestPadding:
             "CANVAS",
         )
 
-        assert sketch_frame.groupLayout == FlexGroupLayout(flexDirection=FlexDirection.VERTICAL)
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.VERTICAL, stackingOrder=FlexStackingOrder.BACKWARDS
+        )
         assert sketch_frame.topPadding == 5
         assert sketch_frame.rightPadding == 10
         assert sketch_frame.bottomPadding == 15
@@ -435,7 +493,9 @@ class TestPadding:
             "CANVAS",
         )
 
-        assert sketch_frame.groupLayout == FlexGroupLayout(flexDirection=FlexDirection.VERTICAL)
+        assert sketch_frame.groupLayout == FlexGroupLayout(
+            flexDirection=FlexDirection.VERTICAL, stackingOrder=FlexStackingOrder.BACKWARDS
+        )
         assert sketch_frame.topPadding == 5
         assert sketch_frame.rightPadding == 10
         assert sketch_frame.bottomPadding == 5
@@ -503,3 +563,52 @@ class TestMinMaxSize:
 
         assert sketch_frame.minSize.to_json() == "{10, 0}"
         assert sketch_frame.maxSize.to_json() == "{0, 0}"
+
+
+@pytest.mark.usefixtures("no_prototyping")
+class TestStackingOrder:
+    def test_stacking_order_default(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "VERTICAL",
+                "children": [
+                    {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "guid": (1, 1), "name": "first"},
+                    {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "guid": (2, 2), "name": "second"},
+                ],
+
+            },
+            "CANVAS",
+        )
+
+        # Figma defaults to an order of what we'd call "backwards". Our fixture
+        # above doesn't change that so we expect "backwards". Likewise, Figma
+        # reverses the order of layers in a stack so we expect the layers in
+        # reverse order here.
+        assert sketch_frame.groupLayout.stackingOrder == FlexStackingOrder.BACKWARDS
+        assert [layer.name for layer in sketch_frame.layers] == ["second", "first"]
+
+    def test_stacking_order_reversed(self):
+        sketch_frame = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "FRAME",
+                "resizeToFit": False,
+                "stackMode": "VERTICAL",
+                "stackReverseZIndex": True,
+                "children": [
+                    {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "guid": (1, 1), "name": "first"},
+                    {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "guid": (2, 2), "name": "second"},
+                ],
+            },
+            "CANVAS",
+        )
+
+        # Figma defaults to an order of what we'd call "backwards". Our fixture
+        # above changes that so we expect "backwards". Likewise, Figma
+        # reverses the order of layers in a stack so we expect the layers in
+        # reverse order here.
+        assert sketch_frame.groupLayout.stackingOrder == FlexStackingOrder.FORWARDS
+        assert [layer.name for layer in sketch_frame.layers] == ["second", "first"]

@@ -12,6 +12,7 @@ from sketchformat.layer_group import (
     FlexDirection,
     FlexJustify,
     FlexAlign,
+    FlexStackingOrder,
 )
 
 
@@ -82,6 +83,23 @@ def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
 
     # Advanced stack settings
     borders_affect_layout = fig_frame.get("bordersTakeSpace", False)
+    # Interpreting stack item order, and stackReverseZIndex is a bit confusing.
+    # Figma reverse the LL order for stack items, but the model stays the same.
+    # If this was all they did the canvas would look out of sync with the UI,
+    # but they also set a z-index ordering mode labelled as "last on top". So 
+    # the item at the bottom of the LL (top of the model) is rendered on top.
+    # When stackReverseZIndex is true (which corresponds to the mode labelled
+    # "first on top") this means to use the reverse of the model order (the top
+    # item in the LL since, remember, it has been reversed). What this means for 
+    # us is that once we've reversed the layer order in our post-processing (so 
+    # that what the user saw in the Figma LL matches what they'll see in Sketch) 
+    # we interpret a false or absent stackReverseZIndex as  "backwards", and
+    # true as "forwards". 
+    stacking_order = (
+        FlexStackingOrder.FORWARDS
+        if fig_frame.get("stackReverseZIndex")
+        else FlexStackingOrder.BACKWARDS
+    )
 
     return FlexGroupLayout(
         flexDirection=flex_direction,
@@ -92,6 +110,7 @@ def convert_group_layout(fig_frame: dict) -> FlexGroupLayout:
         wrappingEnabled=wrapping_enabled,
         alignContent=align_content,
         bordersAffectLayout=borders_affect_layout,
+        stackingOrder=stacking_order,
     )
 
 
@@ -116,25 +135,11 @@ def convert_flex_align(alignment: str) -> FlexAlign:
 
     return align_mapping.get(alignment, FlexAlign.NONE)
 
-
-def post_process_group_layout(fig_node: dict, layer_group: Frame) -> Frame:
-    # If the layout has a child which is ignoring the Stack layout, and the stack
-    # has a "Last on top" z-index order, we'll remove the stack layout.
-    has_child_ignoring_layout = False
-
-    for layer in layer_group.layers:
-        if (
-            hasattr(layer, "flexItem")
-            and layer.flexItem
-            and getattr(layer.flexItem, "ignoreLayout", False)
-        ):
-            has_child_ignoring_layout = True
-            break
-
-    if has_child_ignoring_layout and not fig_node.get("stackReverseZIndex"):
-        layer_group.groupLayout = FreeFormGroupLayout()
-        utils.log_conversion_warning("STK001", fig_node)
-    else:
-        layer_group.layers.reverse()
-
+def post_process_group_layout(layer_group: Frame) -> Frame:                 
+    # Figma displays stack items in reverse order compared to its other 
+    # containers in the LL. We want to take the LL order here so what the user 
+    # will see in Sketch will match what they saw in Figma. The other half of 
+    # handling this is our interpretation of stackReverseZIndex (see 
+    # convert_group_layout).
+    layer_group.layers.reverse()                                            
     return layer_group

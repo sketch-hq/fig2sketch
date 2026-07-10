@@ -65,6 +65,7 @@ class FlexGroupLayout:
     wrappingEnabled: bool = False
     alignContent: FlexJustify = FlexJustify.START
     bordersAffectLayout: bool = False
+    stackingOrder: FlexStackingOrder = FlexStackingOrder.FORWARDS
 
 
 @dataclass(kw_only=True)

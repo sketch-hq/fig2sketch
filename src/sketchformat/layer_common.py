@@ -34,6 +34,11 @@ class FlexAlign(IntEnum):
     NONE = 5
 
 
+class FlexStackingOrder(IntEnum):
+    FORWARDS = 0
+    BACKWARDS = 1
+
+
 class ExportLayerOptions(IntEnum):
     ALL = 0
     SELECTED = 1

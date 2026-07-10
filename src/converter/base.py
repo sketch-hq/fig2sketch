@@ -280,8 +280,9 @@ def max_size(fig_node: dict) -> Size:
 
 
 def _size(fig_size: Optional[dict]) -> Optional[Size]:
-    # Figma stores sizes as {"value": {"x": width, "y": height}}. An unset axis is 0 for min
-    # and Infinity for max; Sketch uses 0 for both to mean "no constraint".
+    # Figma stores sizes as {"value": {"x": width, "y": height}}. An unset axis 
+    # is 0 for min and Infinity for max. Sketch uses 0 for both to mean "no 
+    # constraint".
     if not fig_size:
         return None
 

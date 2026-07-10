@@ -52,9 +52,8 @@ def post_process_symbol(fig_symbol, sketch_symbol):
     based on the component symbol IDs collected when the conversion context iss
     initialized.
     """
-    # .fig stores its stack children in bottom up order, but Sketch uses top down
     if utils.has_auto_layout(fig_symbol):
-        sketch_symbol = layout.post_process_group_layout(fig_symbol, sketch_symbol)
+        sketch_symbol = layout.post_process_group_layout(sketch_symbol)
 
     if context.component_set_for_symbol(fig_symbol["guid"]):
         # The hidden component set frame is emitted to the Symbols page. Keep its
