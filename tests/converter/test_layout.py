@@ -74,7 +74,8 @@ class TestLayout:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, allGuttersGap=10
+            flexDirection=FlexDirection.VERTICAL,
+            allGuttersGap=10,
         )
 
     def test_layout_wrap_enabled(self):
@@ -198,9 +199,9 @@ class TestLayout:
             wrappingEnabled=True,
             alignContent=FlexJustify.END,
         )
-    
+
     def test_absolute_child_ignores_layout(self, warnings):
-    
+
         sketch_frame = tree.convert_node(
             {
                 **FIG_BASE,
@@ -219,10 +220,11 @@ class TestLayout:
             },
             "CANVAS",
         )
-        
+
         assert isinstance(sketch_frame.groupLayout, FlexGroupLayout)
         # Index 1 since the order will be reversed once converted.
-        assert sketch_frame.layers[1].flexItem.ignoreLayout is True 
+        assert sketch_frame.layers[1].flexItem.ignoreLayout is True
+
 
 @pytest.mark.usefixtures("no_prototyping")
 class TestLayoutJustify:
@@ -241,7 +243,8 @@ class TestLayoutJustify:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.START
+            flexDirection=FlexDirection.VERTICAL,
+            justifyContent=FlexJustify.START,
         )
 
     def test_layout_justify_center(self):
@@ -259,7 +262,8 @@ class TestLayoutJustify:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.CENTER
+            flexDirection=FlexDirection.VERTICAL,
+            justifyContent=FlexJustify.CENTER,
         )
 
     def test_layout_justify_max(self):
@@ -277,7 +281,8 @@ class TestLayoutJustify:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.END
+            flexDirection=FlexDirection.VERTICAL,
+            justifyContent=FlexJustify.END,
         )
 
     def test_layout_justify_space_evenly(self):
@@ -295,7 +300,8 @@ class TestLayoutJustify:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, justifyContent=FlexJustify.SPACE_BETWEEN
+            flexDirection=FlexDirection.VERTICAL,
+            justifyContent=FlexJustify.SPACE_BETWEEN,
         )
 
 
@@ -316,7 +322,8 @@ class TestLayoutAlignment:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, alignItems=FlexAlign.START
+            flexDirection=FlexDirection.VERTICAL,
+            alignItems=FlexAlign.START,
         )
 
     def test_layout_alignment_center(self):
@@ -334,7 +341,8 @@ class TestLayoutAlignment:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, alignItems=FlexAlign.CENTER
+            flexDirection=FlexDirection.VERTICAL,
+            alignItems=FlexAlign.CENTER,
         )
 
     def test_layout_alignment_max(self):
@@ -352,7 +360,8 @@ class TestLayoutAlignment:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, alignItems=FlexAlign.END
+            flexDirection=FlexDirection.VERTICAL,
+            alignItems=FlexAlign.END,
         )
 
     def test_layout_alignment_not_set(self):
@@ -369,7 +378,8 @@ class TestLayoutAlignment:
 
         assert sketch_frame.groupLayout == FlexGroupLayout(
             stackingOrder=FlexStackingOrder.BACKWARDS,
-            flexDirection=FlexDirection.VERTICAL, alignItems=FlexAlign.START
+            flexDirection=FlexDirection.VERTICAL,
+            alignItems=FlexAlign.START,
         )
 
 
@@ -578,7 +588,6 @@ class TestStackingOrder:
                     {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "guid": (1, 1), "name": "first"},
                     {**FIG_BASE, "type": "ROUNDED_RECTANGLE", "guid": (2, 2), "name": "second"},
                 ],
-
             },
             "CANVAS",
         )
