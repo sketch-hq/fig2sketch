@@ -34,9 +34,14 @@ def convert(fig_symbol):
 
     try:
         parent = context.fig_node(fig_symbol["parent"]["guid"])
-        if config.import_variants and parent and parent.get("isStateGroup", False):
-            master.name = fig_symbol["name"]
-            master.variantSpecs = build_variant_specs(parent, fig_symbol)
+        if parent and parent.get("isStateGroup", False):
+            if config.import_variants:
+                master.name = fig_symbol["name"]
+                master.variantSpecs = build_variant_specs(parent, fig_symbol)
+            else:
+                # Variant import disabled: keep the pre-variant slash-path naming so
+                # component-set members stay uniquely named and grouped as before.
+                master.name = symbol_variant_name(parent, fig_symbol)
 
     except Exception as e:
         print(e)
@@ -69,6 +74,17 @@ def post_process_symbol(fig_symbol, sketch_symbol):
 
     # Symbol lives on a visible page — keep it in place
     return sketch_symbol
+
+
+def symbol_variant_name(parent: dict, symbol: dict) -> str:
+    """Pre-variant naming for component-set members: "<SetName>/<value>/<value>/...".
+
+    Used when variant import is disabled so members keep unique, grouped names in the
+    Sketch Symbols list instead of colliding on their bare variant-assignment names.
+    """
+    property_values = [x.strip().split("=")[1] for x in symbol["name"].split(",")]
+    ordered_values = [parent["name"]] + property_values
+    return "/".join(ordered_values)
 
 
 def build_variant_properties(parent: dict) -> Optional[List[VariantProperty]]:

@@ -286,12 +286,25 @@ def test_non_variant_frame_keeps_default_group_behavior(no_prototyping, empty_co
     assert sketch_frame.groupBehavior == 1
 
 
-def test_variants_disabled_falls_back_to_plain_symbols(no_prototyping, component_set_context):
-    """With import_variants off (default), a component set converts as plain symbols:
-    no variant metadata on the master, and the frame keeps its default groupBehavior."""
+def test_variants_disabled_master_has_no_variant_metadata(no_prototyping, component_set_context):
+    """With import_variants off (default), component-set members carry no variantSpecs."""
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+
     assert master.variantSpecs is None
 
+
+def test_variants_disabled_uses_pre_variant_slash_path_name(no_prototyping, component_set_context):
+    """With the flag off, members keep the pre-variant "<Set>/<value>/<value>" naming
+    instead of the bare variant-assignment name, so they stay uniquely named."""
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+
+    assert master.name == "Button/Small/Default"
+
+
+def test_variants_disabled_state_group_is_regular_group(no_prototyping, component_set_context):
+    """With the flag off, an isStateGroup frame imports as a regular group exactly as it
+    did before variant support: default groupBehavior and no variant properties."""
     sketch_frame = tree.convert_node(FIG_COMPONENT_SET, "CANVAS")
+
     assert sketch_frame.groupBehavior == 1
     assert sketch_frame.variantProperties is None
