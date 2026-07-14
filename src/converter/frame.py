@@ -1,5 +1,6 @@
 import math
 from . import base, group, prototype, rectangle, layout, symbol
+from .config import config
 from converter import utils
 from sketchformat.layer_group import (
     ClippingBehavior,
@@ -39,7 +40,7 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
     if utils.has_auto_layout(fig_frame):
         sketch_frame = layout.post_process_group_layout(sketch_frame)
 
-    if fig_frame.get("isStateGroup", False):
+    if config.import_variants and fig_frame.get("isStateGroup", False):
         sketch_frame.groupBehavior = 3
         sketch_frame.variantProperties = symbol.build_variant_properties(fig_frame)
 

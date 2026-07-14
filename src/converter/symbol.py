@@ -1,4 +1,5 @@
 from . import instance, group, base, prototype, layout
+from .config import config
 from .context import context
 from converter import utils
 from sketchformat.layer_group import *
@@ -33,7 +34,7 @@ def convert(fig_symbol):
 
     try:
         parent = context.fig_node(fig_symbol["parent"]["guid"])
-        if parent and parent.get("isStateGroup", False):
+        if config.import_variants and parent and parent.get("isStateGroup", False):
             master.name = fig_symbol["name"]
             master.variantSpecs = build_variant_specs(parent, fig_symbol)
 

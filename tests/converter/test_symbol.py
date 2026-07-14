@@ -1,9 +1,16 @@
 from .base import *
 from converter import tree, symbol, utils
+from converter.config import config
 from sketchformat.layer_group import VariantProperty, VariantPropertyValue
 from sketchformat.layer_shape import Rectangle
 import pytest
 from converter.context import context
+
+
+@pytest.fixture
+def enable_variants(monkeypatch):
+    monkeypatch.setattr(config, "import_variants", True)
+
 
 FIG_SYMBOL = {
     **FIG_BASE,
@@ -98,7 +105,7 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
     ]
 
 
-def test_variant_name_uses_fig_name_as_is(no_prototyping, empty_context):
+def test_variant_name_uses_fig_name_as_is(no_prototyping, empty_context, enable_variants):
     variants = {
         **FIG_BASE,
         "type": "FRAME",
@@ -166,14 +173,14 @@ def _collect_ids(node, id_map):
         _collect_ids(child, id_map)
 
 
-def test_variant_specs_on_symbol_master(no_prototyping, component_set_context):
+def test_variant_specs_on_symbol_master(no_prototyping, component_set_context, enable_variants):
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
     assert master.variantSpecs is not None
     assert len(master.variantSpecs) == 2
 
 
-def test_variant_ids_match(no_prototyping, component_set_context):
+def test_variant_ids_match(no_prototyping, component_set_context, enable_variants):
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
     props = symbol.build_variant_properties(FIG_COMPONENT_SET)
@@ -186,7 +193,7 @@ def test_variant_ids_match(no_prototyping, component_set_context):
         assert val_id in val_ids
 
 
-def test_variant_name_preserved(no_prototyping, component_set_context):
+def test_variant_name_preserved(no_prototyping, component_set_context, enable_variants):
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
     assert master.name == "Size=Small, State=Default"
@@ -198,7 +205,7 @@ def test_non_variant_symbol_unaffected(no_prototyping, empty_context):
     assert master.variantSpecs is None
 
 
-def test_variant_properties_on_frame(no_prototyping, component_set_context):
+def test_variant_properties_on_frame(no_prototyping, component_set_context, enable_variants):
     sketch_frame = tree.convert_node(FIG_COMPONENT_SET, "CANVAS")
 
     assert sketch_frame.groupBehavior == 3
@@ -208,7 +215,7 @@ def test_variant_properties_on_frame(no_prototyping, component_set_context):
     assert sketch_frame.variantProperties[1].name == "State"
 
 
-def test_hidden_component_set_emits_variant_set(no_prototyping, empty_context):
+def test_hidden_component_set_emits_variant_set(no_prototyping, empty_context, enable_variants):
     component_set = {**FIG_COMPONENT_SET, "parent": {"guid": (2, 2)}}
     components_page = {
         **FIG_BASE,
@@ -253,7 +260,9 @@ def test_hidden_component_set_emits_variant_set(no_prototyping, empty_context):
     assert sketch_instance.symbolID == variant_master.symbolID
 
 
-def test_variant_specs_from_variantPropSpecs(no_prototyping, component_set_context):
+def test_variant_specs_from_variantPropSpecs(
+    no_prototyping, component_set_context, enable_variants
+):
     """variantSpecs are built from variantPropSpecs + componentPropDefs, not name parsing."""
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
     props = symbol.build_variant_properties(FIG_COMPONENT_SET)
@@ -275,3 +284,14 @@ def test_non_variant_frame_keeps_default_group_behavior(no_prototyping, empty_co
     sketch_frame = tree.convert_node(fig_frame, "CANVAS")
 
     assert sketch_frame.groupBehavior == 1
+
+
+def test_variants_disabled_falls_back_to_plain_symbols(no_prototyping, component_set_context):
+    """With import_variants off (default), a component set converts as plain symbols:
+    no variant metadata on the master, and the frame keeps its default groupBehavior."""
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+    assert master.variantSpecs is None
+
+    sketch_frame = tree.convert_node(FIG_COMPONENT_SET, "CANVAS")
+    assert sketch_frame.groupBehavior == 1
+    assert sketch_frame.variantProperties is None

@@ -1,6 +1,7 @@
 import logging
 from urllib.error import HTTPError
 from . import component, page, font
+from .config import config
 from .errors import Fig2SketchWarning
 from sketchformat.document import Swatch
 from sketchformat.layer_common import AbstractLayer
@@ -124,6 +125,9 @@ class Context:
         return sid in self._component_symbols
 
     def component_set_for_symbol(self, sid: Sequence[int]) -> Optional[dict]:
+        if not config.import_variants:
+            return None
+
         if sid not in self._component_symbols:
             return None
 

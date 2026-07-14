@@ -34,6 +34,11 @@ def parse_args(args: List[str] = sys.argv[1:]) -> argparse.Namespace:
         help="try to convert corrupted images",
     )
     group.add_argument(
+        "--import-variants",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    group.add_argument(
         "--compress",
         action="store_true",
         help="compress the output sketch file",
@@ -80,6 +85,7 @@ def run(args: argparse.Namespace) -> None:
         ImageFile.LOAD_TRUNCATED_IMAGES = True
 
     config.can_detach = args.instance_override == "detach"
+    config.import_variants = args.import_variants
 
     # Load SSL certificates in OSs where Python does not use system defaults
     if not ssl.create_default_context().get_ca_certs():
