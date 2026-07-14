@@ -16,9 +16,9 @@ def convert(pages: List[Page]) -> dict:
             }
             for page in pages
         },
-        "version": 187,
+        "version": 196,
         "compatibilityVersion": 99,
-        "coeditCompatibilityVersion": 164,
+        "coeditCompatibilityVersion": 196,
         "app": "com.bohemiancoding.sketch3",
         "autosaved": 0,
         "variant": "NONAPPSTORE",
@@ -28,8 +28,8 @@ def convert(pages: List[Page]) -> dict:
             "build": 199630,
             "app": "com.bohemiancoding.sketch3",
             "compatibilityVersion": 99,
-            "coeditCompatibilityVersion": 164,
-            "version": 187,
+            "coeditCompatibilityVersion": 196,
+            "version": 196,
             "variant": "NONAPPSTORE",
         },
         "saveHistory": ["NONAPPSTORE.199630"],
