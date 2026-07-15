@@ -94,7 +94,12 @@ def test_document(sketch_doc):
             }
         ]
         assert doc["userInfo"] == {
-            "fig2sketch": {"can_detach": True, "salt": "31323334", "version": ANY}
+            "fig2sketch": {
+                "can_detach": True,
+                "import_variants": False,
+                "salt": "31323334",
+                "version": ANY,
+            }
         }
 
         # Version looks like a version number

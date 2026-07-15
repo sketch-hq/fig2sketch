@@ -1,9 +1,16 @@
 from .base import *
 from converter import tree, symbol, utils
+from converter.config import config
 from sketchformat.layer_group import VariantProperty, VariantPropertyValue
 from sketchformat.layer_shape import Rectangle
 import pytest
 from converter.context import context
+
+
+@pytest.fixture
+def enable_variants(monkeypatch):
+    monkeypatch.setattr(config, "import_variants", True)
+
 
 FIG_SYMBOL = {
     **FIG_BASE,
@@ -98,7 +105,7 @@ def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
     ]
 
 
-def test_variant_name_uses_fig_name_as_is(no_prototyping, empty_context):
+def test_variant_name_uses_fig_name_as_is(no_prototyping, empty_context, enable_variants):
     variants = {
         **FIG_BASE,
         "type": "FRAME",
@@ -166,14 +173,14 @@ def _collect_ids(node, id_map):
         _collect_ids(child, id_map)
 
 
-def test_variant_specs_on_symbol_master(no_prototyping, component_set_context):
+def test_variant_specs_on_symbol_master(no_prototyping, component_set_context, enable_variants):
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
     assert master.variantSpecs is not None
     assert len(master.variantSpecs) == 2
 
 
-def test_variant_ids_match(no_prototyping, component_set_context):
+def test_variant_ids_match(no_prototyping, component_set_context, enable_variants):
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
     props = symbol.build_variant_properties(FIG_COMPONENT_SET)
@@ -186,7 +193,7 @@ def test_variant_ids_match(no_prototyping, component_set_context):
         assert val_id in val_ids
 
 
-def test_variant_name_preserved(no_prototyping, component_set_context):
+def test_variant_name_preserved(no_prototyping, component_set_context, enable_variants):
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
 
     assert master.name == "Size=Small, State=Default"
@@ -198,7 +205,7 @@ def test_non_variant_symbol_unaffected(no_prototyping, empty_context):
     assert master.variantSpecs is None
 
 
-def test_variant_properties_on_frame(no_prototyping, component_set_context):
+def test_variant_properties_on_frame(no_prototyping, component_set_context, enable_variants):
     sketch_frame = tree.convert_node(FIG_COMPONENT_SET, "CANVAS")
 
     assert sketch_frame.groupBehavior == 3
@@ -208,7 +215,7 @@ def test_variant_properties_on_frame(no_prototyping, component_set_context):
     assert sketch_frame.variantProperties[1].name == "State"
 
 
-def test_hidden_component_set_emits_variant_set(no_prototyping, empty_context):
+def test_hidden_component_set_emits_variant_set(no_prototyping, empty_context, enable_variants):
     component_set = {**FIG_COMPONENT_SET, "parent": {"guid": (2, 2)}}
     components_page = {
         **FIG_BASE,
@@ -253,7 +260,65 @@ def test_hidden_component_set_emits_variant_set(no_prototyping, empty_context):
     assert sketch_instance.symbolID == variant_master.symbolID
 
 
-def test_variant_specs_from_variantPropSpecs(no_prototyping, component_set_context):
+def test_symbol_in_non_variant_frame_imported_with_flag_on(
+    no_prototyping, empty_context, enable_variants
+):
+    """With variant import on, a symbol nested in a regular (non-isStateGroup) frame on the
+    hidden components page is still imported: its master is hoisted to the Symbols page as a
+    plain symbol master (not a variant set) and the instance links to it."""
+    inner_symbol = {
+        **FIG_BASE,
+        "type": "SYMBOL",
+        "name": "Icon",
+        "guid": (30, 30),
+        "children": [],
+        "parent": {"guid": (31, 31)},
+    }
+    regular_frame = {
+        **FIG_BASE,
+        "type": "FRAME",
+        "name": "Group",
+        "guid": (31, 31),
+        "resizeToFit": False,
+        "children": [inner_symbol],
+        "parent": {"guid": (2, 2)},
+    }
+    components_page = {
+        **FIG_BASE,
+        "type": "CANVAS",
+        "name": "Internal Only Canvas",
+        "guid": (2, 2),
+        "internalOnly": True,
+        "children": [regular_frame],
+        "parent": {"guid": (0, 0)},
+    }
+    fig_instance = {
+        **FIG_BASE,
+        "type": "INSTANCE",
+        "name": "Icon instance",
+        "guid": (40, 40),
+        "symbolData": {"symbolID": (30, 30), "symbolOverrides": []},
+        "derivedSymbolData": [],
+        "resizeToFit": True,
+    }
+    id_map = {}
+    _collect_ids(components_page, id_map)
+    context.init(components_page, id_map, "DISPLAY_P3")
+
+    sketch_instance = tree.convert_node(fig_instance, "FRAME")
+
+    assert sketch_instance._class == "symbolInstance"
+    assert context.symbols_page is not None
+    masters = [layer for layer in context.symbols_page.layers if layer._class == "symbolMaster"]
+    assert len(masters) == 1
+    assert masters[0].name == "Icon"
+    assert masters[0].variantSpecs is None
+    assert sketch_instance.symbolID == masters[0].symbolID
+
+
+def test_variant_specs_from_variantPropSpecs(
+    no_prototyping, component_set_context, enable_variants
+):
     """variantSpecs are built from variantPropSpecs + componentPropDefs, not name parsing."""
     master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
     props = symbol.build_variant_properties(FIG_COMPONENT_SET)
@@ -275,3 +340,32 @@ def test_non_variant_frame_keeps_default_group_behavior(no_prototyping, empty_co
     sketch_frame = tree.convert_node(fig_frame, "CANVAS")
 
     assert sketch_frame.groupBehavior == 1
+
+
+def test_variants_disabled_member_stays_a_symbol_in_place(no_prototyping, component_set_context):
+    """With the flag off, a component-set member on a visible page stays a symbol master in
+    place — it is not turned into an instance — and carries no variant metadata."""
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+
+    assert master._class == "symbolMaster"
+    assert master.variantSpecs is None
+
+
+def test_variants_disabled_uses_pre_variant_slash_path_name(no_prototyping, component_set_context):
+    """With the flag off, members keep the pre-variant "<Set>/<value>/<value>" naming
+    instead of the bare variant-assignment name, so they stay uniquely named."""
+    master = tree.convert_node(FIG_COMPONENT_SET["children"][0], "FRAME")
+
+    assert master.name == "Button/Small/Default"
+
+
+def test_variants_disabled_state_group_is_regular_group(no_prototyping, component_set_context):
+    """With the flag off, an isStateGroup frame on a visible page imports as a regular group:
+    default groupBehavior, no variant properties, and its members stay as symbol masters in
+    place (not moved to the Symbols page as instances)."""
+    sketch_frame = tree.convert_node(FIG_COMPONENT_SET, "CANVAS")
+
+    assert sketch_frame.groupBehavior == 1
+    assert sketch_frame.variantProperties is None
+    assert {layer._class for layer in sketch_frame.layers} == {"symbolMaster"}
+    assert context.symbols_page is None
