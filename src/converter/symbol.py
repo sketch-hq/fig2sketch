@@ -26,6 +26,7 @@ def convert(fig_symbol):
         **base.base_styled(fig_symbol),
         **layout.layout_information(fig_symbol),
         **prototype.prototyping_information(fig_symbol),
+        **base.container_information(fig_symbol),
         symbolID=utils.gen_object_id(fig_symbol["guid"]),
     )
 

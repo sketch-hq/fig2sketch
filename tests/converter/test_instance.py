@@ -5,7 +5,7 @@ from converter import tree
 from converter import style as style_converter
 from converter.config import config
 from converter.context import context
-from sketchformat.layer_group import Group, SymbolInstance, OverrideValue, Frame
+from sketchformat.layer_group import Group, GroupBehavior, SymbolInstance, OverrideValue
 from unittest.mock import ANY
 
 FIG_TEXT = {
@@ -703,4 +703,5 @@ class TestDetach:
         fig["resizeToFit"] = False
 
         i = tree.convert_node(fig, "CANVAS")
-        assert isinstance(i, Frame)
+        assert isinstance(i, Group)
+        assert i.groupBehavior == GroupBehavior.FRAME

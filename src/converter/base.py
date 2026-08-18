@@ -1,7 +1,7 @@
 import logging
 from sketchformat.common import Size
 from sketchformat.layer_common import *
-from sketchformat.layer_group import FlexDirection
+from sketchformat.layer_group import FlexDirection, RulerData
 from sketchformat.layer_shape import *
 from sketchformat.style import *
 from .errors import *
@@ -28,6 +28,37 @@ SUPPORTED_INHERIT_STYLES = {
     "inheritGridStyleID": ("layoutGrids"),
     "inheritFillStyleIDForBackground": (),  # Unused?
 }
+
+
+class _ContainerInformation(TypedDict):
+    horizontalRulerData: RulerData
+    verticalRulerData: RulerData
+    hasBackgroundColor: bool
+    backgroundColor: Color
+    includeBackgroundColorInExport: bool
+
+
+def container_information(fig_frame: dict) -> _ContainerInformation:
+    """Fields the top-level container kinds write, which a plain group leaves out.
+
+    MSLayerGroup carries these for every group, but Sketch omits any property equal to
+    its default when encoding, so a plain group's output has no trace of them. Group
+    defaults them to None to match that, which means every container sets them here:
+    frames, and symbol masters via symbol.py.
+    """
+    return {
+        "horizontalRulerData": RulerData(),
+        "verticalRulerData": RulerData(),
+        # Left over from artboards, and written only to keep output unchanged. The
+        # current model stores neither on a layer group, migrating a legacy artboard
+        # background into a style fill instead, which is already where a fig
+        # background lands. Nothing reads the fig node for these.
+        "hasBackgroundColor": False,
+        "backgroundColor": Color.White(),
+        # Still live on MSLayerGroup. True is both correct here, since the fill really
+        # does come from the fig file, and the model's own default.
+        "includeBackgroundColorInExport": True,
+    }
 
 
 class _Masking(TypedDict):

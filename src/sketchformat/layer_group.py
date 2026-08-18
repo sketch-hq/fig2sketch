@@ -147,22 +147,28 @@ class ShapeGroup(AbstractLayerGroup):
 
 @dataclass(kw_only=True)
 class Group(AbstractLayerGroup):
-    _class: str = field(default="group")
+    """A Sketch layer group, mirroring MSLayerGroup.
 
+    Plain groups, frames, graphics, sections and variant sets are all this one
+    class; `groupBehavior` is what tells Sketch which traits to derive.
 
-@dataclass(kw_only=True)
-class Frame(AbstractLayerGroup):
+    MSLayerGroup carries the fields below for every group, but Sketch omits any
+    property equal to its default when encoding, so a plain group's output has no
+    trace of them. They default to None here to match, and the container kinds set
+    them through base.container_information.
+    """
+
     _class: str = field(default="group")
-    horizontalRulerData: RulerData = field(default_factory=RulerData)
-    verticalRulerData: RulerData = field(default_factory=RulerData)
+    horizontalRulerData: Optional[RulerData] = None
+    verticalRulerData: Optional[RulerData] = None
     grid: Optional[SimpleGrid] = None
     layout: Optional[LayoutGrid] = None
-    hasBackgroundColor: bool = False
-    backgroundColor: Color = field(default_factory=Color.White)
-    includeBackgroundColorInExport: bool = True
-    isFlowHome: bool = False
-    overlayBackgroundInteraction: OverlayBackgroundInteraction = OverlayBackgroundInteraction.NONE
-    presentationStyle: PresentationStyle = PresentationStyle.SCREEN
+    hasBackgroundColor: Optional[bool] = None
+    backgroundColor: Optional[Color] = None
+    includeBackgroundColorInExport: Optional[bool] = None
+    isFlowHome: Optional[bool] = None
+    overlayBackgroundInteraction: Optional[OverlayBackgroundInteraction] = None
+    presentationStyle: Optional[PresentationStyle] = None
     overlaySettings: Optional[FlowOverlaySettings] = None
     prototypeViewport: Optional[PrototypeViewport] = None
 
@@ -175,7 +181,7 @@ class OverrideProperty:
 
 
 @dataclass(kw_only=True)
-class SymbolMaster(Frame):
+class SymbolMaster(Group):
     _class: str = field(default="symbolMaster")
     allowsOverrides: bool = True
     includeBackgroundColorInInstance: bool = True

@@ -4,7 +4,7 @@ from .config import config
 from converter import utils
 from sketchformat.layer_group import (
     ClippingBehavior,
-    Frame,
+    Group,
     GroupBehavior,
     FlexGroupLayout,
     FlexDirection,
@@ -19,11 +19,12 @@ from typing import Optional
 from collections import namedtuple
 
 
-def convert(fig_frame: dict) -> Frame:
-    obj = Frame(
+def convert(fig_frame: dict) -> Group:
+    obj = Group(
         **base.base_styled(fig_frame),
         **layout.layout_information(fig_frame),
         **prototype.prototyping_information(fig_frame),
+        **base.container_information(fig_frame),
         grid=convert_grid(fig_frame),
         groupBehavior=GroupBehavior.FRAME,
     )
@@ -33,7 +34,7 @@ def convert(fig_frame: dict) -> Frame:
     return obj
 
 
-def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
+def post_process_frame(fig_frame: dict, sketch_frame: Group) -> Group:
     # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
     if sketch_frame.overlaySettings is not None:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))

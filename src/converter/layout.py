@@ -5,7 +5,7 @@ from converter import utils
 from sketchformat.layer_common import PaddingSelection
 from sketchformat.layer_group import (
     ClippingBehavior,
-    Frame,
+    Group,
     FlexGroupLayout,
     FreeFormGroupLayout,
     InferredGroupLayout,
@@ -136,7 +136,7 @@ def convert_flex_align(alignment: str) -> FlexAlign:
     return align_mapping.get(alignment, FlexAlign.NONE)
 
 
-def post_process_group_layout(layer_group: Frame) -> Frame:
+def post_process_group_layout(layer_group: Group) -> Group:
     # Figma displays stack items in reverse order compared to its other
     # containers in the LL. We want to take the LL order here so what the user
     # will see in Sketch will match what they saw in Figma. The other half of
