@@ -108,6 +108,8 @@ WARNING_MESSAGES = {
     "IMG004": "appears to be corrupted in the .fig file ({error}), it will not be converted",
     "LAY001": "is an unsupported layer type, it will not be converted",
     "NOD001": "node could not be found",
+    "SEC001": "is a frame containing a section or variant set, which Sketch only allows on a page or in another section. It will be converted to a section",
+    "SEC002": "contains a section or variant set but cannot become a section itself, so the result will nest a section inside a frame",
     "VAR001": "is a component set but has no parseable variant properties. Variant data will not be converted",
     "VAR002": "is a variant but its name could not be parsed for variant values. Its variantSpecs will be empty",
 }
