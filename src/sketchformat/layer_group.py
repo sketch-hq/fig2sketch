@@ -22,6 +22,22 @@ class ClippingBehavior(IntEnum):
     NONE = 2
 
 
+class GroupBehavior(IntEnum):
+    """Mirrors Sketch's GroupBehavior. Layer traits are derived from this value, so
+    it is what distinguishes plain groups, frames, sections and variant sets in a
+    file: they all serialize as _class "group".
+
+    Note SECTION and VARIANT_SET both confer the section trait in Sketch, which is
+    mutually exclusive with the frame trait. Neither may be nested inside a frame.
+    """
+
+    DEFAULT = 0
+    FRAME = 1
+    GRAPHIC = 2
+    VARIANT_SET = 3
+    SECTION = 4
+
+
 @dataclass(kw_only=True)
 class RulerData:
     _class: str = field(default="rulerData")
@@ -100,7 +116,7 @@ class VariantProperty:
 @dataclass(kw_only=True)
 class AbstractLayerGroup(AbstractStyledLayer):
     hasClickThrough: bool = False
-    groupBehavior: int = 0
+    groupBehavior: GroupBehavior = GroupBehavior.DEFAULT
     groupLayout: Union[FreeFormGroupLayout, InferredGroupLayout, FlexGroupLayout] = field(
         default_factory=FreeFormGroupLayout
     )

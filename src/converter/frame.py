@@ -5,6 +5,7 @@ from converter import utils
 from sketchformat.layer_group import (
     ClippingBehavior,
     Frame,
+    GroupBehavior,
     FlexGroupLayout,
     FlexDirection,
     FlexJustify,
@@ -24,7 +25,7 @@ def convert(fig_frame: dict) -> Frame:
         **layout.layout_information(fig_frame),
         **prototype.prototyping_information(fig_frame),
         grid=convert_grid(fig_frame),
-        groupBehavior=1,
+        groupBehavior=GroupBehavior.FRAME,
     )
 
     obj.layout = convert_layout(fig_frame, obj.frame)
@@ -41,7 +42,7 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
         sketch_frame = layout.post_process_group_layout(sketch_frame)
 
     if config.import_variants and fig_frame.get("isStateGroup", False):
-        sketch_frame.groupBehavior = 3
+        sketch_frame.groupBehavior = GroupBehavior.VARIANT_SET
         sketch_frame.variantProperties = symbol.build_variant_properties(fig_frame)
 
     return sketch_frame
