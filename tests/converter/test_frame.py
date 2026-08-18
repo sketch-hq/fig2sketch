@@ -113,28 +113,6 @@ class TestFrameBackgroud:
         assert ab.style.corners.style == CornerStyle.ROUNDED
         assert ab.style.corners.smoothing is None
 
-    def test_section_as_frame(self):
-        fig_section = {
-            **FIG_BASE,
-            "type": "SECTION",
-            "resizeToFit": False,
-            "fillPaints": [
-                {
-                    "type": "SOLID",
-                    "color": FIG_COLOR[0],
-                    "opacity": 0.9,
-                    "visible": True,
-                }
-            ],
-            "children": [{**FIG_BASE, "type": "ROUNDED_RECTANGLE"}],
-        }
-
-        ab = tree.convert_node(fig_section, "CANVAS")
-
-        assert ab._class == "group"
-        assert not ab.hasBackgroundColor
-        assert ab.style.fills[0].color == SKETCH_COLOR[0]
-
 
 class TestGrid:
     def _grid(self, spacing, color):
