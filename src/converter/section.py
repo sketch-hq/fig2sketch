@@ -25,7 +25,7 @@ def convert(fig_section: dict) -> Group:
     return Group(
         **styled,
         **layout.layout_information(fig_section),
-        **base.container_information(fig_section),
+        **base.container_information(),
         groupBehavior=GroupBehavior.SECTION,
     )
 

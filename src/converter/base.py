@@ -38,7 +38,7 @@ class _ContainerInformation(TypedDict):
     includeBackgroundColorInExport: bool
 
 
-def container_information(fig_frame: dict) -> _ContainerInformation:
+def container_information() -> _ContainerInformation:
     """Fields the top-level container kinds write, which a plain group leaves out.
 
     MSLayerGroup carries these for every group, but Sketch omits any property equal to
