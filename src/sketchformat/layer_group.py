@@ -163,8 +163,6 @@ class Group(AbstractLayerGroup):
     verticalRulerData: Optional[RulerData] = None
     grid: Optional[SimpleGrid] = None
     layout: Optional[LayoutGrid] = None
-    hasBackgroundColor: Optional[bool] = None
-    backgroundColor: Optional[Color] = None
     includeBackgroundColorInExport: Optional[bool] = None
     isFlowHome: Optional[bool] = None
     overlayBackgroundInteraction: Optional[OverlayBackgroundInteraction] = None

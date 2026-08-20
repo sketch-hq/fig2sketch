@@ -31,7 +31,7 @@ class TestFrameBackgroud:
     def test_no_background(self):
         ab = tree.convert_node(FIG_ARTBOARD, "CANVAS")
 
-        assert ab.hasBackgroundColor == False
+        assert ab.style.fills == []
 
     def test_disabled_background(self):
         ab = tree.convert_node(
@@ -49,7 +49,7 @@ class TestFrameBackgroud:
             "CANVAS",
         )
 
-        assert ab.hasBackgroundColor == False
+        assert not ab.style.fills[0].isEnabled
 
     def test_simple_background(self):
         ab = tree.convert_node(
@@ -67,7 +67,6 @@ class TestFrameBackgroud:
             "CANVAS",
         )
 
-        assert ab.hasBackgroundColor == False
         assert ab.style.fills[0].fillType == FillType.COLOR
         assert ab.style.fills[0].color == SKETCH_COLOR[0]
 
@@ -77,7 +76,6 @@ class TestFrameBackgroud:
             "CANVAS",
         )
 
-        assert ab.hasBackgroundColor == False
         assert len(ab.style.fills) == 1
         assert ab.style.fills[0].fillType == FillType.GRADIENT
 
