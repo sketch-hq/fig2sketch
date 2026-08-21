@@ -9,6 +9,7 @@ from converter import (
     text,
     slice,
     instance,
+    section,
     symbol,
 )
 import logging
@@ -27,6 +28,7 @@ def ignored_layer_type(fig_layer: dict) -> AbstractLayer:
 CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
     "CANVAS": page.convert,
     "FRAME": frame.convert,
+    "SECTION": section.convert,
     "GROUP": group.convert,
     "ROUNDED_RECTANGLE": rectangle.convert,
     "RECTANGLE": rectangle.convert,
@@ -46,6 +48,7 @@ CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
 POST_PROCESSING: Dict[str, Callable[[dict, Any], AbstractLayer]] = {
     "CANVAS": page.add_page_background,
     "FRAME": frame.post_process_frame,
+    "SECTION": section.post_process,
     "GROUP": group.post_process_frame,
     "BOOLEAN_OPERATION": shape_group.post_process,
     "SYMBOL": symbol.post_process_symbol,
@@ -91,10 +94,15 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
 
 
 def get_node_type(fig_node: dict, parent_type: str) -> str:
-    if fig_node["type"] in ["FRAME", "SECTION"]:
+    if fig_node["type"] == "SECTION":
+        # A section stays a section whatever its resize behavior, since in Sketch it
+        # is a container kind rather than a way of sizing one
+        return "SECTION"
+
+    if fig_node["type"] == "FRAME":
         if not fig_node.get("resizeToFit", False) or utils.has_auto_layout(fig_node):
             return "FRAME"
         else:
             return "GROUP"
-    else:
-        return fig_node["type"]
+
+    return fig_node["type"]

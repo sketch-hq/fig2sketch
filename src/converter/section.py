@@ -1,0 +1,41 @@
+from . import base, layout, utils
+from sketchformat.layer_group import Group, GroupBehavior
+
+
+def convert(fig_section: dict) -> Group:
+    """Converts a fig section.
+
+    A section shares the frame representation, since both serialize as a "group" whose
+    groupBehavior tells Sketch which traits to derive. It carries less than a frame
+    though: a fig section has no layout grids, and Sketch disallows a section as a
+    prototype source or destination, so neither grid nor prototyping information is
+    converted for one.
+
+    A fig section carries a white background and a thin inside stroke, which we keep.
+    Those arrive as ordinary fills and borders, and stay on the section's own style
+    because a section does not take the GROUP path that moves them to a background
+    rect.
+    """
+    styled = base.base_styled(fig_section)
+    # Sketch allows a section to be neither a prototype source nor a destination, so
+    # the destination link base_layer converts for every node is dropped here. It is
+    # the only prototyping information a fig section can carry.
+    styled.pop("flow", None)
+
+    return Group(
+        **styled,
+        **layout.layout_information(fig_section),
+        **base.container_information(fig_section),
+        groupBehavior=GroupBehavior.SECTION,
+    )
+
+
+def post_process(fig_section: dict, sketch_section: Group) -> Group:
+    # A fig section has no auto layout, so nothing reaches this today. Sketch
+    # sections do support stacks though, so handle it rather than assume it cannot
+    # happen: if the fig format ever gives sections auto layout, a stacked one needs
+    # the same child reordering as a frame.
+    if utils.has_auto_layout(fig_section):
+        sketch_section = layout.post_process_group_layout(sketch_section)
+
+    return sketch_section
