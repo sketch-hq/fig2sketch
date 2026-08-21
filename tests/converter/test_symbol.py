@@ -1,7 +1,7 @@
 from .base import *
 from converter import tree, symbol, utils
 from converter.config import config
-from sketchformat.layer_group import VariantProperty, VariantPropertyValue
+from sketchformat.layer_group import GroupBehavior, VariantProperty, VariantPropertyValue
 from sketchformat.layer_shape import Rectangle
 import pytest
 from converter.context import context
@@ -213,6 +213,88 @@ def test_variant_properties_on_frame(no_prototyping, component_set_context, enab
     assert len(sketch_frame.variantProperties) == 2
     assert sketch_frame.variantProperties[0].name == "Size"
     assert sketch_frame.variantProperties[1].name == "State"
+
+
+def _styled_component_set(color, opacity, with_fill=False, weight=1.0):
+    styled = {
+        **FIG_COMPONENT_SET,
+        "strokePaints": [{"type": "SOLID", "color": color, "opacity": opacity, "visible": True}],
+        "strokeWeight": weight,
+    }
+    if with_fill:
+        styled["fillPaints"] = [
+            {"type": "SOLID", "color": FIG_COLOR[0], "opacity": 0.9, "visible": True}
+        ]
+    return styled
+
+
+FIG_DEFAULT_VARIANT_SET_STROKE = {
+    "r": 0.5921568870544434,
+    "g": 0.278431385755539,
+    "b": 1.0,
+    "a": 1,
+}
+
+
+def test_variant_set_default_styling_stripped(
+    no_prototyping, component_set_context, enable_variants
+):
+    """A variant set arrives with a purple stroke and no fill.
+
+    Sketch's overlay draws that same appearance for an unstyled variant set, so
+    dropping it is visually neutral and leaves the layer clean.
+    """
+    styled_set = _styled_component_set(FIG_DEFAULT_VARIANT_SET_STROKE, 1)
+
+    sketch_frame = tree.convert_node(styled_set, "CANVAS")
+
+    assert sketch_frame.groupBehavior == GroupBehavior.VARIANT_SET
+    assert sketch_frame.style.borders == []
+
+
+def test_variant_set_custom_styling_kept(no_prototyping, component_set_context, enable_variants):
+    """Styling the user chose is theirs, so only the fig default is dropped."""
+    styled_set = _styled_component_set(FIG_COLOR[1], 0.7)
+
+    sketch_frame = tree.convert_node(styled_set, "CANVAS")
+
+    assert sketch_frame.groupBehavior == GroupBehavior.VARIANT_SET
+    assert sketch_frame.style.borders[0].color == SKETCH_COLOR[1]
+
+
+def test_variant_set_default_color_but_wider_stroke_kept(
+    no_prototyping, component_set_context, enable_variants
+):
+    """Widening the stroke is styling too, even though the color is still the
+    default."""
+    styled_set = _styled_component_set(FIG_DEFAULT_VARIANT_SET_STROKE, 1, weight=13.0)
+
+    sketch_frame = tree.convert_node(styled_set, "CANVAS")
+
+    assert len(sketch_frame.style.borders) == 1
+    assert sketch_frame.style.borders[0].thickness == 13.0
+
+
+def test_variant_set_default_stroke_with_fill_kept(
+    no_prototyping, component_set_context, enable_variants
+):
+    """A fill means the user styled the variant set, so the stroke stays too."""
+    styled_set = _styled_component_set(FIG_DEFAULT_VARIANT_SET_STROKE, 1, with_fill=True)
+
+    sketch_frame = tree.convert_node(styled_set, "CANVAS")
+
+    assert sketch_frame.style.fills[0].color == SKETCH_COLOR[0]
+    assert len(sketch_frame.style.borders) == 1
+
+
+def test_variant_set_styling_kept_when_variants_disabled(no_prototyping, component_set_context):
+    """With variant import off the frame is not a variant set, so nothing is dropped."""
+    styled_set = _styled_component_set(FIG_DEFAULT_VARIANT_SET_STROKE, 1)
+
+    sketch_frame = tree.convert_node(styled_set, "CANVAS")
+
+    assert sketch_frame.groupBehavior == GroupBehavior.FRAME
+    assert len(sketch_frame.style.borders) == 1
 
 
 def test_hidden_component_set_emits_variant_set(no_prototyping, empty_context, enable_variants):

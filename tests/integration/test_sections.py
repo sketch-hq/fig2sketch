@@ -57,6 +57,28 @@ def test_section_keeps_its_styling(sections_page):
     assert section["layers"][0]["name"] != "Frame Background"
 
 
+def test_variant_set_default_styling_stripped(sections_page):
+    """The unstyled component set carries the fig default purple stroke, which Sketch's
+    overlay draws itself."""
+    section = layer_by_name(sections_page, "Section")
+    variant_set = layer_by_name(section, "Component")
+
+    assert variant_set["groupBehavior"] == GroupBehavior.VARIANT_SET.value
+    assert variant_set["style"]["borders"] == []
+
+
+def test_variant_set_custom_styling_kept(sections_page):
+    """The styled component set keeps the stroke the user chose."""
+    section = layer_by_name(sections_page, "Section")
+    variant_set = layer_by_name(section, "Component Styled")
+
+    assert variant_set["groupBehavior"] == GroupBehavior.VARIANT_SET.value
+
+    border = variant_set["style"]["borders"][0]
+    assert border["thickness"] == 13.0
+    assert border["color"]["red"] == pytest.approx(1.0)
+
+
 def test_variant_sets_hold_their_masters(sections_page):
     section = layer_by_name(sections_page, "Section")
     variant_set = layer_by_name(section, "Component")

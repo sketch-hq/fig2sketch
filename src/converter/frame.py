@@ -18,6 +18,17 @@ from sketchformat.layer_group import (
 from typing import Optional
 from collections import namedtuple
 
+# The stroke a variant set carries in the fig file unless the user styles it: solid
+# #9747FF at full opacity, one unit wide and inside the bounds. Taken from a .fig
+# export.
+DEFAULT_VARIANT_SET_STROKE_COLOR = {
+    "r": 0.5921568870544434,
+    "g": 0.27843138575553894,
+    "b": 1.0,
+    "a": 1.0,
+}
+DEFAULT_VARIANT_SET_STROKE_WEIGHT = 1.0
+
 
 def convert(fig_frame: dict) -> Group:
     obj = Group(
@@ -46,7 +57,53 @@ def post_process_frame(fig_frame: dict, sketch_frame: Group) -> Group:
         sketch_frame.groupBehavior = GroupBehavior.VARIANT_SET
         sketch_frame.variantProperties = symbol.build_variant_properties(fig_frame)
 
+        if has_default_variant_set_styling(fig_frame):
+            # Sketch's overlay draws this appearance for an unstyled variant set, so
+            # dropping it is visually neutral and leaves the layer clean. Styling the
+            # user chose themselves is left alone.
+            sketch_frame.style.borders = []
+
     return sketch_frame
+
+
+def has_default_variant_set_styling(fig_frame: dict) -> bool:
+    """Whether a variant set carries only the styling it has by default.
+
+    The fig file holds that default as a real stroke rather than leaving it out, so it
+    has to be recognized rather than assumed absent. Anything else, including keeping
+    the default color but widening the stroke, is styling the user applied, which we
+    keep.
+    """
+    if fig_frame.get("fillPaints"):
+        return False
+
+    strokes = fig_frame.get("strokePaints", [])
+    if len(strokes) != 1:
+        return False
+
+    stroke = strokes[0]
+    if stroke.get("type") != "SOLID" or not stroke.get("visible", True):
+        return False
+
+    if not _is_close(stroke.get("opacity", 1.0), 1.0):
+        return False
+
+    if not _is_close(fig_frame.get("strokeWeight", 0), DEFAULT_VARIANT_SET_STROKE_WEIGHT):
+        return False
+
+    color = stroke.get("color", {})
+    return all(
+        _is_close(color.get(channel), value)
+        for channel, value in DEFAULT_VARIANT_SET_STROKE_COLOR.items()
+    )
+
+
+def _is_close(value: Optional[float], expected: float) -> bool:
+    """Compares against values read out of a .fig, so exact equality is too brittle."""
+    if value is None:
+        return False
+
+    return math.isclose(value, expected, abs_tol=1e-6)
 
 
 def convert_grid(fig_frame: dict) -> Optional[SimpleGrid]:
