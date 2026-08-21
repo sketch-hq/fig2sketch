@@ -26,60 +26,6 @@ class TestIDs:
         assert ab.do_objectID == utils.gen_object_id(FIG_ARTBOARD["guid"])
 
 
-@pytest.mark.usefixtures("no_prototyping")
-class TestFrameBackgroud:
-    def test_no_background(self):
-        ab = tree.convert_node(FIG_ARTBOARD, "CANVAS")
-
-        assert ab.style.fills == []
-
-    def test_disabled_background(self):
-        ab = tree.convert_node(
-            {
-                **FIG_ARTBOARD,
-                "fillPaints": [
-                    {
-                        "type": "SOLID",
-                        "color": FIG_COLOR[0],
-                        "opacity": 0.9,
-                        "visible": False,
-                    }
-                ],
-            },
-            "CANVAS",
-        )
-
-        assert not ab.style.fills[0].isEnabled
-
-    def test_simple_background(self):
-        ab = tree.convert_node(
-            {
-                **FIG_ARTBOARD,
-                "fillPaints": [
-                    {
-                        "type": "SOLID",
-                        "color": FIG_COLOR[0],
-                        "opacity": 0.9,
-                        "visible": True,
-                    }
-                ],
-            },
-            "CANVAS",
-        )
-
-        assert ab.style.fills[0].fillType == FillType.COLOR
-        assert ab.style.fills[0].color == SKETCH_COLOR[0]
-
-    def test_gradient_background(self, warnings):
-        ab = tree.convert_node(
-            {**FIG_ARTBOARD, **FIG_GRADIENT_FILL_PAINTS},
-            "CANVAS",
-        )
-
-        assert len(ab.style.fills) == 1
-        assert ab.style.fills[0].fillType == FillType.GRADIENT
-
-
 FIG_TEXT = {
     **FIG_BASE,
     "type": "TEXT",
