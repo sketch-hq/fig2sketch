@@ -4,7 +4,8 @@ from .config import config
 from converter import utils
 from sketchformat.layer_group import (
     ClippingBehavior,
-    Frame,
+    Group,
+    GroupBehavior,
     FlexGroupLayout,
     FlexDirection,
     FlexJustify,
@@ -18,13 +19,14 @@ from typing import Optional
 from collections import namedtuple
 
 
-def convert(fig_frame: dict) -> Frame:
-    obj = Frame(
+def convert(fig_frame: dict) -> Group:
+    obj = Group(
         **base.base_styled(fig_frame),
         **layout.layout_information(fig_frame),
         **prototype.prototyping_information(fig_frame),
+        **base.container_information(fig_frame),
         grid=convert_grid(fig_frame),
-        groupBehavior=1,
+        groupBehavior=GroupBehavior.FRAME,
     )
 
     obj.layout = convert_layout(fig_frame, obj.frame)
@@ -32,7 +34,7 @@ def convert(fig_frame: dict) -> Frame:
     return obj
 
 
-def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
+def post_process_frame(fig_frame: dict, sketch_frame: Group) -> Group:
     # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
     if sketch_frame.overlaySettings is not None:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
@@ -41,7 +43,7 @@ def post_process_frame(fig_frame: dict, sketch_frame: Frame) -> Frame:
         sketch_frame = layout.post_process_group_layout(sketch_frame)
 
     if config.import_variants and fig_frame.get("isStateGroup", False):
-        sketch_frame.groupBehavior = 3
+        sketch_frame.groupBehavior = GroupBehavior.VARIANT_SET
         sketch_frame.variantProperties = symbol.build_variant_properties(fig_frame)
 
     return sketch_frame
