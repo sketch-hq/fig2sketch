@@ -7,16 +7,23 @@ def convert(fig_section: dict) -> Group:
 
     A section shares the frame representation, since both serialize as a "group" whose
     groupBehavior tells Sketch which traits to derive. It carries less than a frame
-    though: a fig section has no layout grids, and a section cannot be a prototype
-    destination or an overlay, so neither grid nor prototyping information applies.
+    though: a fig section has no layout grids, and Sketch disallows a section as a
+    prototype source or destination, so neither grid nor prototyping information is
+    converted for one.
 
     A fig section carries a white background and a thin inside stroke, which we keep.
     Those arrive as ordinary fills and borders, and stay on the section's own style
     because a section does not take the GROUP path that moves them to a background
     rect.
     """
+    styled = base.base_styled(fig_section)
+    # Sketch allows a section to be neither a prototype source nor a destination, so
+    # the destination link base_layer converts for every node is dropped here. It is
+    # the only prototyping information a fig section can carry.
+    styled.pop("flow", None)
+
     return Group(
-        **base.base_styled(fig_section),
+        **styled,
         **layout.layout_information(fig_section),
         **base.container_information(fig_section),
         groupBehavior=GroupBehavior.SECTION,

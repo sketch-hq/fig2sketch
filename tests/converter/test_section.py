@@ -1,5 +1,6 @@
 from .base import *
 from converter import tree
+from converter.context import context
 from sketchformat.layer_group import GroupBehavior
 
 FIG_SECTION = {
@@ -8,6 +9,50 @@ FIG_SECTION = {
     "resizeToFit": False,
     "children": [],
 }
+
+# The destination link is the only prototyping information a fig section can carry.
+FIG_SECTION_WITH_DESTINATION_LINK = {
+    **FIG_SECTION,
+    "guid": (0, 2),
+    "parent": {"guid": (0, 1)},
+    "prototypeInteractions": [
+        {
+            "isDeleted": False,
+            "event": {"interactionType": "ON_CLICK"},
+            "actions": [
+                {
+                    "navigationType": "NAVIGATE",
+                    "connectionType": "INTERNAL_NODE",
+                    "transitionNodeID": (0, 9),
+                    "transitionType": "INSTANT_TRANSITION",
+                }
+            ],
+        }
+    ],
+}
+
+FIG_LINK_TARGET = {**FIG_BASE, "type": "FRAME", "guid": (0, 9), "children": []}
+
+FIG_LINK_CANVAS = {
+    **FIG_BASE,
+    "type": "CANVAS",
+    "guid": (0, 1),
+    "resizeToFit": False,
+    "children": [FIG_SECTION_WITH_DESTINATION_LINK, FIG_LINK_TARGET],
+}
+
+
+@pytest.fixture
+def linked_section():
+    context.init(
+        None,
+        {
+            (0, 1): FIG_LINK_CANVAS,
+            (0, 2): FIG_SECTION_WITH_DESTINATION_LINK,
+            (0, 9): FIG_LINK_TARGET,
+        },
+        "DISPLAY_P3",
+    )
 
 
 def test_section_uses_the_section_behavior():
@@ -47,16 +92,17 @@ def test_section_keeps_behavior_when_resizing_to_fit():
         assert section.groupBehavior == GroupBehavior.SECTION
 
 
-def test_section_carries_no_prototyping_information():
-    """A section can be neither a prototype destination nor an overlay, so it skips
-    prototyping conversion entirely. A frame given this same node comes back with all
-    three of these set, which is what makes the assertions worth making.
+def test_section_ignores_the_destination_link(linked_section):
+    """Sketch allows a section to be neither a prototype source nor a destination, so
+    the link is dropped rather than converted.
 
-    Note this needs no prototyping fixture, unlike the frame tests: a section never
-    consults the canvas for prototype information in the first place.
+    The same node as a frame keeps it, which is what makes the assertion worth making
+    and would catch the fixture going stale.
     """
-    section = tree.convert_node(FIG_SECTION, "CANVAS")
+    section = tree.convert_node(FIG_SECTION_WITH_DESTINATION_LINK, "CANVAS")
 
-    assert section.presentationStyle is None
-    assert section.isFlowHome is None
-    assert section.overlayBackgroundInteraction is None
+    assert section.flow is None
+
+    frame = tree.convert_node({**FIG_SECTION_WITH_DESTINATION_LINK, "type": "FRAME"}, "CANVAS")
+
+    assert frame.flow is not None
