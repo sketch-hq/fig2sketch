@@ -1,5 +1,5 @@
 import zipfile
-from . import document, meta, tree, user
+from . import document, meta, prototype, tree, user
 from .context import context
 from sketchformat.layer_group import Page
 from sketchformat.serialize import serialize
@@ -45,20 +45,23 @@ def separate_pages(fig_pages: List[dict]) -> Tuple[List[dict], Optional[dict]]:
 
 
 def convert_pages(fig_pages: List[dict], output: zipfile.ZipFile) -> List[Page]:
-    pages = []
+    pages: List[Page] = []
 
     for fig_page in fig_pages:
         tree.mark_promoted_sections(fig_page)
-        page = tree.convert_node(fig_page, "DOCUMENT")
-        serialize(page, output.open(f"pages/{page.do_objectID}.json", "w"))
-        pages.append(page)
+        pages.append(tree.convert_node(fig_page, "DOCUMENT"))  # type: ignore
 
     if context.symbols_page:
-        page = context.symbols_page
-        serialize(page, output.open(f"pages/{page.do_objectID}.json", "w"))
-        pages.append(page)
+        pages.append(context.symbols_page)
 
-    return pages  # type: ignore
+    # Whether a prototype link is valid depends on what its destination became, so
+    # every page has to be converted before any of them is written out
+    prototype.drop_invalid_flows(pages)
+
+    for page in pages:
+        serialize(page, output.open(f"pages/{page.do_objectID}.json", "w"))
+
+    return pages
 
 
 def write_sketch_file(

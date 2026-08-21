@@ -6,6 +6,7 @@ from .errors import Fig2SketchWarning
 from sketchformat.document import Swatch
 from sketchformat.layer_common import AbstractLayer
 from sketchformat.layer_group import Page
+from sketchformat.prototype import FlowConnection
 from typing import Sequence, Tuple, Optional, Dict, IO, List, Set
 
 
@@ -39,6 +40,7 @@ class Context:
         # init() is what sets a document up, but tests build nodes without it, and
         # get_node_type consults this for every node
         self._promoted_sections: Set[Sequence[int]] = set()
+        self._flows: List[Tuple[dict, FlowConnection]] = []
 
     def init(
         self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict], color_space: str
@@ -54,6 +56,7 @@ class Context:
         self._component_nodes: Set[Sequence[int]] = set(find_node_ids(components_page))
         self._converted_component_sets: Set[Sequence[int]] = set()
         self._promoted_sections = set()
+        self._flows = []
         self._node_by_key = {
             node["key"]: node for node in id_map.values() if isinstance(node.get("key"), str)
         }
@@ -126,6 +129,18 @@ class Context:
 
     def used_fonts(self) -> Dict[Tuple[str, str], Tuple[IO[bytes], str]]:
         return self._used_fonts
+
+    def register_flow(self, fig_node: dict, flow: FlowConnection) -> None:
+        """Remembers which fig node a converted flow came from.
+
+        Whether a link is valid depends on what its destination turns into, which is
+        only known once every page has been converted. Keeping the source node here
+        lets that later pass name the layer it warns about.
+        """
+        self._flows.append((fig_node, flow))
+
+    def flows(self) -> List[Tuple[dict, FlowConnection]]:
+        return self._flows
 
     def promote_to_section(self, gid: Sequence[int]) -> None:
         self._promoted_sections.add(gid)
