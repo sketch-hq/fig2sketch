@@ -41,9 +41,10 @@ def test_section_uses_section_behavior(sections_page):
     assert section["groupBehavior"] == GroupBehavior.SECTION.value
 
 
-def test_section_keeps_figma_default_styling(sections_page):
-    """Figma gives a section a white background and a thin inside stroke, and we keep
-    both on the section's own style rather than on a background rect."""
+def test_section_keeps_its_styling(sections_page):
+    """A section's styling is preserved as-is, on the section's own style rather than
+    on a background rect. The fill and border checked here are the ones a fig section
+    carries by default, but nothing about the conversion is specific to them."""
     section = layer_by_name(sections_page, "Section")
 
     fill = section["style"]["fills"][0]

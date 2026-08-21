@@ -3,14 +3,14 @@ from sketchformat.layer_group import Group, GroupBehavior
 
 
 def convert(fig_section: dict) -> Group:
-    """Converts a Figma section.
+    """Converts a fig section.
 
     A section shares the frame representation, since both serialize as a "group" whose
     groupBehavior tells Sketch which traits to derive. It carries less than a frame
-    though: Figma sections have no layout grids, and a section cannot be a prototype
+    though: a fig section has no layout grids, and a section cannot be a prototype
     destination or an overlay, so neither grid nor prototyping information applies.
 
-    Figma gives a section a white background and a thin inside stroke, which we keep.
+    A fig section carries a white background and a thin inside stroke, which we keep.
     Those arrive as ordinary fills and borders, and stay on the section's own style
     because a section does not take the GROUP path that moves them to a background
     rect.
@@ -24,7 +24,10 @@ def convert(fig_section: dict) -> Group:
 
 
 def post_process(fig_section: dict, sketch_section: Group) -> Group:
-    # Sections support stacks, so they need the same child reordering as a frame
+    # A fig section has no auto layout, so nothing reaches this today. Sketch
+    # sections do support stacks though, so handle it rather than assume it cannot
+    # happen: if the fig format ever gives sections auto layout, a stacked one needs
+    # the same child reordering as a frame.
     if utils.has_auto_layout(fig_section):
         sketch_section = layout.post_process_group_layout(sketch_section)
 

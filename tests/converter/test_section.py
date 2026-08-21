@@ -18,7 +18,7 @@ def test_section_uses_the_section_behavior():
 
 
 def test_section_keeps_its_own_styling():
-    """Figma gives a section a white background and a thin inside stroke, which we
+    """A fig section carries a white background and a thin inside stroke, which we
     preserve, so the fill and border stay on the section's own style rather than
     moving to a background rect."""
     fig_section = {
@@ -47,19 +47,16 @@ def test_section_keeps_behavior_when_resizing_to_fit():
         assert section.groupBehavior == GroupBehavior.SECTION
 
 
-def test_section_carries_no_frame_only_information():
-    """Figma sections have no layout grids, and a section can be neither a prototype
-    destination nor an overlay, so none of that is converted for one.
+def test_section_carries_no_prototyping_information():
+    """A section can be neither a prototype destination nor an overlay, so it skips
+    prototyping conversion entirely. A frame given this same node comes back with all
+    three of these set, which is what makes the assertions worth making.
 
     Note this needs no prototyping fixture, unlike the frame tests: a section never
     consults the canvas for prototype information in the first place.
     """
     section = tree.convert_node(FIG_SECTION, "CANVAS")
 
-    assert section.grid is None
-    assert section.layout is None
     assert section.presentationStyle is None
     assert section.isFlowHome is None
     assert section.overlayBackgroundInteraction is None
-    assert section.overlaySettings is None
-    assert section.prototypeViewport is None
