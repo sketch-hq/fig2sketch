@@ -33,12 +33,10 @@ SUPPORTED_INHERIT_STYLES = {
 class _ContainerInformation(TypedDict):
     horizontalRulerData: RulerData
     verticalRulerData: RulerData
-    hasBackgroundColor: bool
-    backgroundColor: Color
     includeBackgroundColorInExport: bool
 
 
-def container_information(fig_frame: dict) -> _ContainerInformation:
+def container_information() -> _ContainerInformation:
     """Fields the top-level container kinds write, which a plain group leaves out.
 
     MSLayerGroup carries these for every group, but Sketch omits any property equal to
@@ -49,12 +47,6 @@ def container_information(fig_frame: dict) -> _ContainerInformation:
     return {
         "horizontalRulerData": RulerData(),
         "verticalRulerData": RulerData(),
-        # Left over from artboards, and written only to keep output unchanged. The
-        # current model stores neither on a layer group, migrating a legacy artboard
-        # background into a style fill instead, which is already where a fig
-        # background lands. Nothing reads the fig node for these.
-        "hasBackgroundColor": False,
-        "backgroundColor": Color.White(),
         # Still live on MSLayerGroup. True is both correct here, since the fill really
         # does come from the fig file, and the model's own default.
         "includeBackgroundColorInExport": True,

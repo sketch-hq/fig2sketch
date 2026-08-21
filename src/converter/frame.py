@@ -35,7 +35,7 @@ def convert(fig_frame: dict) -> Group:
         **base.base_styled(fig_frame),
         **layout.layout_information(fig_frame),
         **prototype.prototyping_information(fig_frame),
-        **base.container_information(fig_frame),
+        **base.container_information(),
         grid=convert_grid(fig_frame),
         groupBehavior=GroupBehavior.FRAME,
     )
