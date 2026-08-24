@@ -50,7 +50,7 @@ def convert(fig_symbol):
     return master
 
 
-def post_process_symbol(fig_symbol, sketch_symbol):
+def post_process(fig_symbol, sketch_symbol):
     """Finalize a converted symbol and decide where its master should live.
 
     Symbols from .fig format's hidden components page are moved to Sketch's Symbols page

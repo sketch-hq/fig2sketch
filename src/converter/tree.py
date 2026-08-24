@@ -47,11 +47,11 @@ CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
 
 POST_PROCESSING: Dict[str, Callable[[dict, Any], AbstractLayer]] = {
     "CANVAS": page.add_page_background,
-    "FRAME": frame.post_process_frame,
+    "FRAME": frame.post_process,
     "SECTION": section.post_process,
-    "GROUP": group.post_process_frame,
+    "GROUP": group.post_process_frame_as_group,
     "BOOLEAN_OPERATION": shape_group.post_process,
-    "SYMBOL": symbol.post_process_symbol,
+    "SYMBOL": symbol.post_process,
     "INSTANCE": instance.post_process,
 }
 

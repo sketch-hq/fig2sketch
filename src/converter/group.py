@@ -16,7 +16,13 @@ def convert(fig_group):
     )
 
 
-def post_process_frame(fig_group: dict, sketch_group: Group) -> Group:
+def post_process_frame_as_group(fig_group: dict, sketch_group: Group) -> Group:
+    """Finalize a .fig frame that was converted to a Sketch group.
+
+    A frame without auto layout that resizes to fit its children has no Sketch
+    counterpart as a frame, so it becomes a plain group. Sketch groups carry no
+    fills or borders, hence the frame style is moved onto a background rect.
+    """
     convert_frame_style(fig_group, sketch_group)
     adjust_group_resizing_constraint(fig_group, sketch_group)
 
