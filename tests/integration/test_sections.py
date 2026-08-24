@@ -86,6 +86,29 @@ def test_variant_sets_hold_their_masters(sections_page):
     assert [layer["_class"] for layer in variant_set["layers"]] == ["symbolMaster"] * 2
 
 
+def test_frames_above_a_variant_set_are_promoted(sections_page):
+    """Sketch allows a variant set only on a page or in a section, so the whole chain
+    of frames above one becomes sections rather than losing the variant behavior."""
+    outer = layer_by_name(sections_page, "Outer section frame")
+    inner = layer_by_name(outer, "Inner section frame")
+
+    assert outer["groupBehavior"] == GroupBehavior.SECTION.value
+    assert inner["groupBehavior"] == GroupBehavior.SECTION.value
+
+    variant_set = layer_by_name(inner, "Component Styled")
+    assert variant_set["groupBehavior"] == GroupBehavior.VARIANT_SET.value
+
+
+def test_no_promotion_without_the_variants_flag(sections_page_without_variants):
+    """With the flag off those frames hold no variant set, so there is nothing to
+    make room for and they stay frames."""
+    outer = layer_by_name(sections_page_without_variants, "Outer section frame")
+    inner = layer_by_name(outer, "Inner section frame")
+
+    assert outer["groupBehavior"] == GroupBehavior.FRAME.value
+    assert inner["groupBehavior"] == GroupBehavior.FRAME.value
+
+
 def test_section_converts_without_the_variants_flag(sections_page_without_variants):
     """Sections are not gated, so they convert either way, while the component sets
     stay plain frames with their styling untouched."""
