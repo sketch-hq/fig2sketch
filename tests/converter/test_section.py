@@ -24,11 +24,15 @@ FIG_SECTION = {
     "children": [],
 }
 
-# The destination link is the only prototyping information a fig section can carry.
-FIG_SECTION_WITH_DESTINATION_LINK = {
-    **FIG_SECTION,
+# A frame may be a prototype source, so a promoted one reaches section.convert still
+# carrying its link. The fig format does not let a section be a source, which is why the
+# link is put on a frame here rather than on a section directly.
+FIG_LINKING_FRAME = {
+    **FIG_BASE,
+    "type": "FRAME",
     "guid": (0, 2),
     "parent": {"guid": (0, 1)},
+    "resizeToFit": False,
     "prototypeInteractions": [
         {
             "isDeleted": False,
@@ -43,6 +47,7 @@ FIG_SECTION_WITH_DESTINATION_LINK = {
             ],
         }
     ],
+    "children": [{**FIG_SECTION, "guid": (0, 3), "parent": {"guid": (0, 2)}}],
 }
 
 FIG_LINK_TARGET = {**FIG_BASE, "type": "FRAME", "guid": (0, 9), "children": []}
@@ -52,7 +57,7 @@ FIG_LINK_CANVAS = {
     "type": "CANVAS",
     "guid": (0, 1),
     "resizeToFit": False,
-    "children": [FIG_SECTION_WITH_DESTINATION_LINK, FIG_LINK_TARGET],
+    "children": [FIG_LINKING_FRAME, FIG_LINK_TARGET],
 }
 
 
@@ -62,7 +67,8 @@ def linked_section():
         None,
         {
             (0, 1): FIG_LINK_CANVAS,
-            (0, 2): FIG_SECTION_WITH_DESTINATION_LINK,
+            (0, 2): FIG_LINKING_FRAME,
+            (0, 3): FIG_LINKING_FRAME["children"][0],
             (0, 9): FIG_LINK_TARGET,
         },
         "DISPLAY_P3",
@@ -106,20 +112,20 @@ def test_section_keeps_behavior_when_resizing_to_fit():
         assert section.groupBehavior == GroupBehavior.SECTION
 
 
-def test_section_ignores_the_destination_link(linked_section):
-    """Sketch allows a section to be neither a prototype source nor a destination, so
-    the link is dropped rather than converted.
+def test_promoted_frame_drops_its_prototype_link(linked_section):
+    """Sketch allows a section to be neither a prototype source nor a destination, so a
+    frame that was one loses its link on being promoted.
 
-    The same node as a frame keeps it, which is what makes the assertion worth making
-    and would catch the fixture going stale.
+    Left unpromoted the same node keeps it, which is what makes the assertion worth
+    making and would catch the fixture going stale.
     """
-    section = tree.convert_node(FIG_SECTION_WITH_DESTINATION_LINK, "CANVAS")
+    assert tree.convert_node(FIG_LINKING_FRAME, "CANVAS").flow is not None
 
-    assert section.flow is None
+    tree.mark_promoted_sections(FIG_LINK_CANVAS)
+    promoted = tree.convert_node(FIG_LINKING_FRAME, "CANVAS")
 
-    frame = tree.convert_node({**FIG_SECTION_WITH_DESTINATION_LINK, "type": "FRAME"}, "CANVAS")
-
-    assert frame.flow is not None
+    assert promoted.groupBehavior == GroupBehavior.SECTION
+    assert promoted.flow is None
 
 
 @pytest.mark.usefixtures("no_prototyping", "empty_context")

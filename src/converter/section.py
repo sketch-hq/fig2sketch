@@ -17,9 +17,11 @@ def convert(fig_section: dict) -> Group:
     rect.
     """
     styled = base.base_styled(fig_section)
-    # Sketch allows a section to be neither a prototype source nor a destination, so
-    # the destination link base_layer converts for every node is dropped here. It is
-    # the only prototyping information a fig section can carry.
+    # Sketch allows a section to be neither a prototype source nor a destination, so the
+    # link base_layer converts for every node is dropped here. A frame promoted to a
+    # section is what makes this matter: a frame may be a source, and it arrives here
+    # carrying the link it had. The fig format does not let a section be one, so a node
+    # that was already a section reaches this with nothing to drop.
     styled.pop("flow", None)
 
     return Group(
