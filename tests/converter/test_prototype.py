@@ -373,8 +373,12 @@ class TestDropInvalidFlows:
         warnings.assert_called_once_with("PRT006", fig_source)
 
 
-def test_convert_flow_registers_the_link(canvas):
-    """The pass that validates links later needs the fig node each one came from."""
+def test_convert_flow_records_the_node_the_link_came_from(canvas):
+    """Each link is stored in the context next to its fig node as it is converted.
+
+    drop_invalid_flows only runs once every page is done, and by then the link is a
+    plain destination id, so it needs this to name the layer it warns about.
+    """
     fig_source = {
         **FIG_BASE,
         "guid": (0, 7),
