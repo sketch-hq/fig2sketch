@@ -19,10 +19,72 @@ from typing import Dict, Callable, Any
 import traceback
 from .errors import *
 from . import utils
+from .config import config
+from .context import context
 
 
 def ignored_layer_type(fig_layer: dict) -> AbstractLayer:
     raise Fig2SketchWarning("LAY001")
+
+
+# Group-like types that can take on the section behavior if they have to contain one
+PROMOTABLE_TO_SECTION = ("FRAME", "GROUP")
+
+# A page may hold a section as it is, so it ends the chain without being promoted. The
+# other legal container, a section, ends it by already being one
+SECTION_CONTAINERS = ("CANVAS",)
+
+
+def will_be_section(fig_node: dict) -> bool:
+    if fig_node["type"] == "SECTION":
+        return True
+
+    # A variant set is a section in Sketch, so it is bound by the same nesting rule
+    return bool(config.import_variants and fig_node.get("isStateGroup", False))
+
+
+def mark_promoted_sections(fig_node: dict) -> bool:
+    """Finds sections nested in frames and promotes the frames above them.
+
+    Sketch only allows a section on a page or inside another section, while the fig
+    format lets a variant set sit inside a frame. Rather than dropping the section
+    behavior, the frames above it become sections too, which keeps the variant set
+    intact.
+
+    Run this over a page before converting it: conversion visits a parent before its
+    children, so the frames have already been built by the time their descendants
+    would reveal that they need to be sections.
+
+    Returns whether the node is, or was promoted to, a section. The recursion descends,
+    but a node decides only once its children have reported back, so promotion travels
+    upwards from the innermost section and stops at the nearest container that may hold
+    one as it is — a page, or an enclosing section — leaving that one alone rather than
+    promoting or warning about it.
+    """
+    if will_be_section(fig_node):
+        # The chain ends here, since a section may sit in a section. Its descendants
+        # are still searched on their own: a frame below it may hold a variant set,
+        # which is no more legal for being inside a section further up
+        for child in fig_node.get("children", []):
+            mark_promoted_sections(child)
+
+        return True
+
+    # Every branch has to be walked, so collect the results rather than short-circuit
+    contains_section = [mark_promoted_sections(child) for child in fig_node.get("children", [])]
+    if not any(contains_section) or fig_node["type"] in SECTION_CONTAINERS:
+        return False
+
+    if fig_node["type"] not in PROMOTABLE_TO_SECTION:
+        # A symbol master cannot become a section, and Sketch does not allow a section
+        # inside one, so warn rather than emit a shape we cannot fix
+        utils.log_conversion_warning("SEC002", fig_node)
+        return False
+
+    context.promote_to_section(fig_node["guid"])
+    utils.log_conversion_warning("SEC001", fig_node)
+
+    return True
 
 
 CONVERTERS: Dict[str, Callable[[dict], AbstractLayer]] = {
@@ -94,6 +156,10 @@ def convert_node(fig_node: dict, parent_type: str) -> AbstractLayer:
 
 
 def get_node_type(fig_node: dict, parent_type: str) -> str:
+    if context.is_promoted_to_section(fig_node["guid"]):
+        # Promoted by mark_promoted_sections so it can hold a section or variant set
+        return "SECTION"
+
     if fig_node["type"] == "SECTION":
         # A section stays a section whatever its resize behavior, since in Sketch it
         # is a container kind rather than a way of sizing one

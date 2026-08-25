@@ -48,6 +48,7 @@ def convert_pages(fig_pages: List[dict], output: zipfile.ZipFile) -> List[Page]:
     pages = []
 
     for fig_page in fig_pages:
+        tree.mark_promoted_sections(fig_page)
         page = tree.convert_node(fig_page, "DOCUMENT")
         serialize(page, output.open(f"pages/{page.do_objectID}.json", "w"))
         pages.append(page)
