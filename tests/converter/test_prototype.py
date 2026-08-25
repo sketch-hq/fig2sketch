@@ -332,7 +332,7 @@ class TestDropInvalidFlows:
         assert source.flow is None
         warnings.assert_called_once_with("PRT007", ANY)
 
-    def test_nested_layers_are_reached(self, warnings):
+    def test_nested_layers_are_validated(self, warnings):
         """Both the link and its destination can sit at any depth."""
         source = self._group("source", flow=self._flow("nested_section"))
         section = self._group("nested_section", behavior=GroupBehavior.SECTION)
@@ -346,7 +346,7 @@ class TestDropInvalidFlows:
         assert source.flow is None
         warnings.assert_called_once_with("PRT006", ANY)
 
-    def test_link_to_another_page_is_kept(self):
+    def test_link_to_layer_on_another_page_is_kept(self):
         """Symbols move to the Symbols page while their destinations stay behind, so
         validity is a question about the document rather than about one page."""
         source = self._group("source", flow=self._flow("target"))
