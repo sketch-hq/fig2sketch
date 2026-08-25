@@ -45,7 +45,7 @@ def convert(fig_frame: dict) -> Group:
     return obj
 
 
-def post_process_frame(fig_frame: dict, sketch_frame: Group) -> Group:
+def post_process(fig_frame: dict, sketch_frame: Group) -> Group:
     # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
     if sketch_frame.overlaySettings is not None:
         sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))

@@ -67,7 +67,7 @@ def instance_scale(fig_instance: dict, fig_master: dict) -> float:
 
 def post_process(fig_instance, sketch_instance):
     if sketch_instance._class == "group":
-        return group.post_process_frame(fig_instance, sketch_instance)
+        return group.post_process_frame_as_group(fig_instance, sketch_instance)
     else:
         return sketch_instance
 
