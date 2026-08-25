@@ -55,9 +55,11 @@ def mark_promoted_sections(fig_node: dict) -> bool:
     children, so the frames have already been built by the time their descendants
     would reveal that they need to be sections.
 
-    Returns whether the node is, or was promoted to, a section. Walking bottom-up like
-    this promotes the whole chain up to the nearest container that may already hold a
-    section, so a page or an enclosing section stops it rather than being warned about.
+    Returns whether the node is, or was promoted to, a section. The recursion descends,
+    but a node decides only once its children have reported back, so promotion travels
+    upwards from the innermost section and stops at the nearest container that may hold
+    one as it is — a page, or an enclosing section — leaving that one alone rather than
+    promoting or warning about it.
     """
     if will_be_section(fig_node):
         # The chain ends here, since a section may sit in a section. Its descendants
