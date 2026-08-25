@@ -26,7 +26,8 @@ FIG_SECTION = {
 
 # A frame may be a prototype source, so a promoted one reaches section.convert still
 # carrying its link. The fig format does not let a section be a source, which is why the
-# link is put on a frame here rather than on a section directly.
+# link is put on a frame here rather than on a section directly. What it contains is a
+# variant set, the one thing the fig format really does allow inside a frame.
 FIG_LINKING_FRAME = {
     **FIG_BASE,
     "type": "FRAME",
@@ -47,7 +48,17 @@ FIG_LINKING_FRAME = {
             ],
         }
     ],
-    "children": [{**FIG_SECTION, "guid": (0, 3), "parent": {"guid": (0, 2)}}],
+    "children": [
+        {
+            **FIG_BASE,
+            "type": "FRAME",
+            "guid": (0, 3),
+            "parent": {"guid": (0, 2)},
+            "isStateGroup": True,
+            "resizeToFit": False,
+            "children": [],
+        }
+    ],
 }
 
 FIG_LINK_TARGET = {**FIG_BASE, "type": "FRAME", "guid": (0, 9), "children": []}
@@ -112,13 +123,15 @@ def test_section_keeps_behavior_when_resizing_to_fit():
         assert section.groupBehavior == GroupBehavior.SECTION
 
 
-def test_promoted_frame_drops_its_prototype_link(linked_section):
+def test_promoted_frame_drops_its_prototype_link(linked_section, monkeypatch):
     """Sketch allows a section to be neither a prototype source nor a destination, so a
     frame that was one loses its link on being promoted.
 
     Left unpromoted the same node keeps it, which is what makes the assertion worth
     making and would catch the fixture going stale.
     """
+    monkeypatch.setattr(config, "import_variants", True)
+
     assert tree.convert_node(FIG_LINKING_FRAME, "CANVAS").flow is not None
 
     tree.mark_promoted_sections(FIG_LINK_CANVAS)
