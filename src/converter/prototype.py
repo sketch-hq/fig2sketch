@@ -1,8 +1,13 @@
 from .context import context
 from .errors import *
 from converter import utils
+from sketchformat.layer_common import AbstractLayer
+from sketchformat.layer_group import AbstractLayerGroup, GroupBehavior, Page
 from sketchformat.prototype import *
-from typing import TypedDict, Tuple, Optional
+from typing import Iterator, List, TypedDict, Tuple, Optional
+
+# A link back to wherever the prototype came from, rather than to a layer
+BACK_DESTINATION = "back"
 
 OVERLAY_INTERACTION = {
     "NONE": OverlayBackgroundInteraction.NONE,
@@ -86,7 +91,11 @@ def convert_flow(fig_node: dict) -> _Flow:
                     overlaySettings=overlay_settings,
                 )
 
-    return {"flow": flow} if flow else {}
+    if flow is None:
+        return {}
+
+    context.register_flow(fig_node, flow)
+    return {"flow": flow}
 
 
 class _PrototypingInformation(TypedDict, total=False):
@@ -146,7 +155,7 @@ def get_destination_settings_if_any(
     transition_node_id = action.get("transitionNodeID", None)
 
     if connection_type == "BACK":
-        destination = "back"
+        destination = BACK_DESTINATION
     elif connection_type == "INTERNAL_NODE" and transition_node_id is None:
         destination = None
     elif connection_type == "INTERNAL_NODE" and transition_node_id is not None:
@@ -169,3 +178,57 @@ def get_destination_settings_if_any(
         raise Fig2SketchWarning("PRT004")
 
     return destination, overlay_settings
+
+
+def _descendants(group: AbstractLayerGroup) -> Iterator[AbstractLayer]:
+    for layer in group.layers:
+        yield layer
+        if isinstance(layer, AbstractLayerGroup):
+            yield from _descendants(layer)
+
+
+def _is_section(layer: AbstractLayer) -> bool:
+    return isinstance(layer, AbstractLayerGroup) and layer.groupBehavior == GroupBehavior.SECTION
+
+
+def drop_invalid_flows(pages: List[Page]) -> None:
+    """Removes prototype links that point somewhere Sketch cannot navigate to.
+
+    A link is converted from the destination's id alone, without knowing what that
+    id becomes, so two kinds of broken link can reach the output: one pointing at a
+    section, which Sketch does not allow as a destination, and one pointing at a
+    layer that never made it into the document, since conversion skips a subtree
+    that fails and drops unsupported layer types.
+
+    Neither is known before every page is converted, which is why this runs at the
+    end rather than as a check while converting. Only those two cases are dropped: a
+    fig link can point at a group or another non-frame layer, and those are left
+    alone.
+    """
+    layers = [layer for page in pages for layer in _descendants(page)]
+    # Pages are left out on purpose. A page is not a destination, so a link naming
+    # one is as broken as a link naming nothing.
+    section_ids = {layer.do_objectID for layer in layers if _is_section(layer)}
+    layer_ids = {layer.do_objectID for layer in layers}
+
+    # Flows are matched by object identity, since two links to the same destination
+    # compare equal. The context holds a reference to each one, so the ids stay valid.
+    source_nodes = {id(flow): fig_node for fig_node, flow in context.flows()}
+
+    for layer in layers:
+        flow = layer.flow
+        if flow is None or flow.destinationArtboardID == BACK_DESTINATION:
+            continue
+
+        if flow.destinationArtboardID in section_ids:
+            warning_code = "PRT006"
+        elif flow.destinationArtboardID not in layer_ids:
+            warning_code = "PRT007"
+        else:
+            continue
+
+        layer.flow = None
+
+        fig_node = source_nodes.get(id(flow))
+        if fig_node is not None:
+            utils.log_conversion_warning(warning_code, fig_node)
