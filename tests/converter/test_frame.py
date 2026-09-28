@@ -3,7 +3,10 @@ from .base import *
 from converter import prototype, tree, frame
 from sketchformat.layer_common import Rect
 from sketchformat.layer_shape import Rectangle
+from sketchformat.layer_group import Group
+from sketchformat.layer_common import PrototypeScrolling
 from sketchformat.style import *
+from sketchformat.prototype import FlowOverlaySettings
 from unittest.mock import ANY
 
 FIG_ARTBOARD = {
@@ -81,6 +84,33 @@ class TestFrameBackgroud:
         assert ab.style.corners.radii == [5]
         assert ab.style.corners.style == CornerStyle.ROUNDED
         assert ab.style.corners.smoothing is None
+
+    def test_overlay_frame_does_not_add_a_clipping_mask_layer(self):
+        sketch_frame = Group(
+            do_objectID="frame-id",
+            name="Overlay",
+            frame=Rect(height=100, width=100, x=0, y=0),
+            rotation=0,
+            style=Style(do_objectID="style-id"),
+            overlaySettings=FlowOverlaySettings.RegularArtboard(),
+        )
+
+        result = frame.post_process(FIG_ARTBOARD, sketch_frame)
+
+        assert result.layers == []
+
+    def test_scrollable_frame_uses_native_scrolling_and_clipping_properties(self):
+        result = tree.convert_node(
+            {
+                **FIG_ARTBOARD,
+                "scrollDirection": "VERTICAL",
+                "frameMaskDisabled": True,
+            },
+            "CANVAS",
+        )
+
+        assert result.prototypeScrolling == PrototypeScrolling.VERTICAL
+        assert result.clippingBehavior == frame.ClippingBehavior.CLIP_TO_BOUNDS
 
     def test_smooth_corners_preserve_smoothing_amount(self):
         ab = tree.convert_node(

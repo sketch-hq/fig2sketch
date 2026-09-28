@@ -93,7 +93,7 @@ WARNING_MESSAGES = {
     "PRT002": "has multiple actions per layer, which is not supported. Only the first one will be converted",
     "PRT003": "has an action with an unsupported navigation type: {props}. This action will be ignored",
     "PRT004": "has an action with an unsupported connection type: {props}. This action will be ignored",
-    "PRT005": "has a prototype with a scroll overflow which is not supported. This setting will be ignored.",
+    "PRT005": "has an unsupported scroll setting: {props}. This setting will be ignored",
     "PRT006": "links to a section, which Sketch does not support as a prototype destination. The link will be removed",
     "PRT007": "links to a layer that is not part of the converted document. The link will be removed",
     "GRD001": "has a layout grid which is only supported in Sketch artboards. It will be ignored",

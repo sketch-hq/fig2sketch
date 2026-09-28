@@ -100,11 +100,6 @@ class TestPrototypeInformation:
         assert info["overlayBackgroundInteraction"] == OverlayBackgroundInteraction.NONE
         assert info["presentationStyle"] == PresentationStyle.SCREEN
 
-    def test_scroll_direction_warning(self, warnings):
-        prototyping_information({**FIG_ARTBOARD, "scrollDirection": "HORIZONTAL"})
-
-        warnings.assert_any_call("PRT005", ANY)
-
     def test_prototype_information_with_no_overlay(self):
         info = prototyping_information(FIG_ARTBOARD)
 

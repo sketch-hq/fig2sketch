@@ -15,6 +15,7 @@ from sketchformat.layer_group import (
     LayoutGrid,
     Rect,
 )
+from sketchformat.layer_common import PrototypeScrolling
 from typing import Optional
 from collections import namedtuple
 
@@ -42,14 +43,13 @@ def convert(fig_frame: dict) -> Group:
 
     obj.layout = convert_layout(fig_frame, obj.frame)
 
+    if obj.prototypeScrolling != PrototypeScrolling.NONE:
+        obj.clippingBehavior = ClippingBehavior.CLIP_TO_BOUNDS
+
     return obj
 
 
 def post_process(fig_frame: dict, sketch_frame: Group) -> Group:
-    # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
-    if sketch_frame.overlaySettings is not None:
-        sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
-
     if utils.has_auto_layout(fig_frame):
         sketch_frame = layout.post_process_group_layout(sketch_frame)
 

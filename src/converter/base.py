@@ -65,6 +65,7 @@ class _BaseLayer(positioning._Positioning, prototype._Flow):
     booleanOperation: BooleanOperation
     exportOptions: ExportOptions
     isFixedToViewport: bool
+    prototypeScrolling: PrototypeScrolling
     isLocked: bool
     isVisible: bool
     layerListExpandedType: LayerListStatus
@@ -89,7 +90,8 @@ def base_layer(fig_node: dict) -> _BaseLayer:
         "booleanOperation": BooleanOperation.NONE,
         "exportOptions": export_options(fig_node.get("exportSettings", [])),
         **positioning.convert(fig_node),  # type: ignore
-        "isFixedToViewport": False,
+        "isFixedToViewport": prototype.is_fixed_to_viewport(fig_node),
+        "prototypeScrolling": prototype.prototype_scrolling(fig_node),
         "isLocked": fig_node.get("locked", False),
         "isVisible": fig_node.get("visible", True),
         "layerListExpandedType": LayerListStatus.COLLAPSED,
