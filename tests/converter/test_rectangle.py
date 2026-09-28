@@ -1,6 +1,5 @@
-from converter.rectangle import convert, make_clipping_rect
+from converter.rectangle import convert
 from .base import FIG_BASE
-from sketchformat.layer_common import ClippingMaskMode, Rect
 from sketchformat.layer_shape import PointRadiusBehaviour
 from sketchformat.style import CornerStyle, StyleCorners
 
@@ -67,17 +66,3 @@ class TestCorners:
         assert rect.style.corners.style == CornerStyle.ROUNDED
         assert rect.style.corners.smoothing is None
         assert rect.pointRadiusBehaviour == PointRadiusBehaviour.V1
-
-
-class TestSyntheticRectangles:
-    def test_clipping_rect_preserves_smoothing(self):
-        rect = make_clipping_rect(
-            {**FIG_BASE, "cornerRadius": 25, "cornerSmoothing": 0.2},
-            Rect(height=100, width=200, x=0, y=0),
-        )
-
-        assert rect.hasClippingMask
-        assert rect.clippingMaskMode == ClippingMaskMode.OUTLINE
-        assert rect.style.corners.smoothing == 0.2
-        assert rect.style.corners.style == CornerStyle.SMOOTH
-        assert rect.pointRadiusBehaviour == PointRadiusBehaviour.V1_SMOOTH
