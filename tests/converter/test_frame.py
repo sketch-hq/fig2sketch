@@ -3,7 +3,6 @@ from .base import *
 from converter import prototype, tree, frame
 from sketchformat.layer_common import Rect
 from sketchformat.layer_shape import Rectangle
-from sketchformat.layer_common import PrototypeScrolling
 from sketchformat.style import *
 from unittest.mock import ANY
 
@@ -82,19 +81,6 @@ class TestFrameBackgroud:
         assert ab.style.corners.radii == [5]
         assert ab.style.corners.style == CornerStyle.ROUNDED
         assert ab.style.corners.smoothing is None
-
-    def test_scrollable_frame_uses_native_scrolling_and_clipping_properties(self):
-        result = tree.convert_node(
-            {
-                **FIG_ARTBOARD,
-                "scrollDirection": "VERTICAL",
-                "frameMaskDisabled": True,
-            },
-            "CANVAS",
-        )
-
-        assert result.prototypeScrolling == PrototypeScrolling.VERTICAL
-        assert result.clippingBehavior == frame.ClippingBehavior.CLIP_TO_BOUNDS
 
     def test_smooth_corners_preserve_smoothing_amount(self):
         ab = tree.convert_node(

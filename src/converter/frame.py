@@ -3,7 +3,6 @@ from . import base, group, prototype, rectangle, layout, symbol
 from .config import config
 from converter import utils
 from sketchformat.layer_group import (
-    ClippingBehavior,
     Group,
     GroupBehavior,
     FlexGroupLayout,
@@ -15,7 +14,6 @@ from sketchformat.layer_group import (
     LayoutGrid,
     Rect,
 )
-from sketchformat.layer_common import PrototypeScrolling
 from typing import Optional
 from collections import namedtuple
 
@@ -42,9 +40,6 @@ def convert(fig_frame: dict) -> Group:
     )
 
     obj.layout = convert_layout(fig_frame, obj.frame)
-
-    if obj.prototypeScrolling != PrototypeScrolling.NONE:
-        obj.clippingBehavior = ClippingBehavior.CLIP_TO_BOUNDS
 
     return obj
 
