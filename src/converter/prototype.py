@@ -2,6 +2,7 @@ from .context import context
 from .errors import *
 from converter import utils
 from sketchformat.layer_common import AbstractLayer
+from sketchformat.layer_common import PrototypeScrolling
 from sketchformat.layer_group import AbstractLayerGroup, GroupBehavior, Page
 from sketchformat.prototype import *
 from typing import Iterator, List, TypedDict, Tuple, Optional
@@ -106,43 +107,78 @@ class _PrototypingInformation(TypedDict, total=False):
     prototypeViewport: PrototypeViewport
 
 
+def is_fixed_to_viewport(fig_node: dict) -> bool:
+    behavior = fig_node.get("scrollBehavior", "SCROLLS")
+    if behavior in ("SCROLLS", "FIXED_WHEN_CHILD_OF_SCROLLING_FRAME", "FIXED"):
+        return behavior != "SCROLLS"
+    utils.log_conversion_warning("PRT005", fig_node, props=[behavior])
+    return False
+
+
+SCROLL_DIRECTIONS = {
+    "HORIZONTAL": PrototypeScrolling.HORIZONTAL,
+    "VERTICAL": PrototypeScrolling.VERTICAL,
+    "BOTH": PrototypeScrolling.BOTH,
+    "HORIZONTAL_AND_VERTICAL": PrototypeScrolling.BOTH,
+}
+
+
+def prototype_scrolling(fig_node: dict) -> PrototypeScrolling:
+    direction = fig_node.get("scrollDirection", "NONE")
+    if direction == "NONE":
+        return PrototypeScrolling.NONE
+
+    mapped = SCROLL_DIRECTIONS.get(direction)
+    if mapped is None:
+        utils.log_conversion_warning("PRT005", fig_node, props=[direction])
+        return PrototypeScrolling.NONE
+    return mapped
+
+
 def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
+    info: _PrototypingInformation = {}
+
     # Some information about the prototype is in the canvas/page
     fig_canvas = context.fig_node(fig_frame["parent"]["guid"])
 
     if "prototypeDevice" not in fig_canvas:
-        return {
-            "isFlowHome": False,
-            "overlayBackgroundInteraction": OverlayBackgroundInteraction.NONE,
-            "presentationStyle": PresentationStyle.SCREEN,
-        }
-
-    # TODO: Overflow scrolling means making the artboard bigger (fit the child bounds)
-    if fig_frame.get("scrollDirection", "NONE") != "NONE":
-        utils.log_conversion_warning("PRT005", fig_frame)
+        info.update(
+            {
+                "isFlowHome": False,
+                "overlayBackgroundInteraction": OverlayBackgroundInteraction.NONE,
+                "presentationStyle": PresentationStyle.SCREEN,
+            }
+        )
+        return info
 
     if "overlayBackgroundInteraction" in fig_frame:
-        return {
-            "isFlowHome": False,
-            "overlayBackgroundInteraction": OVERLAY_INTERACTION[
-                fig_frame["overlayBackgroundInteraction"]
-            ],
-            "presentationStyle": PresentationStyle.OVERLAY,
-            "overlaySettings": FlowOverlaySettings.Positioned(
-                fig_frame.get("overlayPositionType", "CENTER")
-            ),
-        }
+        info.update(
+            {
+                "isFlowHome": False,
+                "overlayBackgroundInteraction": OVERLAY_INTERACTION[
+                    fig_frame["overlayBackgroundInteraction"]
+                ],
+                "presentationStyle": PresentationStyle.OVERLAY,
+                "overlaySettings": FlowOverlaySettings.Positioned(
+                    fig_frame.get("overlayPositionType", "CENTER")
+                ),
+            }
+        )
+        return info
     else:
-        return {
-            "isFlowHome": fig_frame.get("prototypeStartingPoint", {}).get("name", "") != "",
-            "prototypeViewport": PrototypeViewport(
-                name=fig_canvas["prototypeDevice"]["presetIdentifier"],
-                size=Point.from_dict(fig_canvas["prototypeDevice"]["size"]),
-            ),
-            "overlayBackgroundInteraction": OverlayBackgroundInteraction.NONE,
-            "presentationStyle": PresentationStyle.SCREEN,
-            "overlaySettings": FlowOverlaySettings.RegularArtboard(),
-        }
+        info.update(
+            {
+                "isFlowHome": fig_frame.get("prototypeStartingPoint", {}).get("name", "") != "",
+                "prototypeViewport": PrototypeViewport(
+                    name=fig_canvas["prototypeDevice"]["presetIdentifier"],
+                    size=Point.from_dict(fig_canvas["prototypeDevice"]["size"]),
+                ),
+                "overlayBackgroundInteraction": OverlayBackgroundInteraction.NONE,
+                "presentationStyle": PresentationStyle.SCREEN,
+                "overlaySettings": FlowOverlaySettings.RegularArtboard(),
+            }
+        )
+        return info
 
 
 def get_destination_settings_if_any(

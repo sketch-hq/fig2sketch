@@ -3,7 +3,6 @@ from . import base, group, prototype, rectangle, layout, symbol
 from .config import config
 from converter import utils
 from sketchformat.layer_group import (
-    ClippingBehavior,
     Group,
     GroupBehavior,
     FlexGroupLayout,
@@ -46,10 +45,6 @@ def convert(fig_frame: dict) -> Group:
 
 
 def post_process(fig_frame: dict, sketch_frame: Group) -> Group:
-    # The .fig file clips overlays implicitly but .sketch doesn't, so we must add a mask
-    if sketch_frame.overlaySettings is not None:
-        sketch_frame.layers.insert(0, rectangle.make_clipping_rect(fig_frame, sketch_frame.frame))
-
     if utils.has_auto_layout(fig_frame):
         sketch_frame = layout.post_process_group_layout(sketch_frame)
 

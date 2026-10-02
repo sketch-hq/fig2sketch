@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from enum import IntEnum
+from enum import IntEnum, IntFlag
 from typing import Optional, List, Union
 
 from .common import Size
@@ -90,6 +90,13 @@ class SizingBehaviour(IntEnum):
     RELATIVE = 3
 
 
+class PrototypeScrolling(IntFlag):
+    NONE = 0
+    HORIZONTAL = 1
+    VERTICAL = 2
+    BOTH = HORIZONTAL | VERTICAL
+
+
 @dataclass(kw_only=True)
 class ExportFormat:
     _class: str = field(default="exportFormat")
@@ -138,6 +145,7 @@ class AbstractLayer:
     exportOptions: ExportOptions = field(default_factory=ExportOptions)
     flow: Optional[FlowConnection] = None
     isFixedToViewport: bool = False
+    prototypeScrolling: PrototypeScrolling = PrototypeScrolling.NONE
     isFlippedHorizontal: bool = False
     isFlippedVertical: bool = False
     isLocked: bool = False

@@ -1,6 +1,8 @@
 import pytest
 from .base import *
 from converter import prototype, tree, base
+from converter import utils
+from sketchformat.layer_common import PrototypeScrolling
 from sketchformat.style import *
 from unittest.mock import ANY
 from converter.context import context
@@ -24,6 +26,35 @@ class TestIDs:
         ab = tree.convert_node({**FIG_ARTBOARD, "overrideKey": (789, 112)}, "CANVAS")
 
         assert ab.do_objectID == utils.gen_object_id(FIG_ARTBOARD["guid"])
+
+    def test_fixed_scroll_behavior_uses_sketch_viewport_flag(self):
+        layer = base.base_layer(
+            {**FIG_BASE, "scrollBehavior": "FIXED_WHEN_CHILD_OF_SCROLLING_FRAME"}
+        )
+
+        assert layer["isFixedToViewport"] is True
+        assert "scrollBehavior" not in layer
+
+    @pytest.mark.parametrize(
+        ("fig_direction", "sketch_direction"),
+        [
+            ("HORIZONTAL", PrototypeScrolling.HORIZONTAL),
+            ("VERTICAL", PrototypeScrolling.VERTICAL),
+            ("BOTH", PrototypeScrolling.BOTH),
+            ("HORIZONTAL_AND_VERTICAL", PrototypeScrolling.BOTH),
+        ],
+    )
+    def test_scroll_direction_uses_sketch_prototype_scrolling_bitmask(
+        self, fig_direction, sketch_direction
+    ):
+        layer = base.base_layer({**FIG_BASE, "scrollDirection": fig_direction})
+
+        assert layer["prototypeScrolling"] == sketch_direction
+
+    def test_unknown_scroll_direction_warns(self, warnings):
+        base.base_layer({**FIG_BASE, "scrollDirection": "DIAGONAL"})
+
+        warnings.assert_called_once_with("PRT005", ANY, props=["DIAGONAL"])
 
 
 FIG_TEXT = {
