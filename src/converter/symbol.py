@@ -30,6 +30,8 @@ def convert(fig_symbol):
         symbolID=utils.gen_object_id(fig_symbol["guid"]),
     )
 
+    prototype.add_overlay_backdrop(fig_symbol, master)
+
     # Keep the base ID as the symbol reference, create a new one for the container
     master.do_objectID = utils.gen_object_id(fig_symbol["guid"], b"symbol_master")
 

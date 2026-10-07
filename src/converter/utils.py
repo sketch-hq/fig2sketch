@@ -96,6 +96,7 @@ WARNING_MESSAGES = {
     "PRT005": "has an unsupported scroll setting: {props}. This setting will be ignored",
     "PRT006": "links to a section, which Sketch does not support as a prototype destination. The link will be removed",
     "PRT007": "links to a layer that is not part of the converted document. The link will be removed",
+    "PRT008": "navigates to a frame that other links open as an overlay. Sketch presents a frame the same way for every link, so this link will open it as an overlay",
     "GRD001": "has a layout grid which is only supported in Sketch artboards. It will be ignored",
     "GRD002": "has multiple grids but their sizes that are not multiples of each other. The larger one will not be converted",
     "GRD003": "has more than three or more grids and Sketch only supports two. Only the two finer grids will be converted",

@@ -66,6 +66,77 @@ FIG_CANVAS = {
 }
 
 
+def interactions(*actions: dict, deleted: bool = False) -> dict:
+    return {
+        "prototypeInteractions": [
+            {
+                "isDeleted": deleted,
+                "event": {"interactionType": "ON_CLICK"},
+                "actions": list(actions),
+            }
+        ]
+    }
+
+
+def link(destination, navigation: str = "OVERLAY", **extra) -> dict:
+    return {
+        "navigationType": navigation,
+        "connectionType": "INTERNAL_NODE",
+        "transitionNodeID": destination,
+        **extra,
+    }
+
+
+FIG_SECTION = {
+    **FIG_BASE,
+    "type": "SECTION",
+    "guid": (0, 20),
+    "children": [],
+    "parent": {"guid": (0, 3)},
+}
+
+FIG_FRAME_IN_SECTION = {
+    **FIG_BASE,
+    "type": "FRAME",
+    "guid": (0, 21),
+    "prototypeStartingPoint": {"name": "Flow 1", "description": ""},
+    "children": [],
+    "parent": {"guid": (0, 20)},
+}
+
+FIG_FRAME_IN_FRAME = {
+    **FIG_BASE,
+    "type": "FRAME",
+    "guid": (0, 22),
+    "children": [],
+    "parent": {"guid": (0, 4)},
+}
+
+# The fig format leaves out overlay settings that hold their defaults, so an overlay
+# that is centered and does not close on a click outside carries none of them
+FIG_DEFAULT_OVERLAY = {
+    **FIG_BASE,
+    "type": "FRAME",
+    "guid": (0, 23),
+    "children": [],
+    "parent": {"guid": (0, 3)},
+}
+
+# Overlay settings stay on a frame after the links that opened it as one are gone
+FIG_UNLINKED_OVERLAY = {
+    **FIG_OVERLAY,
+    "guid": (0, 24),
+}
+
+FIG_OVERLAY_OPENER = {
+    **FIG_BASE,
+    "type": "ROUNDED_RECTANGLE",
+    "guid": (0, 30),
+    "parent": {"guid": (0, 4)},
+    **interactions(link((0, 5)), link((0, 23), navigation="SWAP")),
+}
+
+
 @pytest.fixture
 def canvas(monkeypatch):
     context.init(
@@ -76,9 +147,16 @@ def canvas(monkeypatch):
             (0, 3): FIG_CANVAS,
             (0, 4): FIG_ARTBOARD,
             (0, 5): FIG_OVERLAY,
+            (0, 20): FIG_SECTION,
+            (0, 21): FIG_FRAME_IN_SECTION,
+            (0, 22): FIG_FRAME_IN_FRAME,
+            (0, 23): FIG_DEFAULT_OVERLAY,
+            (0, 24): FIG_UNLINKED_OVERLAY,
+            (0, 30): FIG_OVERLAY_OPENER,
         },
         "DISPLAY_P3",
     )
+    mark_overlay_destinations([FIG_OVERLAY_OPENER])
 
 
 @pytest.fixture
@@ -117,10 +195,129 @@ class TestPrototypeInformation:
         assert info["isFlowHome"] is False
         assert info["overlayBackgroundInteraction"] == OverlayBackgroundInteraction.CLOSES_OVERLAY
         assert info["presentationStyle"] == PresentationStyle.OVERLAY
-        assert info["overlaySettings"].overlayType == 0
+        assert info["overlaySettings"].overlayType == OverlayType.ABSOLUTE
         assert info["overlaySettings"].overlayAnchor == Point(0.5, 1)
         assert info["overlaySettings"].sourceAnchor == Point(0.5, 1)
         assert info["overlaySettings"].offset == Point(0, 0)
+
+    def test_overlay_with_default_settings(self):
+        """A frame opened as an overlay is one, even with no overlay settings of its
+        own to show it, since the fig format leaves out the ones at their defaults."""
+        info = prototyping_information(FIG_DEFAULT_OVERLAY)
+
+        assert info["presentationStyle"] == PresentationStyle.OVERLAY
+        assert info["overlayBackgroundInteraction"] == OverlayBackgroundInteraction.NONE
+        assert info["overlaySettings"].overlayType == OverlayType.ABSOLUTE
+        assert info["overlaySettings"].overlayAnchor == Point(0.5, 0.5)
+
+    def test_overlay_settings_without_an_overlay_link_make_a_screen(self):
+        """Leftover settings do not make an overlay: what matters is how links open it."""
+        info = prototyping_information(FIG_UNLINKED_OVERLAY)
+
+        assert info["presentationStyle"] == PresentationStyle.SCREEN
+        assert info["overlayBackgroundInteraction"] == OverlayBackgroundInteraction.NONE
+        assert "prototypeViewport" in info
+
+    def test_frame_in_a_section_belongs_to_the_page(self):
+        """A section only groups frames, so the page's device and the frame's starting
+        point still apply to a frame inside one."""
+        info = prototyping_information(FIG_FRAME_IN_SECTION)
+
+        assert info["isFlowHome"] is True
+        assert info["prototypeViewport"].name == FIG_CANVAS["prototypeDevice"]["presetIdentifier"]
+        assert info["presentationStyle"] == PresentationStyle.SCREEN
+
+    def test_frame_in_a_promoted_section_belongs_to_the_page(self):
+        context.promote_to_section(FIG_ARTBOARD["guid"])
+
+        info = prototyping_information(FIG_FRAME_IN_FRAME)
+
+        assert info["prototypeViewport"].name == FIG_CANVAS["prototypeDevice"]["presetIdentifier"]
+
+    def test_frame_in_a_frame_is_not_a_screen_of_the_page(self):
+        info = prototyping_information(FIG_FRAME_IN_FRAME)
+
+        assert info["isFlowHome"] is False
+        assert info["presentationStyle"] == PresentationStyle.SCREEN
+        assert "prototypeViewport" not in info
+
+
+class TestMarkOverlayDestinations:
+    @pytest.fixture(autouse=True)
+    def empty_context(self):
+        context.init(None, {}, "DISPLAY_P3")
+
+    def test_overlay_and_swap_destinations_are_marked(self):
+        mark_overlay_destinations(
+            [
+                {**FIG_BASE, **interactions(link((1, 1)))},
+                {**FIG_BASE, **interactions(link((1, 2), navigation="SWAP"))},
+            ]
+        )
+
+        assert context.is_overlay_destination((1, 1))
+        assert context.is_overlay_destination((1, 2))
+
+    def test_navigation_destinations_are_not_marked(self):
+        mark_overlay_destinations(
+            [{**FIG_BASE, **interactions(link((1, 1), navigation="NAVIGATE"))}]
+        )
+
+        assert not context.is_overlay_destination((1, 1))
+
+    def test_deleted_interactions_are_ignored(self):
+        mark_overlay_destinations([{**FIG_BASE, **interactions(link((1, 1)), deleted=True)}])
+
+        assert not context.is_overlay_destination((1, 1))
+
+    def test_interactions_that_are_not_converted_still_count(self):
+        """A hover link is dropped, but still shows the frame is meant as an overlay."""
+        fig_node = {**FIG_BASE, **interactions(link((1, 1)))}
+        fig_node["prototypeInteractions"][0]["event"] = {"interactionType": "ON_HOVER"}
+
+        mark_overlay_destinations([fig_node])
+
+        assert context.is_overlay_destination((1, 1))
+
+
+@pytest.mark.usefixtures("canvas")
+class TestOverlayBackdrop:
+    BACKDROP = {
+        "backgroundType": "SOLID_COLOR",
+        "backgroundColor": {"r": 1.0, "g": 0.0, "b": 0.0, "a": 0.5},
+    }
+
+    def test_solid_background_becomes_a_backdrop_fill(self):
+        backdrop = overlay_backdrop({**FIG_OVERLAY, "overlayBackgroundAppearance": self.BACKDROP})
+
+        assert backdrop.layeringType == LayeringType.BACKDROP
+        assert backdrop.fillType == FillType.COLOR
+        assert backdrop.color == Color(red=1.0, green=0.0, blue=0.0, alpha=0.5)
+
+    def test_no_background(self):
+        appearance = {**self.BACKDROP, "backgroundType": "NONE"}
+
+        assert overlay_backdrop({**FIG_OVERLAY, "overlayBackgroundAppearance": appearance}) is None
+        assert overlay_backdrop(FIG_OVERLAY) is None
+
+    def test_frame_that_is_not_an_overlay_has_no_backdrop(self):
+        fig_frame = {**FIG_UNLINKED_OVERLAY, "overlayBackgroundAppearance": self.BACKDROP}
+
+        assert overlay_backdrop(fig_frame) is None
+
+    def test_backdrop_is_added_after_the_frame_fills(self):
+        fig_frame = {
+            **FIG_OVERLAY,
+            "resizeToFit": False,
+            "overlayBackgroundAppearance": self.BACKDROP,
+            "fillPaints": [
+                {"type": "SOLID", "color": FIG_COLOR[2], "opacity": 1, "visible": True}
+            ],
+        }
+
+        sketch_frame = tree.convert_node(fig_frame, "")
+
+        assert [f.layeringType for f in sketch_frame.style.fills] == [None, LayeringType.BACKDROP]
 
 
 class TestConvertFlow:
@@ -235,10 +432,53 @@ class TestConvertFlow:
         assert flow["flow"].destinationArtboardID == utils.gen_object_id((0, 6))
         assert flow["flow"].animationType == AnimationType.SLIDE_FROM_TOP
         assert flow["flow"].maintainScrollPosition is False
-        assert flow["flow"].overlaySettings.overlayType == 0
+        assert flow["flow"].overlaySettings.overlayType == OverlayType.RELATIVE
         assert flow["flow"].overlaySettings.overlayAnchor == Point(0, 0)
         assert flow["flow"].overlaySettings.sourceAnchor == Point(0, 0)
         assert flow["flow"].overlaySettings.offset == Point(19.6, 85.0)
+
+    def test_offset_is_ignored_unless_the_position_is_manual(self, overlay):
+        flow = convert_flow(
+            {**FIG_BASE, **interactions(link((0, 5), overlayRelativePosition={"x": 4, "y": 2}))}
+        )
+
+        assert flow["flow"].overlaySettings.overlayType == OverlayType.ABSOLUTE
+        assert flow["flow"].overlaySettings.offset == Point(0, 0)
+
+    def test_swap_closes_the_open_overlays(self, overlay):
+        flow = convert_flow({**FIG_BASE, **interactions(link((0, 5), navigation="SWAP"))})
+
+        assert flow["flow"].destinationArtboardID == utils.gen_object_id((0, 5))
+        assert flow["flow"].shouldCloseExistingOverlays is True
+        assert flow["flow"].overlaySettings.overlayAnchor == Point(0.5, 1)
+
+    def test_opening_an_overlay_keeps_the_open_ones(self, overlay):
+        flow = convert_flow({**FIG_BASE, **interactions(link((0, 5)))})
+
+        assert flow["flow"].shouldCloseExistingOverlays is False
+
+    def test_close_becomes_a_back_link(self, warnings):
+        """Sketch closes an overlay when a back link inside it is followed."""
+        flow = convert_flow({**FIG_BASE, **interactions({"connectionType": "CLOSE"})})
+
+        assert flow["flow"].destinationArtboardID == BACK_DESTINATION
+        assert flow["flow"].overlaySettings is None
+        warnings.assert_not_called()
+
+    def test_navigating_to_an_overlay_warns(self, overlay, warnings):
+        context.mark_overlay_destination((0, 5))
+
+        flow = convert_flow({**FIG_BASE, **interactions(link((0, 5), navigation="NAVIGATE"))})
+
+        assert flow["flow"].destinationArtboardID == utils.gen_object_id((0, 5))
+        assert flow["flow"].overlaySettings is None
+        warnings.assert_called_once_with("PRT008", ANY)
+
+    def test_navigating_to_a_screen_does_not_warn(self, overlay, warnings):
+        flow = convert_flow({**FIG_BASE, **interactions(link((0, 5), navigation="NAVIGATE"))})
+
+        assert flow["flow"].overlaySettings is None
+        warnings.assert_not_called()
 
 
 class TestDropInvalidFlows:
