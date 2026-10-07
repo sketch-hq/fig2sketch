@@ -40,6 +40,7 @@ class Context:
         # init() is what sets a document up, but tests build nodes without it, and
         # get_node_type consults this for every node
         self._promoted_sections: Set[Sequence[int]] = set()
+        self._overlay_destinations: Set[Sequence[int]] = set()
         self._flows: List[Tuple[dict, FlowConnection]] = []
 
     def init(
@@ -56,6 +57,7 @@ class Context:
         self._component_nodes: Set[Sequence[int]] = set(find_node_ids(components_page))
         self._converted_component_sets: Set[Sequence[int]] = set()
         self._promoted_sections = set()
+        self._overlay_destinations = set()
         self._flows = []
         self._node_by_key = {
             node["key"]: node for node in id_map.values() if isinstance(node.get("key"), str)
@@ -147,6 +149,12 @@ class Context:
 
     def is_promoted_to_section(self, gid: Sequence[int]) -> bool:
         return gid in self._promoted_sections
+
+    def mark_overlay_destination(self, gid: Sequence[int]) -> None:
+        self._overlay_destinations.add(gid)
+
+    def is_overlay_destination(self, gid: Sequence[int]) -> bool:
+        return gid in self._overlay_destinations
 
     def is_component_page_symbol(self, sid: Sequence[int]) -> bool:
         return sid in self._component_symbols

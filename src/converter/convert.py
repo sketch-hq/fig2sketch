@@ -21,6 +21,10 @@ def convert_fig_tree_to_sketch(
 
     context.init(components_page, id_map, color_space)
 
+    # Whether a frame is an overlay is decided by the links to it, which can be on
+    # any page, so they are all read before the first frame is converted
+    prototype.mark_overlay_destinations(id_map.values())
+
     # Convert all normal pages
     sketch_pages: List[Page] = convert_pages(fig_pages, output)
 

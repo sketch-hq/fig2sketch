@@ -1,3 +1,4 @@
+from . import style as converter_style
 from .context import context
 from .errors import *
 from converter import utils
@@ -5,10 +6,19 @@ from sketchformat.layer_common import AbstractLayer
 from sketchformat.layer_common import PrototypeScrolling
 from sketchformat.layer_group import AbstractLayerGroup, GroupBehavior, Page
 from sketchformat.prototype import *
-from typing import Iterator, List, TypedDict, Tuple, Optional
+from sketchformat.style import Fill, LayeringType
+from typing import Iterable, Iterator, List, TypedDict, Tuple, Optional
 
-# A link back to wherever the prototype came from, rather than to a layer
+# A link back to wherever the prototype came from, rather than to a layer. Followed
+# from inside an overlay, Sketch closes the overlay instead
 BACK_DESTINATION = "back"
+
+# Connection types that leave the current screen or overlay rather than go to a layer
+BACK_CONNECTIONS = ("BACK", "CLOSE")
+
+# Navigation types that open their destination as an overlay. A swap replaces the
+# overlay that is open, which Sketch does by closing the open overlays first
+OVERLAY_NAVIGATIONS = ("OVERLAY", "SWAP")
 
 OVERLAY_INTERACTION = {
     "NONE": OverlayBackgroundInteraction.NONE,
@@ -72,25 +82,30 @@ def convert_flow(fig_node: dict) -> _Flow:
             if action == {}:
                 continue
 
-            if action.get("navigationType", "NAVIGATE") not in ["NAVIGATE", "SCROLL", "OVERLAY"]:
-                utils.log_conversion_warning("PRT003", fig_node, props=[action["navigationType"]])
+            navigation_type = action.get("navigationType", "NAVIGATE")
+            if navigation_type not in ["NAVIGATE", "SCROLL", *OVERLAY_NAVIGATIONS]:
+                utils.log_conversion_warning("PRT003", fig_node, props=[navigation_type])
                 continue
 
             try:
-                destination, overlay_settings = get_destination_settings_if_any(action)
+                destination, settings = get_destination_settings_if_any(action)
             except Fig2SketchWarning as w:
                 utils.log_conversion_warning(w.code, fig_node, props=[action["connectionType"]])
                 continue
 
-            if destination is not None:
-                flow = FlowConnection(
-                    destinationArtboardID=destination,
-                    animationType=ANIMATION_TYPE[
-                        action.get("transitionType", "INSTANT_TRANSITION")
-                    ],
-                    maintainScrollPosition=action.get("transitionPreserveScroll", False),
-                    overlaySettings=overlay_settings,
-                )
+            if destination is None:
+                continue
+
+            if settings is None and opens_overlay_as_screen(action):
+                utils.log_conversion_warning("PRT008", fig_node)
+
+            flow = FlowConnection(
+                destinationArtboardID=destination,
+                animationType=ANIMATION_TYPE[action.get("transitionType", "INSTANT_TRANSITION")],
+                maintainScrollPosition=action.get("transitionPreserveScroll", False),
+                overlaySettings=settings,
+                shouldCloseExistingOverlays=navigation_type == "SWAP",
+            )
 
     if flow is None:
         return {}
@@ -135,62 +150,158 @@ def prototype_scrolling(fig_node: dict) -> PrototypeScrolling:
     return mapped
 
 
+def mark_overlay_destinations(fig_nodes: Iterable[dict]) -> None:
+    """Records which frames the prototype opens as overlays.
+
+    In the fig format, being an overlay is a property of the link: a link opens its
+    destination as an overlay, or swaps the open overlay for it. The destination itself
+    is only marked by the overlay settings it carries, and those are left out when they
+    hold their defaults, so a frame with default settings looks like any other. Sketch
+    makes it a property of the frame instead, so every link is read up front, before
+    the frames it points at are converted.
+
+    Interactions that are not converted still count: they show how the frame was
+    designed to be shown, even if the link itself does not survive.
+    """
+    for fig_node in fig_nodes:
+        for interaction in fig_node.get("prototypeInteractions", []):
+            if interaction.get("isDeleted", False):
+                continue
+
+            for action in interaction.get("actions", []):
+                destination = action.get("transitionNodeID")
+                if (
+                    action.get("navigationType") in OVERLAY_NAVIGATIONS
+                    and action.get("connectionType") == "INTERNAL_NODE"
+                    and destination is not None
+                    and not utils.is_invalid_ref(destination)
+                ):
+                    context.mark_overlay_destination(destination)
+
+
+def opens_overlay_as_screen(action: dict) -> bool:
+    """Whether a link navigates to a frame that other links open as an overlay.
+
+    Sketch decides how to present a frame from the frame alone, so it opens one the
+    same way for every link to it. A frame that is an overlay anywhere becomes one,
+    and this link will open it as an overlay too.
+    """
+    destination = action.get("transitionNodeID")
+    return (
+        action.get("connectionType") == "INTERNAL_NODE"
+        and destination is not None
+        and context.is_overlay_destination(destination)
+    )
+
+
+def canvas_of(fig_frame: dict) -> Optional[dict]:
+    """The page a frame sits on, if it is one of the page's own frames.
+
+    A section only groups frames, so one inside a section, however deeply, still
+    belongs to the page. A frame promoted to a section is treated the same, since it
+    is a section by the time Sketch sees it. A frame inside any other layer is not a
+    screen of its own, and gets no page.
+    """
+    fig_parent = context.fig_node(fig_frame["parent"]["guid"])
+    while fig_parent["type"] == "SECTION" or context.is_promoted_to_section(fig_parent["guid"]):
+        fig_parent = context.fig_node(fig_parent["parent"]["guid"])
+
+    return fig_parent if fig_parent["type"] == "CANVAS" else None
+
+
+def overlay_settings(fig_overlay: dict, action: Optional[dict] = None) -> FlowOverlaySettings:
+    """Where an overlay appears, from its own settings and, if given, the link's.
+
+    The position type belongs to the overlay, and a manual position is relative to the
+    layer that opens it. Its offset is stored on the link, since each one can open the
+    overlay at a different spot, and the fig format ignores it for the other types.
+    """
+    position = fig_overlay.get("overlayPositionType", "CENTER")
+    if position == "MANUAL" and action is not None:
+        offset = Point.from_dict(action.get("overlayRelativePosition", {"x": 0, "y": 0}))
+        return FlowOverlaySettings.Positioned(position, offset)
+
+    return FlowOverlaySettings.Positioned(position)
+
+
 def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
     info: _PrototypingInformation = {}
 
-    # Some information about the prototype is in the canvas/page
-    fig_canvas = context.fig_node(fig_frame["parent"]["guid"])
-
-    if "prototypeDevice" not in fig_canvas:
-        info.update(
-            {
-                "isFlowHome": False,
-                "overlayBackgroundInteraction": OverlayBackgroundInteraction.NONE,
-                "presentationStyle": PresentationStyle.SCREEN,
-            }
-        )
-        return info
-
-    if "overlayBackgroundInteraction" in fig_frame:
+    if context.is_overlay_destination(fig_frame["guid"]):
         info.update(
             {
                 "isFlowHome": False,
                 "overlayBackgroundInteraction": OVERLAY_INTERACTION[
-                    fig_frame["overlayBackgroundInteraction"]
+                    fig_frame.get("overlayBackgroundInteraction", "NONE")
                 ],
                 "presentationStyle": PresentationStyle.OVERLAY,
-                "overlaySettings": FlowOverlaySettings.Positioned(
-                    fig_frame.get("overlayPositionType", "CENTER")
-                ),
+                "overlaySettings": overlay_settings(fig_frame),
             }
         )
         return info
-    else:
+
+    # Some information about the prototype is in the canvas/page
+    fig_canvas = canvas_of(fig_frame)
+
+    if fig_canvas is None or "prototypeDevice" not in fig_canvas:
         info.update(
             {
-                "isFlowHome": fig_frame.get("prototypeStartingPoint", {}).get("name", "") != "",
-                "prototypeViewport": PrototypeViewport(
-                    name=fig_canvas["prototypeDevice"]["presetIdentifier"],
-                    size=Point.from_dict(fig_canvas["prototypeDevice"]["size"]),
-                ),
+                "isFlowHome": False,
                 "overlayBackgroundInteraction": OverlayBackgroundInteraction.NONE,
                 "presentationStyle": PresentationStyle.SCREEN,
-                "overlaySettings": FlowOverlaySettings.RegularArtboard(),
             }
         )
         return info
+
+    info.update(
+        {
+            "isFlowHome": fig_frame.get("prototypeStartingPoint", {}).get("name", "") != "",
+            "prototypeViewport": PrototypeViewport(
+                name=fig_canvas["prototypeDevice"]["presetIdentifier"],
+                size=Point.from_dict(fig_canvas["prototypeDevice"]["size"]),
+            ),
+            "overlayBackgroundInteraction": OverlayBackgroundInteraction.NONE,
+            "presentationStyle": PresentationStyle.SCREEN,
+            "overlaySettings": FlowOverlaySettings.RegularArtboard(),
+        }
+    )
+    return info
+
+
+def overlay_backdrop(fig_frame: dict) -> Optional[Fill]:
+    """The backdrop a frame draws around itself while it is open as an overlay.
+
+    Sketch keeps it as a fill in the frame's own style, marked as backdrop so it is
+    drawn behind the overlay rather than as the frame's background.
+    """
+    if not context.is_overlay_destination(fig_frame["guid"]):
+        return None
+
+    appearance = fig_frame.get("overlayBackgroundAppearance", {})
+    if appearance.get("backgroundType") != "SOLID_COLOR":
+        return None
+
+    fill = Fill.Color(converter_style.convert_color(appearance["backgroundColor"]))
+    fill.layeringType = LayeringType.BACKDROP
+    return fill
+
+
+def add_overlay_backdrop(fig_frame: dict, sketch_frame: AbstractLayerGroup) -> None:
+    backdrop = overlay_backdrop(fig_frame)
+    if backdrop is not None:
+        sketch_frame.style.fills.append(backdrop)
 
 
 def get_destination_settings_if_any(
     action: dict,
 ) -> Tuple[Optional[str], Optional[FlowOverlaySettings]]:
-    overlay_settings = None
+    settings = None
     destination: Optional[str]
 
     connection_type = action.get("connectionType")
     transition_node_id = action.get("transitionNodeID", None)
 
-    if connection_type == "BACK":
+    if connection_type in BACK_CONNECTIONS:
         destination = BACK_DESTINATION
     elif connection_type == "INTERNAL_NODE" and transition_node_id is None:
         destination = None
@@ -199,21 +310,16 @@ def get_destination_settings_if_any(
             destination = None
         else:
             destination = utils.gen_object_id(transition_node_id)
-            transition_node = context.fig_node(transition_node_id)
 
-            if "overlayBackgroundInteraction" in transition_node:
-                offset = action.get("overlayRelativePosition", {"x": 0, "y": 0})
-
-                overlay_settings = FlowOverlaySettings.Positioned(
-                    transition_node.get("overlayPositionType", "CENTER"),
-                    Point.from_dict(offset),
-                )
+            if action.get("navigationType") in OVERLAY_NAVIGATIONS:
+                transition_node = context.fig_node(transition_node_id)
+                settings = overlay_settings(transition_node, action)
     elif connection_type == "NONE":
         destination = None
     else:
         raise Fig2SketchWarning("PRT004")
 
-    return destination, overlay_settings
+    return destination, settings
 
 
 def _descendants(group: AbstractLayerGroup) -> Iterator[AbstractLayer]:
