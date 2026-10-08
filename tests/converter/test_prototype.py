@@ -4,6 +4,7 @@ from converter.prototype import *
 from sketchformat.layer_common import Rect
 from sketchformat.layer_group import Group
 from sketchformat.prototype import *
+from sketchformat.serialize.json import convert_object
 from unittest.mock import ANY
 
 FIG_ARTBOARD_NO_PROTOTYPE = {
@@ -66,16 +67,16 @@ FIG_CANVAS = {
 }
 
 
-def interactions(*actions: dict, deleted: bool = False) -> dict:
+def interaction(*actions: dict, trigger: str = "ON_CLICK", deleted: bool = False) -> dict:
     return {
-        "prototypeInteractions": [
-            {
-                "isDeleted": deleted,
-                "event": {"interactionType": "ON_CLICK"},
-                "actions": list(actions),
-            }
-        ]
+        "isDeleted": deleted,
+        "event": {"interactionType": trigger},
+        "actions": list(actions),
     }
+
+
+def interactions(*actions: dict, trigger: str = "ON_CLICK", deleted: bool = False) -> dict:
+    return {"prototypeInteractions": [interaction(*actions, trigger=trigger, deleted=deleted)]}
 
 
 def link(destination, navigation: str = "OVERLAY", **extra) -> dict:
@@ -271,9 +272,9 @@ class TestMarkOverlayDestinations:
         assert not context.is_overlay_destination((1, 1))
 
     def test_interactions_that_are_not_converted_still_count(self):
-        """A hover link is dropped, but still shows the frame is meant as an overlay."""
-        fig_node = {**FIG_BASE, **interactions(link((1, 1)))}
-        fig_node["prototypeInteractions"][0]["event"] = {"interactionType": "ON_HOVER"}
+        """A link after a delay is dropped, but still shows the frame is meant as an
+        overlay."""
+        fig_node = {**FIG_BASE, **interactions(link((1, 1)), trigger="AFTER_TIMEOUT")}
 
         mark_overlay_destinations([fig_node])
 
@@ -479,6 +480,59 @@ class TestConvertFlow:
 
         assert flow["flow"].overlaySettings is None
         warnings.assert_not_called()
+
+    def test_click_leaves_the_trigger_out(self, overlay):
+        """Sketch reads a missing trigger as a click."""
+        flow = convert_flow({**FIG_BASE, **interactions(link((0, 5)))})["flow"]
+
+        assert flow.interactionTrigger is None
+        assert "interactionTrigger" not in convert_object(flow)
+
+    @pytest.mark.parametrize(
+        "fig_trigger, trigger",
+        [
+            ("ON_HOVER", InteractionTrigger.HOVER),
+            ("MOUSE_IN", InteractionTrigger.HOVER),
+            ("MOUSE_ENTER", InteractionTrigger.HOVER),
+            ("ON_PRESS", InteractionTrigger.PRESS),
+        ],
+    )
+    def test_trigger(self, overlay, warnings, fig_trigger, trigger):
+        fig_node = {**FIG_BASE, **interactions(link((0, 5)), trigger=fig_trigger)}
+
+        flow = convert_flow(fig_node)["flow"]
+
+        assert flow.destinationArtboardID == utils.gen_object_id((0, 5))
+        assert flow.interactionTrigger == trigger
+        assert convert_object(flow)["interactionTrigger"] == trigger
+        warnings.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "fig_trigger",
+        ["AFTER_TIMEOUT", "MOUSE_OUT", "MOUSE_LEAVE", "MOUSE_DOWN", "MOUSE_UP", "ON_KEY_DOWN"],
+    )
+    def test_triggers_sketch_does_not_have_are_dropped(self, overlay, warnings, fig_trigger):
+        fig_node = {**FIG_BASE, **interactions(link((0, 5)), trigger=fig_trigger)}
+
+        assert convert_flow(fig_node) == {}
+        warnings.assert_called_once_with("PRT001", ANY, props=[fig_trigger])
+
+    def test_click_is_kept_over_an_earlier_hover(self, overlay, warnings):
+        """Sketch keeps one link per layer. A click is what moves the prototype between
+        screens, so it is kept whichever order the links come in."""
+        fig_node = {
+            **FIG_BASE,
+            "prototypeInteractions": [
+                interaction(link((0, 5)), trigger="MOUSE_ENTER"),
+                interaction({"connectionType": "BACK"}),
+            ],
+        }
+
+        flow = convert_flow(fig_node)["flow"]
+
+        assert flow.destinationArtboardID == BACK_DESTINATION
+        assert flow.interactionTrigger is None
+        warnings.assert_called_once_with("PRT002", ANY)
 
 
 class TestDropInvalidFlows:
