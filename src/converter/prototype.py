@@ -7,7 +7,7 @@ from sketchformat.layer_common import PrototypeScrolling
 from sketchformat.layer_group import AbstractLayerGroup, GroupBehavior, Page
 from sketchformat.prototype import *
 from sketchformat.style import Fill, LayeringType
-from typing import Iterable, Iterator, List, TypedDict, Tuple, Optional
+from typing import Iterable, Iterator, List, Sequence, TypedDict, Tuple, Optional
 
 # A link back to wherever the prototype came from, rather than to a layer. Followed
 # from inside an overlay, Sketch closes the overlay instead
@@ -328,7 +328,7 @@ def get_destination_settings_if_any(
         if utils.is_invalid_ref(transition_node_id):
             destination = None
         else:
-            destination = utils.gen_object_id(transition_node_id)
+            destination = destination_id(transition_node_id)
 
             if action.get("navigationType") in OVERLAY_NAVIGATIONS:
                 transition_node = context.fig_node(transition_node_id)
@@ -339,6 +339,21 @@ def get_destination_settings_if_any(
         raise Fig2SketchWarning("PRT004")
 
     return destination, settings
+
+
+def destination_id(fig_id: Sequence[int]) -> str:
+    """The object ID of the layer a link goes to.
+
+    For a component, that is its master layer, since the component's own ID is the
+    symbolID its instances refer to and no layer has it. A destination missing from the
+    fig file keeps the ID it would have had, and drop_invalid_flows removes the link.
+    """
+    try:
+        is_component = context.fig_node(fig_id)["type"] == "SYMBOL"
+    except Fig2SketchWarning:
+        is_component = False
+
+    return utils.symbol_master_id(fig_id) if is_component else utils.gen_object_id(fig_id)
 
 
 def _descendants(group: AbstractLayerGroup) -> Iterator[AbstractLayer]:

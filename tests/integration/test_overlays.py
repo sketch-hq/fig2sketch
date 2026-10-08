@@ -36,10 +36,14 @@ POSITIONS = [
 ]
 
 
-@pytest.fixture(scope="module")
-def overlays_page(tmp_path_factory):
+# Each layer opens a component as an overlay: Button next to the layer, Ellipse 2 with
+# every overlay setting at its default
+COMPONENT_LINKS = [("Ellipse 1", "Button"), ("Rectangle 1", "Ellipse 2")]
+
+
+def convert_page(tmp_path_factory, fig_path: str, page_name: str) -> dict:
     out_path = f'{tmp_path_factory.mktemp("overlays")}/out.sketch'
-    args = fig2sketch.parse_args(["tests/data/prototyping.fig", out_path, "--salt=1234"])
+    args = fig2sketch.parse_args([fig_path, out_path, "--salt=1234"])
     fig2sketch.run(args)
 
     with ZipFile(out_path) as sketch:
@@ -49,10 +53,20 @@ def overlays_page(tmp_path_factory):
         for page_ref in document["pages"]:
             with sketch.open(page_ref["_ref"] + ".json") as page_json:
                 page = json.load(page_json)
-            if page["name"] == "Overlays":
+            if page["name"] == page_name:
                 return page
 
-    raise AssertionError("No Overlays page in the converted document")
+    raise AssertionError(f"No {page_name} page in the converted document")
+
+
+@pytest.fixture(scope="module")
+def overlays_page(tmp_path_factory):
+    return convert_page(tmp_path_factory, "tests/data/prototyping.fig", "Overlays")
+
+
+@pytest.fixture(scope="module")
+def components_page(tmp_path_factory):
+    return convert_page(tmp_path_factory, "tests/data/prototyping_components.fig", "Page 2")
 
 
 def layer_by_name(parent: dict, name: str) -> dict:
@@ -181,3 +195,21 @@ def test_navigating_to_an_overlay_has_no_overlay_settings(overlays_page):
 
     assert flow["destinationArtboardID"] == object_id(overlays_page, "Overlay dismissable")
     assert "overlaySettings" not in flow
+
+
+@pytest.mark.parametrize("name, component", COMPONENT_LINKS)
+def test_links_to_components_go_to_their_masters(components_page, name, component):
+    """The component's own ID is the symbolID its instances refer to. No layer has it,
+    so a link to it would be removed as pointing at nothing."""
+    master = layer_by_name(components_page, component)
+
+    assert master["_class"] == "symbolMaster"
+    assert master["presentationStyle"] == PresentationStyle.OVERLAY
+    assert flow_of(components_page, name)["destinationArtboardID"] == master["do_objectID"]
+
+
+def test_component_overlay_is_positioned_next_to_the_link(components_page):
+    settings = flow_of(components_page, "Ellipse 1")["overlaySettings"]
+
+    assert settings["overlayType"] == OverlayType.RELATIVE
+    assert settings["offset"] == "{-3.0, 70.0}"

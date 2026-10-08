@@ -26,6 +26,12 @@ def gen_object_id(fig_id: Sequence[int], suffix: bytes = b"") -> str:
     return str(uuid.UUID(bytes=bytes(uuid_bytes))).upper()
 
 
+def symbol_master_id(fig_id: Sequence[int]) -> str:
+    # A component's own ID is the symbolID its instances refer to, so its master layer
+    # gets an ID of its own
+    return gen_object_id(fig_id, b"symbol_master")
+
+
 def generate_file_ref(data: bytes) -> str:
     return hashlib.sha1(hashlib.sha1(data).digest()).hexdigest()
 

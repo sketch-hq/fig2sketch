@@ -1,5 +1,5 @@
 from .base import *
-from converter import tree
+from converter import symbol, tree
 from converter.prototype import *
 from sketchformat.layer_common import Rect
 from sketchformat.layer_group import Group
@@ -168,6 +168,21 @@ def overlay(monkeypatch):
 @pytest.fixture
 def manual_overlay(monkeypatch):
     context.init(None, {(0, 6): FIG_MANUAL_OVERLAY}, "DISPLAY_P3")
+
+
+FIG_COMPONENT = {
+    **FIG_BASE,
+    "type": "SYMBOL",
+    "guid": (0, 25),
+    "resizeToFit": False,
+    "children": [],
+    "parent": {"guid": (0, 3)},
+}
+
+
+@pytest.fixture
+def component(monkeypatch):
+    context.init(None, {(0, 3): FIG_CANVAS, (0, 25): FIG_COMPONENT}, "DISPLAY_P3")
 
 
 @pytest.mark.usefixtures("canvas")
@@ -533,6 +548,24 @@ class TestConvertFlow:
         assert flow.destinationArtboardID == BACK_DESTINATION
         assert flow.interactionTrigger is None
         warnings.assert_called_once_with("PRT002", ANY)
+
+    @pytest.mark.parametrize("navigation", ["NAVIGATE", "OVERLAY"])
+    def test_link_to_a_component_goes_to_its_master(self, component, warnings, navigation):
+        """The component's own ID is the symbolID its instances refer to, and no layer
+        has it."""
+        flow = convert_flow({**FIG_BASE, **interactions(link((0, 25), navigation=navigation))})
+
+        master = symbol.convert(FIG_COMPONENT)
+        assert flow["flow"].destinationArtboardID == master.do_objectID
+        assert flow["flow"].destinationArtboardID != master.symbolID
+        warnings.assert_not_called()
+
+    def test_link_to_a_missing_layer_keeps_its_id(self, component, warnings):
+        """drop_invalid_flows removes the link once every page is converted."""
+        flow = convert_flow({**FIG_BASE, **interactions(link((9, 9), navigation="NAVIGATE"))})
+
+        assert flow["flow"].destinationArtboardID == utils.gen_object_id((9, 9))
+        warnings.assert_not_called()
 
 
 class TestDropInvalidFlows:
