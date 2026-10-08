@@ -20,6 +20,16 @@ BACK_CONNECTIONS = ("BACK", "CLOSE")
 # overlay that is open, which Sketch does by closing the open overlays first
 OVERLAY_NAVIGATIONS = ("OVERLAY", "SWAP")
 
+# Mouse enter is not quite hover: it opens the destination and leaves it open. Files
+# often pair it with a mouse leave that closes it again, which together act like hovering
+INTERACTION_TRIGGER = {
+    "ON_CLICK": InteractionTrigger.CLICK,
+    "ON_HOVER": InteractionTrigger.HOVER,
+    "MOUSE_IN": InteractionTrigger.HOVER,
+    "MOUSE_ENTER": InteractionTrigger.HOVER,
+    "ON_PRESS": InteractionTrigger.PRESS,
+}
+
 OVERLAY_INTERACTION = {
     "NONE": OverlayBackgroundInteraction.NONE,
     "CLOSE_ON_CLICK_OUTSIDE": OverlayBackgroundInteraction.CLOSES_OVERLAY,
@@ -61,7 +71,14 @@ class _Flow(TypedDict, total=False):
 # TODO: Is this called from every node type (groups?)
 def convert_flow(fig_node: dict) -> _Flow:
     flow = None
-    for interaction in fig_node.get("prototypeInteractions", []):
+    # Sketch keeps one link per layer. A click goes first, since that is how the
+    # prototype moves between screens, where other triggers tend to add extras on top,
+    # like a tooltip on hover
+    fig_interactions = sorted(
+        fig_node.get("prototypeInteractions", []),
+        key=lambda interaction: interaction.get("event", {}).get("interactionType") != "ON_CLICK",
+    )
+    for interaction in fig_interactions:
         if interaction["isDeleted"]:
             continue
 
@@ -69,7 +86,8 @@ def convert_flow(fig_node: dict) -> _Flow:
             continue
 
         interaction_type = interaction["event"].get("interactionType")
-        if interaction_type != "ON_CLICK":
+        trigger = INTERACTION_TRIGGER.get(interaction_type)
+        if trigger is None:
             utils.log_conversion_warning("PRT001", fig_node, props=[interaction_type])
             continue
 
@@ -105,6 +123,7 @@ def convert_flow(fig_node: dict) -> _Flow:
                 maintainScrollPosition=action.get("transitionPreserveScroll", False),
                 overlaySettings=settings,
                 shouldCloseExistingOverlays=navigation_type == "SWAP",
+                interactionTrigger=None if trigger == InteractionTrigger.CLICK else trigger,
             )
 
     if flow is None:

@@ -22,6 +22,14 @@ class AnimationType(IntEnum):
     SLIDE_FROM_TOP = 3
 
 
+class InteractionTrigger(IntEnum):
+    """What the viewer does to a layer to follow its link."""
+
+    CLICK = 1
+    HOVER = 2
+    PRESS = 4
+
+
 class OverlayType(IntEnum):
     """What an overlay is positioned against: the screen it opens over (ABSOLUTE), or
     the layer whose link opened it (RELATIVE)."""
@@ -91,6 +99,8 @@ class FlowConnection:
     animationType: AnimationType = AnimationType.NONE
     maintainScrollPosition: bool = False
     shouldCloseExistingOverlays: bool = False
+    # Sketch reads a missing value as CLICK, so it is only written when set
+    interactionTrigger: Optional[InteractionTrigger] = None
 
 
 @dataclass(kw_only=True)
