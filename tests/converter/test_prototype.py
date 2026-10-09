@@ -295,6 +295,133 @@ class TestMarkOverlayDestinations:
 
         assert context.is_overlay_destination((1, 1))
 
+    def test_links_added_to_layers_inside_an_instance_count(self):
+        """The fig format stores them as overrides on the instance, not on the layer."""
+        override = {"guidPath": {"guids": [(2, 2)]}, **interactions(link((1, 1)))}
+        fig_instance = {
+            **FIG_BASE,
+            "type": "INSTANCE",
+            "symbolData": {"symbolID": (2, 1), "symbolOverrides": [override]},
+        }
+
+        mark_overlay_destinations([fig_instance])
+
+        assert context.is_overlay_destination((1, 1))
+
+
+# Step 1 opens as an overlay. A button inside it, in a group, swaps Step 2 in, and a
+# button inside Step 2 swaps Step 3 in
+FIG_STEPS_CANVAS = {**FIG_BASE, "type": "CANVAS", "guid": (0, 40)}
+FIG_STEP_1_OPENER = {
+    **FIG_BASE,
+    "guid": (0, 41),
+    "parent": {"guid": (0, 40)},
+    **interactions(link((0, 42))),
+}
+FIG_STEP_1 = {**FIG_BASE, "type": "FRAME", "guid": (0, 42), "parent": {"guid": (0, 40)}}
+FIG_STEP_1_GROUP = {
+    **FIG_BASE,
+    "type": "FRAME",
+    "guid": (0, 43),
+    "parent": {"guid": (0, 42)},
+    "transform": Matrix([[1, 0, 10], [0, 1, 20]]),
+}
+FIG_STEP_1_NEXT = {
+    **FIG_BASE,
+    "guid": (0, 44),
+    "parent": {"guid": (0, 43)},
+    "transform": Matrix([[1, 0, 5], [0, 1, 6]]),
+    **interactions(link((0, 45), navigation="SWAP")),
+}
+FIG_STEP_2 = {**FIG_BASE, "type": "FRAME", "guid": (0, 45), "parent": {"guid": (0, 40)}}
+FIG_STEP_2_NEXT = {
+    **FIG_BASE,
+    "guid": (0, 46),
+    "parent": {"guid": (0, 45)},
+    "transform": Matrix([[1, 0, 30], [0, 1, 40]]),
+    **interactions(link((0, 47), navigation="SWAP")),
+}
+FIG_STEP_3 = {**FIG_BASE, "type": "FRAME", "guid": (0, 47), "parent": {"guid": (0, 40)}}
+
+
+def init_steps(step_1_position: str) -> None:
+    fig_nodes = [
+        FIG_STEPS_CANVAS,
+        FIG_STEP_1_OPENER,
+        {**FIG_STEP_1, "overlayPositionType": step_1_position},
+        FIG_STEP_1_GROUP,
+        FIG_STEP_1_NEXT,
+        FIG_STEP_2,
+        FIG_STEP_2_NEXT,
+        FIG_STEP_3,
+    ]
+    context.init(None, {n["guid"]: n for n in fig_nodes}, "DISPLAY_P3")
+    mark_overlay_destinations(fig_nodes)
+
+
+class TestSwappedOverlayPosition:
+    """The fig format gives a swapped-in overlay no position of its own: it appears
+    where the overlay it replaces was."""
+
+    def test_named_position_is_reused(self):
+        init_steps("BOTTOM_CENTER")
+
+        settings = convert_flow(FIG_STEP_1_NEXT)["flow"].overlaySettings
+
+        assert settings.overlayType == OverlayType.ABSOLUTE
+        assert settings.overlayAnchor == Point(0.5, 1)
+
+    def test_manual_position_lines_up_the_top_left_corners(self):
+        """The new overlay is placed relative to the link's own layer, back by where
+        that layer sits in the replaced overlay: 10 + 5 across and 20 + 6 down."""
+        init_steps("MANUAL")
+
+        settings = convert_flow(FIG_STEP_1_NEXT)["flow"].overlaySettings
+
+        assert settings.overlayType == OverlayType.RELATIVE
+        assert settings.sourceAnchor == Point(0, 0)
+        assert settings.overlayAnchor == Point(0, 0)
+        assert settings.offset == Point(-15, -26)
+
+    @pytest.mark.parametrize(
+        "position, anchor", [("BOTTOM_CENTER", Point(0.5, 1)), ("CENTER", Point(0.5, 0.5))]
+    )
+    def test_named_position_carries_through_a_chain_of_swaps(self, position, anchor):
+        """Step 2 is only ever swapped in, so it has no position of its own, and is
+        shown where Step 1 was."""
+        init_steps(position)
+
+        settings = convert_flow(FIG_STEP_2_NEXT)["flow"].overlaySettings
+
+        assert settings.overlayType == OverlayType.ABSOLUTE
+        assert settings.overlayAnchor == anchor
+
+    def test_manual_position_carries_through_a_chain_of_swaps(self):
+        init_steps("MANUAL")
+
+        settings = convert_flow(FIG_STEP_2_NEXT)["flow"].overlaySettings
+
+        assert settings.overlayType == OverlayType.RELATIVE
+        assert settings.offset == Point(-30, -40)
+
+    def test_overlays_that_only_swap_each_other_in(self):
+        """With nothing that opens either of them, there is no position to follow, and
+        following the swaps must not go round in circles."""
+        fig_back = {
+            **FIG_BASE,
+            "guid": (0, 48),
+            "parent": {"guid": (0, 47)},
+            **interactions(link((0, 45), navigation="SWAP")),
+        }
+        fig_nodes = [FIG_STEPS_CANVAS, FIG_STEP_2, FIG_STEP_2_NEXT, FIG_STEP_3, fig_back]
+        context.init(None, {n["guid"]: n for n in fig_nodes}, "DISPLAY_P3")
+        mark_overlay_destinations(fig_nodes)
+
+        settings = convert_flow(FIG_STEP_2_NEXT)["flow"].overlaySettings
+
+        assert settings.overlayType == OverlayType.ABSOLUTE
+        assert settings.overlayAnchor == Point(0.5, 0.5)
+
 
 @pytest.mark.usefixtures("canvas")
 class TestOverlayBackdrop:

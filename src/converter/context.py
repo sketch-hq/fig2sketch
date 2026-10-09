@@ -41,6 +41,8 @@ class Context:
         # get_node_type consults this for every node
         self._promoted_sections: Set[Sequence[int]] = set()
         self._overlay_destinations: Set[Sequence[int]] = set()
+        self._opened_overlays: Set[Sequence[int]] = set()
+        self._swapped_in_by: Dict[Sequence[int], List[dict]] = {}
         self._flows: List[Tuple[dict, FlowConnection]] = []
 
     def init(
@@ -58,6 +60,8 @@ class Context:
         self._converted_component_sets: Set[Sequence[int]] = set()
         self._promoted_sections = set()
         self._overlay_destinations = set()
+        self._opened_overlays = set()
+        self._swapped_in_by = {}
         self._flows = []
         self._node_by_key = {
             node["key"]: node for node in id_map.values() if isinstance(node.get("key"), str)
@@ -150,11 +154,23 @@ class Context:
     def is_promoted_to_section(self, gid: Sequence[int]) -> bool:
         return gid in self._promoted_sections
 
-    def mark_overlay_destination(self, gid: Sequence[int]) -> None:
+    def mark_overlay_destination(
+        self, gid: Sequence[int], swapped_in_by: Optional[dict] = None
+    ) -> None:
+        """Records a frame a link opens as an overlay, or, if swapped_in_by is given,
+        swaps in for the overlay that fig node sits in."""
         self._overlay_destinations.add(gid)
+        if swapped_in_by is None:
+            self._opened_overlays.add(gid)
+        else:
+            self._swapped_in_by.setdefault(gid, []).append(swapped_in_by)
 
     def is_overlay_destination(self, gid: Sequence[int]) -> bool:
         return gid in self._overlay_destinations
+
+    def swapped_in_by(self, gid: Sequence[int]) -> List[dict]:
+        """The fig nodes whose links swap the overlay in, if no link opens it directly."""
+        return [] if gid in self._opened_overlays else self._swapped_in_by.get(gid, [])
 
     def is_component_page_symbol(self, sid: Sequence[int]) -> bool:
         return sid in self._component_symbols

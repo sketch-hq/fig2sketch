@@ -69,6 +69,13 @@ def components_page(tmp_path_factory):
     return convert_page(tmp_path_factory, "tests/data/prototyping_components.fig", "Page 2")
 
 
+@pytest.fixture(scope="module")
+def swaps_and_instances_page(tmp_path_factory):
+    return convert_page(
+        tmp_path_factory, "tests/data/prototyping_swaps_and_instances.fig", "Overlay positions"
+    )
+
+
 def layer_by_name(parent: dict, name: str) -> dict:
     for layer in parent.get("layers", []):
         if layer["name"] == name:
@@ -213,3 +220,25 @@ def test_component_overlay_is_positioned_next_to_the_link(components_page):
 
     assert settings["overlayType"] == OverlayType.RELATIVE
     assert settings["offset"] == "{-3.0, 70.0}"
+
+
+def test_swapped_in_overlay_takes_the_place_of_the_one_it_replaces(swaps_and_instances_page):
+    """Overlay 1 opens at a manual position, and the link inside it that swaps in
+    Overlay 2 sits at (112, 76). Placed relative to the link and back by that much,
+    Overlay 2 lands on Overlay 1's top-left corner."""
+    flow = flow_of(swaps_and_instances_page, "Overlay 1 Position 1")
+    settings = flow["overlaySettings"]
+
+    assert flow["destinationArtboardID"] == object_id(swaps_and_instances_page, "Overlay 2")
+    assert settings["overlayType"] == OverlayType.RELATIVE
+    assert settings["offset"] == "{-112.0, -76.0}"
+
+
+@pytest.mark.parametrize("name", ["Card overlay A", "Card overlay B", "Card overlay C"])
+def test_links_on_instances_open_overlays(swaps_and_instances_page, name):
+    """Card overlay A is opened by a link added to a layer inside one instance, which
+    the fig format stores as an override on the instance. B is opened from the main
+    component, and C from an instance itself."""
+    assert layer_by_name(swaps_and_instances_page, name)["presentationStyle"] == (
+        PresentationStyle.OVERLAY
+    )

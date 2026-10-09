@@ -1,4 +1,4 @@
-from . import style as converter_style
+from . import positioning, style as converter_style
 from .context import context
 from .errors import *
 from converter import utils
@@ -106,7 +106,7 @@ def convert_flow(fig_node: dict) -> _Flow:
                 continue
 
             try:
-                destination, settings = get_destination_settings_if_any(action)
+                destination, settings = get_destination_settings_if_any(fig_node, action)
             except Fig2SketchWarning as w:
                 utils.log_conversion_warning(w.code, fig_node, props=[action["connectionType"]])
                 continue
@@ -183,7 +183,7 @@ def mark_overlay_destinations(fig_nodes: Iterable[dict]) -> None:
     designed to be shown, even if the link itself does not survive.
     """
     for fig_node in fig_nodes:
-        for interaction in fig_node.get("prototypeInteractions", []):
+        for interaction in interactions_of(fig_node):
             if interaction.get("isDeleted", False):
                 continue
 
@@ -195,7 +195,21 @@ def mark_overlay_destinations(fig_nodes: Iterable[dict]) -> None:
                     and destination is not None
                     and not utils.is_invalid_ref(destination)
                 ):
-                    context.mark_overlay_destination(destination)
+                    swap = action["navigationType"] == "SWAP"
+                    context.mark_overlay_destination(
+                        destination, swapped_in_by=fig_node if swap else None
+                    )
+
+
+def interactions_of(fig_node: dict) -> Iterator[dict]:
+    """A node's interactions, including those an instance adds to layers inside it.
+
+    A link added to a layer inside a single instance is stored as an override on the
+    instance, rather than on the layer.
+    """
+    yield from fig_node.get("prototypeInteractions", [])
+    for override in fig_node.get("symbolData", {}).get("symbolOverrides", []):
+        yield from override.get("prototypeInteractions", [])
 
 
 def opens_overlay_as_screen(action: dict) -> bool:
@@ -241,6 +255,76 @@ def overlay_settings(fig_overlay: dict, action: Optional[dict] = None) -> FlowOv
         return FlowOverlaySettings.Positioned(position, offset)
 
     return FlowOverlaySettings.Positioned(position)
+
+
+def swapped_overlay_settings(
+    fig_link: dict, fig_overlay: dict, action: dict
+) -> FlowOverlaySettings:
+    """Where an overlay a link swaps in appears: where the overlay it replaces was.
+
+    The fig format gives a swapped-in overlay no position of its own. A named position
+    is reused. A manual one is relative to the layer that opened the replaced overlay,
+    which this link cannot refer to, so the new overlay is placed relative to the
+    link's own layer instead, on the replaced overlay's top-left corner.
+
+    A swap link that is not inside an overlay opens its destination like any other.
+    """
+    fig_replaced = replaced_overlay(fig_link)
+    if fig_replaced is None:
+        return overlay_settings(fig_overlay, action)
+
+    position = position_source(fig_replaced).get("overlayPositionType", "CENTER")
+    if position != "MANUAL":
+        return FlowOverlaySettings.Positioned(position)
+
+    corner = position_in(fig_link, fig_replaced)
+    return FlowOverlaySettings.Positioned(position, Point(-corner.x, -corner.y))
+
+
+def replaced_overlay(fig_link: dict) -> Optional[dict]:
+    """The overlay a swap link sits in, which is the one it replaces."""
+    fig_node = fig_link
+    while not context.is_overlay_destination(fig_node["guid"]):
+        if "parent" not in fig_node:
+            return None
+        try:
+            fig_node = context.fig_node(fig_node["parent"]["guid"])
+        except Fig2SketchWarning:
+            return None
+
+    return fig_node
+
+
+def position_source(fig_overlay: dict) -> dict:
+    """The overlay whose position an overlay is shown at.
+
+    An overlay that links only swap in appears where the overlay it replaces was, so
+    its position comes from that one, and so on back to an overlay a link opens.
+    """
+    seen = set()
+    while fig_overlay["guid"] not in seen:
+        seen.add(fig_overlay["guid"])
+        swap_links = context.swapped_in_by(fig_overlay["guid"])
+        fig_replaced = replaced_overlay(swap_links[0]) if swap_links else None
+        if fig_replaced is None:
+            break
+        fig_overlay = fig_replaced
+
+    return fig_overlay
+
+
+def position_in(fig_node: dict, fig_ancestor: dict) -> Point:
+    """Where a layer's top-left corner sits inside one of its ancestors."""
+    if fig_node["guid"] == fig_ancestor["guid"]:
+        return Point(0, 0)
+
+    corner = positioning.transform_frame(fig_node)
+    fig_parent = context.fig_node(fig_node["parent"]["guid"])
+    while fig_parent["guid"] != fig_ancestor["guid"]:
+        corner = fig_parent["transform"].dot(corner)
+        fig_parent = context.fig_node(fig_parent["parent"]["guid"])
+
+    return Point(corner[0], corner[1])
 
 
 def prototyping_information(fig_frame: dict) -> _PrototypingInformation:
@@ -312,7 +396,7 @@ def add_overlay_backdrop(fig_frame: dict, sketch_frame: AbstractLayerGroup) -> N
 
 
 def get_destination_settings_if_any(
-    action: dict,
+    fig_node: dict, action: dict
 ) -> Tuple[Optional[str], Optional[FlowOverlaySettings]]:
     settings = None
     destination: Optional[str]
@@ -332,7 +416,10 @@ def get_destination_settings_if_any(
 
             if action.get("navigationType") in OVERLAY_NAVIGATIONS:
                 transition_node = context.fig_node(transition_node_id)
-                settings = overlay_settings(transition_node, action)
+                if action["navigationType"] == "SWAP":
+                    settings = swapped_overlay_settings(fig_node, transition_node, action)
+                else:
+                    settings = overlay_settings(transition_node, action)
     elif connection_type == "NONE":
         destination = None
     else:
