@@ -1,7 +1,10 @@
+import dataclasses
+
 import pytest
 from .base import *
 from converter.text import *
 from converter.context import context
+from sketchformat.serialize.json import convert_object
 
 TEXT_BASE = {
     **FIG_BASE,
@@ -144,6 +147,99 @@ class TestOverrideStyles:
 
 @pytest.mark.usefixtures("mock_fonts")
 class TestConvert:
+    def test_matching_single_text_and_fill_color_removes_fill(self):
+        text = convert(
+            {
+                **TEXT_PLAIN,
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[0],
+                        "opacity": FIG_COLOR[0]["a"],
+                        "visible": True,
+                    },
+                ],
+            }
+        )
+        serialized_text = convert_object(text)
+
+        assert text.style.fills == []
+        assert serialized_text["style"]["fills"] == []
+        assert (
+            text.style.textStyle.encodedAttributes.MSAttributedStringColorAttribute
+            == SKETCH_COLOR[0]
+        )
+        assert (
+            text.attributedString.attributes[0].attributes.MSAttributedStringColorAttribute
+            == SKETCH_COLOR[0]
+        )
+        assert (
+            serialized_text["style"]["textStyle"]["encodedAttributes"][
+                "MSAttributedStringColorAttribute"
+            ]
+            == convert_object(SKETCH_COLOR[0])
+        )
+
+    def test_multi_color_text_removes_all_fills(self):
+        text = convert(
+            {
+                **TEXT_BASE,
+                "textData": {
+                    "characters": "abc",
+                    "characterStyleIDs": [0, 1, 1],
+                    "styleOverrideTable": [
+                        {
+                            "styleID": 1,
+                            "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[1]}],
+                        },
+                    ],
+                },
+            }
+        )
+
+        assert text.style.fills == []
+        assert (
+            text.attributedString.attributes[0].attributes.MSAttributedStringColorAttribute
+            == SKETCH_COLOR[0]
+        )
+        assert (
+            text.attributedString.attributes[1].attributes.MSAttributedStringColorAttribute
+            == SKETCH_COLOR[1]
+        )
+
+    def test_multiple_fill_colors_with_one_text_color_keeps_fills_and_sets_text_black(self):
+        text = convert(
+            {
+                **TEXT_PLAIN,
+                "fillPaints": [
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[0],
+                        "opacity": 1,
+                        "visible": True,
+                    },
+                    {
+                        "type": "SOLID",
+                        "color": FIG_COLOR[1],
+                        "opacity": 1,
+                        "visible": True,
+                    },
+                ],
+            }
+        )
+
+        assert len(text.style.fills) == 2
+        assert text.style.fills[0].color == dataclasses.replace(SKETCH_COLOR[0], alpha=1)
+        assert text.style.fills[1].color == dataclasses.replace(SKETCH_COLOR[1], alpha=1)
+        assert (
+            text.style.textStyle.encodedAttributes.MSAttributedStringColorAttribute
+            == Color.Black()
+        )
+        assert (
+            text.attributedString.attributes[0].attributes.MSAttributedStringColorAttribute
+            == Color.Black()
+        )
+
     def test_no_kerning(self):
         text = convert(TEXT_PLAIN)
 
