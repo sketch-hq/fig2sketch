@@ -22,6 +22,15 @@ class FillType(IntEnum):
     PATTERN = 4
 
 
+class LayeringType(IntEnum):
+    """Where a fill or blur is drawn. REGULAR is the layer's own content, TINT a group
+    tint, and BACKDROP what a frame shown as an overlay draws around itself."""
+
+    REGULAR = 0
+    TINT = 1
+    BACKDROP = 2
+
+
 class BorderPosition(IntEnum):
     CENTER = 0
     INSIDE = 1
@@ -187,6 +196,8 @@ class Fill:
     contextSettings: ContextSettings = field(default_factory=ContextSettings)
     gradient: Gradient = field(default_factory=Gradient)
     image: Optional[Image] = None
+    # Sketch reads a missing value as REGULAR, so it is only written when set
+    layeringType: Optional[LayeringType] = None
 
     @staticmethod
     def Color(

@@ -40,6 +40,7 @@ def convert(fig_frame: dict) -> Group:
     )
 
     obj.layout = convert_layout(fig_frame, obj.frame)
+    prototype.add_overlay_backdrop(fig_frame, obj)
 
     return obj
 
