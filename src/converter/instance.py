@@ -1,4 +1,5 @@
 import copy, logging, math
+
 from . import base, group, shape_path as shape_path_converter, style as style_converter
 from .context import context
 from .config import config
@@ -7,6 +8,7 @@ from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
 from typing import Dict, List, Optional, Tuple
 from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
+from typing import Optional
 
 GRADIENT_PAINT_TYPES = {
     "GRADIENT_LINEAR",
@@ -42,6 +44,8 @@ IGNORED_OVERRIDE_PROPS = {
     "name",
     "exportSettings",
     "targetAspectRatio",
+    "hyperlink",
+    "overrideLevel",
     "textExplicitLayoutVersion",
     "hyperlink",
 }
@@ -416,6 +420,22 @@ def convert_effect_overrides(
 
     return sketch_overrides, unsupported_overrides
 
+def find_style_node(style_ref: dict) -> Optional[dict]:
+    asset_ref = style_ref.get("assetRef")
+    if asset_ref is not None:
+      try:
+        return context.fig_node_by_key(asset_ref["key"])
+      except (Fig2SketchWarning, KeyError):
+        pass
+
+    guid = style_ref.get("guid")
+    if guid is not None:
+      try:
+        return context.fig_node(guid)
+      except (Fig2SketchWarning, KeyError):
+        pass
+
+    return None
 
 def convert_style_ref_override(
     sketch_path_str: str,
@@ -423,14 +443,14 @@ def convert_style_ref_override(
     style_ref: dict,
     master_node: dict,
 ) -> Tuple[List[OverrideValue], List[str]]:
-    asset_ref = style_ref.get("assetRef")
-    if asset_ref is None:
+    # A style detached from its node leaves a placeholder guid, with the paints
+    # carried on the override itself
+    if "assetRef" not in style_ref and utils.is_invalid_ref(style_ref.get("guid")):
         return [], []
 
-    try:
-        fig_style = context.fig_node_by_key(asset_ref["key"])
-    except (Fig2SketchWarning, KeyError):
-        return [], ["assetRef"]
+    fig_style = find_style_node(style_ref)
+    if fig_style is None:
+      return [], ["assetRef|guid"]
 
     if "fillPaints" not in fig_style:
         return [], ["fillPaints"]

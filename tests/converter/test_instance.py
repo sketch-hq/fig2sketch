@@ -222,6 +222,7 @@ class TestOverrides:
 
     def test_resized_instance_is_not_scaled(self):
         # Even a proportional resize only changes the size the master is laid out at
+        size differing from the master's does not set a scale."""
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["size"] = {"x": 50, "y": 50}
 
@@ -909,6 +910,27 @@ class TestOverrides:
 
         assert isinstance(i, SymbolInstance)
         assert i.overrideValues == []
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_stroke_style_override_by_guid(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(0, 2)]}, "styleIdForStrokeFill": {"guid": (0, 5)}}
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_rect_id = symbol.layers[1].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=SKETCH_COLOR[1]),
+            OverrideValue(
+                overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.MULTIPLY
+            ),
+        ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
     def test_detached_fill_style_override_with_paints(self, warnings):
