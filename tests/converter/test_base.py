@@ -2,7 +2,7 @@ import pytest
 from .base import *
 from converter import prototype, tree, base
 from converter import utils
-from sketchformat.layer_common import PrototypeScrolling
+from sketchformat.layer_common import PrototypeScrolling, SizingBehaviour
 from sketchformat.style import *
 from unittest.mock import ANY
 from converter.context import context
@@ -80,6 +80,37 @@ FIG_TEXT_STYLE = {
     "type": "TEXT",
     "fontName": {"family": "CustomFont", "style": "Normal"},
 }
+
+
+FIG_VERTICAL_STACK = {**FIG_BASE, "type": "FRAME", "guid": (5, 5), "stackMode": "VERTICAL"}
+
+
+@pytest.fixture
+def vertical_stack():
+    context.init(None, {(5, 5): FIG_VERTICAL_STACK}, "DISPLAY_P3")
+
+
+@pytest.mark.usefixtures("vertical_stack")
+class TestTextSizing:
+    def stacked_text(self, text_auto_resize):
+        return {
+            **FIG_TEXT,
+            "horizontalConstraint": "MIN",
+            "verticalConstraint": "MIN",
+            "parent": {"guid": (5, 5)},
+            "textAutoResize": text_auto_resize,
+        }
+
+    def test_auto_width_text_fits_width(self):
+        fig_text = self.stacked_text("WIDTH_AND_HEIGHT")
+
+        assert base.horizontal_sizing_behaviour(fig_text) == SizingBehaviour.FIT
+
+    def test_auto_height_text_fits_height_only(self):
+        fig_text = self.stacked_text("HEIGHT")
+
+        assert base.horizontal_sizing_behaviour(fig_text) == SizingBehaviour.FIXED
+        assert base.vertical_sizing_behaviour(fig_text) == SizingBehaviour.FIT
 
 
 @pytest.fixture
