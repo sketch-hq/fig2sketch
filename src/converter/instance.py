@@ -43,7 +43,7 @@ def convert(fig_instance):
     obj = SymbolInstance(
         **base.base_styled(fig_instance),
         symbolID=utils.gen_object_id(fig_master["guid"]),
-        scale=instance_scale(fig_instance, fig_master),
+        scale=instance_scale(fig_instance),
         overrideValues=sketch_overrides,
     )
     # Replace style
@@ -53,16 +53,14 @@ def convert(fig_instance):
     return obj
 
 
-def instance_scale(fig_instance: dict, fig_master: dict) -> float:
-    scale_x = utils.safe_div(fig_instance["size"]["x"], fig_master["size"]["x"])
-    scale_y = utils.safe_div(fig_instance["size"]["y"], fig_master["size"]["y"])
+def instance_scale(fig_instance: dict) -> float:
+    """The factor the instance was scaled by as a whole, text and borders included.
 
-    if not scale_x:
-        return scale_y or 1
-    if not scale_y:
-        return scale_x
-
-    return scale_x
+    Sketch's scale works the same way: the master is laid out at the instance size divided
+    by the scale, then drawn scaled. Any other resize, even a proportional one, only changes
+    the size the master is laid out at, so it leaves the scale at 1.
+    """
+    return fig_instance["symbolData"].get("uniformScaleFactor", 1)
 
 
 def post_process(fig_instance, sketch_instance):
@@ -507,9 +505,14 @@ def detach_symbol(fig_instance, all_overrides):
     detached_children = copy.deepcopy(fig_master["children"], {})
 
     # Apply overrides to children
+    scale = instance_scale(fig_instance)
     for c in detached_children:
         apply_overrides(
-            c, fig_instance["guid"], all_overrides, fig_instance.get("derivedSymbolData", [])
+            c,
+            fig_instance["guid"],
+            all_overrides,
+            fig_instance.get("derivedSymbolData", []),
+            scale,
         )
 
     fig_instance["children"] = detached_children
@@ -517,7 +520,7 @@ def detach_symbol(fig_instance, all_overrides):
     fig_instance["f2s_detached"] = True
 
 
-def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
+def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data, scale=1):
     guid = fig_node.get("overrideKey", fig_node["guid"])
 
     # Apply overrides
@@ -563,6 +566,9 @@ def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
     if fig_node["type"] == "INSTANCE":
         fig_node["symbolData"]["symbolOverrides"] += child_overrides
         fig_node["derivedSymbolData"] += child_derived_data
+        # Its derived size includes the scale of the instance being detached, so its own
+        # scale has to as well
+        fig_node["symbolData"]["uniformScaleFactor"] = instance_scale(fig_node) * scale
     else:
         if fig_node.get("f2s_detached"):
             # This was previously an instance that was detached before this usage
@@ -572,4 +578,4 @@ def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data):
             derived_symbol_data = child_derived_data
 
         for c in fig_node.get("children", []):
-            apply_overrides(c, instance_id, overrides, derived_symbol_data)
+            apply_overrides(c, instance_id, overrides, derived_symbol_data, scale)
