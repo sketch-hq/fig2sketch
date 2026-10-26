@@ -15,6 +15,15 @@ GRADIENT_PAINT_TYPES = {
     "GRADIENT_DIAMOND",
 }
 
+# Overrides on the symbol root describe the instance layer itself. These are converted
+# from the instance node, so they are applied to it rather than becoming Sketch overrides
+INSTANCE_LAYER_PROPS = {
+    "opacity",
+    "stackPositioning",
+    "stackChildAlignSelf",
+    "stackChildPrimaryGrow",
+}
+
 
 def convert(fig_instance):
     if utils.is_invalid_ref(fig_instance["symbolData"]["symbolID"]):
@@ -134,8 +143,8 @@ def apply_root_overrides_to_instance(fig_instance: dict, all_overrides: list) ->
         for prop, value in override.items():
             if prop == "guidPath":
                 continue
-            if prop == "opacity":
-                fig_instance["opacity"] = value
+            if prop in INSTANCE_LAYER_PROPS:
+                fig_instance[prop] = value
             else:
                 remaining_root_override[prop] = value
 

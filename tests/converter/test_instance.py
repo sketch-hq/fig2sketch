@@ -311,6 +311,19 @@ class TestOverrides:
         assert isinstance(i, Group)
         warnings.assert_any_call("SYM003", ANY, props=["opacity"])
 
+    def test_root_stack_positioning_override_preserves_instance(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(0, 3)]}, "stackPositioning": "ABSOLUTE"}
+        ]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.flexItem.ignoreLayout is True
+        assert i.overrideValues == []
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
     def test_text_metadata_overrides_preserve_instance(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [
