@@ -53,6 +53,28 @@ FIG_FILL_STYLE = {
     ],
 }
 
+FIG_BOUND_FILL_STYLE = {
+    **FIG_BASE,
+    "type": "ROUNDED_RECTANGLE",
+    "guid": (0, 7),
+    "key": "bound-fill",
+    "styleType": "FILL",
+    "fillPaints": [
+        {
+            "type": "SOLID",
+            "color": FIG_COLOR[1],
+            "opacity": 0.9,
+            "visible": True,
+            "colorVar": {
+                "value": {"alias": {"assetRef": {"key": "color-variable", "version": "1:1"}}},
+                "dataType": "ALIAS",
+                "resolvedDataType": "COLOR",
+            },
+            "authoredColor": {"space": "DEFAULT", "c0": 0, "c1": 1, "c2": 0.5, "c3": 0.7},
+        }
+    ],
+}
+
 FIG_VECTOR = {
     **FIG_BASE,
     "type": "VECTOR",
@@ -129,6 +151,7 @@ def symbol(monkeypatch):
             (0, 2): FIG_RECT,
             (0, 5): FIG_FILL_STYLE,
             (0, 6): FIG_VECTOR,
+            (0, 7): FIG_BOUND_FILL_STYLE,
             (1, 9): FIG_TEXT,
             (1, 10): FIG_VECTOR,
         },
@@ -644,6 +667,24 @@ class TestOverrides:
                 overrideName=f"{symbol_text_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
             ),
             OverrideValue(overrideName=f"{symbol_text_id}_opacity:fill-0", value=0.7),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_variable_bound_fill_style_override(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "styleIdForFill": {"assetRef": {"key": "bound-fill", "version": "1:1"}},
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_text_id = context.symbols_page.layers[0].layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1]),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 

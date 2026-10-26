@@ -439,13 +439,26 @@ def unsupported_paint_override_props(paint: dict) -> List[str]:
     equivalent override representation. Any remaining fields are reported as unsupported
     so the instance can detach rather than silently losing data the converter does not
     understand.
+
+    Variable bindings (colorVar, opacityVar) and authored colors sit alongside the resolved
+    color and opacity, which is what gets converted, same as for paints outside overrides.
     """
-    ignored_props = {"blendMode", "color", "opacity", "type", "visible"}
+    ignored_props = {
+        "authoredColor",
+        "blendMode",
+        "color",
+        "colorVar",
+        "opacity",
+        "opacityVar",
+        "type",
+        "visible",
+    }
     if paint.get("type") == "SOLID":
         return [prop for prop in paint if prop not in ignored_props]
 
     if paint.get("type") in GRADIENT_PAINT_TYPES:
         gradient_props = {
+            "authoredStops",
             "interpolationColorSpace",
             "interpolationHueMethod",
             "stops",
