@@ -349,11 +349,7 @@ def horizontal_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
         return SizingBehaviour.FIT
 
     # Check for FIXED sizing behavior
-    is_fixed = (self_mode == "HORIZONTAL" and fig_node.get("stackPrimarySizing") == "FIXED") or (
-        parent_mode == FlexDirection.HORIZONTAL
-        and fig_node.get("stackChildPrimaryGrow") == "FIXED"
-    )
-    if is_fixed:
+    if self_mode == "HORIZONTAL" and fig_node.get("stackPrimarySizing") == "FIXED":
         return SizingBehaviour.FIXED
 
     # Default behavior based on stack mode
@@ -388,10 +384,7 @@ def vertical_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
         return SizingBehaviour.FIT
 
     # Check for FIXED sizing behavior
-    is_fixed = (self_mode == "VERTICAL" and fig_node.get("stackPrimarySizing") == "FIXED") or (
-        parent_mode == FlexDirection.VERTICAL and fig_node.get("stackChildPrimaryGrow") == "FIXED"
-    )
-    if is_fixed:
+    if self_mode == "VERTICAL" and fig_node.get("stackPrimarySizing") == "FIXED":
         return SizingBehaviour.FIXED
 
     # Default behavior based on stack mode
