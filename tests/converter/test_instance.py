@@ -256,6 +256,38 @@ class TestOverrides:
         assert i.overrideValues == []
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
+    def test_instance_of_translucent_master(self, monkeypatch, warnings):
+        monkeypatch.setitem(FIG_SYMBOL, "opacity", 0.5)
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["opacity"] = 0.5
+
+        i = tree.convert_node(fig, "")
+
+        # Sketch already draws the instance with the master's opacity
+        assert isinstance(i, SymbolInstance)
+        assert i.style.contextSettings.opacity == 1
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_instance_more_transparent_than_master(self, monkeypatch):
+        monkeypatch.setitem(FIG_SYMBOL, "opacity", 0.5)
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["opacity"] = 0.25
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.style.contextSettings.opacity == 0.5
+
+    def test_instance_more_opaque_than_master_detaches(self, monkeypatch, warnings):
+        monkeypatch.setitem(FIG_SYMBOL, "opacity", 0.5)
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["opacity"] = 1
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, Group)
+        warnings.assert_any_call("SYM003", ANY, props=["opacity"])
+
     def test_nested_opacity_override_detaches(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [{"guidPath": {"guids": [(1, 9)]}, "opacity": 0.7}]
