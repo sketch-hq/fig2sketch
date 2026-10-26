@@ -267,9 +267,18 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             sk, us = convert_effect_overrides(sketch_path_str, value)
             sketch_overrides += sk
             unsupported_overrides += [f"effects.{p}" for p in us]
-        elif prop in ["size", "pluginData", "name", "exportSettings", "targetAspectRatio"]:
+        elif prop in [
+            "size",
+            "pluginData",
+            "name",
+            "exportSettings",
+            "targetAspectRatio",
+            "textExplicitLayoutVersion",
+            "hyperlink",
+        ]:
             # Size is handled by applying derivedSymbolData
-            # The rest are surely not worth detaching for
+            # The rest are surely not worth detaching for. Text hyperlinks are not
+            # converted for plain text layers either
             pass
         else:
             # Unknown override
