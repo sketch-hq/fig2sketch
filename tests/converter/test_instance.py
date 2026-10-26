@@ -311,6 +311,35 @@ class TestOverrides:
         assert isinstance(i, Group)
         warnings.assert_any_call("SYM003", ANY, props=["opacity"])
 
+    def test_root_fill_override_matching_master_preserves_instance(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 3)]},
+                "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[1], "visible": True}],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+
+        # The instance node still has the master's paints, which is what gets drawn
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == []
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_root_fill_override_restyling_instance_detaches(self, warnings):
+        paints = [{"type": "SOLID", "color": FIG_COLOR[1], "opacity": 1, "visible": True}]
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["fillPaints"] = paints
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(0, 3)]}, "fillPaints": paints}
+        ]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, Group)
+        warnings.assert_any_call("SYM003", ANY, props=["fillPaints"])
+
     def test_root_stack_positioning_override_preserves_instance(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [

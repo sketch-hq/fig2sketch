@@ -24,6 +24,16 @@ INSTANCE_LAYER_PROPS = {
     "stackChildPrimaryGrow",
 }
 
+# Paint overrides, mapped to the Sketch style part they convert to. Sketch overrides cannot
+# reach a master's own style, so on the symbol root these are checked against the instance
+# node instead (see unsupported_root_paints)
+PAINT_PROPS = {
+    "fillPaints": "fill",
+    "styleIdForFill": "fill",
+    "strokePaints": "border",
+    "styleIdForStrokeFill": "border",
+}
+
 
 def convert(fig_instance):
     if utils.is_invalid_ref(fig_instance["symbolData"]["symbolID"]):
@@ -36,8 +46,10 @@ def convert(fig_instance):
     fig_master = context.find_symbol(fig_instance["symbolData"]["symbolID"])
 
     all_overrides = get_all_overrides(fig_instance)
+    unsupported_root = unsupported_root_paints(fig_instance, fig_master, all_overrides)
     all_overrides = apply_root_overrides_to_instance(fig_instance, all_overrides)
     sketch_overrides, unsupported = convert_overrides(all_overrides, fig_instance)
+    unsupported += unsupported_root
 
     opacity = instance_opacity(fig_instance, fig_master)
     if opacity is None:
@@ -129,6 +141,35 @@ def convert_overrides(all_overrides, fig_instance):
     return sketch_overrides, unsupported_overrides
 
 
+def unsupported_root_paints(
+    fig_instance: dict, fig_master: dict, all_overrides: list
+) -> List[str]:
+    """Report root paint overrides that leave the instance styled unlike its master.
+
+    The override holds the paint as it was authored, which can be stale: a paint bound to
+    a variable resolves differently under another variable mode. The instance node holds
+    the paints it ends up with, so those are compared against the master's.
+    """
+    root_guid = fig_master.get("overrideKey", fig_master["guid"])
+    parts = {
+        PAINT_PROPS[prop]
+        for override in all_overrides
+        if override["guidPath"]["guids"] == [root_guid]
+        for prop in override
+        if prop in PAINT_PROPS
+    }
+
+    unsupported = []
+    for part in sorted(parts):
+        prop = "strokePaints" if part == "border" else "fillPaints"
+        paints = fig_instance.get(prop, [])
+        sk, us = convert_style_part_overrides("", part, paints, fig_master)
+        if sk or us or len(paints) != len(master_paints(fig_master, part)):
+            unsupported.append(prop)
+
+    return unsupported
+
+
 def apply_root_overrides_to_instance(fig_instance: dict, all_overrides: list) -> list:
     fig_master = context.find_symbol(fig_instance["symbolData"]["symbolID"])
     root_guid = fig_master.get("overrideKey", fig_master["guid"])
@@ -145,7 +186,7 @@ def apply_root_overrides_to_instance(fig_instance: dict, all_overrides: list) ->
                 continue
             if prop in INSTANCE_LAYER_PROPS:
                 fig_instance[prop] = value
-            else:
+            elif prop not in PAINT_PROPS:
                 remaining_root_override[prop] = value
 
         if len(remaining_root_override) > 1:
