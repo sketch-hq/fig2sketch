@@ -123,6 +123,19 @@ FIG_VECTOR = {
     },
 }
 
+FIG_SPLIT_VECTOR = {
+    **FIG_VECTOR,
+    "guid": (0, 8),
+    "overrideKey": (1, 11),
+    "vectorNetwork": {
+        **FIG_VECTOR["vectorNetwork"],
+        "regions": [
+            *FIG_VECTOR["vectorNetwork"]["regions"],
+            {"loops": [[0, 1, 2]], "style": {}, "windingRule": "NONZERO"},
+        ],
+    },
+}
+
 FIG_SYMBOL = {
     **FIG_BASE,
     "type": "SYMBOL",
@@ -154,6 +167,7 @@ def symbol(monkeypatch):
             (0, 7): FIG_BOUND_FILL_STYLE,
             (1, 9): FIG_TEXT,
             (1, 10): FIG_VECTOR,
+            (1, 11): FIG_SPLIT_VECTOR,
         },
         "DISPLAY_P3",
     )
@@ -787,6 +801,34 @@ class TestOverrides:
         assert i.overrideValues[0] == OverrideValue(
             overrideName=f"{symbol_vector_id}_color:fill-0", value=SKETCH_COLOR[1]
         )
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_fill_override_on_vector_with_regions_detaches(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 11)]},
+                "fillPaints": [
+                    {"type": "SOLID", "color": FIG_COLOR[1], "opacity": 0.9, "visible": True}
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, Group)
+        warnings.assert_any_call("SYM003", ANY, props=["fillPaints.regions"])
+
+    def test_unchanged_fill_override_on_vector_with_regions(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(1, 11)]}, "fillPaints": FIG_SPLIT_VECTOR["fillPaints"]}
+        ]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == []
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
     def test_detached_fill_style_override_with_paints(self, warnings):

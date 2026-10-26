@@ -277,42 +277,19 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
                     value=utils.gen_object_id(value),
                 )
             )
-        elif prop == "fillPaints":
-            sk, us = convert_style_part_overrides(
-                sketch_path_str,
-                "fill",
-                value,
-                fig_nodes[-1],
+        elif prop in PAINT_PROPS:
+            convert_paints = (
+                convert_style_ref_override
+                if prop.startswith("styleId")
+                else convert_style_part_overrides
             )
+            sk, us = convert_paints(sketch_path_str, PAINT_PROPS[prop], value, fig_nodes[-1])
+            if sk and splits_into_regions(fig_nodes[-1]):
+                # The override would land on the group holding the region layers, which
+                # carry the paints, so it would have no effect
+                sk, us = [], us + ["regions"]
             sketch_overrides += sk
-            unsupported_overrides += [f"fillPaints.{p}" for p in us]
-        elif prop == "strokePaints":
-            sk, us = convert_style_part_overrides(
-                sketch_path_str,
-                "border",
-                value,
-                fig_nodes[-1],
-            )
-            sketch_overrides += sk
-            unsupported_overrides += [f"strokePaints.{p}" for p in us]
-        elif prop == "styleIdForFill":
-            sk, us = convert_style_ref_override(
-                sketch_path_str,
-                "fill",
-                value,
-                fig_nodes[-1],
-            )
-            sketch_overrides += sk
-            unsupported_overrides += [f"styleIdForFill.{p}" for p in us]
-        elif prop == "styleIdForStrokeFill":
-            sk, us = convert_style_ref_override(
-                sketch_path_str,
-                "border",
-                value,
-                fig_nodes[-1],
-            )
-            sketch_overrides += sk
-            unsupported_overrides += [f"styleIdForStrokeFill.{p}" for p in us]
+            unsupported_overrides += [f"{prop}.{p}" for p in us]
         elif prop == "effects":
             sk, us = convert_effect_overrides(sketch_path_str, value)
             sketch_overrides += sk
@@ -335,6 +312,15 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             unsupported_overrides.append(prop)
 
     return sketch_overrides, unsupported_overrides
+
+
+def splits_into_regions(fig_node: dict) -> bool:
+    """Whether a vector converts to a group of one layer per region"""
+    return (
+        fig_node["type"] == "VECTOR"
+        and "vectorNetwork" in fig_node
+        and len(shape_path_converter.get_all_segments(fig_node["vectorNetwork"])) > 1
+    )
 
 
 def sketch_override_object_id(fig_node: dict) -> str:
