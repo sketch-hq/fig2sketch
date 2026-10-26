@@ -421,11 +421,10 @@ class TestOverrides:
             OverrideValue(
                 overrideName=f"{symbol_text_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
             ),
-            OverrideValue(overrideName=f"{symbol_text_id}_opacity:fill-0", value=0.7),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
-    def test_fill_override_emits_default_opacity_when_master_differs(self, warnings):
+    def test_fill_override_folds_opacity_into_color(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [
             {
@@ -450,8 +449,10 @@ class TestOverrides:
         assert isinstance(i, SymbolInstance)
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues == [
-            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1]),
-            OverrideValue(overrideName=f"{symbol_text_id}_opacity:fill-0", value=1),
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_color:fill-0",
+                value=Color(red=0, green=1, blue=0.5, alpha=1),
+            ),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
@@ -480,9 +481,56 @@ class TestOverrides:
         assert isinstance(i, SymbolInstance)
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues == [
-            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1])
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_color:fill-0",
+                value=Color(red=0, green=1, blue=0.5, alpha=0.9),
+            )
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_fill_override_keeps_translucent_opacity_of_new_color(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "fillPaints": [
+                    {"type": "SOLID", "color": FIG_COLOR[2], "opacity": 0.9, "visible": True}
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_text_id = context.symbols_page.layers[0].layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_color:fill-0",
+                value=Color(red=0, green=0, blue=1, alpha=0.9),
+            )
+        ]
+
+    def test_fill_override_of_opacity_only_overrides_color(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "fillPaints": [
+                    {"type": "SOLID", "color": FIG_COLOR[0], "opacity": 0.5, "visible": True}
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_text_id = context.symbols_page.layers[0].layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_color:fill-0",
+                value=Color(red=1, green=0, blue=0.5, alpha=0.5),
+            )
+        ]
 
     def test_fill_override_emits_normal_blend_when_master_differs(self, warnings):
         text = copy.deepcopy(FIG_TEXT)
@@ -558,11 +606,13 @@ class TestOverrides:
         assert isinstance(i, SymbolInstance)
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues == [
-            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=SKETCH_COLOR[1]),
+            OverrideValue(
+                overrideName=f"{symbol_rect_id}_color:border-0",
+                value=Color(red=0, green=1, blue=0.5, alpha=0.5),
+            ),
             OverrideValue(
                 overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.SCREEN
             ),
-            OverrideValue(overrideName=f"{symbol_rect_id}_opacity:border-0", value=0.5),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
@@ -738,7 +788,6 @@ class TestOverrides:
             OverrideValue(
                 overrideName=f"{symbol_text_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
             ),
-            OverrideValue(overrideName=f"{symbol_text_id}_opacity:fill-0", value=0.7),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
@@ -756,7 +805,10 @@ class TestOverrides:
 
         assert isinstance(i, SymbolInstance)
         assert i.overrideValues == [
-            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1]),
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_color:fill-0",
+                value=Color(red=0, green=1, blue=0.5, alpha=0.9),
+            ),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
@@ -778,7 +830,6 @@ class TestOverrides:
             OverrideValue(
                 overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.MULTIPLY
             ),
-            OverrideValue(overrideName=f"{symbol_rect_id}_opacity:border-0", value=0.7),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
@@ -861,7 +912,6 @@ class TestOverrides:
             OverrideValue(
                 overrideName=f"{symbol_vector_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
             ),
-            OverrideValue(overrideName=f"{symbol_vector_id}_opacity:fill-0", value=0.7),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 

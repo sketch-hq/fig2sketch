@@ -421,10 +421,14 @@ def convert_style_part_overrides(
 
         if "color" in paint:
             if paint.get("type") == "SOLID":
-                color = style_converter.convert_color(paint["color"])
+                # Like convert_fill, fold the paint opacity into the color alpha: Sketch
+                # ignores an _opacity override on a solid fill or border
+                color = style_converter.convert_color(paint["color"], paint.get("opacity", 1))
                 master_color = (
-                    style_converter.convert_color(master_paint["color"])
-                    if "color" in master_paint
+                    style_converter.convert_color(
+                        master_paint["color"], master_paint.get("opacity", 1)
+                    )
+                    if master_paint.get("type") == "SOLID" and "color" in master_paint
                     else None
                 )
                 if color != master_color:
@@ -464,7 +468,11 @@ def convert_style_part_overrides(
                 )
             )
 
-        if "opacity" in paint and paint["opacity"] != master_paint.get("opacity", 1):
+        if (
+            paint.get("type") != "SOLID"
+            and "opacity" in paint
+            and paint["opacity"] != master_paint.get("opacity", 1)
+        ):
             sketch_overrides.append(
                 OverrideValue(
                     overrideName=f"{sketch_path_str}_opacity:{part_path}",
