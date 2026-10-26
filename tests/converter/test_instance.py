@@ -647,6 +647,28 @@ class TestOverrides:
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
+    def test_stroke_style_override(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "styleIdForStrokeFill": {"assetRef": {"key": "red-fill", "version": "1:1"}},
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_rect_id = context.symbols_page.layers[0].layers[1].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=SKETCH_COLOR[1]),
+            OverrideValue(
+                overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.MULTIPLY
+            ),
+            OverrideValue(overrideName=f"{symbol_rect_id}_opacity:border-0", value=0.7),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
     def test_vector_fill_style_override_uses_shape_path_id(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [

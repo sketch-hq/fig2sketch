@@ -254,7 +254,7 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             )
             sketch_overrides += sk
             unsupported_overrides += [f"styleIdForFill.{p}" for p in us]
-        elif prop == "styleIdForStroke":
+        elif prop == "styleIdForStrokeFill":
             sk, us = convert_style_ref_override(
                 sketch_path_str,
                 "border",
@@ -262,7 +262,7 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
                 fig_nodes[-1],
             )
             sketch_overrides += sk
-            unsupported_overrides += [f"styleIdForStroke.{p}" for p in us]
+            unsupported_overrides += [f"styleIdForStrokeFill.{p}" for p in us]
         elif prop == "effects":
             sk, us = convert_effect_overrides(sketch_path_str, value)
             sketch_overrides += sk
