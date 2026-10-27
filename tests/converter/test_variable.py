@@ -122,16 +122,16 @@ class TestSwatches:
         swatches = context.variable_swatches(FIG_SURFACE)
 
         assert list(swatches) == [LIGHT, DARK]
-        assert swatches[LIGHT].name == "Light/Schemes/Surface"
-        assert swatches[DARK].name == "Dark/Schemes/Surface"
+        assert swatches[LIGHT].name == "Theme/Light/Schemes/Surface"
+        assert swatches[DARK].name == "Theme/Dark/Schemes/Surface"
         assert unlinked(swatches[LIGHT].value) == SKETCH_COLOR[0]
         assert unlinked(swatches[DARK].value) == SKETCH_COLOR[1]
         assert all(s.value.swatchID == s.do_objectID for s in swatches.values())
 
-    def test_single_mode_keeps_variable_name(self):
+    def test_single_mode_leaves_out_mode_name(self):
         swatches = list(context.variable_swatches(FIG_BLUE).values())
 
-        assert [s.name for s in swatches] == ["Blue"]
+        assert [s.name for s in swatches] == ["Palette/Blue"]
         assert unlinked(swatches[0].value) == SKETCH_COLOR[2]
 
     def test_aliases_resolve_per_collection(self):

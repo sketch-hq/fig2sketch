@@ -5,7 +5,7 @@ from .errors import Fig2SketchWarning
 from converter import utils
 from sketchformat.document import Swatch
 from sketchformat.style import Color
-from typing import Dict, FrozenSet, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Dict, FrozenSet, Iterable, Iterator, Optional, Sequence, Tuple
 
 ModeID = Tuple[int, ...]
 
@@ -14,14 +14,19 @@ def convert(fig_variable: dict) -> Dict[ModeID, Swatch]:
     """Converts a fig colour variable into a Sketch swatch for each of its modes.
 
     A swatch holds a single colour, while a variable holds one for every mode of its
-    collection, so each mode becomes a swatch of its own, named after the mode. A
-    collection with a single mode has nothing to tell its swatches apart, so they
-    keep the variable's name alone.
+    collection, so each mode becomes a swatch of its own. Swatches are grouped by
+    collection and then by mode, as in Theme/Dark/Surface. A collection with a single
+    mode has no modes to tell apart, so its swatches sit directly in the collection's
+    group.
     """
     if fig_variable.get("variableResolvedType") != "COLOR":
         return {}
 
-    modes = collection_modes(fig_variable)
+    fig_collection = collection(fig_variable)
+    if fig_collection is None:
+        return {}
+
+    modes = context.variable_modes(fig_collection)
     swatches = {}
     for mode in modes:
         mode_id = tuple(mode["id"])
@@ -33,6 +38,7 @@ def convert(fig_variable: dict) -> Dict[ModeID, Swatch]:
         name = fig_variable["name"]
         if len(modes) > 1:
             name = f"{mode['name']}/{name}"
+        name = f"{fig_collection['name']}/{name}"
 
         color = style.convert_color(fig_color)
         color.swatchID = uuid
@@ -43,14 +49,6 @@ def convert(fig_variable: dict) -> Dict[ModeID, Swatch]:
 
 def collection(fig_variable: dict) -> Optional[dict]:
     return context.fig_node_by_ref(fig_variable["variableSetID"])
-
-
-def collection_modes(fig_variable: dict) -> List[dict]:
-    fig_collection = collection(fig_variable)
-    if fig_collection is None:
-        return []
-
-    return context.variable_modes(fig_collection)
 
 
 def default_mode(fig_collection: dict) -> Optional[ModeID]:
