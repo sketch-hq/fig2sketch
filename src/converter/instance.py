@@ -1,11 +1,11 @@
-import copy, logging
+import copy, logging, math
 from . import base, group, shape_path as shape_path_converter, style as style_converter
 from .context import context
 from .config import config
 from converter import utils
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
 
 GRADIENT_PAINT_TYPES = {
@@ -22,9 +22,18 @@ def convert(fig_instance):
         utils.log_conversion_warning("SYM001", fig_instance)
         return group.convert(fig_instance)
 
+    # Use always the GUID of the master for the symbolID
+    # The instance symbolID can refer to the overrideKey instead
+    fig_master = context.find_symbol(fig_instance["symbolData"]["symbolID"])
+
     all_overrides = get_all_overrides(fig_instance)
     all_overrides = apply_root_overrides_to_instance(fig_instance, all_overrides)
     sketch_overrides, unsupported = convert_overrides(all_overrides, fig_instance)
+
+    opacity = instance_opacity(fig_instance, fig_master)
+    if opacity is None:
+        unsupported.append("opacity")
+
     if unsupported:
         if config.can_detach:
             utils.log_conversion_warning("SYM003", fig_instance, props=unsupported)
@@ -37,9 +46,6 @@ def convert(fig_instance):
         else:
             utils.log_conversion_warning("SYM002", fig_instance, props=unsupported)
 
-    # Use always the GUID of the master for the symbolID
-    # The instance symbolID can refer to the overrideKey instead
-    fig_master = context.find_symbol(fig_instance["symbolData"]["symbolID"])
     obj = SymbolInstance(
         **base.base_styled(fig_instance),
         symbolID=utils.gen_object_id(fig_master["guid"]),
@@ -48,9 +54,27 @@ def convert(fig_instance):
     )
     # Replace style
     obj.style = Style(do_objectID=utils.gen_object_id(fig_instance["guid"], b"style"))
-    obj.style.contextSettings.opacity = fig_instance.get("opacity", 1)
+    obj.style.contextSettings.opacity = 1 if opacity is None else opacity
 
     return obj
+
+
+def instance_opacity(fig_instance: dict, fig_master: dict) -> Optional[float]:
+    """Sketch draws an instance with its master's opacity on top of the instance's own,
+    while in the fig format the instance's opacity replaces the master's.
+
+    Returns the Sketch instance opacity that gives the same result, or None when the
+    instance is more opaque than its master, which Sketch cannot draw.
+    """
+    opacity = fig_instance.get("opacity", 1)
+    master_opacity = fig_master.get("opacity", 1)
+
+    if math.isclose(opacity, master_opacity, abs_tol=1e-6):
+        return 1
+    if opacity < master_opacity:
+        return opacity / master_opacity
+
+    return None
 
 
 def instance_scale(fig_instance: dict) -> float:
