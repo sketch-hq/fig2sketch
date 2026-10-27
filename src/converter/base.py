@@ -30,12 +30,16 @@ SUPPORTED_INHERIT_STYLES = {
     "inheritFillStyleIDForBackground": (),  # Unused?
 }
 
-# Newer files reference the fill styles a node uses through these instead, each holding
-# the style's guid, the key of a library style, or both
-STYLE_REF_KEYS = {
-    "inheritFillStyleID": "styleIdForFill",
-    "inheritFillStyleIDForStroke": "styleIdForStrokeFill",
+# The keys a node references the style of its paints by: the inherit* key older files
+# use, and the style ref newer ones use instead, which holds the style's guid, the key
+# of a library style, or both
+PAINT_STYLE_KEYS = {
+    "fillPaints": ("inheritFillStyleID", "styleIdForFill"),
+    "strokePaints": ("inheritFillStyleIDForStroke", "styleIdForStrokeFill"),
 }
+
+# The style ref that replaces each inherit* key
+STYLE_REF_KEYS = dict(PAINT_STYLE_KEYS.values())
 
 
 class _ContainerInformation(TypedDict):

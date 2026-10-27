@@ -388,7 +388,8 @@ def paints_follow_style(override: dict, paints_key: str) -> bool:
     A layer using a style carries a copy of the style's paints, which can be out of
     date, so the style is what decides them.
     """
-    style_ref = override.get(PAINT_STYLE_REF_KEYS[paints_key])
+    _, ref_key = base.PAINT_STYLE_KEYS[paints_key]
+    style_ref = override.get(ref_key)
     return style_ref is not None and not utils.is_invalid_style_ref(style_ref)
 
 

@@ -72,8 +72,7 @@ EMOJI_SIZE_ADJUST = {
 
 EMOJI_FONT = "AppleColorEmoji"
 
-# Older files reference a text's fill style by the first, newer ones by the second
-FILL_STYLE_KEYS = ("inheritFillStyleID", "styleIdForFill")
+FILL_STYLE_KEYS = base.PAINT_STYLE_KEYS["fillPaints"]
 
 
 def convert(fig_text):
