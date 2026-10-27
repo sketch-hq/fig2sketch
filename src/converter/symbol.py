@@ -30,6 +30,11 @@ def convert(fig_symbol):
         symbolID=utils.gen_object_id(fig_symbol["guid"]),
     )
 
+    # Unlike frames, Sketch symbol masters do not clip by default, and neither do their
+    # instances, so clipping has to be asked for explicitly
+    if master.clippingBehavior == ClippingBehavior.DEFAULT:
+        master.clippingBehavior = ClippingBehavior.CLIP_TO_BOUNDS
+
     prototype.add_overlay_backdrop(fig_symbol, master)
 
     # Keep the base ID as the symbol reference, create a new one for the container

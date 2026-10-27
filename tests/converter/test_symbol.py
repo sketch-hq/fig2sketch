@@ -1,7 +1,12 @@
 from .base import *
 from converter import tree, symbol, utils
 from converter.config import config
-from sketchformat.layer_group import GroupBehavior, VariantProperty, VariantPropertyValue
+from sketchformat.layer_group import (
+    ClippingBehavior,
+    GroupBehavior,
+    VariantProperty,
+    VariantPropertyValue,
+)
 from sketchformat.layer_shape import Rectangle
 import pytest
 from converter.context import context
@@ -76,6 +81,18 @@ def test_rounded_corners(no_prototyping, empty_context):
 
     assert master._class == "symbolMaster"
     assert master.style.corners.radii[0] == 5
+
+
+def test_master_clips_to_bounds(no_prototyping, empty_context):
+    master = tree.convert_node(FIG_SYMBOL, "")
+
+    assert master.clippingBehavior == ClippingBehavior.CLIP_TO_BOUNDS
+
+
+def test_master_does_not_clip_when_mask_disabled(no_prototyping, empty_context):
+    master = tree.convert_node({**FIG_SYMBOL, "frameMaskDisabled": True}, "")
+
+    assert master.clippingBehavior == ClippingBehavior.NONE
 
 
 def test_inner_shadows_children_of_symbol(no_prototyping, empty_context):
