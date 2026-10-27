@@ -344,6 +344,7 @@ class TestOverrides:
         monkeypatch.setitem(FIG_SYMBOL, "opacity", 0.5)
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["opacity"] = 1
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
@@ -373,6 +374,7 @@ class TestOverrides:
         fig["symbolData"]["symbolOverrides"] = [
             {"guidPath": {"guids": [(0, 3)]}, "fillPaints": paints}
         ]
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
@@ -413,6 +415,7 @@ class TestOverrides:
     def test_nested_opacity_override_detaches(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [{"guidPath": {"guids": [(1, 9)]}, "opacity": 0.7}]
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
@@ -914,6 +917,7 @@ class TestOverrides:
                 ],
             }
         ]
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
@@ -1216,6 +1220,7 @@ class TestDetach:
             }
         ]
         fig["resizeToFit"] = True
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
         assert isinstance(i, Group)
@@ -1237,12 +1242,39 @@ class TestDetach:
                 "opacity": 0.5,
             }
         ]
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
         assert isinstance(i, Group)
         assert isinstance(i.layers[1], SymbolInstance)
         assert i.layers[1].scale == 1.5
+
+    def test_detached_layers_resolve_variables_in_instance_mode(self, warnings):
+        """The copies of the master's layers sit in the instance, so they resolve
+        variables in the modes where the instance is."""
+        rect = {
+            **FIG_RECT,
+            "guid": (0, 22),
+            "strokePaints": [bound_paint(FIG_COLOR[0], 1, {"guid": FIG_SURFACE["guid"]})],
+        }
+        master = {**FIG_SYMBOL, "guid": (0, 20), "children": [rect]}
+        init_with_variables(FIG_DARK_FRAME, master, rect)
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["parent"] = {"guid": FIG_DARK_FRAME["guid"]}
+        fig["symbolData"]["symbolID"] = master["guid"]
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [rect["guid"]]}, "opacity": 0.5}
+        ]
+        context.add_fig_node(fig)
+
+        i = tree.convert_node(fig, "")
+        dark = context.variable_swatches(FIG_SURFACE)[DARK]
+
+        assert isinstance(i, Group)
+        assert i.layers[0].style.borders[0].color == dark.value
+        warnings.assert_any_call("SYM003", ANY, props=["opacity"])
 
     def test_convert_to_artboard(self):
         fig = copy.deepcopy(FIG_INSTANCE)
@@ -1253,6 +1285,7 @@ class TestDetach:
             }
         ]
         fig["resizeToFit"] = False
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "CANVAS")
         assert isinstance(i, Group)

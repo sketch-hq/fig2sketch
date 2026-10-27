@@ -710,6 +710,7 @@ def detach_symbol(fig_instance, all_overrides):
         apply_overrides(
             c,
             fig_instance["guid"],
+            fig_instance["guid"],
             all_overrides,
             fig_instance.get("derivedSymbolData", []),
             scale,
@@ -720,7 +721,7 @@ def detach_symbol(fig_instance, all_overrides):
     fig_instance["f2s_detached"] = True
 
 
-def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data, scale=1):
+def apply_overrides(fig_node, instance_id, parent_id, overrides, derived_symbol_data, scale=1):
     guid = fig_node.get("overrideKey", fig_node["guid"])
 
     # Apply overrides
@@ -762,6 +763,11 @@ def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data, scale
     # Generate a unique ID by concatenating instance_id + node_id
     fig_node["guid"] = tuple(j for i in (instance_id, fig_node["guid"]) for j in i)
 
+    # The copy sits in the instance, so walking up from it, for the variable modes or auto
+    # layout that apply, passes through the instance and the layers around it
+    fig_node["parent"] = {**fig_node.get("parent", {}), "guid": parent_id}
+    context.add_fig_node(fig_node)
+
     # If it's an instance, pass the overrides down. Otherwise, convert the children
     if fig_node["type"] == "INSTANCE":
         fig_node["symbolData"]["symbolOverrides"] += child_overrides
@@ -778,4 +784,6 @@ def apply_overrides(fig_node, instance_id, overrides, derived_symbol_data, scale
             derived_symbol_data = child_derived_data
 
         for c in fig_node.get("children", []):
-            apply_overrides(c, instance_id, overrides, derived_symbol_data, scale)
+            apply_overrides(
+                c, instance_id, fig_node["guid"], overrides, derived_symbol_data, scale
+            )

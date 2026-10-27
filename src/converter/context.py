@@ -119,6 +119,10 @@ class Context:
         else:
             raise Fig2SketchWarning("NOD001")
 
+    def add_fig_node(self, fig_node: dict) -> None:
+        """Lets a node made during conversion, like a detached copy, be found by its guid."""
+        self._node_by_id[fig_node["guid"]] = fig_node
+
     def fig_node_by_key(self, key: str) -> dict:
         if key in self._node_by_key:
             return self._node_by_key[key]
