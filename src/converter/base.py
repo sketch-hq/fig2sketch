@@ -338,7 +338,7 @@ def horizontal_sizing_behaviour(fig_node: dict) -> SizingBehaviour:
         return SizingBehaviour.FILL
 
     # Check for FIT sizing behavior
-    if fig_node.get("textAutoResize") == "WIDTH":
+    if fig_node.get("textAutoResize") == "WIDTH_AND_HEIGHT":
         return SizingBehaviour.FIT
 
     counter_sizing_fits = (
