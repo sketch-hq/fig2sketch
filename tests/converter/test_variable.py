@@ -160,6 +160,27 @@ class TestLinkedColor:
 
         assert color == light.value
 
+    def test_default_mode_is_first_in_figma_order(self, monkeypatch):
+        """The modes can be stored out of the order Figma shows them in, which is the
+        order that picks the default and lists the swatches."""
+        monkeypatch.setitem(
+            FIG_THEME,
+            "variableSetModes",
+            [
+                {"id": DARK, "name": "Dark", "sortPosition": '"'},
+                {"id": LIGHT, "name": "Light", "sortPosition": "!"},
+            ],
+        )
+        paint = bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})
+        swatches = context.variable_swatches(FIG_SURFACE)
+
+        color = variable.linked_color(
+            style.convert_color(FIG_COLOR[1]), paint, variable.ancestors(FIG_BASE)
+        )
+
+        assert list(swatches) == [LIGHT, DARK]
+        assert color == swatches[LIGHT].value
+
     def test_links_mode_set_above_layer(self):
         paint = bound_paint(FIG_COLOR[1], 1, {"guid": (1, 3)})
         fig = {**FIG_BASE, "parent": {"guid": FIG_DARK_FRAME["guid"]}}

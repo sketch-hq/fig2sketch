@@ -50,11 +50,11 @@ def collection_modes(fig_variable: dict) -> List[dict]:
     if fig_collection is None:
         return []
 
-    return fig_collection.get("variableSetModes", [])
+    return context.variable_modes(fig_collection)
 
 
 def default_mode(fig_collection: dict) -> Optional[ModeID]:
-    modes = fig_collection.get("variableSetModes", [])
+    modes = context.variable_modes(fig_collection)
     if not modes:
         return None
 

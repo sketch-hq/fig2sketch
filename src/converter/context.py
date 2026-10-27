@@ -51,6 +51,7 @@ class Context:
         self._color_space = color_space
         self._sketch_components: Dict[Sequence[int], Swatch] = {}
         self._variable_swatches: Dict[Sequence[int], Dict[Tuple[int, ...], Swatch]] = {}
+        self._variable_modes: Dict[Sequence[int], List[dict]] = {}
         self.symbols_page: Optional[Page] = None
         self._node_by_id = id_map
         self._used_fonts: Dict[Tuple[str, str], Tuple[IO[bytes], str]] = {}
@@ -99,6 +100,23 @@ class Context:
             self._variable_swatches[vid] = swatches
 
         return swatches
+
+    def variable_modes(self, fig_collection: dict) -> List[dict]:
+        """The modes of a variable collection in the order Figma shows them.
+
+        That can differ from the order they are stored in. The first is the collection's
+        default.
+        """
+        cid = fig_collection["guid"]
+        modes = self._variable_modes.get(cid)
+        if modes is None:
+            modes = sorted(
+                fig_collection.get("variableSetModes", []),
+                key=lambda mode: mode.get("sortPosition", ""),
+            )
+            self._variable_modes[cid] = modes
+
+        return modes
 
     def sketch_components(self) -> List[Swatch]:
         variable_swatches = [
