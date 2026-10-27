@@ -139,12 +139,14 @@ FIG_SPLIT_VECTOR = {
     },
 }
 
+FIG_CANVAS = {**FIG_BASE, "type": "CANVAS", "guid": (0, 0)}
+
 FIG_SYMBOL = {
     **FIG_BASE,
     "type": "SYMBOL",
     "guid": (0, 3),
     "children": [FIG_TEXT, FIG_RECT, FIG_VECTOR],
-    "parent": {"guid": (0, 3)},
+    "parent": {"guid": FIG_CANVAS["guid"]},
 }
 
 FIG_INSTANCE = {
@@ -162,6 +164,7 @@ def symbol(monkeypatch):
     context.init(
         None,
         {
+            (0, 0): FIG_CANVAS,
             (0, 3): FIG_SYMBOL,
             (0, 1): FIG_TEXT,
             (0, 2): FIG_RECT,
@@ -182,6 +185,7 @@ def init_with_variables(*fig_nodes: dict) -> None:
     context.init(
         None,
         {
+            (0, 0): FIG_CANVAS,
             (0, 3): FIG_SYMBOL,
             (0, 1): FIG_TEXT,
             (0, 2): FIG_RECT,
@@ -591,6 +595,7 @@ class TestOverrides:
         context.init(
             None,
             {
+                (0, 0): FIG_CANVAS,
                 (0, 3): symbol,
                 (0, 1): text,
                 (0, 2): FIG_RECT,
@@ -726,6 +731,7 @@ class TestOverrides:
         context.init(
             None,
             {
+                (0, 0): FIG_CANVAS,
                 (0, 3): symbol,
                 (0, 1): FIG_TEXT,
                 (0, 2): rect,
