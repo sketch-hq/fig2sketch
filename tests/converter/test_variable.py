@@ -154,7 +154,9 @@ class TestLinkedColor:
         paint = bound_paint(FIG_COLOR[0], 1, {"guid": (1, 3)})
         light = context.variable_swatches(FIG_SURFACE)[LIGHT]
 
-        color = variable.linked_color(style.convert_color(FIG_COLOR[0]), paint, FIG_BASE)
+        color = variable.linked_color(
+            style.convert_color(FIG_COLOR[0]), paint, variable.ancestors(FIG_BASE)
+        )
 
         assert color == light.value
 
@@ -163,7 +165,9 @@ class TestLinkedColor:
         fig = {**FIG_BASE, "parent": {"guid": FIG_DARK_FRAME["guid"]}}
         dark = context.variable_swatches(FIG_SURFACE)[DARK]
 
-        color = variable.linked_color(style.convert_color(FIG_COLOR[1]), paint, fig)
+        color = variable.linked_color(
+            style.convert_color(FIG_COLOR[1]), paint, variable.ancestors(fig)
+        )
 
         assert color == dark.value
 
@@ -173,7 +177,9 @@ class TestLinkedColor:
         paint = bound_paint(FIG_COLOR[1], 1, {"guid": (1, 3)})
         light = context.variable_swatches(FIG_SURFACE)[LIGHT]
 
-        color = variable.linked_color(style.convert_color(FIG_COLOR[1]), paint, FIG_BASE)
+        color = variable.linked_color(
+            style.convert_color(FIG_COLOR[1]), paint, variable.ancestors(FIG_BASE)
+        )
 
         assert color == light.value
 
@@ -181,7 +187,9 @@ class TestLinkedColor:
         paint = bound_paint(FIG_COLOR[2], 1, {"assetRef": {"key": "blue-key", "version": "1:1"}})
         blue = context.variable_swatches(FIG_BLUE)[(2, 1)]
 
-        color = variable.linked_color(style.convert_color(FIG_COLOR[2]), paint, FIG_BASE)
+        color = variable.linked_color(
+            style.convert_color(FIG_COLOR[2]), paint, variable.ancestors(FIG_BASE)
+        )
 
         assert color == blue.value
 
@@ -189,13 +197,13 @@ class TestLinkedColor:
         paint = bound_paint(FIG_COLOR[0], 0.5, {"guid": (1, 3)})
         color = style.convert_color(FIG_COLOR[0], 0.5)
 
-        assert variable.linked_color(color, paint, FIG_BASE) == color
+        assert variable.linked_color(color, paint, variable.ancestors(FIG_BASE)) == color
 
     def test_unbound_paint_stays_unlinked(self):
         paint = {"type": "SOLID", "color": FIG_COLOR[0], "opacity": 1, "visible": True}
         color = style.convert_color(FIG_COLOR[0])
 
-        assert variable.linked_color(color, paint, FIG_BASE) == color
+        assert variable.linked_color(color, paint, variable.ancestors(FIG_BASE)) == color
         assert context.sketch_components() == []
 
 

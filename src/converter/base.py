@@ -228,9 +228,13 @@ def process_styles(fig_node: dict) -> Style:
     # Fills and borders convert one per paint. A shared style's swatch replaces the
     # colour below, so it wins over the variable its paint is bound to
     for sketch_fill, fig_paint in zip(st.fills, fig_node.get("fillPaints", [])):
-        sketch_fill.color = variable.linked_color(sketch_fill.color, fig_paint, fig_node)
+        sketch_fill.color = variable.linked_color(
+            sketch_fill.color, fig_paint, variable.ancestors(fig_node)
+        )
     for sketch_border, fig_paint in zip(st.borders, fig_node.get("strokePaints", [])):
-        sketch_border.color = variable.linked_color(sketch_border.color, fig_paint, fig_node)
+        sketch_border.color = variable.linked_color(
+            sketch_border.color, fig_paint, variable.ancestors(fig_node)
+        )
 
     for key, value in components.items():
         if key == "inheritFillStyleID":

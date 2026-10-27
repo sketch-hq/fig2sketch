@@ -134,7 +134,9 @@ def text_style(fig_text):
         utils.log_conversion_warning("TXT002", fig_text)
 
     if fills[0]["type"] == "SOLID":
-        color = variable.linked_color(style.convert_color(fills[0]["color"]), fills[0], fig_text)
+        color = variable.linked_color(
+            style.convert_color(fills[0]["color"]), fills[0], variable.ancestors(fig_text)
+        )
     else:
         # Text fill is not solid (gradient or image). Sketch doesn't support this
         utils.log_conversion_warning("TXT003", fig_text)

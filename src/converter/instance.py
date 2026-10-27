@@ -226,7 +226,8 @@ def unsupported_root_paints(
     for part in sorted(parts):
         prop = "strokePaints" if part == "border" else "fillPaints"
         paints = fig_instance.get(prop, [])
-        sk, us = convert_style_part_overrides("", part, paints, fig_master)
+        mode_scope = override_mode_scope(fig_instance, [fig_master])
+        sk, us = convert_style_part_overrides("", part, paints, fig_master, mode_scope)
         if sk or us or len(paints) != len(master_paints(fig_master, part)):
             unsupported.append(prop)
 
@@ -349,7 +350,10 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
                 if prop.startswith("styleId")
                 else convert_style_part_overrides
             )
-            sk, us = convert_paints(sketch_path_str, PAINT_PROPS[prop], value, fig_nodes[-1])
+            mode_scope = override_mode_scope(fig_instance, fig_nodes)
+            sk, us = convert_paints(
+                sketch_path_str, PAINT_PROPS[prop], value, fig_nodes[-1], mode_scope
+            )
             if sk and splits_into_regions(fig_nodes[-1]):
                 # The override would land on the group holding the region layers, which
                 # carry the paints, so it would have no effect
@@ -386,6 +390,33 @@ def paints_follow_style(override: dict, paints_key: str) -> bool:
     """
     style_ref = override.get(PAINT_STYLE_REF_KEYS[paints_key])
     return style_ref is not None and not utils.is_invalid_style_ref(style_ref)
+
+
+def override_mode_scope(fig_instance: dict, fig_nodes: List[dict]) -> List[dict]:
+    """The nodes that can set the variable modes an override resolves in, nearest first.
+
+    The override's path leads through any nested instances to a node in a master. Modes
+    set within a master apply first, then one set on the instance using it, then one set
+    on the master itself, and then those of wherever the instance sits.
+    """
+    mode_scope: List[dict] = []
+    node: Optional[dict] = fig_nodes[-1]
+    # Each node on the path sits in the master of the instance before it
+    for instance in reversed([fig_instance, *fig_nodes[:-1]]):
+        while node is not None and node["type"] != "SYMBOL":
+            mode_scope.append(node)
+            node = variable.parent_node(node)
+
+        mode_scope.append(instance)
+        if node is not None:
+            mode_scope.append(node)
+
+        node = variable.parent_node(instance)
+
+    if node is not None:
+        mode_scope += variable.ancestors(node)
+
+    return mode_scope
 
 
 def sketch_override_object_id(fig_node: dict) -> str:
@@ -437,6 +468,7 @@ def convert_style_ref_override(
     sketch_part: str,
     style_ref: dict,
     master_node: dict,
+    mode_scope: Sequence[dict],
 ) -> Tuple[List[OverrideValue], List[str]]:
     # A detached style leaves the paints carried on the override to convert instead
     if utils.is_invalid_style_ref(style_ref):
@@ -454,6 +486,7 @@ def convert_style_ref_override(
         sketch_part,
         fig_style["fillPaints"],
         master_node,
+        mode_scope,
     )
 
     # Link the colour to the style's swatch, as for a layer using the style. The swatch
@@ -489,7 +522,13 @@ def convert_style_part_overrides(
     sketch_part: str,
     paints: list,
     master_node: dict,
+    mode_scope: Sequence[dict],
 ) -> Tuple[List[OverrideValue], List[str]]:
+    """Converts override paints into the Sketch overrides that differ from the master's.
+
+    The override's colours resolve their variables in mode_scope, where the instance is.
+    The master's resolve them where the master is, as they do when the master converts.
+    """
     sketch_overrides = []
     unsupported_overrides = []
     master_part_paints = master_paints(master_node, sketch_part)
@@ -505,7 +544,7 @@ def convert_style_part_overrides(
                 color = variable.linked_color(
                     style_converter.convert_color(paint["color"], paint.get("opacity", 1)),
                     paint,
-                    master_node,
+                    mode_scope,
                 )
                 master_color = (
                     variable.linked_color(
@@ -513,7 +552,7 @@ def convert_style_part_overrides(
                             master_paint["color"], master_paint.get("opacity", 1)
                         ),
                         master_paint,
-                        master_node,
+                        variable.ancestors(master_node),
                     )
                     if master_paint.get("type") == "SOLID" and "color" in master_paint
                     else None

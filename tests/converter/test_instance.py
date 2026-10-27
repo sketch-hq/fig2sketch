@@ -7,7 +7,9 @@ from converter.config import config
 from converter.context import context
 from sketchformat.layer_group import Group, GroupBehavior, SymbolInstance, OverrideValue
 from unittest.mock import ANY
-from .test_variable import FIG_BLUE, FIG_PALETTE, FIG_SURFACE, FIG_THEME, LIGHT, bound_paint
+from .test_variable import (
+    DARK, FIG_BLUE, FIG_DARK_FRAME, FIG_PALETTE, FIG_SURFACE, FIG_THEME, LIGHT, bound_paint
+)
 
 FIG_TEXT = {
     **FIG_BASE,
@@ -1008,6 +1010,87 @@ class TestOverrides:
         i = tree.convert_node(fig, "")
         symbol = context.symbols_page.layers[0]
         symbol_rect_id = symbol.layers[1].do_objectID
+        light = context.variable_swatches(FIG_SURFACE)[LIGHT]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=light.value),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_paint_override_bound_to_variable_in_instance_mode(self, warnings):
+        """The instance sits in a Dark frame, so the override resolves the variable in
+        the Dark mode, whatever mode the master is in."""
+        init_with_variables(FIG_DARK_FRAME)
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["parent"] = {"guid": FIG_DARK_FRAME["guid"]}
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_rect_id = context.symbols_page.layers[0].layers[1].do_objectID
+        dark = context.variable_swatches(FIG_SURFACE)[DARK]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=dark.value),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_paint_override_bound_to_variable_in_mode_set_on_instance(self, warnings):
+        init_with_variables()
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["variableModeBySetMap"] = FIG_DARK_FRAME["variableModeBySetMap"]
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_rect_id = context.symbols_page.layers[0].layers[1].do_objectID
+        dark = context.variable_swatches(FIG_SURFACE)[DARK]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=dark.value),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_paint_override_bound_to_variable_in_mode_set_within_master(self, warnings):
+        """A mode set on a layer within the master applies to the layers inside it, even
+        in an instance that sits in another mode."""
+        light_frame = {
+            **FIG_DARK_FRAME,
+            "guid": (3, 1),
+            "parent": {"guid": FIG_SYMBOL["guid"]},
+            "variableModeBySetMap": {
+                "entries": [
+                    {"variableSetID": {"guid": FIG_THEME["guid"]}, "variableModeID": LIGHT}
+                ],
+            },
+        }
+        rect = {**FIG_RECT, "parent": {"guid": light_frame["guid"]}}
+        init_with_variables(FIG_DARK_FRAME, light_frame, rect)
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["parent"] = {"guid": FIG_DARK_FRAME["guid"]}
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_rect_id = context.symbols_page.layers[0].layers[1].do_objectID
         light = context.variable_swatches(FIG_SURFACE)[LIGHT]
 
         assert isinstance(i, SymbolInstance)

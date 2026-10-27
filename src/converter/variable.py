@@ -5,7 +5,7 @@ from .errors import Fig2SketchWarning
 from converter import utils
 from sketchformat.document import Swatch
 from sketchformat.style import Color
-from typing import Dict, FrozenSet, List, Optional, Sequence, Tuple
+from typing import Dict, FrozenSet, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 ModeID = Tuple[int, ...]
 
@@ -117,19 +117,25 @@ def parent_node(fig_node: dict) -> Optional[dict]:
         return None
 
 
-def active_mode(fig_node: dict, fig_collection: dict) -> Optional[ModeID]:
-    """Finds the mode a layer resolves the variables of a collection in.
-
-    That is the mode set for the collection by the nearest layer up the tree that sets
-    one, or the collection's default mode where none does.
-    """
+def ancestors(fig_node: dict) -> Iterator[dict]:
+    """The node followed by the layers it sits in, nearest first."""
     node: Optional[dict] = fig_node
     while node is not None:
+        yield node
+        node = parent_node(node)
+
+
+def active_mode(mode_scope: Iterable[dict], fig_collection: dict) -> Optional[ModeID]:
+    """Finds the mode a layer resolves the variables of a collection in.
+
+    That is the mode set for the collection by the first node in the layer's mode scope
+    that sets one, or the collection's default mode where none does. A layer's mode
+    scope is its ancestors, unless it is reached through an instance.
+    """
+    for node in mode_scope:
         for entry in node.get("variableModeBySetMap", {}).get("entries", []):
             if context.fig_node_by_ref(entry["variableSetID"]) is fig_collection:
                 return tuple(entry["variableModeID"])
-
-        node = parent_node(node)
 
     return default_mode(fig_collection)
 
@@ -145,12 +151,13 @@ def paint_variable(fig_paint: dict) -> Optional[dict]:
     return context.fig_node_by_ref(alias)
 
 
-def linked_color(color: Color, fig_paint: dict, fig_node: dict) -> Color:
+def linked_color(color: Color, fig_paint: dict, mode_scope: Iterable[dict]) -> Color:
     """Links a colour converted from a paint to a swatch of the variable it is bound to.
 
-    The swatch is the one for the mode the layer resolves the variable in. The paint
-    stores a colour as well, but only as a cache of the last one resolved, which can
-    be out of date, so the linked colour is the swatch's own.
+    The swatch is the one for the mode the paint's layer resolves the variable in, from
+    the layer's mode scope (see active_mode). The paint stores a colour as well, but
+    only as a cache of the last one resolved, which can be out of date, so the linked
+    colour is the swatch's own.
 
     A linked colour has nowhere to keep an opacity of its own, so a paint with one
     keeps the colour it was converted to.
@@ -166,7 +173,7 @@ def linked_color(color: Color, fig_paint: dict, fig_node: dict) -> Color:
     if fig_collection is None:
         return color
 
-    mode_id = active_mode(fig_node, fig_collection)
+    mode_id = active_mode(mode_scope, fig_collection)
     swatch = context.variable_swatches(fig_variable).get(mode_id) if mode_id else None
     if swatch is None:
         return color
