@@ -4,10 +4,11 @@ from sketchformat.layer_common import *
 from sketchformat.layer_group import FlexDirection, RulerData
 from sketchformat.layer_shape import *
 from sketchformat.style import *
+from sketchformat.document import Swatch
 from .errors import *
-from typing import TypedDict
+from typing import Optional, Sequence, TypedDict
 
-from . import positioning, style, prototype, utils
+from . import positioning, style, prototype, utils, variable
 from .context import context
 
 SUPPORTED_INHERIT_STYLES = {
@@ -27,6 +28,13 @@ SUPPORTED_INHERIT_STYLES = {
     "inheritEffectStyleID": ("blurs", "shadows"),
     "inheritGridStyleID": ("layoutGrids"),
     "inheritFillStyleIDForBackground": (),  # Unused?
+}
+
+# Newer files reference the fill styles a node uses through these instead, each holding
+# the style's guid, the key of a library style, or both
+STYLE_REF_KEYS = {
+    "inheritFillStyleID": "styleIdForFill",
+    "inheritFillStyleIDForStroke": "styleIdForStrokeFill",
 }
 
 
@@ -155,14 +163,46 @@ def base_shape(fig_node: dict) -> _BaseShape:
     }
 
 
+def inherited_style_id(fig_node: dict, inherit_style: str) -> Optional[Sequence[int]]:
+    inherit_node_id = fig_node.get(inherit_style)
+    if inherit_node_id is not None:
+        return None if utils.is_invalid_ref(inherit_node_id) else inherit_node_id
+
+    ref_key = STYLE_REF_KEYS.get(inherit_style)
+    style_ref = fig_node.get(ref_key) if ref_key else None
+    if style_ref is None or utils.is_invalid_style_ref(style_ref):
+        return None
+
+    fig_style = context.fig_node_by_ref(style_ref)
+    if fig_style is None:
+        utils.log_conversion_warning("CMP001", fig_node)
+        return None
+
+    return fig_style["guid"]
+
+
+def fill_style_swatch(fig_node: dict) -> Optional[Swatch]:
+    """The swatch of the fill style a node uses, where the style converts to one."""
+    style_id = inherited_style_id(fig_node, "inheritFillStyleID")
+    if style_id is None:
+        return None
+
+    try:
+        _, swatch = context.component(style_id)
+    except (Fig2SketchWarning, KeyError):
+        return None
+
+    return swatch
+
+
 def process_styles(fig_node: dict) -> Style:
-    # First we apply any overrides that we may have (from inherit* properties)
-    # If any of them can be linked as a shared style, we keep track of them to add the IDs at
-    # the end
+    # First we apply any overrides that we may have (from inherit* properties, or the
+    # style refs that replace some of them). If any of them can be linked as a shared
+    # style, we keep track of them to add the IDs at the end
     components = {}
     for inherit_style, copy_keys in SUPPORTED_INHERIT_STYLES.items():
-        inherit_node_id = fig_node.get(inherit_style)
-        if inherit_node_id is None or utils.is_invalid_ref(inherit_node_id):
+        inherit_node_id = inherited_style_id(fig_node, inherit_style)
+        if inherit_node_id is None:
             continue
 
         try:
@@ -184,6 +224,13 @@ def process_styles(fig_node: dict) -> Style:
             components[inherit_style] = sketch_component
 
     st = style.convert(fig_node)
+
+    # Fills and borders convert one per paint. A shared style's swatch replaces the
+    # colour below, so it wins over the variable its paint is bound to
+    for sketch_fill, fig_paint in zip(st.fills, fig_node.get("fillPaints", [])):
+        sketch_fill.color = variable.linked_color(sketch_fill.color, fig_paint, fig_node)
+    for sketch_border, fig_paint in zip(st.borders, fig_node.get("strokePaints", [])):
+        sketch_border.color = variable.linked_color(sketch_border.color, fig_paint, fig_node)
 
     for key, value in components.items():
         if key == "inheritFillStyleID":

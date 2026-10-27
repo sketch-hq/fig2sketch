@@ -52,6 +52,11 @@ def is_invalid_ref(uuid: Optional[Sequence[int]]) -> bool:
     return uuid is None or uuid[0] == UINT_MAX or uuid[1] == UINT_MAX
 
 
+def is_invalid_style_ref(style_ref: dict) -> bool:
+    # A style detached from a node leaves a placeholder guid behind in its reference
+    return "assetRef" not in style_ref and is_invalid_ref(style_ref.get("guid"))
+
+
 def has_rounded_corners(fig: dict) -> bool:
     return any(
         [

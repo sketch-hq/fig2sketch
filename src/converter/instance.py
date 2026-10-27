@@ -1,6 +1,5 @@
-import copy, logging, math
-
-from . import base, group, shape_path as shape_path_converter, style as style_converter
+import copy, dataclasses, logging, math
+from . import base, group, shape_path as shape_path_converter, style as style_converter, variable
 from .context import context
 from .config import config
 from converter import utils
@@ -8,7 +7,6 @@ from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
 from typing import Dict, List, Optional, Tuple
 from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
-from typing import Optional
 
 GRADIENT_PAINT_TYPES = {
     "GRADIENT_LINEAR",
@@ -342,6 +340,9 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
                     value=utils.gen_object_id(value),
                 )
             )
+        elif prop in ("fillPaints", "strokePaints") and paints_follow_style(override, prop):
+            # The style ref alongside converts in their place
+            continue
         elif prop in PAINT_PROPS:
             convert_paints = (
                 convert_style_ref_override
@@ -375,6 +376,16 @@ def splits_into_regions(fig_node: dict) -> bool:
         and "vectorNetwork" in fig_node
         and len(shape_path_converter.get_all_segments(fig_node["vectorNetwork"])) > 1
     )
+
+
+def paints_follow_style(override: dict, paints_key: str) -> bool:
+    """Whether an override's paints are only a copy of the style it also applies.
+
+    A layer using a style carries a copy of the style's paints, which can be out of
+    date, so the style is what decides them.
+    """
+    style_ref = override.get(PAINT_STYLE_REF_KEYS[paints_key])
+    return style_ref is not None and not utils.is_invalid_style_ref(style_ref)
 
 
 def sketch_override_object_id(fig_node: dict) -> str:
@@ -420,22 +431,6 @@ def convert_effect_overrides(
 
     return sketch_overrides, unsupported_overrides
 
-def find_style_node(style_ref: dict) -> Optional[dict]:
-    asset_ref = style_ref.get("assetRef")
-    if asset_ref is not None:
-      try:
-        return context.fig_node_by_key(asset_ref["key"])
-      except (Fig2SketchWarning, KeyError):
-        pass
-
-    guid = style_ref.get("guid")
-    if guid is not None:
-      try:
-        return context.fig_node(guid)
-      except (Fig2SketchWarning, KeyError):
-        pass
-
-    return None
 
 def convert_style_ref_override(
     sketch_path_str: str,
@@ -443,24 +438,38 @@ def convert_style_ref_override(
     style_ref: dict,
     master_node: dict,
 ) -> Tuple[List[OverrideValue], List[str]]:
-    # A style detached from its node leaves a placeholder guid, with the paints
-    # carried on the override itself
-    if "assetRef" not in style_ref and utils.is_invalid_ref(style_ref.get("guid")):
+    # A detached style leaves the paints carried on the override to convert instead
+    if utils.is_invalid_style_ref(style_ref):
         return [], []
 
-    fig_style = find_style_node(style_ref)
+    fig_style = context.fig_node_by_ref(style_ref)
     if fig_style is None:
-      return [], ["assetRef|guid"]
+        return [], ["assetRef|guid"]
 
     if "fillPaints" not in fig_style:
         return [], ["fillPaints"]
 
-    return convert_style_part_overrides(
+    sketch_overrides, unsupported_overrides = convert_style_part_overrides(
         sketch_path_str,
         sketch_part,
         fig_style["fillPaints"],
         master_node,
     )
+
+    # Link the colour to the style's swatch, as for a layer using the style. The swatch
+    # holds the style paint's opacity in its alpha, which an override sets on its own,
+    # so the two have to agree
+    _, swatch = context.component(fig_style["guid"])
+    if swatch is not None:
+        color_override_name = f"{sketch_path_str}_color:{sketch_part}-0"
+        for sketch_override in sketch_overrides:
+            if (
+                sketch_override.overrideName == color_override_name
+                and sketch_override.value.alpha == swatch.value.alpha
+            ):
+                sketch_override.value = dataclasses.replace(swatch.value)
+
+    return sketch_overrides, unsupported_overrides
 
 
 def master_paints(fig_node: dict, sketch_part: str) -> list:
@@ -493,10 +502,18 @@ def convert_style_part_overrides(
             if paint.get("type") == "SOLID":
                 # Like convert_fill, fold the paint opacity into the color alpha: Sketch
                 # ignores an _opacity override on a solid fill or border
-                color = style_converter.convert_color(paint["color"], paint.get("opacity", 1))
+                color = variable.linked_color(
+                    style_converter.convert_color(paint["color"], paint.get("opacity", 1)),
+                    paint,
+                    master_node,
+                )
                 master_color = (
-                    style_converter.convert_color(
-                        master_paint["color"], master_paint.get("opacity", 1)
+                    variable.linked_color(
+                        style_converter.convert_color(
+                            master_paint["color"], master_paint.get("opacity", 1)
+                        ),
+                        master_paint,
+                        master_node,
                     )
                     if master_paint.get("type") == "SOLID" and "color" in master_paint
                     else None

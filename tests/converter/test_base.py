@@ -72,6 +72,7 @@ FIG_TEXT = {
 FIG_COLOR_STYLE = {
     **FIG_BASE,
     "type": "ROUNDED_RECTANGLE",
+    "guid": (0, 2),
     "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[1], "opacity": 0.7, "visible": True}],
 }
 
@@ -79,6 +80,15 @@ FIG_TEXT_STYLE = {
     **FIG_BASE,
     "type": "TEXT",
     "fontName": {"family": "CustomFont", "style": "Normal"},
+}
+
+FIG_SWATCH_STYLE = {
+    **FIG_BASE,
+    "type": "ROUNDED_RECTANGLE",
+    "guid": (0, 3),
+    "key": "swatch-key",
+    "styleType": "FILL",
+    "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[2], "opacity": 1, "visible": True}],
 }
 
 
@@ -115,7 +125,11 @@ class TestTextSizing:
 
 @pytest.fixture
 def style_overrides(monkeypatch):
-    context.init(None, {(0, 1): FIG_TEXT_STYLE, (0, 2): FIG_COLOR_STYLE}, "DISPLAY_P3")
+    context.init(
+        None,
+        {(0, 1): FIG_TEXT_STYLE, (0, 2): FIG_COLOR_STYLE, (0, 3): FIG_SWATCH_STYLE},
+        "DISPLAY_P3",
+    )
 
 
 @pytest.mark.usefixtures("style_overrides")
@@ -127,6 +141,38 @@ class TestInheritStyle:
     def test_apply_border_override(self):
         style = base.process_styles({**FIG_TEXT, "inheritFillStyleIDForStroke": (0, 2)})
         assert style.borders[0].color == SKETCH_COLOR[1]
+
+    def test_apply_fill_style_ref(self):
+        style = base.process_styles({**FIG_TEXT, "styleIdForFill": {"guid": (0, 2)}})
+        assert style.fills[0].color == SKETCH_COLOR[1]
+
+    def test_apply_border_style_ref(self):
+        style = base.process_styles({**FIG_TEXT, "styleIdForStrokeFill": {"guid": (0, 2)}})
+        assert style.borders[0].color == SKETCH_COLOR[1]
+
+    def test_fill_style_ref_links_swatch(self):
+        style_ref = {"assetRef": {"key": "swatch-key", "version": "1:1"}}
+
+        style = base.process_styles({**FIG_TEXT, "styleIdForFill": style_ref})
+        _, swatch = context.component((0, 3))
+
+        assert style.fills[0].color == swatch.value
+
+    def test_detached_style_ref_keeps_paints(self, warnings):
+        style_ref = {"guid": (utils.UINT_MAX, utils.UINT_MAX)}
+
+        style = base.process_styles({**FIG_TEXT, "styleIdForFill": style_ref})
+
+        assert style.fills[0].color == Color(red=1, green=0, blue=0.5, alpha=1)
+        warnings.assert_not_called()
+
+    def test_missing_style_ref_warns(self, warnings):
+        fig = {**FIG_TEXT, "styleIdForFill": {"guid": (9, 9)}}
+
+        style = base.process_styles(fig)
+
+        assert style.fills[0].color == Color(red=1, green=0, blue=0.5, alpha=1)
+        warnings.assert_called_once_with("CMP001", fig)
 
     def test_apply_text_override(self):
         fig = {**FIG_TEXT, "inheritTextStyleID": (0, 1)}
