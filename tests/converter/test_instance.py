@@ -162,6 +162,7 @@ class TestOverrides:
     def test_scaled_instance(self):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["size"] = {"x": 50, "y": 50}
+        fig["symbolData"]["uniformScaleFactor"] = 0.5
 
         i = tree.convert_node(fig, "")
 
@@ -169,6 +170,41 @@ class TestOverrides:
         assert i.frame.width == 50
         assert i.frame.height == 50
         assert i.scale == 0.5
+
+    def test_scaled_and_resized_instance(self):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["size"] = {"x": 80, "y": 30}
+        fig["symbolData"]["uniformScaleFactor"] = 0.5
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.frame.width == 80
+        assert i.frame.height == 30
+        assert i.scale == 0.5
+
+    def test_resized_instance_is_not_scaled(self):
+        # Even a proportional resize only changes the size the master is laid out at
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["size"] = {"x": 50, "y": 50}
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.frame.width == 50
+        assert i.frame.height == 50
+        assert i.scale == 1
+
+    def test_stretched_instance_is_not_scaled(self):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["size"] = {"x": 300, "y": 120}
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.frame.width == 300
+        assert i.frame.height == 120
+        assert i.scale == 1
 
     def test_text_override(self):
         fig = copy.deepcopy(FIG_INSTANCE)
@@ -691,6 +727,30 @@ class TestDetach:
 
         i = tree.convert_node(fig, "")
         assert isinstance(i, Group)
+
+    def test_nested_instance_keeps_scale_of_detached_instance(self, monkeypatch):
+        rect = {**FIG_RECT, "guid": (0, 22)}
+        nested = copy.deepcopy(FIG_INSTANCE)
+        nested["guid"] = (0, 21)
+        nested["symbolData"]["uniformScaleFactor"] = 0.5
+        outer_symbol = {**FIG_SYMBOL, "guid": (0, 20), "children": [rect, nested]}
+        monkeypatch.setitem(context._node_by_id, (0, 20), outer_symbol)
+        monkeypatch.setitem(context._node_by_id, (0, 22), rect)
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolID"] = (0, 20)
+        fig["symbolData"]["uniformScaleFactor"] = 3
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 22)]},
+                "opacity": 0.5,
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, Group)
+        assert isinstance(i.layers[1], SymbolInstance)
+        assert i.layers[1].scale == 1.5
 
     def test_convert_to_artboard(self):
         fig = copy.deepcopy(FIG_INSTANCE)
