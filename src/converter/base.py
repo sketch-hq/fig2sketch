@@ -164,13 +164,18 @@ def base_shape(fig_node: dict) -> _BaseShape:
 
 
 def inherited_style_id(fig_node: dict, inherit_style: str) -> Optional[Sequence[int]]:
-    inherit_node_id = fig_node.get(inherit_style)
-    if inherit_node_id is not None:
-        return None if utils.is_invalid_ref(inherit_node_id) else inherit_node_id
+    """The guid of the style a node uses, from its style ref or else from inherit_style.
 
+    Figma keeps the style ref up to date, while inherit_style can be stale where both
+    are set, so the style ref decides, even when it marks the style as detached.
+    """
     ref_key = STYLE_REF_KEYS.get(inherit_style)
     style_ref = fig_node.get(ref_key) if ref_key else None
-    if style_ref is None or utils.is_invalid_style_ref(style_ref):
+    if style_ref is None:
+        inherit_node_id = fig_node.get(inherit_style)
+        return None if utils.is_invalid_ref(inherit_node_id) else inherit_node_id
+
+    if utils.is_invalid_style_ref(style_ref):
         return None
 
     fig_style = context.fig_node_by_ref(style_ref)
