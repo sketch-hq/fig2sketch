@@ -969,9 +969,9 @@ class TestOverrides:
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
-    def test_style_override_links_style_swatch_over_variable(self, warnings):
-        """The style's paint is bound to a variable and carries the colour as authored,
-        but the override links to the style's own swatch, as a layer using it would."""
+    def test_style_override_links_style_variable(self, warnings):
+        """The style's paint is bound to a variable, so the override links to the
+        variable's swatch, as a layer using the style would."""
         fig_style = {
             **FIG_BASE,
             "type": "ROUNDED_RECTANGLE",
@@ -994,13 +994,11 @@ class TestOverrides:
         i = tree.convert_node(fig, "")
         symbol = context.symbols_page.layers[0]
         symbol_rect_id = symbol.layers[1].do_objectID
-        _, style_swatch = context.component((0, 7))
+        blue = context.variable_swatches(FIG_BLUE)[(2, 1)]
 
         assert isinstance(i, SymbolInstance)
         assert i.overrideValues == [
-            OverrideValue(
-                overrideName=f"{symbol_rect_id}_color:border-0", value=style_swatch.value
-            ),
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=blue.value),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 

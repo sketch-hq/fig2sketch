@@ -2,6 +2,7 @@ import pytest
 from .base import *
 from converter.text import *
 from converter.context import context
+from .test_variable import FIG_SURFACE, FIG_THEME, LIGHT, bound_paint
 
 TEXT_BASE = {
     **FIG_BASE,
@@ -251,6 +252,28 @@ class TestFillStyle:
         }
 
         assert run_colors(fig) == [SKETCH_COLOR[0], swatch.value]
+
+    def test_run_with_own_bound_fill_style_links_variable(self):
+        """The run carries the text's paints, so its colour comes from the style's paint
+        and the variable that is bound to."""
+        fig_style = {
+            **FIG_FILL_STYLE,
+            "guid": (0, 4),
+            "fillPaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+        }
+        for fig_node in (FIG_THEME, FIG_SURFACE, fig_style):
+            context.add_fig_node(fig_node)
+        fig = {
+            **TEXT_BASE,
+            "textData": {
+                "characters": "abcdef",
+                "characterStyleIDs": [0, 0, 0, 1, 1, 1],
+                "styleOverrideTable": [{"styleID": 1, "styleIdForFill": {"guid": (0, 4)}}],
+            },
+        }
+        light = context.variable_swatches(FIG_SURFACE)[LIGHT]
+
+        assert run_colors(fig) == [SKETCH_COLOR[0], light.value]
 
     def test_run_with_own_paints_leaves_text_fill_style(self):
         _, swatch = context.component(FIG_FILL_STYLE["guid"])

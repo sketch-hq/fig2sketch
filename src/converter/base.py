@@ -6,7 +6,7 @@ from sketchformat.layer_shape import *
 from sketchformat.style import *
 from sketchformat.document import Swatch
 from .errors import *
-from typing import Optional, Sequence, TypedDict
+from typing import Optional, Sequence, Tuple, TypedDict
 
 from . import positioning, style, prototype, utils, variable
 from .context import context
@@ -190,18 +190,16 @@ def inherited_style_id(fig_node: dict, inherit_style: str) -> Optional[Sequence[
     return fig_style["guid"]
 
 
-def fill_style_swatch(fig_node: dict) -> Optional[Swatch]:
-    """The swatch of the fill style a node uses, where the style converts to one."""
+def fill_style(fig_node: dict) -> Tuple[Optional[dict], Optional[Swatch]]:
+    """The fill style a node uses, if any, and its swatch where the style converts to one."""
     style_id = inherited_style_id(fig_node, "inheritFillStyleID")
     if style_id is None:
-        return None
+        return None, None
 
     try:
-        _, swatch = context.component(style_id)
+        return context.component(style_id)
     except (Fig2SketchWarning, KeyError):
-        return None
-
-    return swatch
+        return None, None
 
 
 def process_styles(fig_node: dict) -> Style:
@@ -234,8 +232,11 @@ def process_styles(fig_node: dict) -> Style:
 
     st = style.convert(fig_node)
 
-    # Fills and borders convert one per paint. A shared style's swatch replaces the
-    # colour below, so it wins over the variable its paint is bound to
+    # Each fill and border comes from one paint, so link it to the variable that paint is
+    # bound to, if any. A layer using a fill style has the style's paints copied in above,
+    # so a style bound to a variable links to that variable here. A style that isn't
+    # bound has a swatch of its own instead, which replaces the first fill or border's
+    # colour after these loops
     for sketch_fill, fig_paint in zip(st.fills, fig_node.get("fillPaints", [])):
         sketch_fill.color = variable.linked_color(
             sketch_fill.color, fig_paint, variable.ancestors(fig_node)

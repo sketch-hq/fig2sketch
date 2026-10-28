@@ -124,7 +124,13 @@ def text_style(fig_text):
     else:
         font_name = context.record_font(fig_text["fontName"])
 
+    # A text using a fill style takes the style's paints, which a run applying a style
+    # of its own may not carry
+    fig_style, style_swatch = base.fill_style(fig_text)
     fills = fig_text.get("fillPaints", [])
+    if fig_style is not None:
+        fills = fig_style.get("fillPaints", fills)
+
     if not fills:
         # Set a transparent fill if no fill is set
         fills = [{"type": "SOLID", "color": {"r": 0, "g": 0, "b": 0, "a": 0}}]
@@ -144,10 +150,9 @@ def text_style(fig_text):
         else:
             color = Color.Black()
 
-    # As with other layers' fills, a fill style's swatch wins over the paint's variable
-    fill_style = base.fill_style_swatch(fig_text)
-    if fill_style is not None:
-        color = dataclasses.replace(fill_style.value)
+    # As with other layers' fills, a style not bound to a variable links to its own swatch
+    if style_swatch is not None:
+        color = dataclasses.replace(style_swatch.value)
 
     obj = TextStyle(
         encodedAttributes=EncodedAttributes(

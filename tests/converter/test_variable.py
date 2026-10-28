@@ -148,6 +148,23 @@ class TestSwatches:
 
         assert context.sketch_components() == surface + blue
 
+    def test_all_colour_variables_convert(self):
+        fig_spacing = {
+            **FIG_BLUE,
+            "guid": (2, 3),
+            "name": "Spacing",
+            "variableResolvedType": "FLOAT",
+            "variableDataValues": {"entries": []},
+        }
+
+        variable.convert_all([FIG_THEME, FIG_SURFACE, fig_spacing, FIG_BLUE, FIG_PRIMARY])
+
+        assert context.sketch_components() == [
+            *context.variable_swatches(FIG_SURFACE).values(),
+            *context.variable_swatches(FIG_BLUE).values(),
+            *context.variable_swatches(FIG_PRIMARY).values(),
+        ]
+
 
 class TestLinkedColor:
     def test_links_default_mode(self):
@@ -249,6 +266,29 @@ class TestStyles:
         st = base.process_styles(fig)
 
         assert st.fills[0].color == Color(red=1, green=0, blue=0.5, alpha=0.5)
+
+    def test_fill_style_bound_to_variable_links_variable(self):
+        """A style whose colour is a variable's has no swatch of its own, so a layer
+        using it links to the variable's swatch for the layer's mode."""
+        fig_style = {
+            **FIG_BASE,
+            "type": "ROUNDED_RECTANGLE",
+            "guid": (4, 0),
+            "styleType": "FILL",
+            "fillPaints": [bound_paint(FIG_COLOR[0], 1, {"guid": FIG_SURFACE["guid"]})],
+        }
+        context.add_fig_node(fig_style)
+        fig = {
+            **FIG_BASE,
+            "parent": {"guid": FIG_DARK_FRAME["guid"]},
+            "styleIdForFill": {"guid": fig_style["guid"]},
+        }
+        dark = context.variable_swatches(FIG_SURFACE)[DARK]
+
+        st = base.process_styles(fig)
+
+        assert st.fills[0].color == dark.value
+        assert context.component(fig_style["guid"]) == (fig_style, None)
 
     def test_text_color_links_to_swatch(self, monkeypatch):
         monkeypatch.setattr(context, "record_font", lambda _: "Roboto-Normal")

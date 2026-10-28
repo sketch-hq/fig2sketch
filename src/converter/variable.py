@@ -47,6 +47,13 @@ def convert(fig_variable: dict) -> Dict[ModeID, Swatch]:
     return swatches
 
 
+def convert_all(fig_nodes: Iterable[dict]) -> None:
+    """Converts every colour variable of a file into swatches, whether used or not."""
+    for fig_node in fig_nodes:
+        if fig_node["type"] == "VARIABLE" and not fig_node.get("isSoftDeleted"):
+            context.variable_swatches(fig_node)
+
+
 def collection(fig_variable: dict) -> Optional[dict]:
     return context.fig_node_by_ref(fig_variable["variableSetID"])
 
@@ -149,28 +156,40 @@ def paint_variable(fig_paint: dict) -> Optional[dict]:
     return context.fig_node_by_ref(alias)
 
 
+def linked_variable(fig_paint: dict) -> Optional[Tuple[dict, dict]]:
+    """The variable a paint's colour links to, along with its collection.
+
+    A linked colour has nowhere to keep an opacity of its own, so a paint with one
+    links to none.
+    """
+    if fig_paint.get("opacity", 1) != 1:
+        return None
+
+    fig_variable = paint_variable(fig_paint)
+    if fig_variable is None:
+        return None
+
+    fig_collection = collection(fig_variable)
+    if fig_collection is None:
+        return None
+
+    return fig_variable, fig_collection
+
+
 def linked_color(color: Color, fig_paint: dict, mode_scope: Iterable[dict]) -> Color:
     """Links a colour converted from a paint to a swatch of the variable it is bound to.
 
     The swatch is the one for the mode the paint's layer resolves the variable in, from
     the layer's mode scope (see active_mode). The paint stores a colour as well, but
     only as a cache of the last one resolved, which can be out of date, so the linked
-    colour is the swatch's own.
-
-    A linked colour has nowhere to keep an opacity of its own, so a paint with one
+    colour is the swatch's own. A paint that links to no variable (see linked_variable)
     keeps the colour it was converted to.
     """
-    if fig_paint.get("opacity", 1) != 1:
+    linked = linked_variable(fig_paint)
+    if linked is None:
         return color
 
-    fig_variable = paint_variable(fig_paint)
-    if fig_variable is None:
-        return color
-
-    fig_collection = collection(fig_variable)
-    if fig_collection is None:
-        return color
-
+    fig_variable, fig_collection = linked
     mode_id = active_mode(mode_scope, fig_collection)
     swatch = context.variable_swatches(fig_variable).get(mode_id) if mode_id else None
     if swatch is None:

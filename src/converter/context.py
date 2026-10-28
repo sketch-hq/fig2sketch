@@ -49,7 +49,7 @@ class Context:
         self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict], color_space: str
     ) -> None:
         self._color_space = color_space
-        self._sketch_components: Dict[Sequence[int], Swatch] = {}
+        self._sketch_components: Dict[Sequence[int], Optional[Swatch]] = {}
         self._variable_swatches: Dict[Sequence[int], Dict[Tuple[int, ...], Swatch]] = {}
         self._variable_modes: Dict[Sequence[int], List[dict]] = {}
         self.symbols_page: Optional[Page] = None
@@ -79,12 +79,13 @@ class Context:
     def component(self, cid: Sequence[int]) -> Tuple[dict, Optional[Swatch]]:
         fig_component = self.fig_node(cid)
 
-        # See if we can convert this component to a Sketch swatch
-        sketch_component = self._sketch_components.get(cid)
-        if not sketch_component:
+        # See if we can convert this component to a Sketch swatch, remembering when we
+        # can't too
+        if cid in self._sketch_components:
+            sketch_component = self._sketch_components[cid]
+        else:
             sketch_component = component.convert(fig_component)
-            if sketch_component is not None:
-                self._sketch_components[cid] = sketch_component
+            self._sketch_components[cid] = sketch_component
 
         return fig_component, sketch_component
 
@@ -122,7 +123,8 @@ class Context:
         variable_swatches = [
             s for swatches in self._variable_swatches.values() for s in swatches.values()
         ]
-        return list(self._sketch_components.values()) + variable_swatches
+        style_swatches = [s for s in self._sketch_components.values() if s is not None]
+        return style_swatches + variable_swatches
 
     def add_symbol(self, sketch_symbol: AbstractLayer) -> None:
         if not self.symbols_page:
