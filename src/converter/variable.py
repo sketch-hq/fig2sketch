@@ -136,12 +136,18 @@ def active_mode(mode_scope: Iterable[dict], fig_collection: dict) -> Optional[Mo
 
     That is the mode set for the collection by the first node in the layer's mode scope
     that sets one, or the collection's default mode where none does. A layer's mode
-    scope is its ancestors, unless it is reached through an instance.
+    scope is its ancestors, unless it is reached through an instance. An instance
+    override can clear the mode a layer sets, leaving an entry with no mode, so the
+    layer takes the mode of those around it.
     """
     for node in mode_scope:
         for entry in node.get("variableModeBySetMap", {}).get("entries", []):
+            mode_id = entry.get("variableModeID")
+            if mode_id is None:
+                continue
+
             if context.fig_node_by_ref(entry["variableSetID"]) is fig_collection:
-                return tuple(entry["variableModeID"])
+                return tuple(mode_id)
 
     return default_mode(fig_collection)
 
