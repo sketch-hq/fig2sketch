@@ -1278,7 +1278,9 @@ class TestDetach:
 
         assert isinstance(i, Group)
         assert i.layers[0].style.borders[0].color == dark.value
-        warnings.assert_any_call("SYM003", ANY, props=["opacity"])
+        warnings.assert_any_call(
+            "SYM003", ANY, props=["opacity"], layers={"opacity": ["thing/thing"]}
+        )
 
     def test_convert_to_artboard(self):
         fig = copy.deepcopy(FIG_INSTANCE)

@@ -5,8 +5,8 @@ from .config import config
 from converter import utils
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
-from typing import Dict, List, Optional, Tuple
-from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
+from typing import Dict, List, Optional, Sequence, Tuple
+from .errors import Fig2SketchNodeChanged
 
 GRADIENT_PAINT_TYPES = {
     "GRADIENT_LINEAR",
@@ -45,7 +45,7 @@ IGNORED_OVERRIDE_PROPS = {
     "hyperlink",
     "overrideLevel",
     "textExplicitLayoutVersion",
-    "hyperlink",
+    "textUserLayoutVersion",
 }
 
 # Paint fields converted or intentionally dropped on paint overrides, see
