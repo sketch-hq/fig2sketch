@@ -70,6 +70,14 @@ GRADIENT_PAINT_PROPS = {
 }
 IMAGE_PAINT_PROPS = {"image", "imageScaleMode", "scale"}
 
+# Component property fields, mapped to the override they convert to and the keys holding the
+# value in the assignment's `value` and in its `varValue`
+PROPERTY_OVERRIDE_FIELDS = {
+    "OVERRIDDEN_SYMBOL_ID": ("overriddenSymbolID", "guidValue", "symbolIdValue"),
+    "TEXT_DATA": ("textData", "textValue", "textDataValue"),
+    "VISIBLE": ("visible", "boolValue", "boolValue"),
+}
+
 
 def convert(fig_instance):
     if utils.is_invalid_ref(fig_instance["symbolData"]["symbolID"]):
@@ -668,18 +676,34 @@ def convert_properties_to_overrides(fig_master, properties, guid_path=[]):
 
     for prop in properties:
         for ref_prop, ref_guid in find_refs(fig_master, prop["defID"]):
-            if ref_prop["componentPropNodeField"] == "OVERRIDDEN_SYMBOL_ID":
-                override = {"overriddenSymbolID": prop["value"]["guidValue"]}
-            elif ref_prop["componentPropNodeField"] == "TEXT_DATA":
-                override = {"textData": prop["value"]["textValue"]}
-            elif ref_prop["componentPropNodeField"] == "VISIBLE":
-                override = {"visible": prop["value"]["boolValue"]}
-            else:  # INHERIT_FILL_STYLE_ID
-                raise Exception(f"Unexpected property {ref_prop['componentPropNodeField']}")
+            field = ref_prop["componentPropNodeField"]
+            if field not in PROPERTY_OVERRIDE_FIELDS:  # INHERIT_FILL_STYLE_ID
+                raise Exception(f"Unexpected property {field}")
 
-            overrides.append({**override, "guidPath": {"guids": guid_path + [ref_guid]}})
+            value = property_value(prop, field)
+            # Without a value (e.g. bound to a variable) the layer keeps the master's value
+            if value is None:
+                continue
+
+            override_prop = PROPERTY_OVERRIDE_FIELDS[field][0]
+            overrides.append({override_prop: value, "guidPath": {"guids": guid_path + [ref_guid]}})
 
     return overrides
+
+
+def property_value(prop, field):
+    """Get the value of a property assignment for a node field.
+
+    Older files store it in `value`. Newer ones may leave `value` out or empty and only store
+    it in `varValue`, the same way variables store their values."""
+    _, legacy_key, var_key = PROPERTY_OVERRIDE_FIELDS[field]
+    if legacy_key in prop.get("value", {}):
+        return prop["value"][legacy_key]
+
+    value = prop.get("varValue", {}).get("value", {}).get(var_key)
+    if var_key == "symbolIdValue" and value is not None:
+        return value.get("guid")
+    return value
 
 
 def find_refs(node, ref_id):
