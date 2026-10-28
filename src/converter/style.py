@@ -454,7 +454,10 @@ def convert_effects(fig_node: dict) -> _Effects:
             is_progressive = "blurOpType" in e.keys() and e["blurOpType"] == "PROGRESSIVE"
             progressive_blur_start = e.get("startOffset", {"x": 0, "y": 0})
             progressive_blur_end = e.get("endOffset", {"x": 0, "y": 0})
-            progressive_start_radius = (e.get("startRadius", 0) / 2) / blur_radius
+            # A zero radius blurs nothing, so there is no ramp to scale against
+            progressive_start_radius = (
+                (e.get("startRadius", 0) / 2) / blur_radius if blur_radius else 1
+            )
 
             sketch["blurs"].append(
                 Blur(

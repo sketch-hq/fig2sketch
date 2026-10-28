@@ -478,6 +478,44 @@ class TestConvertEffects:
         assert blur.type == BlurType.BACKGROUND
         assert blur.radius == 2.5
 
+    def test_zero_radius_blur(self):
+        effects = convert_effects(
+            {
+                "effects": [
+                    {
+                        "type": "BACKGROUND_BLUR",
+                        "radius": 0,
+                        "visible": True,
+                    }
+                ]
+            }
+        )
+        blur = effects["blurs"][0]
+        assert blur.isEnabled
+        assert blur.type == BlurType.BACKGROUND
+        assert blur.radius == 0
+        assert not blur.isProgressive
+
+    def test_zero_radius_progressive_blur(self):
+        effects = convert_effects(
+            {
+                "effects": [
+                    {
+                        "type": "FOREGROUND_BLUR",
+                        "radius": 0,
+                        "blurOpType": "PROGRESSIVE",
+                        "startRadius": 4,
+                        "startOffset": {"x": 0, "y": 0},
+                        "endOffset": {"x": 0, "y": 1},
+                    }
+                ]
+            }
+        )
+        blur = effects["blurs"][0]
+        assert blur.radius == 0
+        assert blur.isProgressive
+        assert [s.color.alpha for s in blur.gradient.stops] == [1, 1]
+
     def test_unsupported_effect_is_ignored(self, warnings):
         effects = convert_effects(
             {
@@ -554,6 +592,26 @@ class TestUnsupportedEffectsInTree:
         assert layer.style.blurs == []
         assert layer.style.shadows == []
         warnings.assert_called_once_with("STY006", ANY, props=["GRAIN"])
+
+    def test_layer_is_not_skipped_when_blur_radius_is_zero(self, warnings):
+        layer = tree.convert_node(
+            {
+                **FIG_BASE,
+                "type": "ROUNDED_RECTANGLE",
+                "effects": [
+                    {
+                        "type": "BACKGROUND_BLUR",
+                        "radius": 0.0,
+                        "visible": True,
+                    }
+                ],
+            },
+            "CANVAS",
+        )
+
+        assert isinstance(layer, Rectangle)
+        assert [b.radius for b in layer.style.blurs] == [0]
+        warnings.assert_not_called()
 
     def test_noise_and_grain_doc_keeps_text_layers(self, warnings):
         figtree, id_map = fig2tree.convert_fig("tests/data/noise_and_grain.fig", None)
