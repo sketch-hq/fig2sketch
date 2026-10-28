@@ -215,6 +215,37 @@ class TestLinkedColor:
 
         assert color == dark.value
 
+    def test_mode_cleared_by_override_inherits_mode_above(self):
+        """An instance override that clears a layer's mode leaves an entry with no mode,
+        so the layer takes the mode set above it."""
+        paint = bound_paint(FIG_COLOR[1], 1, {"guid": (1, 3)})
+        fig = {
+            **FIG_BASE,
+            "parent": {"guid": FIG_DARK_FRAME["guid"]},
+            "variableModeBySetMap": {"entries": [{"variableSetID": {"guid": (1, 0)}}]},
+        }
+        dark = context.variable_swatches(FIG_SURFACE)[DARK]
+
+        color = variable.linked_color(
+            style.convert_color(FIG_COLOR[1]), paint, variable.ancestors(fig)
+        )
+
+        assert color == dark.value
+
+    def test_mode_cleared_by_override_falls_back_to_default(self):
+        paint = bound_paint(FIG_COLOR[1], 1, {"guid": (1, 3)})
+        fig = {
+            **FIG_BASE,
+            "variableModeBySetMap": {"entries": [{"variableSetID": {"guid": (1, 0)}}]},
+        }
+        light = context.variable_swatches(FIG_SURFACE)[LIGHT]
+
+        color = variable.linked_color(
+            style.convert_color(FIG_COLOR[1]), paint, variable.ancestors(fig)
+        )
+
+        assert color == light.value
+
     def test_ignores_stale_paint_color(self):
         """The colour on a paint is only a cache of the last one resolved, which can be
         another mode's, so the mode in effect for the layer picks the swatch."""
