@@ -7,6 +7,16 @@ from converter.config import config
 from converter.context import context
 from sketchformat.layer_group import Group, GroupBehavior, SymbolInstance, OverrideValue
 from unittest.mock import ANY
+from .test_variable import (
+    DARK,
+    FIG_BLUE,
+    FIG_DARK_FRAME,
+    FIG_PALETTE,
+    FIG_SURFACE,
+    FIG_THEME,
+    LIGHT,
+    bound_paint,
+)
 
 FIG_TEXT = {
     **FIG_BASE,
@@ -136,12 +146,14 @@ FIG_SPLIT_VECTOR = {
     },
 }
 
+FIG_CANVAS = {**FIG_BASE, "type": "CANVAS", "guid": (0, 0)}
+
 FIG_SYMBOL = {
     **FIG_BASE,
     "type": "SYMBOL",
     "guid": (0, 3),
     "children": [FIG_TEXT, FIG_RECT, FIG_VECTOR],
-    "parent": {"guid": (0, 3)},
+    "parent": {"guid": FIG_CANVAS["guid"]},
 }
 
 FIG_INSTANCE = {
@@ -159,6 +171,7 @@ def symbol(monkeypatch):
     context.init(
         None,
         {
+            (0, 0): FIG_CANVAS,
             (0, 3): FIG_SYMBOL,
             (0, 1): FIG_TEXT,
             (0, 2): FIG_RECT,
@@ -168,6 +181,29 @@ def symbol(monkeypatch):
             (1, 9): FIG_TEXT,
             (1, 10): FIG_VECTOR,
             (1, 11): FIG_SPLIT_VECTOR,
+        },
+        "DISPLAY_P3",
+    )
+    context._component_symbols = {(0, 3): False}
+
+
+def init_with_variables(*fig_nodes: dict) -> None:
+    """Sets up the symbol fixture's nodes, along with colour variables and any others."""
+    context.init(
+        None,
+        {
+            (0, 0): FIG_CANVAS,
+            (0, 3): FIG_SYMBOL,
+            (0, 1): FIG_TEXT,
+            (0, 2): FIG_RECT,
+            (0, 5): FIG_FILL_STYLE,
+            (0, 6): FIG_VECTOR,
+            (1, 9): FIG_TEXT,
+            (1, 10): FIG_VECTOR,
+            **{
+                node["guid"]: node
+                for node in [FIG_THEME, FIG_SURFACE, FIG_PALETTE, FIG_BLUE, *fig_nodes]
+            },
         },
         "DISPLAY_P3",
     )
@@ -319,6 +355,7 @@ class TestOverrides:
         monkeypatch.setitem(FIG_SYMBOL, "opacity", 0.5)
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["opacity"] = 1
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
@@ -348,6 +385,7 @@ class TestOverrides:
         fig["symbolData"]["symbolOverrides"] = [
             {"guidPath": {"guids": [(0, 3)]}, "fillPaints": paints}
         ]
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
@@ -388,6 +426,7 @@ class TestOverrides:
     def test_nested_opacity_override_detaches(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [{"guidPath": {"guids": [(1, 9)]}, "opacity": 0.7}]
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
@@ -563,6 +602,7 @@ class TestOverrides:
         context.init(
             None,
             {
+                (0, 0): FIG_CANVAS,
                 (0, 3): symbol,
                 (0, 1): text,
                 (0, 2): FIG_RECT,
@@ -698,6 +738,7 @@ class TestOverrides:
         context.init(
             None,
             {
+                (0, 0): FIG_CANVAS,
                 (0, 3): symbol,
                 (0, 1): FIG_TEXT,
                 (0, 2): rect,
@@ -804,11 +845,12 @@ class TestOverrides:
         assert len(context.symbols_page.layers) == 1
         symbol = context.symbols_page.layers[0]
         symbol_text_id = symbol.layers[0].do_objectID
+        _, red_fill = context.component(FIG_FILL_STYLE["guid"])
 
         assert isinstance(i, SymbolInstance)
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues == [
-            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=SKETCH_COLOR[1]),
+            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=red_fill.value),
             OverrideValue(
                 overrideName=f"{symbol_text_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
             ),
@@ -826,13 +868,11 @@ class TestOverrides:
 
         i = tree.convert_node(fig, "")
         symbol_text_id = context.symbols_page.layers[0].layers[0].do_objectID
+        _, bound_fill = context.component(FIG_BOUND_FILL_STYLE["guid"])
 
         assert isinstance(i, SymbolInstance)
         assert i.overrideValues == [
-            OverrideValue(
-                overrideName=f"{symbol_text_id}_color:fill-0",
-                value=Color(red=0, green=1, blue=0.5, alpha=0.9),
-            ),
+            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=bound_fill.value),
         ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
@@ -847,10 +887,11 @@ class TestOverrides:
 
         i = tree.convert_node(fig, "")
         symbol_rect_id = context.symbols_page.layers[0].layers[1].do_objectID
+        _, red_fill = context.component(FIG_FILL_STYLE["guid"])
 
         assert isinstance(i, SymbolInstance)
         assert i.overrideValues == [
-            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=SKETCH_COLOR[1]),
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=red_fill.value),
             OverrideValue(
                 overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.MULTIPLY
             ),
@@ -874,7 +915,8 @@ class TestOverrides:
         assert isinstance(i, SymbolInstance)
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues[0] == OverrideValue(
-            overrideName=f"{symbol_vector_id}_color:fill-0", value=SKETCH_COLOR[1]
+            overrideName=f"{symbol_vector_id}_color:fill-0",
+            value=context.component(FIG_FILL_STYLE["guid"])[1].value,
         )
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
@@ -888,6 +930,7 @@ class TestOverrides:
                 ],
             }
         ]
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
@@ -909,6 +952,194 @@ class TestOverrides:
 
         assert isinstance(i, SymbolInstance)
         assert i.overrideValues == []
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_stroke_style_override_by_guid(self, warnings):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(0, 2)]}, "styleIdForStrokeFill": {"guid": (0, 5)}}
+        ]
+
+        i = tree.convert_node(fig, "")
+        assert len(context.symbols_page.layers) == 1
+        symbol = context.symbols_page.layers[0]
+        symbol_rect_id = symbol.layers[1].do_objectID
+        _, red_fill = context.component(FIG_FILL_STYLE["guid"])
+
+        assert isinstance(i, SymbolInstance)
+        assert i.symbolID == symbol.symbolID
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=red_fill.value),
+            OverrideValue(
+                overrideName=f"{symbol_rect_id}_blendMode:border-0", value=BlendMode.MULTIPLY
+            ),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_style_override_links_style_variable(self, warnings):
+        """The style's paint is bound to a variable, so the override links to the
+        variable's swatch, as a layer using the style would."""
+        fig_style = {
+            **FIG_BASE,
+            "type": "ROUNDED_RECTANGLE",
+            "guid": (0, 7),
+            "styleType": "FILL",
+            "fillPaints": [
+                {
+                    **bound_paint(FIG_COLOR[2], 1, {"guid": FIG_BLUE["guid"]}),
+                    "authoredColor": {"space": "DEFAULT", "c0": 0, "c1": 0, "c2": 1, "c3": 1},
+                }
+            ],
+        }
+        init_with_variables(fig_style)
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(0, 2)]}, "styleIdForStrokeFill": {"guid": (0, 7)}}
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol = context.symbols_page.layers[0]
+        symbol_rect_id = symbol.layers[1].do_objectID
+        blue = context.variable_swatches(FIG_BLUE)[(2, 1)]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=blue.value),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_paint_override_bound_to_variable(self, warnings):
+        """The paint holds a cached colour from the Dark mode, but nothing sets a mode,
+        so the override links to the default Light mode's swatch."""
+        init_with_variables()
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol = context.symbols_page.layers[0]
+        symbol_rect_id = symbol.layers[1].do_objectID
+        light = context.variable_swatches(FIG_SURFACE)[LIGHT]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=light.value),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_paint_override_bound_to_variable_in_instance_mode(self, warnings):
+        """The instance sits in a Dark frame, so the override resolves the variable in
+        the Dark mode, whatever mode the master is in."""
+        init_with_variables(FIG_DARK_FRAME)
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["parent"] = {"guid": FIG_DARK_FRAME["guid"]}
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_rect_id = context.symbols_page.layers[0].layers[1].do_objectID
+        dark = context.variable_swatches(FIG_SURFACE)[DARK]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=dark.value),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_paint_override_bound_to_variable_in_mode_set_on_instance(self, warnings):
+        init_with_variables()
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["variableModeBySetMap"] = FIG_DARK_FRAME["variableModeBySetMap"]
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_rect_id = context.symbols_page.layers[0].layers[1].do_objectID
+        dark = context.variable_swatches(FIG_SURFACE)[DARK]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=dark.value),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_paint_override_bound_to_variable_in_mode_set_within_master(self, warnings):
+        """A mode set on a layer within the master applies to the layers inside it, even
+        in an instance that sits in another mode."""
+        light_frame = {
+            **FIG_DARK_FRAME,
+            "guid": (3, 1),
+            "parent": {"guid": FIG_SYMBOL["guid"]},
+            "variableModeBySetMap": {
+                "entries": [
+                    {"variableSetID": {"guid": FIG_THEME["guid"]}, "variableModeID": LIGHT}
+                ],
+            },
+        }
+        rect = {**FIG_RECT, "parent": {"guid": light_frame["guid"]}}
+        init_with_variables(FIG_DARK_FRAME, light_frame, rect)
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["parent"] = {"guid": FIG_DARK_FRAME["guid"]}
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(0, 2)]},
+                "strokePaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol_rect_id = context.symbols_page.layers[0].layers[1].do_objectID
+        light = context.variable_swatches(FIG_SURFACE)[LIGHT]
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_rect_id}_color:border-0", value=light.value),
+        ]
+        assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
+
+    def test_style_ref_replaces_override_paints(self, warnings):
+        """An override applying a style carries a copy of its paints too, which can be
+        out of date, so only the style converts."""
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolOverrides"] = [
+            {
+                "guidPath": {"guids": [(1, 9)]},
+                "styleIdForFill": {"guid": FIG_FILL_STYLE["guid"]},
+                "fillPaints": [
+                    {"type": "SOLID", "color": FIG_COLOR[2], "opacity": 1, "visible": True}
+                ],
+            }
+        ]
+
+        i = tree.convert_node(fig, "")
+        symbol = context.symbols_page.layers[0]
+        symbol_text_id = symbol.layers[0].do_objectID
+        _, red_fill = context.component(FIG_FILL_STYLE["guid"])
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_text_id}_color:fill-0", value=red_fill.value),
+            OverrideValue(
+                overrideName=f"{symbol_text_id}_blendMode:fill-0", value=BlendMode.MULTIPLY
+            ),
+        ]
         assert not any(call.args[0] == "SYM003" for call in warnings.call_args_list)
 
     def test_detached_fill_style_override_with_paints(self, warnings):
@@ -1000,6 +1231,7 @@ class TestDetach:
             }
         ]
         fig["resizeToFit"] = True
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
         assert isinstance(i, Group)
@@ -1021,12 +1253,41 @@ class TestDetach:
                 "opacity": 0.5,
             }
         ]
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "")
 
         assert isinstance(i, Group)
         assert isinstance(i.layers[1], SymbolInstance)
         assert i.layers[1].scale == 1.5
+
+    def test_detached_layers_resolve_variables_in_instance_mode(self, warnings):
+        """The copies of the master's layers sit in the instance, so they resolve
+        variables in the modes where the instance is."""
+        rect = {
+            **FIG_RECT,
+            "guid": (0, 22),
+            "strokePaints": [bound_paint(FIG_COLOR[0], 1, {"guid": FIG_SURFACE["guid"]})],
+        }
+        master = {**FIG_SYMBOL, "guid": (0, 20), "children": [rect]}
+        init_with_variables(FIG_DARK_FRAME, master, rect)
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["parent"] = {"guid": FIG_DARK_FRAME["guid"]}
+        fig["symbolData"]["symbolID"] = master["guid"]
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [rect["guid"]]}, "opacity": 0.5}
+        ]
+        context.add_fig_node(fig)
+
+        i = tree.convert_node(fig, "")
+        dark = context.variable_swatches(FIG_SURFACE)[DARK]
+
+        assert isinstance(i, Group)
+        assert i.layers[0].style.borders[0].color == dark.value
+        warnings.assert_any_call(
+            "SYM003", ANY, props=["opacity"], layers={"opacity": ["thing/thing"]}
+        )
 
     def test_convert_to_artboard(self):
         fig = copy.deepcopy(FIG_INSTANCE)
@@ -1037,6 +1298,7 @@ class TestDetach:
             }
         ]
         fig["resizeToFit"] = False
+        context.add_fig_node(fig)
 
         i = tree.convert_node(fig, "CANVAS")
         assert isinstance(i, Group)

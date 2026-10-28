@@ -2,6 +2,7 @@ import pytest
 from .base import *
 from converter.text import *
 from converter.context import context
+from .test_variable import FIG_SURFACE, FIG_THEME, LIGHT, bound_paint
 
 TEXT_BASE = {
     **FIG_BASE,
@@ -209,3 +210,83 @@ class TestFeatures:
         ]
 
         warnings.assert_any_call("TXT006", ANY, features=["CV03"])
+
+
+FIG_FILL_STYLE = {
+    **FIG_BASE,
+    "type": "ROUNDED_RECTANGLE",
+    "guid": (0, 3),
+    "styleType": "FILL",
+    "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[2], "opacity": 1, "visible": True}],
+}
+
+
+@pytest.fixture
+def fill_style():
+    context.init(None, {FIG_FILL_STYLE["guid"]: FIG_FILL_STYLE}, "DISPLAY_P3")
+
+
+def run_colors(fig_text: dict) -> List[Color]:
+    return [
+        run.attributes.MSAttributedStringColorAttribute
+        for run in override_characters_style(fig_text)
+    ]
+
+
+@pytest.mark.usefixtures("mock_fonts", "fill_style")
+class TestFillStyle:
+    def test_color_links_to_fill_style(self):
+        _, swatch = context.component(FIG_FILL_STYLE["guid"])
+
+        assert run_colors({**TEXT_PLAIN, "styleIdForFill": {"guid": (0, 3)}}) == [swatch.value]
+
+    def test_run_with_own_fill_style(self):
+        _, swatch = context.component(FIG_FILL_STYLE["guid"])
+        fig = {
+            **TEXT_BASE,
+            "textData": {
+                "characters": "abcdef",
+                "characterStyleIDs": [0, 0, 0, 1, 1, 1],
+                "styleOverrideTable": [{"styleID": 1, "styleIdForFill": {"guid": (0, 3)}}],
+            },
+        }
+
+        assert run_colors(fig) == [SKETCH_COLOR[0], swatch.value]
+
+    def test_run_with_own_bound_fill_style_links_variable(self):
+        """The run carries the text's paints, so its colour comes from the style's paint
+        and the variable that is bound to."""
+        fig_style = {
+            **FIG_FILL_STYLE,
+            "guid": (0, 4),
+            "fillPaints": [bound_paint(FIG_COLOR[1], 1, {"guid": FIG_SURFACE["guid"]})],
+        }
+        for fig_node in (FIG_THEME, FIG_SURFACE, fig_style):
+            context.add_fig_node(fig_node)
+        fig = {
+            **TEXT_BASE,
+            "textData": {
+                "characters": "abcdef",
+                "characterStyleIDs": [0, 0, 0, 1, 1, 1],
+                "styleOverrideTable": [{"styleID": 1, "styleIdForFill": {"guid": (0, 4)}}],
+            },
+        }
+        light = context.variable_swatches(FIG_SURFACE)[LIGHT]
+
+        assert run_colors(fig) == [SKETCH_COLOR[0], light.value]
+
+    def test_run_with_own_paints_leaves_text_fill_style(self):
+        _, swatch = context.component(FIG_FILL_STYLE["guid"])
+        fig = {
+            **TEXT_BASE,
+            "styleIdForFill": {"guid": (0, 3)},
+            "textData": {
+                "characters": "abcdef",
+                "characterStyleIDs": [0, 0, 0, 1, 1, 1],
+                "styleOverrideTable": [
+                    {"styleID": 1, "fillPaints": [{"type": "SOLID", "color": FIG_COLOR[1]}]}
+                ],
+            },
+        }
+
+        assert run_colors(fig) == [swatch.value, SKETCH_COLOR[1]]

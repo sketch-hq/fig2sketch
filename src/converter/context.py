@@ -49,7 +49,9 @@ class Context:
         self, components_page: Optional[dict], id_map: Dict[Sequence[int], dict], color_space: str
     ) -> None:
         self._color_space = color_space
-        self._sketch_components: Dict[Sequence[int], Swatch] = {}
+        self._sketch_components: Dict[Sequence[int], Optional[Swatch]] = {}
+        self._variable_swatches: Dict[Sequence[int], Dict[Tuple[int, ...], Swatch]] = {}
+        self._variable_modes: Dict[Sequence[int], List[dict]] = {}
         self.symbols_page: Optional[Page] = None
         self._node_by_id = id_map
         self._used_fonts: Dict[Tuple[str, str], Tuple[IO[bytes], str]] = {}
@@ -77,17 +79,52 @@ class Context:
     def component(self, cid: Sequence[int]) -> Tuple[dict, Optional[Swatch]]:
         fig_component = self.fig_node(cid)
 
-        # See if we can convert this component to a Sketch swatch
-        sketch_component = self._sketch_components.get(cid)
-        if not sketch_component:
+        # See if we can convert this component to a Sketch swatch, remembering when we
+        # can't too
+        if cid in self._sketch_components:
+            sketch_component = self._sketch_components[cid]
+        else:
             sketch_component = component.convert(fig_component)
-            if sketch_component is not None:
-                self._sketch_components[cid] = sketch_component
+            self._sketch_components[cid] = sketch_component
 
         return fig_component, sketch_component
 
+    def variable_swatches(self, fig_variable: dict) -> Dict[Tuple[int, ...], Swatch]:
+        """The swatches of a colour variable, by the ID of the mode each is for."""
+        vid = fig_variable["guid"]
+        swatches = self._variable_swatches.get(vid)
+        if swatches is None:
+            # Converting a variable looks up the nodes it refers to through the context
+            from . import variable
+
+            swatches = variable.convert(fig_variable)
+            self._variable_swatches[vid] = swatches
+
+        return swatches
+
+    def variable_modes(self, fig_collection: dict) -> List[dict]:
+        """The modes of a variable collection in the order Figma shows them.
+
+        That can differ from the order they are stored in. The first is the collection's
+        default.
+        """
+        cid = fig_collection["guid"]
+        modes = self._variable_modes.get(cid)
+        if modes is None:
+            modes = sorted(
+                fig_collection.get("variableSetModes", []),
+                key=lambda mode: mode.get("sortPosition", ""),
+            )
+            self._variable_modes[cid] = modes
+
+        return modes
+
     def sketch_components(self) -> List[Swatch]:
-        return list(self._sketch_components.values())
+        variable_swatches = [
+            s for swatches in self._variable_swatches.values() for s in swatches.values()
+        ]
+        style_swatches = [s for s in self._sketch_components.values() if s is not None]
+        return style_swatches + variable_swatches
 
     def add_symbol(self, sketch_symbol: AbstractLayer) -> None:
         if not self.symbols_page:
@@ -102,11 +139,37 @@ class Context:
         else:
             raise Fig2SketchWarning("NOD001")
 
+    def add_fig_node(self, fig_node: dict) -> None:
+        """Lets a node made during conversion, like a detached copy, be found by its guid."""
+        self._node_by_id[fig_node["guid"]] = fig_node
+
     def fig_node_by_key(self, key: str) -> dict:
         if key in self._node_by_key:
             return self._node_by_key[key]
         else:
             raise Fig2SketchWarning("NOD001")
+
+    def fig_node_by_ref(self, ref: dict) -> Optional[dict]:
+        """Finds the node a style or variable reference points at.
+
+        A reference holds the key of a node from a library, the guid of a node in this
+        file, or both, in which case the key is tried first.
+        """
+        asset_ref = ref.get("assetRef")
+        if asset_ref is not None:
+            try:
+                return self.fig_node_by_key(asset_ref["key"])
+            except (Fig2SketchWarning, KeyError):
+                pass
+
+        guid = ref.get("guid")
+        if guid is not None:
+            try:
+                return self.fig_node(tuple(guid))
+            except Fig2SketchWarning:
+                pass
+
+        return None
 
     def record_font(self, fig_font_name):
         font_descriptor = (fig_font_name["family"], fig_font_name["style"])

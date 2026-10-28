@@ -1,5 +1,5 @@
 import zipfile
-from . import document, meta, prototype, tree, user
+from . import document, meta, prototype, tree, user, variable
 from .context import context
 from sketchformat.layer_group import Page
 from sketchformat.serialize import serialize
@@ -24,6 +24,10 @@ def convert_fig_tree_to_sketch(
     # Whether a frame is an overlay is decided by the links to it, which can be on
     # any page, so they are all read before the first frame is converted
     prototype.mark_overlay_destinations(id_map.values())
+
+    # Every colour variable becomes swatches, in the order the file lists them, even
+    # those no layer links to
+    variable.convert_all(id_map.values())
 
     # Convert all normal pages
     sketch_pages: List[Page] = convert_pages(fig_pages, output)

@@ -1,6 +1,7 @@
 import copy
+import dataclasses
 import itertools
-from . import base, style
+from . import base, style, variable
 from .context import context
 from converter import utils
 from sketchformat.text import *
@@ -71,6 +72,8 @@ EMOJI_SIZE_ADJUST = {
 
 EMOJI_FONT = "AppleColorEmoji"
 
+FILL_STYLE_KEYS = base.PAINT_STYLE_KEYS["fillPaints"]
+
 
 def convert(fig_text):
     text_resize = fig_text.get("textAutoResize", "NONE")
@@ -100,13 +103,34 @@ def convert(fig_text):
     return obj
 
 
+def run_properties(fig_text: dict, style_override: dict) -> dict:
+    """Merges the properties a run of text overrides into the text's own.
+
+    A run that sets its fill, by paints or by style, no longer uses the text's fill
+    style, so the text's reference to it is left out.
+    """
+    run = {**fig_text, **style_override}
+    if "fillPaints" in style_override or any(k in style_override for k in FILL_STYLE_KEYS):
+        for key in FILL_STYLE_KEYS:
+            if key not in style_override:
+                run.pop(key, None)
+
+    return run
+
+
 def text_style(fig_text):
     if fig_text["fontName"]["family"] == EMOJI_FONT:
         font_name = EMOJI_FONT
     else:
         font_name = context.record_font(fig_text["fontName"])
 
+    # A text using a fill style takes the style's paints, which a run applying a style
+    # of its own may not carry
+    fig_style, style_swatch = base.fill_style(fig_text)
     fills = fig_text.get("fillPaints", [])
+    if fig_style is not None:
+        fills = fig_style.get("fillPaints", fills)
+
     if not fills:
         # Set a transparent fill if no fill is set
         fills = [{"type": "SOLID", "color": {"r": 0, "g": 0, "b": 0, "a": 0}}]
@@ -115,7 +139,9 @@ def text_style(fig_text):
         utils.log_conversion_warning("TXT002", fig_text)
 
     if fills[0]["type"] == "SOLID":
-        color = style.convert_color(fills[0]["color"])
+        color = variable.linked_color(
+            style.convert_color(fills[0]["color"]), fills[0], variable.ancestors(fig_text)
+        )
     else:
         # Text fill is not solid (gradient or image). Sketch doesn't support this
         utils.log_conversion_warning("TXT003", fig_text)
@@ -123,6 +149,10 @@ def text_style(fig_text):
             color = style.convert_color(fills[0]["stops"][0]["color"])
         else:
             color = Color.Black()
+
+    # As with other layers' fills, a style not bound to a variable links to its own swatch
+    if style_swatch is not None:
+        color = dataclasses.replace(style_swatch.value)
 
     obj = TextStyle(
         encodedAttributes=EncodedAttributes(
@@ -213,7 +243,7 @@ def override_characters_style(fig_text):
                 style_override["fontSize"] = scaled_font_size
 
         # If the style changed (as seen by Sketch), convert the previous style run
-        current_style = text_style({**fig_text, **style_override})
+        current_style = text_style(run_properties(fig_text, style_override))
         if current_style != last_style and pos != 0:
             attributes.append(
                 StringAttribute(
