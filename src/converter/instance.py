@@ -34,6 +34,40 @@ PAINT_PROPS = {
     "styleIdForStrokeFill": "border",
 }
 
+# Size is handled by applying derivedSymbolData. The rest are surely not worth detaching
+# for. Text hyperlinks are not converted for plain text layers either
+IGNORED_OVERRIDE_PROPS = {
+    "size",
+    "pluginData",
+    "name",
+    "exportSettings",
+    "targetAspectRatio",
+    "textExplicitLayoutVersion",
+    "hyperlink",
+}
+
+# Paint fields converted or intentionally dropped on paint overrides, see
+# unsupported_paint_override_props
+IGNORED_PAINT_PROPS = {
+    "authoredColor",
+    "blendMode",
+    "color",
+    "colorVar",
+    "opacity",
+    "opacityVar",
+    "type",
+    "visible",
+}
+GRADIENT_PAINT_PROPS = {
+    "authoredStops",
+    "interpolationColorSpace",
+    "interpolationHueMethod",
+    "stops",
+    "stopsVar",
+    "transform",
+}
+IMAGE_PAINT_PROPS = {"image", "imageScaleMode", "scale"}
+
 
 def convert(fig_instance):
     if utils.is_invalid_ref(fig_instance["symbolData"]["symbolID"]):
@@ -321,18 +355,7 @@ def convert_override(override: dict, fig_instance: dict) -> Tuple[List[OverrideV
             sk, us = convert_effect_overrides(sketch_path_str, value)
             sketch_overrides += sk
             unsupported_overrides += [f"effects.{p}" for p in us]
-        elif prop in [
-            "size",
-            "pluginData",
-            "name",
-            "exportSettings",
-            "targetAspectRatio",
-            "textExplicitLayoutVersion",
-            "hyperlink",
-        ]:
-            # Size is handled by applying derivedSymbolData
-            # The rest are surely not worth detaching for. Text hyperlinks are not
-            # converted for plain text layers either
+        elif prop in IGNORED_OVERRIDE_PROPS:
             pass
         else:
             # Unknown override
@@ -515,42 +538,26 @@ def convert_style_part_overrides(
 def unsupported_paint_override_props(paint: dict) -> List[str]:
     """Return paint override fields that are unsafe to keep on an attached instance.
 
-    Properties listed below are supported or intentionally dropped becuase Sketch has no
-    equivalent override representation. Any remaining fields are reported as unsupported
-    so the instance can detach rather than silently losing data the converter does not
-    understand.
+    Properties in the *_PAINT_PROPS sets are supported or intentionally dropped because
+    Sketch has no equivalent override representation. Any remaining fields are reported as
+    unsupported so the instance can detach rather than silently losing data the converter does
+    not understand.
 
     Variable bindings (colorVar, opacityVar) and authored colors sit alongside the resolved
     color and opacity, which is what gets converted, same as for paints outside overrides.
     """
-    ignored_props = {
-        "authoredColor",
-        "blendMode",
-        "color",
-        "colorVar",
-        "opacity",
-        "opacityVar",
-        "type",
-        "visible",
-    }
     if paint.get("type") == "SOLID":
-        return [prop for prop in paint if prop not in ignored_props]
+        return [prop for prop in paint if prop not in IGNORED_PAINT_PROPS]
 
     if paint.get("type") in GRADIENT_PAINT_TYPES:
-        gradient_props = {
-            "authoredStops",
-            "interpolationColorSpace",
-            "interpolationHueMethod",
-            "stops",
-            "stopsVar",
-            "transform",
-        }
-        return [prop for prop in paint if prop not in ignored_props and prop not in gradient_props]
+        return [
+            prop
+            for prop in paint
+            if prop not in IGNORED_PAINT_PROPS and prop not in GRADIENT_PAINT_PROPS
+        ]
 
     return [
-        prop
-        for prop in paint
-        if prop not in ignored_props and prop not in ["image", "imageScaleMode", "scale"]
+        prop for prop in paint if prop not in IGNORED_PAINT_PROPS and prop not in IMAGE_PAINT_PROPS
     ]
 
 
