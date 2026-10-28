@@ -8,7 +8,14 @@ from converter.context import context
 from sketchformat.layer_group import Group, GroupBehavior, SymbolInstance, OverrideValue
 from unittest.mock import ANY
 from .test_variable import (
-    DARK, FIG_BLUE, FIG_DARK_FRAME, FIG_PALETTE, FIG_SURFACE, FIG_THEME, LIGHT, bound_paint
+    DARK,
+    FIG_BLUE,
+    FIG_DARK_FRAME,
+    FIG_PALETTE,
+    FIG_SURFACE,
+    FIG_THEME,
+    LIGHT,
+    bound_paint,
 )
 
 FIG_TEXT = {
