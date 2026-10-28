@@ -1,7 +1,7 @@
 from .base import *
 import copy
 import pytest
-from converter import tree
+from converter import instance, tree
 from converter import style as style_converter
 from converter.config import config
 from converter.context import context
@@ -312,6 +312,39 @@ class TestOverrides:
         assert i.overrideValues == [
             OverrideValue(overrideName=f"{symbol_text_id}_stringValue", value="modified")
         ]
+
+    @pytest.mark.parametrize("value", [None, {}])
+    def test_text_prop_assignment_in_var_value(self, value):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        assignment = {
+            "defID": (1, 0),
+            "varValue": {
+                "value": {"textDataValue": {"characters": "modified"}},
+                "dataType": "TEXT_DATA",
+                "resolvedDataType": "TEXT_DATA",
+            },
+        }
+        if value is not None:
+            assignment["value"] = value
+        fig["componentPropAssignments"] = [assignment]
+
+        i = tree.convert_node(fig, "")
+        symbol = context.symbols_page.layers[0]
+        symbol_text_id = symbol.layers[0].do_objectID
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == [
+            OverrideValue(overrideName=f"{symbol_text_id}_stringValue", value="modified")
+        ]
+
+    def test_prop_assignment_without_value_keeps_master_value(self):
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["componentPropAssignments"] = [{"defID": (1, 0), "value": {}}]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, SymbolInstance)
+        assert i.overrideValues == []
 
     def test_root_opacity_override_preserves_instance(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
@@ -1303,3 +1336,50 @@ class TestDetach:
         i = tree.convert_node(fig, "CANVAS")
         assert isinstance(i, Group)
         assert i.groupBehavior == GroupBehavior.FRAME
+
+
+class TestConvertPropertiesToOverrides:
+    MASTER = {
+        "guid": (0, 1),
+        "children": [
+            {
+                "guid": (0, 2),
+                "componentPropRefs": [
+                    {"defID": (1, 0), "componentPropNodeField": "VISIBLE"},
+                    {"defID": (1, 1), "componentPropNodeField": "OVERRIDDEN_SYMBOL_ID"},
+                ],
+            }
+        ],
+    }
+
+    def test_values_in_var_value(self):
+        properties = [
+            {"defID": (1, 0), "value": {}, "varValue": {"value": {"boolValue": False}}},
+            {"defID": (1, 1), "varValue": {"value": {"symbolIdValue": {"guid": (2, 3)}}}},
+        ]
+
+        assert instance.convert_properties_to_overrides(self.MASTER, properties, [(0, 9)]) == [
+            {"visible": False, "guidPath": {"guids": [(0, 9), (0, 2)]}},
+            {"overriddenSymbolID": (2, 3), "guidPath": {"guids": [(0, 9), (0, 2)]}},
+        ]
+
+    def test_legacy_value_takes_priority(self):
+        properties = [
+            {
+                "defID": (1, 0),
+                "value": {"boolValue": True},
+                "varValue": {"value": {"boolValue": False}},
+            }
+        ]
+
+        assert instance.convert_properties_to_overrides(self.MASTER, properties) == [
+            {"visible": True, "guidPath": {"guids": [(0, 2)]}}
+        ]
+
+    def test_skips_assignments_without_value(self):
+        properties = [
+            {"defID": (1, 0)},
+            {"defID": (1, 1), "value": {}, "varValue": {"value": {"alias": {}}}},
+        ]
+
+        assert instance.convert_properties_to_overrides(self.MASTER, properties) == []
