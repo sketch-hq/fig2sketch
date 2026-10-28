@@ -15,9 +15,10 @@ def convert(fig_variable: dict) -> Dict[ModeID, Swatch]:
 
     A swatch holds a single colour, while a variable holds one for every mode of its
     collection, so each mode becomes a swatch of its own. Swatches are grouped by
-    collection and then by mode, as in Theme/Dark/Surface. A collection with a single
-    mode has no modes to tell apart, so its swatches sit directly in the collection's
-    group.
+    collection and then by the variable's own groups, with the mode last, as in
+    Theme/Schemes/Dark/Surface, so each group lists its colours once per mode. A
+    collection with a single mode has no modes to tell apart, so its swatches leave the
+    mode out.
     """
     if fig_variable.get("variableResolvedType") != "COLOR":
         return {}
@@ -35,10 +36,10 @@ def convert(fig_variable: dict) -> Dict[ModeID, Swatch]:
             continue
 
         uuid = utils.gen_object_id(tuple(fig_variable["guid"]) + mode_id, b"swatch")
-        name = fig_variable["name"]
+        path = fig_variable["name"].split("/")
         if len(modes) > 1:
-            name = f"{mode['name']}/{name}"
-        name = f"{fig_collection['name']}/{name}"
+            path.insert(-1, mode["name"])
+        name = "/".join([fig_collection["name"], *path])
 
         color = style.convert_color(fig_color)
         color.swatchID = uuid

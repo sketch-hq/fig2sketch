@@ -122,11 +122,17 @@ class TestSwatches:
         swatches = context.variable_swatches(FIG_SURFACE)
 
         assert list(swatches) == [LIGHT, DARK]
-        assert swatches[LIGHT].name == "Theme/Light/Schemes/Surface"
-        assert swatches[DARK].name == "Theme/Dark/Schemes/Surface"
+        assert swatches[LIGHT].name == "Theme/Schemes/Light/Surface"
+        assert swatches[DARK].name == "Theme/Schemes/Dark/Surface"
         assert unlinked(swatches[LIGHT].value) == SKETCH_COLOR[0]
         assert unlinked(swatches[DARK].value) == SKETCH_COLOR[1]
         assert all(s.value.swatchID == s.do_objectID for s in swatches.values())
+
+    def test_ungrouped_variable_has_mode_under_collection(self):
+        fig_variable = {**FIG_SURFACE, "guid": (1, 9), "name": "Accent"}
+        swatches = context.variable_swatches(fig_variable)
+
+        assert [s.name for s in swatches.values()] == ["Theme/Light/Accent", "Theme/Dark/Accent"]
 
     def test_single_mode_leaves_out_mode_name(self):
         swatches = list(context.variable_swatches(FIG_BLUE).values())
