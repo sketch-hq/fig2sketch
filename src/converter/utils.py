@@ -88,8 +88,8 @@ WARNING_MESSAGES = {
     "STY005": "contains a image fill property, which is not supported. The extra properties will be ignored",
     "STY006": "contains an unsupported effect: {props}. It will be ignored",
     "SYM001": "references an invalid symbol. It will be converted to an empty placeholder group",
-    "SYM002": "overrides unsupported properties: {props}. The override will be ignored",
-    "SYM003": "overrides unsupported properties: {props}. The instance will be detached",
+    "SYM002": "overrides unsupported properties: {props}. The override will be ignored. Overridden layers: {layers}",
+    "SYM003": "overrides unsupported properties: {props}. The instance will be detached. Overridden layers: {layers}",
     "SYM004": "contains an override of an unknown node {node_ref}. The override will be ignored",
     "GRP001": "has inner shadows which are not supported at group level in Sketch. It will be copied to the layers inside the frame",
     "GRP002": "has children with different resizing constraints. This cannot be accurately represented in Sketch so the converted group will not scale correctly",
@@ -124,7 +124,7 @@ WARNING_MESSAGES = {
 }
 
 
-def log_conversion_warning(warning_code: str, fig_node: dict, **kw: list) -> None:
+def log_conversion_warning(warning_code: str, fig_node: dict, **kw: object) -> None:
     if fig_node["guid"] not in issued_warnings:
         issued_warnings[fig_node["guid"]] = [warning_code]
     elif warning_code not in issued_warnings[fig_node["guid"]]:

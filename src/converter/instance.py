@@ -5,7 +5,7 @@ from .config import config
 from converter import utils
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
 
 GRADIENT_PAINT_TYPES = {
@@ -49,15 +49,17 @@ def convert(fig_instance):
     unsupported_root = unsupported_root_paints(fig_instance, fig_master, all_overrides)
     all_overrides = apply_root_overrides_to_instance(fig_instance, all_overrides)
     sketch_overrides, unsupported = convert_overrides(all_overrides, fig_instance)
-    unsupported += unsupported_root
+    # Props overridden on the symbol root belong to the instance layer itself
+    unsupported += [(prop, fig_instance["name"]) for prop in unsupported_root]
 
     opacity = instance_opacity(fig_instance, fig_master)
     if opacity is None:
-        unsupported.append("opacity")
+        unsupported.append(("opacity", fig_instance["name"]))
 
     if unsupported:
+        layers = unsupported_layers(unsupported)
         if config.can_detach:
-            utils.log_conversion_warning("SYM003", fig_instance, props=unsupported)
+            utils.log_conversion_warning("SYM003", fig_instance, props=list(layers), layers=layers)
 
             # Modify input tree in place, with the detached symbol subtree
             detach_symbol(fig_instance, all_overrides)
@@ -65,7 +67,7 @@ def convert(fig_instance):
             # Raise an exception to trigger conversion of the detached node
             raise Fig2SketchNodeChanged()
         else:
-            utils.log_conversion_warning("SYM002", fig_instance, props=unsupported)
+            utils.log_conversion_warning("SYM002", fig_instance, props=list(layers), layers=layers)
 
     obj = SymbolInstance(
         **base.base_styled(fig_instance),
@@ -131,14 +133,39 @@ def master_instance(fig_symbol):
 
 
 def convert_overrides(all_overrides, fig_instance):
+    """Convert overrides, pairing each unsupported prop with the layer it overrides."""
     sketch_overrides = []
     unsupported_overrides = []
     for override in all_overrides:
         sk, us = convert_override(override, fig_instance)
         sketch_overrides += sk
-        unsupported_overrides += us
+        if us:
+            layer = override_layer_path(override, fig_instance)
+            unsupported_overrides += [(prop, layer) for prop in us]
 
     return sketch_overrides, unsupported_overrides
+
+
+def override_layer_path(override: dict, fig_instance: dict) -> str:
+    """Name path of the overridden layer, starting at the instance."""
+    fig_master = context.find_symbol(fig_instance["symbolData"]["symbolID"])
+    root_guid = fig_master.get("overrideKey", fig_master["guid"])
+    names = [
+        context.fig_node(guid)["name"]
+        for guid in override["guidPath"]["guids"]
+        if guid != root_guid
+    ]
+    return "/".join([fig_instance["name"], *names])
+
+
+def unsupported_layers(unsupported: List[Tuple[str, str]]) -> Dict[str, List[str]]:
+    """Group unsupported props by name, listing each overridden layer once."""
+    layers: Dict[str, List[str]] = {}
+    for prop, layer in unsupported:
+        prop_layers = layers.setdefault(prop, [])
+        if layer not in prop_layers:
+            prop_layers.append(layer)
+    return layers
 
 
 def unsupported_root_paints(

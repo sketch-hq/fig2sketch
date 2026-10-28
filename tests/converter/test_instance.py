@@ -323,7 +323,7 @@ class TestOverrides:
         i = tree.convert_node(fig, "")
 
         assert isinstance(i, Group)
-        warnings.assert_any_call("SYM003", ANY, props=["opacity"])
+        warnings.assert_any_call("SYM003", ANY, props=["opacity"], layers={"opacity": ["thing"]})
 
     def test_root_fill_override_matching_master_preserves_instance(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
@@ -352,7 +352,9 @@ class TestOverrides:
         i = tree.convert_node(fig, "")
 
         assert isinstance(i, Group)
-        warnings.assert_any_call("SYM003", ANY, props=["fillPaints"])
+        warnings.assert_any_call(
+            "SYM003", ANY, props=["fillPaints"], layers={"fillPaints": ["thing"]}
+        )
 
     def test_root_stack_positioning_override_preserves_instance(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
@@ -390,7 +392,29 @@ class TestOverrides:
         i = tree.convert_node(fig, "")
 
         assert isinstance(i, Group)
-        warnings.assert_any_call("SYM003", ANY, props=["opacity"])
+        warnings.assert_any_call(
+            "SYM003", ANY, props=["opacity"], layers={"opacity": ["thing/thing"]}
+        )
+
+    def test_detach_warning_lists_each_prop_once_with_its_layers(self, monkeypatch, warnings):
+        monkeypatch.setitem(FIG_TEXT, "name", "Label")
+        monkeypatch.setitem(FIG_RECT, "name", "Box")
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["name"] = "Card"
+        fig["symbolData"]["symbolOverrides"] = [
+            {"guidPath": {"guids": [(1, 9)]}, "fontSize": 16},
+            {"guidPath": {"guids": [(0, 2)]}, "fontSize": 16, "visible": False},
+        ]
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, Group)
+        warnings.assert_any_call(
+            "SYM003",
+            ANY,
+            props=["fontSize", "visible"],
+            layers={"fontSize": ["Card/Label", "Card/Box"], "visible": ["Card/Box"]},
+        )
 
     def test_fill_override(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
@@ -868,7 +892,12 @@ class TestOverrides:
         i = tree.convert_node(fig, "")
 
         assert isinstance(i, Group)
-        warnings.assert_any_call("SYM003", ANY, props=["fillPaints.regions"])
+        warnings.assert_any_call(
+            "SYM003",
+            ANY,
+            props=["fillPaints.regions"],
+            layers={"fillPaints.regions": ["thing/thing"]},
+        )
 
     def test_unchanged_fill_override_on_vector_with_regions(self, warnings):
         fig = copy.deepcopy(FIG_INSTANCE)
@@ -932,7 +961,9 @@ class TestOverrides:
         assert i.symbolID == symbol.symbolID
         assert i.overrideValues == []
 
-        warnings.assert_any_call("SYM002", ANY, props=["fontSize"])
+        warnings.assert_any_call(
+            "SYM002", ANY, props=["fontSize"], layers={"fontSize": ["thing/thing"]}
+        )
 
     def test_prop_and_symbol_override(self):
         """When a property and an override are specified for the same thing, we want
