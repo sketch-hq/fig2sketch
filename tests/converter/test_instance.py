@@ -1322,6 +1322,67 @@ class TestDetach:
             "SYM003", ANY, props=["opacity"], layers={"opacity": ["thing/thing"]}
         )
 
+    def slot_instance(self, monkeypatch, slot_content_id):
+        """An instance whose master has a slot frame, filled in with another frame's
+        children."""
+        default = {**FIG_RECT, "guid": (0, 32), "name": "default"}
+        slot = {
+            **FIG_BASE,
+            "type": "FRAME",
+            "guid": (0, 31),
+            "name": "slot",
+            "children": [default],
+            "componentPropRefs": [{"defID": (1, 5), "componentPropNodeField": "SLOT_CONTENT_ID"}],
+        }
+        master = {**FIG_SYMBOL, "guid": (0, 30), "children": [slot]}
+        slotted = {**FIG_RECT, "guid": (0, 34), "name": "slotted"}
+        content = {
+            **FIG_BASE,
+            "type": "FRAME",
+            "guid": (0, 33),
+            "isSlotContent": True,
+            "children": [slotted],
+        }
+        for node in [master, slot, default, content, slotted]:
+            monkeypatch.setitem(context._node_by_id, node["guid"], node)
+
+        fig = copy.deepcopy(FIG_INSTANCE)
+        fig["symbolData"]["symbolID"] = master["guid"]
+        fig["componentPropAssignments"] = [
+            {
+                "defID": (1, 5),
+                "value": {},
+                "varValue": {"value": {"slotContentIdValue": {"guid": slot_content_id}}},
+            }
+        ]
+        fig["derivedSymbolData"] = [
+            {"guidPath": {"guids": [slotted["guid"]]}, "size": {"x": 40, "y": 20}}
+        ]
+        context.add_fig_node(fig)
+        return fig
+
+    def test_slot_content_replaces_slot_children(self, monkeypatch, warnings):
+        fig = self.slot_instance(monkeypatch, (0, 33))
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, Group)
+        [slot] = i.layers
+        assert [layer.name for layer in slot.layers] == ["slotted"]
+        assert slot.layers[0].frame.width == 40
+        warnings.assert_any_call(
+            "SYM003", ANY, props=["slotContentID"], layers={"slotContentID": ["thing/slot"]}
+        )
+
+    def test_missing_slot_content_keeps_master_children(self, monkeypatch, warnings):
+        fig = self.slot_instance(monkeypatch, (0, 99))
+
+        i = tree.convert_node(fig, "")
+
+        assert isinstance(i, Group)
+        [slot] = i.layers
+        assert [layer.name for layer in slot.layers] == ["default"]
+
     def test_convert_to_artboard(self):
         fig = copy.deepcopy(FIG_INSTANCE)
         fig["symbolData"]["symbolOverrides"] = [
@@ -1347,10 +1408,28 @@ class TestConvertPropertiesToOverrides:
                 "componentPropRefs": [
                     {"defID": (1, 0), "componentPropNodeField": "VISIBLE"},
                     {"defID": (1, 1), "componentPropNodeField": "OVERRIDDEN_SYMBOL_ID"},
+                    {"defID": (1, 2), "componentPropNodeField": "SLOT_CONTENT_ID"},
                 ],
             }
         ],
     }
+
+    def test_slot_content(self):
+        properties = [
+            {"defID": (1, 2), "varValue": {"value": {"slotContentIdValue": {"guid": (2, 4)}}}},
+        ]
+
+        assert instance.convert_properties_to_overrides(self.MASTER, properties) == [
+            {"slotContentID": (2, 4), "guidPath": {"guids": [(0, 2)]}}
+        ]
+
+    def test_skips_invalid_slot_content(self):
+        invalid = (utils.UINT_MAX, utils.UINT_MAX)
+        properties = [
+            {"defID": (1, 2), "varValue": {"value": {"slotContentIdValue": {"guid": invalid}}}},
+        ]
+
+        assert instance.convert_properties_to_overrides(self.MASTER, properties) == []
 
     def test_values_in_var_value(self):
         properties = [
