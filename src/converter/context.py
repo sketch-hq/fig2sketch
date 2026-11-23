@@ -180,18 +180,24 @@ class Context:
         try:
             font_file, font_name = font.get_webfont(*font_descriptor)
         except Exception as e:
-            if isinstance(e, font.FontNotFoundError) or (
-                isinstance(e, HTTPError) and (e.code == 404 or e.code == 400)
-            ):
-                logging.warning(f"Could not find font {font_descriptor} via Google Fonts")
-            else:
-                logging.warning(f"Could not download font {font_descriptor}: {e}")
-
             font_file = None
-            if fig_font_name["postscript"]:
-                font_name = fig_font_name["postscript"]
+            postscript = fig_font_name["postscript"]
+            if postscript:
+                font_name = postscript
             else:
                 font_name = f"{fig_font_name['family']}-{fig_font_name['style']}"
+
+            not_found = isinstance(e, font.FontNotFoundError) or (
+                isinstance(e, HTTPError) and (e.code == 404 or e.code == 400)
+            )
+            if not not_found:
+                logging.warning(f"Could not download font {font_descriptor}: {e}")
+            elif postscript:
+                logging.debug(
+                    f"Font {font_descriptor} not found on Google Fonts, using {postscript}"
+                )
+            else:
+                logging.warning(f"Could not find font {font_descriptor} via Google Fonts")
 
         self._used_fonts[font_descriptor] = (font_file, font_name)
         return font_name
