@@ -6,7 +6,7 @@ from converter import utils
 from sketchformat.layer_group import SymbolInstance, OverrideValue
 from sketchformat.style import Style
 from typing import Dict, List, Optional, Sequence, Tuple
-from .errors import Fig2SketchNodeChanged
+from .errors import Fig2SketchNodeChanged, Fig2SketchWarning
 
 GRADIENT_PAINT_TYPES = {
     "GRADIENT_LINEAR",
@@ -76,6 +76,9 @@ PROPERTY_OVERRIDE_FIELDS = {
     "OVERRIDDEN_SYMBOL_ID": ("overriddenSymbolID", "guidValue", "symbolIdValue"),
     "TEXT_DATA": ("textData", "textValue", "textDataValue"),
     "VISIBLE": ("visible", "boolValue", "boolValue"),
+    # A slot is a frame whose children an instance replaces with those of a slot content
+    # frame. Sketch has no override for that, so the instance detaches to show them
+    "SLOT_CONTENT_ID": ("slotContentID", None, "slotContentIdValue"),
 }
 
 
@@ -701,8 +704,11 @@ def property_value(prop, field):
         return prop["value"][legacy_key]
 
     value = prop.get("varValue", {}).get("value", {}).get(var_key)
-    if var_key == "symbolIdValue" and value is not None:
-        return value.get("guid")
+    if var_key in ("symbolIdValue", "slotContentIdValue") and value is not None:
+        value = value.get("guid")
+        # An invalid slot content means the slot shows the master's children
+        if var_key == "slotContentIdValue" and utils.is_invalid_ref(value):
+            return None
     return value
 
 
@@ -763,6 +769,15 @@ def apply_overrides(fig_node, instance_id, parent_id, overrides, derived_symbol_
                     continue
                 elif k == "overriddenSymbolID":
                     fig_node["symbolData"]["symbolID"] = v
+                elif k == "slotContentID":
+                    # Overrides and derived data address the slot content's children by
+                    # their own guids, so they apply to the copies like to master children
+                    try:
+                        slot_content = context.fig_node(v)
+                    except Fig2SketchWarning:
+                        # Without its content, the slot keeps the master's children
+                        continue
+                    fig_node["children"] = copy.deepcopy(slot_content["children"], {})
                 else:
                     fig_node[k] = v
 
